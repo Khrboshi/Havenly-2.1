@@ -99,9 +99,11 @@ export default function JournalHistoryPage() {
                 </span>
               )}
             </div>
+
             <p className="text-sm text-slate-100 whitespace-pre-wrap">
               {entry.content}
             </p>
+
             {entry.ai_response && (
               <div className="mt-2 border-t border-slate-800 pt-2">
                 <p className="text-[11px] text-emerald-300 mb-1">
