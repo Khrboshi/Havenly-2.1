@@ -1,19 +1,22 @@
 import "./globals.css";
 import Navbar from "./components/Navbar";
+import { createServerSupabase } from "@/lib/supabase/server";
 
 export const metadata = {
   title: "Havenly",
-  description: "AI-powered wellbeing journal",
+  description: "Daily AI-assisted reflections",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }) {
+  // SSR-authenticated user
+  const supabase = createServerSupabase();
+  await supabase.auth.getUser(); // ensures cookies are loaded
+
   return (
-    <html lang="en">
-      <body className="bg-slate-950 text-slate-100">
+    <html lang="en" className="bg-slate-950 text-white">
+      <body className="min-h-screen font-sans antialiased">
         <Navbar />
-        <main className="max-w-5xl mx-auto px-4 py-6">
-          {children}
-        </main>
+        <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
       </body>
     </html>
   );
