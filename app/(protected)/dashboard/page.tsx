@@ -8,8 +8,6 @@ import Link from "next/link";
 type JournalEntry = {
   id: string;
   created_at: string;
-  mood: number | null;
-  title: string | null;
   content: string | null;
   ai_response: string | null;
 };
@@ -33,11 +31,13 @@ export default function DashboardPage() {
 
       const { data: profile } = await supabaseClient
         .from("profiles")
-        .select("display_name, main_focus")
+        .select("display_name")
         .eq("id", user.id)
         .maybeSingle();
 
-      setDisplayName(profile?.display_name || user.email?.split("@")[0] || "friend");
+      setDisplayName(
+        profile?.display_name || user.email?.split("@")[0] || "friend"
+      );
 
       const { data: entries } = await supabaseClient
         .from("journal_entries")
@@ -53,7 +53,7 @@ export default function DashboardPage() {
   }, [router]);
 
   if (loading) {
-    return <p className="text-sm text-slate-300 mt-6">Loading your space…</p>;
+    return <p className="text-sm text-slate-400 mt-6">Loading your space…</p>;
   }
 
   return (
@@ -72,7 +72,7 @@ export default function DashboardPage() {
           href="/journal/new"
           className="inline-flex items-center gap-2 rounded-2xl bg-emerald-400 px-4 py-3 text-sm font-medium text-slate-950 hover:bg-emerald-300 transition"
         >
-          Start today&apos;s reflection
+          Start today&apos;s reflection{" "}
           <span className="text-xs opacity-80">· 3–5 min</span>
         </Link>
 
@@ -100,6 +100,7 @@ export default function DashboardPage() {
             <p className="text-sm text-slate-100 line-clamp-3">
               {lastEntry.content}
             </p>
+
             {lastEntry.ai_response && (
               <div className="mt-2 border-t border-slate-800 pt-2">
                 <p className="text-[11px] text-emerald-300 mb-1">
