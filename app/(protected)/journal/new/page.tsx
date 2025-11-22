@@ -150,7 +150,7 @@ export default function NewJournalEntryPage() {
           <p className="text-xs uppercase tracking-[0.2em] text-emerald-300/80">
             Havenly reflection
           </p>
-          <div className="rounded-2xl border border-emerald-400/50 bg-emerald-950/20 p-4 text-sm text-emerald-100">
+          <div className="rounded-2xl border border-emerald-400/50 bg-emerald-950/20 p-4 text-sm text-emerald-100 whitespace-pre-wrap">
             {aiResponse}
           </div>
         </section>
