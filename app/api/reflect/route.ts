@@ -9,6 +9,13 @@ export async function POST(req: Request) {
   try {
     const { content, mood } = await req.json();
 
+    if (!process.env.GROQ_API_KEY) {
+      return NextResponse.json(
+        { error: "Groq API key missing on server." },
+        { status: 500 }
+      );
+    }
+
     if (!content || typeof content !== "string") {
       return NextResponse.json(
         { error: "Missing or invalid content." },
@@ -22,11 +29,11 @@ export async function POST(req: Request) {
         {
           role: "system",
           content:
-            "You are Havenly, a very concise, warm reflection coach. You respond in 2–4 short paragraphs max, focusing on validation, gentle reframing, and 1 small suggestion. You are not a therapist, you avoid diagnostics, and you never mention being an AI.",
+            "You are Havenly, a concise, warm reflection assistant. You respond in 2–4 short paragraphs, focusing on validation, gentle reframing, and one small suggestion. Avoid diagnostic or clinical language. Never mention that you are an AI.",
         },
         {
           role: "user",
-          content: `My current mood (1-5) is: ${mood ?? "not given"}.\nThis is what happened today:\n\n${content}`,
+          content: `Mood: ${mood ?? "not provided"} / 5.\n\nUser reflection:\n${content}`,
         },
       ],
       max_tokens: 256,
@@ -35,7 +42,7 @@ export async function POST(req: Request) {
 
     const aiResponse =
       completion.choices?.[0]?.message?.content?.trim() ||
-      "Thank you for sharing. I’m here with you, even if I have no words right now.";
+      "Thank you for sharing. I'm here with you.";
 
     return NextResponse.json({ aiResponse });
   } catch (error) {
