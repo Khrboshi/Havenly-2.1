@@ -1,13 +1,17 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 
-export async function GET(request: Request) {
-  const supabase = createServerSupabase();
+export async function GET() {
+  const supabase = await createServerSupabase();
+
   await supabase.auth.signOut();
 
-  const url = new URL(request.url);
-  url.pathname = "/login";
-  url.searchParams.set("logged_out", "1");
+  // This triggers client components to get new session immediately
+  const res = NextResponse.redirect("/login?logged_out=1");
 
-  return NextResponse.redirect(url.toString());
+  // VERY IMPORTANT — clear auth cookies
+  res.cookies.set("sb-access-token", "", { maxAge: 0, path: "/" });
+  res.cookies.set("sb-refresh-token", "", { maxAge: 0, path: "/" });
+
+  return res;
 }
