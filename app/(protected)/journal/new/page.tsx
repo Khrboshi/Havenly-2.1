@@ -3,18 +3,20 @@
 import { FormEvent, useEffect, useState } from "react";
 import { supabaseClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function NewJournalEntryPage() {
   const router = useRouter();
-  const [mood, setMood] = useState(3);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  const [mood, setMood] = useState<number>(3);
   const [content, setContent] = useState("");
   const [aiResponse, setAiResponse] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    async function checkUser() {
+    async function load() {
       const {
         data: { user },
       } = await supabaseClient.auth.getUser();
@@ -27,95 +29,104 @@ export default function NewJournalEntryPage() {
       setUserId(user.id);
     }
 
-    checkUser();
+    load();
   }, [router]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    setError("");
-    setAiResponse(null);
-
-    if (!userId) {
-      setError("Not authenticated.");
-      return;
-    }
+    if (!userId) return;
 
     if (!content.trim()) {
-      setError("Write at least one sentence about your day.");
+      setError("Please write a short reflection for today.");
       return;
     }
 
+    setError("");
     setLoading(true);
+    setAiResponse(null);
 
     try {
+      // Call AI reflection API
       const res = await fetch("/api/reflect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content, mood }),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        throw new Error("AI reflection failed");
+        throw new Error(data?.error || "Failed to generate reflection.");
       }
 
-      const data = await res.json();
-      const reflection: string = data.aiResponse || "";
+      const reflection: string =
+        data.aiResponse || "Thank you for sharing. I'm here with you.";
       setAiResponse(reflection);
 
-      const title =
-        content.split(".")[0]?.slice(0, 80) || "Untitled reflection";
-
+      // Save entry to Supabase
       const { error: insertError } = await supabaseClient
         .from("journal_entries")
         .insert({
           user_id: userId,
           mood,
           content,
-          title,
           ai_response: reflection,
         });
 
       if (insertError) {
         console.error(insertError);
-        setError("Saved partially. Please try again later.");
+        setError("Saved AI reflection, but failed to store the entry.");
+      } else {
+        // Optional: redirect to history
+        // router.push("/journal");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("Something went wrong generating your reflection.");
+      setError(err.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="max-w-xl mx-auto mt-4 space-y-5">
-      <section className="space-y-1">
-        <h1 className="text-xl font-semibold">Today&apos;s reflection</h1>
-        <p className="text-sm text-slate-300">
-          Pick your mood, write a short note, and let Havenly respond.
-        </p>
-      </section>
+    <div className="mt-4 space-y-6">
+      <div className="flex items-center justify-between gap-2">
+        <div>
+          <h1 className="text-xl font-semibold">Today&apos;s reflection</h1>
+          <p className="text-sm text-slate-300">
+            One mood slider, one short note. That&apos;s enough.
+          </p>
+        </div>
+        <Link
+          href="/journal"
+          className="text-xs text-slate-400 hover:text-emerald-300"
+        >
+          View history
+        </Link>
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
           <label className="text-xs text-slate-300 flex justify-between">
             <span>How are you feeling right now?</span>
-            <span className="text-[10px] text-slate-400">
-              1 = low · 5 = high
+            <span className="text-emerald-300 font-medium">
+              {mood} <span className="text-slate-500">/ 5</span>
             </span>
           </label>
           <input
             type="range"
             min={1}
             max={5}
+            step={1}
             value={mood}
             onChange={(e) => setMood(Number(e.target.value))}
-            className="w-full"
+            className="w-full accent-emerald-400"
           />
-          <p className="text-xs text-slate-300">
-            Mood:{" "}
-            <span className="font-semibold text-emerald-300">{mood}/5</span>
-          </p>
+          <div className="flex justify-between text-[10px] text-slate-500">
+            <span>Low</span>
+            <span>Okay</span>
+            <span>High</span>
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -123,15 +134,16 @@ export default function NewJournalEntryPage() {
             What&apos;s on your mind?
           </label>
           <textarea
-            className="w-full min-h-[160px] rounded-2xl bg-slate-900/60 border border-slate-700 px-3 py-2 text-sm outline-none focus:border-emerald-400"
-            placeholder="Describe your day, a moment, a worry, or something you're grateful for."
+            rows={6}
+            className="w-full rounded-2xl bg-slate-900/60 border border-slate-700 px-3 py-2 text-sm outline-none focus:border-emerald-400 resize-none"
+            placeholder="Write a few sentences about what happened today, or what you're feeling right now."
             value={content}
             onChange={(e) => setContent(e.target.value)}
           />
         </div>
 
         {error && (
-          <p className="text-xs text-red-400 border border-red-500/40 bg-red-950/30 rounded-lg px-3 py-2">
+          <p className="text-xs text-red-400 border border-red-500/30 bg-red-950/30 rounded-lg px-3 py-2">
             {error}
           </p>
         )}
@@ -139,20 +151,20 @@ export default function NewJournalEntryPage() {
         <button
           type="submit"
           disabled={loading}
-          className="rounded-full bg-emerald-400 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-300 disabled:opacity-60 disabled:cursor-not-allowed"
+          className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-medium text-slate-950 hover:bg-emerald-300 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {loading ? "Saving and reflecting…" : "Save & get reflection"}
+          {loading ? "Reflecting…" : "Save & get reflection"}
         </button>
       </form>
 
       {aiResponse && (
-        <section className="mt-4 space-y-2">
-          <p className="text-xs uppercase tracking-[0.2em] text-emerald-300/80">
+        <section className="mt-4 rounded-2xl border border-emerald-400/40 bg-slate-900/60 p-4 space-y-2">
+          <p className="text-[11px] text-emerald-300 uppercase tracking-[0.2em]">
             Havenly reflection
           </p>
-          <div className="rounded-2xl border border-emerald-400/50 bg-emerald-950/20 p-4 text-sm text-emerald-100 whitespace-pre-wrap">
+          <p className="text-xs text-slate-100 whitespace-pre-wrap">
             {aiResponse}
-          </div>
+          </p>
         </section>
       )}
     </div>
