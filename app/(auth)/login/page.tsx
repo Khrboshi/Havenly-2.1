@@ -1,33 +1,18 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import { supabaseClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
-  const router = useRouter();
+  const searchParams = useSearchParams();
+  const loggedOut = searchParams.get("logged_out") === "1";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [info, setInfo] = useState("");
-
-  // Show friendly messages based on URL query (?verify=1, ?logged_out=1)
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-
-    if (params.get("verify") === "1") {
-      setInfo(
-        "Check your email to confirm your account. Once verified, you can log in here."
-      );
-    } else if (params.get("logged_out") === "1") {
-      setInfo(
-        "You’ve been logged out. Thank you for checking in today — come back anytime you need a quiet moment."
-      );
-    }
-  }, []);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -46,19 +31,21 @@ export default function LoginPage() {
       return;
     }
 
-    router.replace("/dashboard");
+    // Hard redirect so the server immediately sees the new session
+    window.location.href = "/dashboard";
   }
 
   return (
     <div className="max-w-sm mx-auto mt-8">
       <h1 className="text-2xl font-semibold mb-2">Welcome back</h1>
-      <p className="text-sm text-slate-300 mb-4">
+      <p className="text-sm text-slate-300 mb-6">
         Log in to continue your Havenly reflections.
       </p>
 
-      {info && (
-        <div className="mb-4 text-xs rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-emerald-100">
-          {info}
+      {loggedOut && (
+        <div className="mb-4 rounded-lg border border-emerald-500/40 bg-emerald-900/20 px-3 py-2 text-xs text-emerald-100">
+          You&apos;ve been logged out. Thank you for checking in today — come
+          back anytime you need a quiet moment.
         </div>
       )}
 
