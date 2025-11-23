@@ -3,15 +3,12 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
-
 export async function POST(req: Request) {
   try {
     const { content, mood } = await req.json();
 
-    if (!process.env.GROQ_API_KEY) {
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) {
       return NextResponse.json(
         { error: "Groq API key missing on server." },
         { status: 500 }
@@ -25,13 +22,15 @@ export async function POST(req: Request) {
       );
     }
 
+    const groq = new Groq({ apiKey });
+
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
         {
           role: "system",
           content:
-            "You are Havenly, a concise, warm reflection assistant...",
+            "You are Havenly, a concise, warm reflection assistant. You respond in 2–4 short paragraphs, focusing on validation, gentle reframing, and one small suggestion. Avoid diagnostic or clinical language. Never mention that you are an AI.",
         },
         {
           role: "user",
