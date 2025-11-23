@@ -1,19 +1,33 @@
-import { createServerSupabase } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { supabaseClient } from "@/lib/supabase/client";
 
-export default async function HomePage() {
-  const supabase = createServerSupabase();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+export default function HomePage() {
+  const router = useRouter();
 
-  if (session?.user) {
-    redirect("/dashboard");
-  }
+  useEffect(() => {
+    let isMounted = true;
+
+    async function checkUser() {
+      const { data } = await supabaseClient.auth.getUser();
+      if (!isMounted) return;
+      if (data.user) {
+        router.replace("/dashboard");
+      }
+    }
+
+    checkUser();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [router]);
 
   return (
-    <main className="max-w-5xl mx-auto px-6 py-20">
+    <main className="max-w-5xl mx-auto px-6 py-16 md:py-20">
       <div className="flex flex-col items-start space-y-8">
         <div className="space-y-2">
           <p className="text-xs tracking-[0.2em] text-emerald-300">
@@ -32,7 +46,7 @@ export default async function HomePage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-wrap gap-3">
           <Link
             href="/signup"
             className="rounded-full bg-emerald-400 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-emerald-300 transition"
