@@ -1,12 +1,29 @@
-import { redirect } from "next/navigation";
-import { createServerSupabase } from "@/lib/supabase/server";
+"use client";
 
-export default async function LogoutPage() {
-  const supabase = createServerSupabase();
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-  // Server-side sign out (clears cookies for middleware & SSR)
-  await supabase.auth.signOut();
+export default function LogoutPage() {
+  const router = useRouter();
 
-  // Redirect to landing with a friendly toast
-  redirect("/?message=logged_out");
+  useEffect(() => {
+    async function doLogout() {
+      try {
+        await fetch("/auth/logout");
+      } catch (e) {
+        console.error("Logout error", e);
+      } finally {
+        router.replace("/login?logged_out=1");
+      }
+    }
+
+    doLogout();
+  }, [router]);
+
+  return (
+    <div className="mt-8 text-sm text-slate-300">
+      Signing you out… one last deep breath, then you&apos;re free to close this
+      tab.
+    </div>
+  );
 }
