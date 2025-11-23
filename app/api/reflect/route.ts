@@ -27,24 +27,55 @@ export async function POST(req: Request) {
 
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
+
+      // MUCH better and more unique responses
       messages: [
         {
           role: "system",
-          content:
-            "You are Havenly, a concise, warm reflection assistant. You respond in 2–4 short paragraphs, focusing on validation, gentle reframing, and one small suggestion. Avoid diagnostic or clinical language. Never mention that you are an AI.",
+          content: `
+You are Havenly — a warm, emotionally intelligent reflection companion.
+
+Your job:
+• Validate the user's feelings authentically  
+• Reflect back what is *unique* about what they wrote  
+• Gently explore what might be beneath the surface  
+• Offer 1 soft, actionable suggestion  
+• Stay supportive, human, grounded  
+• Never mention AI, therapy, diagnosis, or mental health treatment  
+• Write 3–5 short paragraphs (not too similar across entries)
+
+Variation rules:
+• Responses must sound different each time  
+• Vary rhythm, structure, tone, and depth  
+• Lean heavily on the *specific details* the user wrote  
+• When mood is provided, subtly incorporate it
+          `,
         },
         {
           role: "user",
-          content: `Mood: ${mood ?? "not provided"} / 5.\n\nUser reflection:\n${content}`,
+          content: `
+User mood: ${mood ?? "not provided"} / 5.
+
+User reflection:
+"${content}"
+
+Write a personalized response that acknowledges the user's unique words.
+          `,
         },
       ],
-      max_tokens: 256,
-      temperature: 0.6,
+
+      max_tokens: 320,
+
+      // More diversity + creativity, but still stable
+      temperature: 0.85,
+      top_p: 0.9,
+      presence_penalty: 0.8,
+      frequency_penalty: 0.3,
     });
 
     const aiResponse =
       completion.choices?.[0]?.message?.content?.trim() ||
-      "Thank you for sharing. I'm here with you.";
+      "Thank you for opening up today — I’m here with you.";
 
     return NextResponse.json({ aiResponse });
   } catch (error) {
