@@ -31,17 +31,16 @@ export default function SignupPage() {
       return;
     }
 
-    // Supabase emails the user — show confirmation message
+    // Show message to check email
     setSuccess(
-      `We’ve sent a confirmation link to ${email}. Please check your inbox and verify your account to continue.`
+      `We’ve sent a confirmation link to ${email}. Please check your inbox to verify your account.`
     );
 
-    // Insert profile only *after* user confirms email
     if (data.user) {
+      // No "catch" — use Supabase error handling pattern instead
       await supabaseClient
         .from("profiles")
-        .insert({ id: data.user.id, main_focus: focus })
-        .catch(() => {});
+        .insert({ id: data.user.id, main_focus: focus });
     }
   }
 
