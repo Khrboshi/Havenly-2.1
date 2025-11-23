@@ -1,37 +1,22 @@
-// app/layout.tsx
 import "./globals.css";
-import Navbar from "./components/Navbar";
 import { createServerSupabase } from "@/lib/supabase/server";
-import type { ReactNode } from "react";
-import type { User } from "@supabase/supabase-js";
+import Navbar from "./components/Navbar";
+import ToastMessage from "./components/ToastMessage";
 
-export const metadata = {
-  title: "Havenly 2.1",
-  description: "AI-powered reflection journal",
-};
+export const dynamic = "force-dynamic";
 
-async function getUser(): Promise<User | null> {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const supabase = createServerSupabase();
-
   const {
-    data: { user },
-  } = await supabase.auth.getUser(); // Secure & recommended
-
-  return user ?? null;
-}
-
-export default async function RootLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  const user = await getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
   return (
     <html lang="en">
-      <body className="bg-slate-950 text-slate-200 min-h-screen">
-        <Navbar user={user} />
-        <main className="max-w-5xl mx-auto px-4 py-8">{children}</main>
+      <body className="bg-slate-950 text-slate-200">
+        <Navbar user={session?.user || null} />
+        <ToastMessage />
+        {children}
       </body>
     </html>
   );
