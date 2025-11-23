@@ -4,24 +4,40 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 export default function ToastMessage() {
-  const params = useSearchParams();
-  const [message, setMessage] = useState("");
+  const searchParams = useSearchParams();
+  const [visible, setVisible] = useState(false);
+  const [text, setText] = useState("");
 
   useEffect(() => {
-    if (params.get("from") === "login") {
-      setMessage("Welcome back! Glad to see you again.");
+    const from = searchParams.get("from");
+    const message = searchParams.get("message");
+
+    let toastText = "";
+
+    if (from === "login") {
+      toastText = "Welcome back. You’re now logged in.";
+    } else if (message === "logged_out") {
+      toastText =
+        "You’re signed out for now. Come back any time you need a quiet moment.";
     }
 
-    if (params.get("logout") === "1") {
-      setMessage("You’ve logged out safely. Come back whenever you need a moment.");
+    if (!toastText) {
+      setVisible(false);
+      return;
     }
-  }, [params]);
 
-  if (!message) return null;
+    setText(toastText);
+    setVisible(true);
+
+    const timer = setTimeout(() => setVisible(false), 4500);
+    return () => clearTimeout(timer);
+  }, [searchParams]);
+
+  if (!visible) return null;
 
   return (
     <div className="toast-container">
-      <div className="toast">{message}</div>
+      <div className="toast animate-fade-in">{text}</div>
     </div>
   );
 }
