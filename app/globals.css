@@ -2,24 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
+/* GLOBAL RESET */
 html,
 body {
   padding: 0;
   margin: 0;
 }
 
+/* BASE THEME */
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
     "Inter", sans-serif;
-  background-color: #020617; /* slate-950-ish */
-  color: #e5e7eb; /* slate-200-ish */
+  background-color: #020617; /* Deep slate-950 */
+  color: #e5e7eb; /* Slate-200 */
+  min-height: 100vh;
 }
 
+/* LINKS */
 a {
   color: inherit;
   text-decoration: none;
 }
 
+/* ANTI-JITTER */
 * {
   box-sizing: border-box;
+}
+
+/* SMOOTH INTERACTIONS */
+button,
+a {
+  transition: all 0.15s ease;
+}
+
+/* FADE HOVER (Used by logo group-hover) */
+.group:hover .fade {
+  opacity: 0.8;
 }
