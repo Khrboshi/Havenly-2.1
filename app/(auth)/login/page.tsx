@@ -50,6 +50,7 @@ export default function LoginPage() {
             onChange={(e) => setEmail(e.target.value.trim())}
           />
         </div>
+
         <div className="space-y-1">
           <label className="text-xs text-slate-300">Password</label>
           <input
