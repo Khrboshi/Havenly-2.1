@@ -8,16 +8,17 @@ import { useRouter } from "next/navigation";
 export default function Navbar() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    async function loadUser() {
+    async function load() {
       const {
         data: { user },
       } = await supabaseClient.auth.getUser();
-      setUser(user ?? null);
+
+      setUser(user);
     }
-    loadUser();
+    load();
   }, []);
 
   async function handleLogout() {
@@ -27,76 +28,74 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="w-full border-b border-slate-800/60 bg-slate-950/60 backdrop-blur-sm px-4 py-3 flex items-center justify-between sticky top-0 z-50">
-
-      {/* LEFT — LOGO */}
+    <nav className="w-full border-b border-slate-800/60 bg-slate-950/60 backdrop-blur-sm px-5 py-3 flex items-center justify-between">
+      
+      {/* LEFT — Logo */}
       <Link
-        href="/"
+        href={user ? "/dashboard" : "/"}
         className="flex items-center gap-2 group transition"
       >
-        <div className="h-8 w-8 rounded-full bg-emerald-500 flex items-center justify-center text-slate-900 font-bold group-hover:opacity-80 transition">
+        <div className="h-8 w-8 rounded-full bg-emerald-500 flex items-center justify-center text-slate-900 font-bold group-hover:opacity-70 transition-opacity">
           H
         </div>
-        <span className="text-slate-200 font-semibold group-hover:text-white transition">
+        <span className="text-slate-200 font-semibold group-hover:opacity-70 transition-opacity">
           Havenly
         </span>
       </Link>
 
-      {/* RIGHT — NAVIGATION */}
-      <div className="flex items-center gap-6 relative">
-        {!user && (
-          <>
-            <Link
-              href="/login"
-              className="text-slate-300 hover:text-white transition"
-            >
-              Log in
-            </Link>
+      {/* RIGHT — Login / Register if logged out */}
+      {!user && (
+        <div className="flex items-center gap-4">
+          <Link href="/login" className="nav-btn">
+            Log in
+          </Link>
+          <Link href="/signup" className="nav-primary-btn">
+            Get started
+          </Link>
+        </div>
+      )}
 
-            <Link
-              href="/signup"
-              className="px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 font-medium hover:bg-emerald-400 transition"
-            >
-              Get started
-            </Link>
-          </>
-        )}
-
-        {user && (
-          <>
-            <button
-              onClick={() => setDropdownOpen((v) => !v)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800 text-slate-200 hover:bg-slate-700 transition"
-            >
+      {/* RIGHT — User dropdown if logged in */}
+      {user && (
+        <div className="relative">
+          <button
+            onClick={() => setOpen((o) => !o)}
+            className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 transition px-4 py-2 rounded-xl"
+          >
+            <span className="text-slate-200 text-sm">
               {user.email?.split("@")[0]}
-              <span className="opacity-60 text-xs">▾</span>
-            </button>
+            </span>
+            <span className="text-slate-400">▾</span>
+          </button>
 
-            {dropdownOpen && (
-              <div className="absolute right-0 top-12 w-44 rounded-xl bg-slate-900 border border-slate-800 shadow-xl overflow-hidden">
-                <Link
-                  href="/dashboard"
-                  className="block px-4 py-2 text-sm text-slate-200 hover:bg-slate-800 transition"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/settings"
-                  className="block px-4 py-2 text-sm text-slate-200 hover:bg-slate-800 transition"
-                >
-                  Settings
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-left px-4 py-2 text-sm text-red-300 hover:bg-red-500/20 transition"
-                >
-                  Logout
-                </button>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+          {open && (
+            <div className="absolute right-0 mt-2 w-40 rounded-xl bg-slate-900 border border-slate-800 shadow-xl p-2 flex flex-col text-sm">
+              <Link
+                href="/dashboard"
+                className="dropdown-item"
+                onClick={() => setOpen(false)}
+              >
+                Dashboard
+              </Link>
+
+              <Link
+                href="/settings"
+                className="dropdown-item"
+                onClick={() => setOpen(false)}
+              >
+                Settings
+              </Link>
+
+              <button
+                className="dropdown-item text-red-300 hover:text-red-400"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </nav>
   );
 }
