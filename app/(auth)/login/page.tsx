@@ -1,27 +1,16 @@
 "use client";
 
-import { FormEvent, useState, useEffect } from "react";
+import { FormEvent, useState } from "react";
 import { supabaseClient } from "@/lib/supabase/client";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
-  const params = useSearchParams();
-
-  const logoutMsg = params.get("msg") === "logout-success";
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // Display encouraging logout message
-  useEffect(() => {
-    if (logoutMsg) {
-      alert("You’ve logged out successfully. Looking forward to seeing you again soon.");
-    }
-  }, [logoutMsg]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -40,42 +29,38 @@ export default function LoginPage() {
       return;
     }
 
-    // Force refresh + redirect → ALWAYS updates UI
+    // FORCE the server layout to update the session
     router.refresh();
-    router.push("/dashboard?from=login");
+
+    // Redirect to dashboard with a flag
+    router.replace("/dashboard?from=login");
   }
 
   return (
-    <div className="max-w-sm mx-auto mt-8">
+    <div className="max-w-sm mx-auto mt-10">
       <h1 className="text-2xl font-semibold mb-2">Welcome back</h1>
       <p className="text-sm text-slate-300 mb-6">
         Log in to continue your Havenly reflections.
       </p>
 
-      {logoutMsg && (
-        <p className="text-xs text-emerald-300 mb-4">
-          You’ve logged out. Come back anytime.
-        </p>
-      )}
-
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-1">
+        <div>
           <label className="text-xs text-slate-300">Email</label>
           <input
             type="email"
             required
-            className="w-full rounded-xl bg-slate-900/60 border border-slate-700 px-3 py-2 text-sm outline-none focus:border-emerald-400"
+            className="w-full rounded-xl bg-slate-900/60 border border-slate-700 px-3 py-2 text-sm"
             value={email}
             onChange={(e) => setEmail(e.target.value.trim())}
           />
         </div>
 
-        <div className="space-y-1">
+        <div>
           <label className="text-xs text-slate-300">Password</label>
           <input
             type="password"
             required
-            className="w-full rounded-xl bg-slate-900/60 border border-slate-700 px-3 py-2 text-sm outline-none focus:border-emerald-400"
+            className="w-full rounded-xl bg-slate-900/60 border border-slate-700 px-3 py-2 text-sm"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -90,14 +75,14 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-full bg-emerald-400 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-300 disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full rounded-full bg-emerald-400 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-300 disabled:opacity-60"
         >
           {loading ? "Signing you in…" : "Log in"}
         </button>
       </form>
 
       <p className="mt-4 text-xs text-slate-400">
-        Don&apos;t have an account?{" "}
+        Don’t have an account?{" "}
         <Link href="/signup" className="text-emerald-300 hover:underline">
           Sign up
         </Link>
