@@ -1,5 +1,6 @@
 import "./globals.css";
 import Navbar from "./components/Navbar";
+import ToastMessage from "./components/ToastMessage";
 
 export const metadata = {
   title: "Havenly 2.1",
@@ -15,35 +16,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="max-w-4xl mx-auto px-4 py-8">{children}</main>
       </body>
     </html>
-  );
-}
-
-// ------------------------------
-// TOAST SYSTEM
-// ------------------------------
-"use client";
-import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-
-function ToastMessage() {
-  const params = useSearchParams();
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    if (params.get("loggedout") === "1") {
-      setShow(true);
-      setTimeout(() => setShow(false), 4500);
-    }
-  }, [params]);
-
-  if (!show) return null;
-
-  return (
-    <div className="toast-container">
-      <div className="toast">
-        You logged out. Take care of yourself today — your space will be here
-        when you come back.
-      </div>
-    </div>
   );
 }
