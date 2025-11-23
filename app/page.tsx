@@ -3,13 +3,11 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 
 export default async function HomePage() {
-  // Check user session on the server
   const supabase = createServerSupabase();
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // If logged in → redirect to dashboard
   if (session?.user) {
     redirect("/dashboard");
   }
@@ -17,7 +15,6 @@ export default async function HomePage() {
   return (
     <main className="max-w-5xl mx-auto px-6 py-20">
       <div className="flex flex-col items-start space-y-8">
-
         <div className="space-y-2">
           <p className="text-xs tracking-[0.2em] text-emerald-300">
             HAVENLY 2.1 · MVP
@@ -35,7 +32,7 @@ export default async function HomePage() {
           </p>
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4">
           <Link
             href="/signup"
             className="rounded-full bg-emerald-400 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-emerald-300 transition"
