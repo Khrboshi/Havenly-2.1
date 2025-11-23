@@ -1,20 +1,24 @@
 import "./globals.css";
+import type { Metadata } from "next";
+import Navbar from "@/app/components/Navbar";
 import { createServerSupabase } from "@/lib/supabase/server";
-import Navbar from "./components/Navbar";
-import ToastMessage from "./components/ToastMessage";
+import ToastMessage from "@/app/components/ToastMessage";
 
-export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Havenly",
+  description: "Daily reflection and journaling made simple.",
+};
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const supabase = createServerSupabase();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { data } = await supabase.auth.getUser();
+
+  const user = data?.user || null;
 
   return (
     <html lang="en">
       <body className="bg-slate-950 text-slate-200">
-        <Navbar user={session?.user || null} />
+        <Navbar user={user} />
         <ToastMessage />
         {children}
       </body>
