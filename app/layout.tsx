@@ -1,25 +1,23 @@
 import "./globals.css";
 import Navbar from "./components/Navbar";
-import ToastClient from "./components/ToastClient";
-import { Suspense } from "react";
+import { createServerSupabase } from "@/lib/supabase/server";
 
 export const metadata = {
-  title: "Havenly 2.1",
-  description: "AI-powered reflection journal",
+  title: "Havenly",
+  description: "A calm space to reflect.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const supabase = createServerSupabase();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
   return (
     <html lang="en">
-      <body className="bg-slate-950 text-slate-100 min-h-screen">
-        <Navbar />
-
-        {/* Suspense boundary fixes ALL Vercel errors */}
-        <Suspense fallback={null}>
-          <ToastClient />
-        </Suspense>
-
-        <main className="max-w-4xl mx-auto px-4 py-8">{children}</main>
+      <body className="bg-slate-950 text-slate-200">
+        <Navbar user={session?.user || null} />
+        {children}
       </body>
     </html>
   );
