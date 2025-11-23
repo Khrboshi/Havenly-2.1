@@ -1,18 +1,20 @@
-// app/logout/page.tsx
-import { redirect } from "next/navigation";
-import { createServerSupabase } from "@/lib/supabase/server";
+"use client";
 
-export const dynamic = "force-dynamic";
+import { useEffect } from "react";
+import { supabaseClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
-export default async function LogoutPage() {
-  const supabase = createServerSupabase();
+export default function LogoutPage() {
+  const router = useRouter();
 
-  try {
-    await supabase.auth.signOut();
-  } catch {
-    // ignore if already logged out
-  }
+  useEffect(() => {
+    async function doLogout() {
+      await supabaseClient.auth.signOut();
+      router.push("/login?msg=logout-success");
+      router.refresh(); // ensures UI updates
+    }
+    doLogout();
+  }, [router]);
 
-  // Back to landing page after logout
-  redirect("/");
+  return null; // nothing visible
 }
