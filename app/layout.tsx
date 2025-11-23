@@ -16,7 +16,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en">
       <body className="bg-slate-950 text-slate-200">
-        <Navbar user={session?.user || null} />
+        <Navbar />
         {children}
       </body>
     </html>
