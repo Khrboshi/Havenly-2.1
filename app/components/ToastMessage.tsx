@@ -5,23 +5,19 @@ import { useSearchParams } from "next/navigation";
 
 export default function ToastMessage() {
   const params = useSearchParams();
-  const [visible, setVisible] = useState(false);
-
-  const message = params.get("message");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
-    if (message) {
-      setVisible(true);
-      const timeout = setTimeout(() => setVisible(false), 3500);
-      return () => clearTimeout(timeout);
+    if (params.get("logout") === "1") {
+      setMessage("You’ve logged out. Take care, and come back whenever you’re ready.");
     }
-  }, [message]);
+  }, [params]);
 
-  if (!visible || !message) return null;
+  if (!message) return null;
 
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 shadow-xl text-slate-100 text-sm animate-fade-in z-50">
-      {message}
+    <div className="toast-container animate-fade-in">
+      <div className="toast">{message}</div>
     </div>
   );
 }
