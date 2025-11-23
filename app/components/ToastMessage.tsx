@@ -8,15 +8,19 @@ export default function ToastMessage() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+    if (params.get("from") === "login") {
+      setMessage("Welcome back! Glad to see you again.");
+    }
+
     if (params.get("logout") === "1") {
-      setMessage("You’ve logged out. Take care, and come back whenever you’re ready.");
+      setMessage("You’ve logged out safely. Come back whenever you need a moment.");
     }
   }, [params]);
 
   if (!message) return null;
 
   return (
-    <div className="toast-container animate-fade-in">
+    <div className="toast-container">
       <div className="toast">{message}</div>
     </div>
   );
