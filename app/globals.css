@@ -71,11 +71,15 @@ a {
   }
 }
 
-/* Animation used by ToastMessage.tsx */
-@keyframes fadeIn {
+/* -------------------- */
+/* GENERAL ANIMATIONS */
+/* -------------------- */
+
+/* Unified fade-in animation */
+@keyframes fadeInSmooth {
   from {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: translateY(-6px);
   }
   to {
     opacity: 1;
@@ -84,16 +88,21 @@ a {
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.25s ease-out;
+  animation: fadeInSmooth 0.25s ease-out;
 }
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in { animation: fade-in 0.2s ease-out; }
 
+/* Mobile menu dropdown animation */
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.animate-slide-down { animation: slideDown 0.25s ease-out; }
+
+.animate-slide-down {
+  animation: slideDown 0.25s ease-out;
+}
