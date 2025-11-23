@@ -21,15 +21,15 @@ export function createServerSupabase() {
       set(name: string, value: string, options: CookieOptions) {
         try {
           cookieStore.set({ name, value, ...options });
-        } catch (err) {
-          // ignore errors on server components
+        } catch {
+          // ignore when called in edge / RSC
         }
       },
       remove(name: string, options: CookieOptions) {
         try {
           cookieStore.set({ name, value: "", ...options });
-        } catch (err) {
-          // ignore errors on server components
+        } catch {
+          // ignore when called in edge / RSC
         }
       },
     },
