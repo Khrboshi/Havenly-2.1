@@ -12,11 +12,12 @@ export const metadata = {
 
 async function getUser(): Promise<User | null> {
   const supabase = createServerSupabase();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
 
-  return session?.user ?? null;
+  const {
+    data: { user },
+  } = await supabase.auth.getUser(); // Secure & recommended
+
+  return user ?? null;
 }
 
 export default async function RootLayout({
@@ -29,9 +30,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className="bg-slate-950 text-slate-200 min-h-screen">
-        {/* Navbar gets the current user from the server on every request */}
         <Navbar user={user} />
-
         <main className="max-w-5xl mx-auto px-4 py-8">{children}</main>
       </body>
     </html>
