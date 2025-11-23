@@ -29,38 +29,35 @@ export default function LoginPage() {
       return;
     }
 
-    // FORCE the server layout to update the session
-    router.refresh();
-
-    // Redirect to dashboard with a flag
-    router.replace("/dashboard?from=login");
+    // Redirect to dashboard and trigger a "welcome back" toast
+    router.push("/dashboard?from=login");
   }
 
   return (
-    <div className="max-w-sm mx-auto mt-10">
+    <div className="max-w-sm mx-auto mt-8">
       <h1 className="text-2xl font-semibold mb-2">Welcome back</h1>
       <p className="text-sm text-slate-300 mb-6">
         Log in to continue your Havenly reflections.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
+        <div className="space-y-1">
           <label className="text-xs text-slate-300">Email</label>
           <input
             type="email"
             required
-            className="w-full rounded-xl bg-slate-900/60 border border-slate-700 px-3 py-2 text-sm"
+            className="w-full rounded-xl bg-slate-900/60 border border-slate-700 px-3 py-2 text-sm outline-none focus:border-emerald-400"
             value={email}
             onChange={(e) => setEmail(e.target.value.trim())}
           />
         </div>
 
-        <div>
+        <div className="space-y-1">
           <label className="text-xs text-slate-300">Password</label>
           <input
             type="password"
             required
-            className="w-full rounded-xl bg-slate-900/60 border border-slate-700 px-3 py-2 text-sm"
+            className="w-full rounded-xl bg-slate-900/60 border border-slate-700 px-3 py-2 text-sm outline-none focus:border-emerald-400"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -75,14 +72,14 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-full bg-emerald-400 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-300 disabled:opacity-60"
+          className="w-full rounded-full bg-emerald-400 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-300 disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {loading ? "Signing you in…" : "Log in"}
         </button>
       </form>
 
       <p className="mt-4 text-xs text-slate-400">
-        Don’t have an account?{" "}
+        Don&apos;t have an account?{" "}
         <Link href="/signup" className="text-emerald-300 hover:underline">
           Sign up
         </Link>
