@@ -3,12 +3,15 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
 
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
+
 export async function POST(req: Request) {
   try {
     const { content, mood } = await req.json();
 
-    const apiKey = process.env.GROQ_API_KEY;
-    if (!apiKey) {
+    if (!process.env.GROQ_API_KEY) {
       return NextResponse.json(
         { error: "Groq API key missing on server." },
         { status: 500 }
@@ -21,8 +24,6 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-
-    const groq = new Groq({ apiKey });
 
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
