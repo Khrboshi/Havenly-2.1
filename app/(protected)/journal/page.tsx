@@ -9,7 +9,6 @@ type JournalEntry = {
   id: string;
   created_at: string;
   mood: number | null;
-  title: string | null;
   content: string | null;
   ai_response: string | null;
 };
@@ -20,6 +19,8 @@ export default function JournalHistoryPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     async function load() {
       const {
         data: { user },
@@ -35,6 +36,8 @@ export default function JournalHistoryPage() {
         .select("*")
         .order("created_at", { ascending: false });
 
+      if (!isMounted) return;
+
       if (error) {
         console.error(error);
       } else {
@@ -45,6 +48,10 @@ export default function JournalHistoryPage() {
     }
 
     load();
+
+    return () => {
+      isMounted = false;
+    };
   }, [router]);
 
   if (loading) {
