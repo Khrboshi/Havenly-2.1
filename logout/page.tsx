@@ -8,21 +8,15 @@ export default function LogoutPage() {
   const router = useRouter();
 
   useEffect(() => {
-    async function runLogout() {
-      // Clear Supabase session
+    async function doLogout() {
       await supabaseClient.auth.signOut();
-
-      // Redirect to home page
-      router.replace("/");
+      router.replace("/?loggedout=1");
       router.refresh();
     }
-
-    runLogout();
+    doLogout();
   }, [router]);
 
   return (
-    <div className="flex items-center justify-center h-[60vh] text-slate-300">
-      Logging you out…
-    </div>
+    <p className="text-slate-400 mt-6">Logging you out…</p>
   );
 }
