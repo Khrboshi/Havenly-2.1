@@ -10,28 +10,13 @@ export default function Navbar() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    let mounted = true;
-
     async function load() {
       const {
         data: { user },
       } = await supabaseClient.auth.getUser();
-      if (mounted) setUser(user);
+      setUser(user);
     }
-
     load();
-
-    // Listen for login/logout events
-    const { data: listener } = supabaseClient.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null);
-      }
-    );
-
-    return () => {
-      mounted = false;
-      listener.subscription.unsubscribe();
-    };
   }, []);
 
   async function handleLogout() {
@@ -42,13 +27,19 @@ export default function Navbar() {
 
   return (
     <nav className="w-full border-b border-slate-800/60 bg-slate-950/60 backdrop-blur-sm px-4 py-3 flex items-center justify-between">
-      <Link href="/" className="flex items-center gap-2">
+      
+      {/* LEFT SIDE - Logo */}
+      <Link
+        href={user ? "/dashboard" : "/"}
+        className="flex items-center gap-2"
+      >
         <div className="h-8 w-8 rounded-full bg-emerald-500 flex items-center justify-center text-slate-900 font-bold">
           H
         </div>
         <span className="text-slate-200 font-semibold">Havenly</span>
       </Link>
 
+      {/* RIGHT SIDE */}
       <div className="flex items-center gap-4">
         {!user && (
           <>
