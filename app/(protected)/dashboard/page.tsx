@@ -17,7 +17,7 @@ type JournalEntry = {
 export default function DashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [displayName, setDisplayName] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState<string>("friend");
   const [lastEntry, setLastEntry] = useState<JournalEntry | null>(null);
 
   useEffect(() => {
@@ -37,7 +37,8 @@ export default function DashboardPage() {
         .eq("id", user.id)
         .maybeSingle();
 
-      setDisplayName(profile?.display_name || user.email?.split("@")[0]);
+      const name = profile?.display_name || user.email?.split("@")[0] || "friend";
+      setDisplayName(name);
 
       const { data: entries } = await supabaseClient
         .from("journal_entries")
@@ -53,55 +54,65 @@ export default function DashboardPage() {
   }, [router]);
 
   if (loading) {
-    return <p className="text-slate-300">Loading your space…</p>;
+    return <p className="text-sm text-slate-300 mt-6">Loading your space…</p>;
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Hey {displayName},</h1>
+    <div className="space-y-6 mt-4">
+      <section className="space-y-2">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          Hey {displayName},
+        </h1>
+        <p className="text-sm text-slate-300">
+          Take 3–5 minutes to check in with yourself.
+        </p>
+      </section>
 
-      <p className="text-sm text-slate-300">
-        Take 3–5 minutes to check in with yourself.
-      </p>
-
-      <Link
-        href="/journal/new"
-        className="inline-flex items-center gap-2 rounded-2xl bg-emerald-400 px-4 py-3 text-sm font-medium text-slate-950 hover:bg-emerald-300 transition"
-      >
-        Start today&apos;s reflection
-        <span className="text-xs opacity-80">· 3–5 min</span>
-      </Link>
-
-      <p className="text-xs text-slate-400">
-        Or{" "}
+      <section className="space-y-3">
         <Link
-          href="/journal"
-          className="text-emerald-300 hover:underline font-medium"
+          href="/journal/new"
+          className="inline-flex items-center gap-2 rounded-2xl bg-emerald-400 px-4 py-3 text-sm font-medium text-slate-950 hover:bg-emerald-300 transition"
         >
-          review your past entries
+          Start today&apos;s reflection
+          <span className="text-xs opacity-80">· 3–5 min</span>
         </Link>
-        .
-      </p>
+
+        <div className="text-xs text-slate-400">
+          Or{" "}
+          <Link
+            href="/journal"
+            className="text-emerald-300 hover:underline font-medium"
+          >
+            review your past entries
+          </Link>
+          .
+        </div>
+      </section>
 
       {lastEntry && (
-        <div className="rounded-xl border border-slate-800 bg-slate-900 p-4 space-y-2">
-          <p className="text-[11px] text-slate-400">
-            {new Date(lastEntry.created_at).toLocaleString()}
+        <section className="space-y-2">
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+            Last entry
           </p>
-
-          <p className="text-sm text-slate-200 line-clamp-3">
-            {lastEntry.content}
-          </p>
-
-          {lastEntry.ai_response && (
-            <div className="pt-2 border-t border-slate-800">
-              <p className="text-[11px] text-emerald-300">Havenly reflection</p>
-              <p className="text-xs text-slate-200 line-clamp-4">
-                {lastEntry.ai_response}
-              </p>
-            </div>
-          )}
-        </div>
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4 space-y-2">
+            <p className="text-[11px] text-slate-400">
+              {new Date(lastEntry.created_at).toLocaleString()}
+            </p>
+            <p className="text-sm text-slate-100 line-clamp-3">
+              {lastEntry.content}
+            </p>
+            {lastEntry.ai_response && (
+              <div className="mt-2 border-t border-slate-800 pt-2">
+                <p className="text-[11px] text-emerald-300 mb-1">
+                  Havenly reflection
+                </p>
+                <p className="text-xs text-slate-200 line-clamp-4">
+                  {lastEntry.ai_response}
+                </p>
+              </div>
+            )}
+          </div>
+        </section>
       )}
     </div>
   );
