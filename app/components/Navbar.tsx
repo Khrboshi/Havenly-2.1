@@ -3,13 +3,16 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabaseClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
+
   const [user, setUser] = useState<any>(null);
   const [open, setOpen] = useState(false);
 
+  // 1️⃣ Load user + subscribe to auth changes
   useEffect(() => {
     async function load() {
       const {
@@ -18,22 +21,48 @@ export default function Navbar() {
 
       setUser(user);
     }
+
     load();
-  }, []);
+
+    // Subscribe to login/logout events
+    const { data: listener } = supabaseClient.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+        router.refresh(); // force component re-render
+      }
+    );
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, [router]);
+
+  // 2️⃣ Re-render navbar on page change
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  // 3️⃣ Dashboard button always forces navigation
+  function gotoDashboard() {
+    router.push("/dashboard");
+    router.refresh();
+  }
 
   async function handleLogout() {
     await supabaseClient.auth.signOut();
-    router.replace("/");
+    router.push("/");
     router.refresh();
   }
 
   return (
     <nav className="w-full border-b border-slate-800/60 bg-slate-950/60 backdrop-blur-sm px-5 py-3 flex items-center justify-between">
       
-      {/* LEFT — Logo */}
-      <Link
-        href={user ? "/dashboard" : "/"}
-        className="flex items-center gap-2 group transition"
+      {/* Logo */}
+      <button
+        onClick={() => {
+          user ? gotoDashboard() : router.push("/");
+        }}
+        className="flex items-center gap-2 group cursor-pointer"
       >
         <div className="h-8 w-8 rounded-full bg-emerald-500 flex items-center justify-center text-slate-900 font-bold group-hover:opacity-70 transition-opacity">
           H
@@ -41,9 +70,9 @@ export default function Navbar() {
         <span className="text-slate-200 font-semibold group-hover:opacity-70 transition-opacity">
           Havenly
         </span>
-      </Link>
+      </button>
 
-      {/* RIGHT — Login / Register if logged out */}
+      {/* Logged-out buttons */}
       {!user && (
         <div className="flex items-center gap-4">
           <Link href="/login" className="nav-btn">
@@ -55,7 +84,7 @@ export default function Navbar() {
         </div>
       )}
 
-      {/* RIGHT — User dropdown if logged in */}
+      {/* Logged-in dropdown */}
       {user && (
         <div className="relative">
           <button
@@ -70,13 +99,12 @@ export default function Navbar() {
 
           {open && (
             <div className="absolute right-0 mt-2 w-40 rounded-xl bg-slate-900 border border-slate-800 shadow-xl p-2 flex flex-col text-sm">
-              <Link
-                href="/dashboard"
+              <button
+                onClick={gotoDashboard}
                 className="dropdown-item"
-                onClick={() => setOpen(false)}
               >
                 Dashboard
-              </Link>
+              </button>
 
               <Link
                 href="/settings"
