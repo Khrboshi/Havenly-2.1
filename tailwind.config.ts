@@ -3,7 +3,7 @@ import type { Config } from "tailwindcss";
 const config: Config = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}"
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
@@ -11,16 +11,16 @@ const config: Config = {
         havenly: {
           bg: "#020617",
           card: "#020617",
-          accent: "#34d399"
-        }
+          accent: "#34d399",
+        },
       },
       borderRadius: {
         xl: "1.25rem",
-        "2xl": "1.5rem"
-      }
-    }
+        "2xl": "1.5rem",
+      },
+    },
   },
-  plugins: []
+  plugins: [],
 };
 
 export default config;
