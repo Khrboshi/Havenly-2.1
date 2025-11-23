@@ -1,16 +1,27 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import { supabaseClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
+  const params = useSearchParams();
+
+  const logoutMsg = params.get("msg") === "logout-success";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Display encouraging logout message
+  useEffect(() => {
+    if (logoutMsg) {
+      alert("You’ve logged out successfully. Looking forward to seeing you again soon.");
+    }
+  }, [logoutMsg]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -29,7 +40,9 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/dashboard");
+    // Force refresh + redirect → ALWAYS updates UI
+    router.refresh();
+    router.push("/dashboard?from=login");
   }
 
   return (
@@ -38,6 +51,12 @@ export default function LoginPage() {
       <p className="text-sm text-slate-300 mb-6">
         Log in to continue your Havenly reflections.
       </p>
+
+      {logoutMsg && (
+        <p className="text-xs text-emerald-300 mb-4">
+          You’ve logged out. Come back anytime.
+        </p>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1">
