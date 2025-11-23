@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
 
@@ -29,7 +31,7 @@ export async function POST(req: Request) {
         {
           role: "system",
           content:
-            "You are Havenly, a concise, warm reflection assistant. You respond in 2–4 short paragraphs, focusing on validation, gentle reframing, and one small suggestion. Avoid diagnostic or clinical language. Never mention that you are an AI.",
+            "You are Havenly, a concise, warm reflection assistant...",
         },
         {
           role: "user",
