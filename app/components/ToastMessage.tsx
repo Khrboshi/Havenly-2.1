@@ -20,7 +20,7 @@ export default function ToastMessage() {
   if (!visible || !message) return null;
 
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 shadow-xl text-slate-100 text-sm animate-fade-in">
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 shadow-xl text-slate-100 text-sm animate-fade-in z-50">
       {message}
     </div>
   );
