@@ -10,21 +10,32 @@ export default function Navbar() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
+    let mounted = true;
+
     async function load() {
       const {
         data: { user },
       } = await supabaseClient.auth.getUser();
-      setUser(user);
+      if (mounted) setUser(user);
     }
+
     load();
+
+    // Listen for login/logout events
+    const { data: listener } = supabaseClient.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => {
+      mounted = false;
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   async function handleLogout() {
-    try {
-      await fetch("/auth/logout", { method: "POST" });
-    } catch {
-      // ignore network errors; session will be cleared server-side anyway on next request
-    }
+    await supabaseClient.auth.signOut();
     router.replace("/");
     router.refresh();
   }
@@ -44,6 +55,7 @@ export default function Navbar() {
             <Link href="/login" className="text-slate-300 hover:text-white">
               Log in
             </Link>
+
             <Link
               href="/signup"
               className="px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 font-medium hover:bg-emerald-400 transition"
@@ -61,6 +73,7 @@ export default function Navbar() {
             >
               Dashboard
             </Link>
+
             <button
               onClick={handleLogout}
               className="px-4 py-2 rounded-xl bg-slate-800 text-slate-200 hover:bg-slate-700 transition"
