@@ -1,20 +1,9 @@
-"use client";
+import { createServerSupabase } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
-import { useEffect } from "react";
-import { supabaseClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+export default async function LogoutPage() {
+  const supabase = createServerSupabase();
+  await supabase.auth.signOut();
 
-export default function LogoutPage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    async function doLogout() {
-      await supabaseClient.auth.signOut();
-      router.push("/login?msg=logout-success");
-      router.refresh(); // ensures UI updates
-    }
-    doLogout();
-  }, [router]);
-
-  return null; // nothing visible
+  redirect("/login?logout=1");
 }
