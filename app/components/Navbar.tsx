@@ -1,159 +1,215 @@
-// app/components/Navbar.tsx
 "use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
+import { supabaseClient } from "@/lib/supabase/client";
 
-type NavbarProps = {
-  user: User | null;
-};
-
-export default function Navbar({ user }: NavbarProps) {
-  const pathname = usePathname();
+export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
+
+  const [user, setUser] = useState<User | null | undefined>(undefined);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const isAuthed = !!user;
+  // Load current user and subscribe to auth changes
+  useEffect(() => {
+    let isMounted = true;
 
-  const displayName =
-    (user?.user_metadata as any)?.full_name ||
-    user?.email ||
-    "";
+    supabaseClient.auth
+      .getUser()
+      .then(({ data, error }) => {
+        if (!isMounted) return;
+        if (error) {
+          setUser(null);
+        } else {
+          setUser(data?.user ?? null);
+        }
+      })
+      .catch(() => {
+        if (isMounted) setUser(null);
+      });
 
-  const initials =
-    displayName?.trim()?.charAt(0)?.toUpperCase() || "H";
+    const { data: subscription } = supabaseClient.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!isMounted) return;
+        setUser(session?.user ?? null);
+      }
+    );
 
-  const go = (href: string) => {
+    return () => {
+      isMounted = false;
+      subscription?.subscription.unsubscribe();
+    };
+  }, []);
+
+  const isActive = (href: string) => pathname === href;
+
+  const homeHref = user ? "/dashboard" : "/";
+
+  async function handleLogout() {
     setMobileOpen(false);
-    router.push(href);
-  };
 
-  const mainLinks = isAuthed
-    ? [
-        { href: "/dashboard", label: "Dashboard" },
-        { href: "/journal", label: "Journal" },
-        { href: "/settings", label: "Settings" },
-      ]
-    : [];
+    // Optimistic update so navbar changes immediately
+    setUser(null);
 
-  const linkClass = (href: string) =>
-    `text-sm ${
-      pathname === href ? "text-emerald-300" : "text-slate-300"
-    } hover:text-white transition`;
+    // Client sign-out (updates Supabase client state)
+    try {
+      await supabaseClient.auth.signOut();
+    } catch {
+      // ignore
+    }
+
+    // Let the /logout page handle server-side sign-out + redirect + toast
+    router.push("/logout");
+  }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-800 bg-slate-950/80 backdrop-blur-sm">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-        {/* LEFT: Logo */}
+    <header className="border-b border-slate-800 bg-slate-950/95 backdrop-blur">
+      <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+        {/* Logo / brand */}
         <button
-          type="button"
-          onClick={() => go("/")}
+          onClick={() => router.push(homeHref)}
           className="flex items-center gap-2 group"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 text-sm font-semibold text-slate-950 group-hover:opacity-80 transition-opacity">
-            {initials}
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-400 text-sm font-semibold text-slate-950 group-hover:opacity-80 transition-opacity">
+            {user?.email?.[0]?.toUpperCase() ?? "H"}
           </div>
-          <span className="text-sm font-semibold tracking-wide text-slate-100 group-hover:text-emerald-300 transition-colors">
+          <span className="text-base font-semibold tracking-tight group-hover:opacity-80 transition-opacity">
             Havenly
           </span>
         </button>
 
-        {/* DESKTOP NAV */}
-        <nav className="hidden items-center gap-8 md:flex">
-          {mainLinks.map((link) => (
-            <button
-              key={link.href}
-              type="button"
-              onClick={() => go(link.href)}
-              className={linkClass(link.href)}
-            >
-              {link.label}
-            </button>
-          ))}
-
-          {isAuthed && (
-            <button
-              type="button"
-              onClick={() => go("/logout")}
-              className="text-sm text-slate-300 hover:text-emerald-300 transition"
-            >
-              Logout
-            </button>
-          )}
-
-          {!isAuthed && (
-            <div className="flex items-center gap-3">
-              <Link href="/login" className={linkClass("/login")}>
+        {/* Desktop nav */}
+        <div className="hidden items-center gap-6 text-sm md:flex">
+          {user ? (
+            <>
+              <Link
+                href="/dashboard"
+                className={
+                  "hover:text-emerald-300 transition-colors" +
+                  (isActive("/dashboard") ? " text-emerald-300" : "")
+                }
+              >
+                Dashboard
+              </Link>
+              <Link
+                href="/journal"
+                className={
+                  "hover:text-emerald-300 transition-colors" +
+                  (isActive("/journal") ? " text-emerald-300" : "")
+                }
+              >
+                Journal
+              </Link>
+              <Link
+                href="/settings"
+                className={
+                  "hover:text-emerald-300 transition-colors" +
+                  (isActive("/settings") ? " text-emerald-300" : "")
+                }
+              >
+                Settings
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="rounded-full border border-slate-600 px-4 py-1.5 text-xs font-medium text-slate-100 hover:border-emerald-400 hover:text-emerald-300 transition-colors"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="text-sm text-slate-100 hover:text-emerald-300 transition-colors"
+              >
                 Log in
               </Link>
               <Link
                 href="/signup"
-                className="rounded-full bg-emerald-500 px-4 py-1.5 text-sm font-medium text-slate-950 hover:bg-emerald-400"
+                className="rounded-full bg-emerald-400 px-4 py-1.5 text-xs font-medium text-slate-950 hover:bg-emerald-300 transition-colors"
               >
                 Get started
               </Link>
-            </div>
+            </>
           )}
-        </nav>
+        </div>
 
-        {/* MOBILE TOGGLE */}
+        {/* Mobile menu button */}
         <button
-          type="button"
-          className="inline-flex items-center justify-center rounded-full border border-slate-700 p-1.5 md:hidden"
-          onClick={() => setMobileOpen((v) => !v)}
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-700 md:hidden"
+          onClick={() => setMobileOpen((prev) => !prev)}
+          aria-label="Toggle menu"
         >
           <span className="sr-only">Toggle navigation</span>
-          <div className="space-y-[3px]">
-            <span className="block h-[2px] w-4 bg-slate-300" />
-            <span className="block h-[2px] w-4 bg-slate-300" />
+          <div className="space-y-1">
+            <span className="block h-0.5 w-4 rounded bg-slate-200" />
+            <span className="block h-0.5 w-4 rounded bg-slate-200" />
           </div>
         </button>
-      </div>
+      </nav>
 
-      {/* MOBILE MENU */}
+      {/* Mobile dropdown */}
       {mobileOpen && (
-        <div className="border-t border-slate-800 bg-slate-950 md:hidden">
-          <div className="mx-auto flex max-w-5xl flex-col gap-2 px-4 py-3">
-            {isAuthed && (
+        <div className="border-t border-slate-800 bg-slate-950 md:hidden animate-slide-down">
+          <div className="mx-auto flex max-w-5xl flex-col px-4 py-3 text-sm gap-2">
+            {user ? (
               <>
-                {mainLinks.map((link) => (
-                  <button
-                    key={link.href}
-                    type="button"
-                    onClick={() => go(link.href)}
-                    className={linkClass(link.href)}
-                  >
-                    {link.label}
-                  </button>
-                ))}
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMobileOpen(false)}
+                  className={
+                    "py-1.5 hover:text-emerald-300 transition-colors" +
+                    (isActive("/dashboard") ? " text-emerald-300" : "")
+                  }
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  href="/journal"
+                  onClick={() => setMobileOpen(false)}
+                  className={
+                    "py-1.5 hover:text-emerald-300 transition-colors" +
+                    (isActive("/journal") ? " text-emerald-300" : "")
+                  }
+                >
+                  Journal
+                </Link>
+                <Link
+                  href="/settings"
+                  onClick={() => setMobileOpen(false)}
+                  className={
+                    "py-1.5 hover:text-emerald-300 transition-colors" +
+                    (isActive("/settings") ? " text-emerald-300" : "")
+                  }
+                >
+                  Settings
+                </Link>
                 <button
-                  type="button"
-                  onClick={() => go("/logout")}
-                  className="mt-1 text-left text-sm text-slate-300 hover:text-emerald-300"
+                  onClick={handleLogout}
+                  className="mt-1 rounded-full border border-slate-700 px-4 py-1.5 text-left text-xs font-medium text-slate-100 hover:border-emerald-400 hover:text-emerald-300 transition-colors"
                 >
                   Logout
                 </button>
               </>
-            )}
-
-            {!isAuthed && (
+            ) : (
               <>
-                <button
-                  type="button"
-                  onClick={() => go("/login")}
-                  className={linkClass("/login")}
+                <Link
+                  href="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="py-1.5 hover:text-emerald-300 transition-colors"
                 >
                   Log in
-                </button>
-                <button
-                  type="button"
-                  onClick={() => go("/signup")}
-                  className="mt-1 w-full rounded-full bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400"
+                </Link>
+                <Link
+                  href="/signup"
+                  onClick={() => setMobileOpen(false)}
+                  className="mt-1 rounded-full bg-emerald-400 px-4 py-1.5 text-xs font-medium text-slate-950 text-center hover:bg-emerald-300 transition-colors"
                 >
                   Get started
-                </button>
+                </Link>
               </>
             )}
           </div>
