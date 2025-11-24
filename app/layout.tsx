@@ -1,29 +1,28 @@
 import "./globals.css";
-import type { Metadata } from "next";
 import { createServerSupabase } from "@/lib/supabase/server";
 import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Havenly – A calm space to reflect",
-  description:
-    "Take 3–5 minutes a day to check in with yourself, jot a quick note, and get a gentle AI reflection.",
+  title: "Havenly",
+  description: "A calm space to reflect",
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // ALWAYS load a fresh session on every request
   const supabase = await createServerSupabase();
-  const { data: { session } } = await supabase.auth.getSession();
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  const user = session?.user ?? null;
 
   return (
     <html lang="en">
-      <body className="bg-slate-950 text-slate-200">
-        <Navbar user={session?.user ?? null} />
-
-        <main className="mx-auto max-w-5xl px-4 py-10">
-          {children}
-        </main>
-
-        <Footer />
+      <body className="bg-slate-950 text-slate-100 min-h-screen">
+        <Navbar user={user} />
+        <main className="pt-10">{children}</main>
       </body>
     </html>
   );
