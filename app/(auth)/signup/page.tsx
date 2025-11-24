@@ -1,114 +1,94 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { supabaseClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { useState, FormEvent } from "react";
 import Link from "next/link";
+import { supabaseClient } from "@/lib/supabase/client";
 
 export default function SignupPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [focus, setFocus] = useState("Stress relief");
-  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: FormEvent) {
+  async function handleSignup(e: FormEvent) {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    const { data, error } = await supabaseClient.auth.signUp({
-      email,
-      password,
-    });
-
-    if (error) {
-      setLoading(false);
-      setError(error.message || "Unable to sign up.");
-      return;
-    }
-
-    if (data.user?.id) {
-      await supabaseClient.from("profiles").insert({
-        id: data.user.id,
-        main_focus: focus,
+    try {
+      const { error } = await supabaseClient.auth.signInWithOtp({
+        email: email.trim().toLowerCase(),
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
-    }
 
-    setLoading(false);
-    router.push("/login?verify=1");
+      if (error) {
+        setError(error.message || "Unable to send signup link.");
+        return;
+      }
+
+      setSent(true);
+    } catch (err) {
+      console.error(err);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <div className="max-w-sm mx-auto mt-8">
-      <h1 className="text-2xl font-semibold mb-2">Create your Havenly</h1>
-      <p className="text-sm text-slate-300 mb-6">
-        A calm private space to check in with yourself each day.
-      </p>
+    <div className="mx-auto max-w-md space-y-6 pt-10">
+      <header className="space-y-2">
+        <h1 className="text-2xl font-semibold text-slate-50">
+          Create your Havenly space
+        </h1>
+        <p className="text-sm text-slate-300">
+          We&apos;ll email you a secure magic link. No password needed, and you
+          can always log out in one click.
+        </p>
+      </header>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-1">
-          <label className="text-xs text-slate-300">Email</label>
-          <input
-            type="email"
-            required
-            className="w-full rounded-xl bg-slate-900/60 border border-slate-700 px-3 py-2 text-sm outline-none focus:border-emerald-400"
-            value={email}
-            onChange={(e) => setEmail(e.target.value.trim())}
-          />
+      {sent ? (
+        <div className="rounded-2xl border border-emerald-500/40 bg-emerald-900/20 p-4 text-sm text-emerald-100">
+          We&apos;ve sent a signup link to{" "}
+          <span className="font-semibold">{email}</span>.  
+          Please check your inbox and follow the link to start journaling.
         </div>
+      ) : (
+        <form onSubmit={handleSignup} className="space-y-4">
+          <div className="space-y-1">
+            <label className="text-xs text-slate-300">Email</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-xl bg-slate-950/70 border border-slate-700 px-3 py-2 text-sm text-slate-100 outline-none focus:border-emerald-400"
+              placeholder="you@example.com"
+            />
+          </div>
 
-        <div className="space-y-1">
-          <label className="text-xs text-slate-300">Password</label>
-          <input
-            type="password"
-            required
-            minLength={6}
-            className="w-full rounded-xl bg-slate-900/60 border border-slate-700 px-3 py-2 text-sm outline-none focus:border-emerald-400"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <p className="text-[10px] text-slate-500">
-            Minimum 6 characters. You can change it later.
-          </p>
-        </div>
+          {error && (
+            <p className="text-xs rounded-lg border border-red-600/50 bg-red-950/40 px-3 py-2 text-red-300">
+              {error}
+            </p>
+          )}
 
-        <div className="space-y-1">
-          <label className="text-xs text-slate-300">
-            What brings you here?
-          </label>
-          <select
-            className="w-full rounded-xl bg-slate-900/60 border border-slate-700 px-3 py-2 text-xs outline-none focus:border-emerald-400"
-            value={focus}
-            onChange={(e) => setFocus(e.target.value)}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-300 disabled:opacity-60"
           >
-            <option>Stress relief</option>
-            <option>Clarity & decisions</option>
-            <option>Gratitude</option>
-            <option>Tracking my mood</option>
-          </select>
-        </div>
+            {loading ? "Sending link…" : "Send me a signup link"}
+          </button>
+        </form>
+      )}
 
-        {error && (
-          <p className="text-xs text-red-400 border border-red-500/40 bg-red-950/30 rounded-lg px-3 py-2">
-            {error}
-          </p>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-full bg-emerald-400 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-300 disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {loading ? "Creating your space…" : "Create account"}
-        </button>
-      </form>
-
-      <p className="mt-4 text-xs text-slate-400">
+      <p className="text-center text-xs text-slate-400">
         Already have an account?{" "}
         <Link href="/login" className="text-emerald-300 hover:underline">
-          Log in
+          Log in here
         </Link>
       </p>
     </div>
