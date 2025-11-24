@@ -1,18 +1,23 @@
-import { createServerSupabase } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
-import { redirect } from "next/navigation";
+export const dynamic = "force-dynamic";
 
-export async function GET() {
+import { NextResponse } from "next/server";
+import { createServerSupabase } from "@/lib/supabase/server";
+
+export async function GET(request: Request) {
   try {
     const supabase = await createServerSupabase();
 
-    // Clear session server-side
+    // Destroy the session
     await supabase.auth.signOut();
 
-    // Redirect user to login with the logout notice
-    return NextResponse.redirect("/login?logged_out=1");
+    // Create absolute redirect URL
+    const url = new URL("/login?logged_out=1", request.url);
+
+    return NextResponse.redirect(url);
   } catch (err) {
     console.error("Logout error:", err);
-    return NextResponse.redirect("/login?error=logout_failed");
+
+    const fallback = new URL("/login?error=logout_failed", request.url);
+    return NextResponse.redirect(fallback);
   }
 }
