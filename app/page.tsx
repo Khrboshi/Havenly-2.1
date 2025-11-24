@@ -1,4 +1,3 @@
-// app/page.tsx
 "use client";
 
 import { useEffect } from "react";
@@ -9,7 +8,7 @@ import { supabaseClient } from "@/lib/supabase/client";
 export default function HomePage() {
   const router = useRouter();
 
-  // If already logged in, skip the marketing page.
+  // If already logged in, skip landing → dashboard
   useEffect(() => {
     let isMounted = true;
 
@@ -22,88 +21,155 @@ export default function HomePage() {
     }
 
     checkUser();
-
     return () => {
       isMounted = false;
     };
   }, [router]);
 
   return (
-    <main className="mx-auto max-w-5xl px-6 py-16 md:py-20">
-      <div className="flex flex-col items-start space-y-10">
-        {/* Hero copy */}
-        <div className="space-y-3">
-          <p className="text-xs tracking-[0.2em] text-emerald-300">
-            HAVENLY 2.1 · MVP
+    <div className="mx-auto max-w-5xl space-y-14 pt-12 md:pt-16">
+      {/* TOP: HERO */}
+      <section className="grid gap-10 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-start">
+        {/* Left column */}
+        <div className="space-y-6">
+          <p className="text-[11px] uppercase tracking-[0.3em] text-emerald-300/90">
+            HAVENLY 2.1 · EARLY ACCESS
           </p>
 
-          <h1 className="text-4xl font-bold leading-tight text-slate-100 md:text-5xl">
-            A calm space to reflect,{" "}
-            <span className="text-emerald-400">a few minutes a day.</span>
+          <h1 className="text-4xl font-semibold tracking-tight text-slate-50 md:text-5xl">
+            A calm space to{" "}
+            <span className="text-emerald-300">decompress your day</span> in
+            just a few minutes.
           </h1>
 
           <p className="max-w-xl text-sm text-slate-300 md:text-base">
-            Havenly helps you slow down, capture what&apos;s happening inside
-            you, and get a short AI-assisted reflection that feels like a gentle
-            coach — not a therapist, and not a productivity drill sergeant.
+            Havenly is a private micro-journal. You jot down a few honest
+            sentences, and a gentle AI reflection helps you see your day with a
+            bit more compassion and clarity — no pressure, no streaks, no social
+            feed.
           </p>
 
-          <p className="text-xs text-slate-400 md:text-sm">
-            No passwords to remember. Sign in with a private magic link sent to
-            your inbox, and pick up your reflections from any device.
-          </p>
+          {/* Primary CTAs */}
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/magic-login"
+              className="inline-flex items-center justify-center rounded-full bg-emerald-400 px-6 py-3 text-sm font-semibold text-slate-950 shadow-sm hover:bg-emerald-300"
+            >
+              Start free journal ✨
+            </Link>
+
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center rounded-full border border-slate-700 px-6 py-3 text-sm font-semibold text-slate-100 hover:bg-slate-900/60"
+            >
+              I already have an account
+            </Link>
+          </div>
+
+          {/* Social proof / reassurance */}
+          <div className="flex flex-wrap gap-4 text-[11px] text-slate-400">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🧘‍♀️</span>
+              <span>Designed for busy, thoughtful people — not productivity robots.</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-lg">🔒</span>
+              <span>
+                Private by design —{" "}
+                <Link
+                  href="/privacy"
+                  className="underline decoration-dotted underline-offset-2 hover:text-slate-200"
+                >
+                  see how we protect your data
+                </Link>
+                .
+              </span>
+            </div>
+          </div>
         </div>
 
-        {/* Primary actions */}
-        <div className="flex flex-wrap gap-3">
+        {/* Right column: 5-second check-in */}
+        <div className="rounded-3xl border border-slate-800 bg-slate-950/80 p-5 shadow-lg">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+            TRY A 5-SECOND CHECK-IN
+          </p>
+
+          <p className="mb-4 text-sm text-slate-200">
+            If today had a color, what would it be? 🎨  
+            If it had a weather, what would it feel like? ⛅
+          </p>
+
+          <div className="mb-4 space-y-2 text-xs text-slate-400">
+            <p>Examples people write:</p>
+            <ul className="list-disc space-y-1 pl-4">
+              <li>“Grey but slowly clearing. Tired, but relieved I showed up.”</li>
+              <li>“Bright yellow morning ☀️ then a heavy blue meeting.”</li>
+              <li>“Stormy outside, but inside I&apos;m weirdly calm.”</li>
+            </ul>
+          </div>
+
           <Link
             href="/magic-login"
-            className="rounded-full bg-emerald-400 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-300"
+            className="inline-flex w-full items-center justify-center rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-white"
           >
-            Try a 5-second check-in ✨
+            Capture today & get a reflection
           </Link>
 
-          <Link
-            href="/login"
-            className="rounded-full border border-slate-700 px-6 py-3 text-sm font-semibold text-slate-100 transition hover:bg-slate-800"
-          >
-            I already have an account
-          </Link>
+          <p className="mt-3 text-[11px] text-slate-500">
+            No commitment. Just one short entry and a gentle reflection from
+            Havenly.
+          </p>
+        </div>
+      </section>
+
+      {/* MIDDLE: FEATURES */}
+      <section className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+          <p className="mb-1 text-xs font-semibold text-emerald-300">
+            3–5 minute check-ins
+          </p>
+          <p className="text-xs text-slate-300">
+            One mood slider, one short note. Havenly keeps things light so you
+            actually want to come back.
+          </p>
         </div>
 
-        {/* Feature grid */}
-        <div className="grid grid-cols-1 gap-4 pt-6 sm:grid-cols-3">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
-            <h3 className="mb-1 text-sm font-medium text-emerald-300">
-              Daily check-ins
-            </h3>
-            <p className="text-xs text-slate-400">
-              One mood slider, one reflection. No complex forms or endless
-              questions — just a tiny daily pause.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
-            <h3 className="mb-1 text-sm font-medium text-emerald-300">
-              AI reflections
-            </h3>
-            <p className="text-xs text-slate-400">
-              Groq-powered insights help you reframe your day, notice patterns,
-              and gently nudge yourself toward what you need.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
-            <h3 className="mb-1 text-sm font-medium text-emerald-300">
-              Private by design
-            </h3>
-            <p className="text-xs text-slate-400">
-              Your entries are tied only to your account. No public feed, no
-              likes, no judgment — just your own honest check-ins.
-            </p>
-          </div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+          <p className="mb-1 text-xs font-semibold text-emerald-300">
+            Gentle AI reflections
+          </p>
+          <p className="text-xs text-slate-300">
+            Groq-powered reflections highlight small wins, patterns, and
+            directions for kindness — not hustle.
+          </p>
         </div>
-      </div>
-    </main>
+
+        <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+          <p className="mb-1 text-xs font-semibold text-emerald-300">
+            Private by default
+          </p>
+          <p className="text-xs text-slate-300">
+            No feed, likes, or followers. Your entries stay tied to your
+            account only.
+          </p>
+        </div>
+      </section>
+
+      {/* BOTTOM: FUTURE PREMIUM TEASER (non-breaking) */}
+      <section className="rounded-3xl border border-slate-800 bg-slate-950/70 p-5 md:flex md:items-center md:justify-between md:gap-8">
+        <div className="space-y-1">
+          <p className="text-xs font-semibold text-emerald-300">
+            Coming soon · Havenly Premium
+          </p>
+          <p className="text-sm text-slate-200">
+            Deeper trends, longer reflections, and premium features — built for
+            people who want a gentle companion over the long run.
+          </p>
+        </div>
+        <p className="mt-3 text-[11px] text-slate-500 md:mt-0">
+          For now, everything you see is free while we learn from early users.
+        </p>
+      </section>
+    </div>
   );
 }
