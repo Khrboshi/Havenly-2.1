@@ -5,29 +5,22 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabaseClient } from "@/lib/supabase/client";
 
-const MOOD_LABELS = ["", "Drained", "Heavy", "In-between", "Okay", "Light"];
+const MOOD_LABELS = [
+  { value: 1, emoji: "😣", label: "Drained", blurb: "Today feels heavy and tiring." },
+  { value: 2, emoji: "😕", label: "Not great", blurb: "Some things are weighing on you." },
+  { value: 3, emoji: "😐", label: "In between", blurb: "Not bad, not great — just okay." },
+  { value: 4, emoji: "🙂", label: "Light", blurb: "There are small bright spots in your day." },
+  { value: 5, emoji: "😄", label: "Good", blurb: "You feel grounded and fairly positive." },
+];
 
-function sampleReflectionForMood(mood: number): string {
-  switch (mood) {
-    case 1:
-      return "It sounds like today has been really heavy. It is okay to move slowly and only carry what you can right now.";
-    case 2:
-      return "You are holding a lot. See if there is one tiny thing you can postpone, delegate, or simply let be for today.";
-    case 4:
-      return "You seem to be managing things with care. Notice one small moment that felt good and give it a bit more space.";
-    case 5:
-      return "You are in a lighter space today. You might capture what is working well so you can return to it on harder days.";
-    case 3:
-    default:
-      return "It is normal to feel mixed. Try to name one thing that felt hard and one thing that felt supportive today.";
-  }
-}
+// Mock data for “your next 10 reflections” preview (no backend call)
+const DEMO_HISTORY = [2, 3, 4, 3, 5, 4, 2, 4, 5, 3];
 
 export default function HomePage() {
   const router = useRouter();
-  const [mood, setMood] = useState<number>(3);
+  const [demoMood, setDemoMood] = useState<number>(3);
 
-  // If user is already logged in, send them to the dashboard
+  // Auto-redirect logged-in users to the dashboard (same behavior as before)
   useEffect(() => {
     let isMounted = true;
 
@@ -40,181 +33,222 @@ export default function HomePage() {
     }
 
     checkUser();
+
     return () => {
       isMounted = false;
     };
   }, [router]);
 
-  const moodLabel = MOOD_LABELS[mood];
-  const reflectionPreview = sampleReflectionForMood(mood);
+  const currentMood =
+    MOOD_LABELS.find((m) => m.value === demoMood) ?? MOOD_LABELS[2];
 
   return (
-    <div className="space-y-14 py-10 md:py-14">
+    <div className="max-w-5xl mx-auto px-6 py-16 md:py-20 space-y-12">
       {/* HERO SECTION */}
-      <section className="grid gap-10 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] items-center">
-        <div className="space-y-6">
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/5 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-emerald-200">
-            <span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Private AI journaling · Early access
-          </div>
-
-          <div className="space-y-3">
-            <h1 className="text-balance text-4xl font-semibold text-slate-50 md:text-5xl">
-              A calm space to unload your mind{" "}
-              <span className="block text-emerald-300">
-                in just a few minutes a day.
-              </span>
-            </h1>
-            <p className="max-w-xl text-sm text-slate-300 md:text-[15px]">
-              Havenly helps you pause, name what is happening inside you, and
-              get a gentle AI reflection that feels like a supportive friend –
-              not a productivity coach or a therapist.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/signup"
-              className="rounded-full bg-emerald-400 px-6 py-3 text-sm font-semibold text-slate-950 shadow-sm shadow-emerald-500/40 transition hover:bg-emerald-300"
-            >
-              Start your first reflection
-            </Link>
-            <Link
-              href="#how-it-works"
-              className="text-sm font-medium text-slate-300 hover:text-emerald-200"
-            >
-              See how it works
-            </Link>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-900 text-[10px]">
-                🔒
-              </span>
-              <span>Entries stay private to your account only.</span>
-            </div>
-            <Link
-              href="/privacy"
-              className="underline-offset-2 hover:text-emerald-200 hover:underline"
-            >
-              Read the privacy note
-            </Link>
-          </div>
+      <section className="space-y-6">
+        <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/5 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-emerald-300">
+          <span className="text-xs">✨</span>
+          <span>Havenly 2.1 · Early access</span>
         </div>
 
-        {/* RIGHT: INTERACTIVE PREVIEW */}
-        <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-950/70 p-4 shadow-[0_18px_45px_rgba(15,23,42,0.7)]">
-          <div className="mb-1 text-xs font-medium uppercase tracking-[0.14em] text-slate-400">
-            Try a 5-second check-in
-          </div>
+        <div className="space-y-3">
+          <h1 className="text-4xl md:text-5xl font-bold leading-tight text-slate-100">
+            A calm space to reflect,{" "}
+            <span className="text-emerald-400">
+              a few minutes a day.
+            </span>
+          </h1>
 
-          <div className="space-y-4 rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-            <div className="flex items-center justify-between text-xs text-slate-300">
-              <span>How are you feeling today?</span>
-              <span className="font-medium text-emerald-300">{moodLabel}</span>
-            </div>
-
-            <div className="space-y-1.5">
-              <input
-                type="range"
-                min={1}
-                max={5}
-                value={mood}
-                onChange={(e) => setMood(Number(e.target.value))}
-                className="w-full cursor-pointer accent-emerald-400"
-              />
-              <div className="flex justify-between text-[10px] text-slate-500">
-                <span>Low</span>
-                <span>Okay</span>
-                <span>Light</span>
-              </div>
-            </div>
-
-            <p className="text-[11px] text-slate-400">
-              Small check-ins like this are the core of Havenly. Once you sign
-              up, they are saved to your private journal and reflected back to
-              you over time.
-            </p>
-          </div>
-
-          <div className="space-y-2 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4">
-            <div className="text-[11px] font-medium uppercase tracking-[0.16em] text-emerald-300">
-              Sample AI reflection
-            </div>
-            <p className="text-xs leading-relaxed text-slate-100">
-              {reflectionPreview}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* HOW IT WORKS */}
-      <section id="how-it-works" className="space-y-6">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-400">
-          How Havenly supports you
-        </h2>
-
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
-            <h3 className="mb-1 text-sm font-medium text-emerald-300">
-              2-minute daily check-ins
-            </h3>
-            <p className="text-xs text-slate-400">
-              One mood slider, one short note. No long forms, no pressure to
-              sound &quot;smart&quot; or &quot;deep&quot; – just what is true
-              for you today.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
-            <h3 className="mb-1 text-sm font-medium text-emerald-300">
-              Gentle AI reflections
-            </h3>
-            <p className="text-xs text-slate-400">
-              Powered by Groq, reflections focus on validation, gentle
-              reframing, and one small next step – without clinical or
-              productivity jargon.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4">
-            <h3 className="mb-1 text-sm font-medium text-emerald-300">
-              Private by design
-            </h3>
-            <p className="text-xs text-slate-400">
-              Your entries are tied to your account only. No public feed, no
-              followers, no ads, and no dark patterns nudging you to share.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* TRUST + FINAL CTA */}
-      <section className="flex flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-950/80 p-5 md:flex-row md:items-center md:justify-between">
-        <div className="space-y-1">
-          <h3 className="text-sm font-semibold text-slate-50">
-            Ready to give your mind a quieter place to land?
-          </h3>
-          <p className="max-w-xl text-xs text-slate-400">
-            Create a free account, try a few reflections this week, and see how
-            it feels. If it does not help, you can simply stop – your entries
-            stay private either way.
+          <p className="text-slate-300 max-w-xl text-sm md:text-base">
+            Havenly helps you slow down, capture what is happening inside
+            you, and get a short AI-assisted reflection that feels like a
+            gentle coach — not a therapist, not a productivity drill sergeant.
           </p>
         </div>
+
+        {/* Primary CTAs */}
         <div className="flex flex-wrap gap-3">
           <Link
             href="/signup"
-            className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-950 hover:bg-emerald-300"
+            className="rounded-full bg-emerald-400 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-emerald-300 transition"
           >
-            Create a free account
+            Start free journal
           </Link>
-          <Link
-            href="/login"
-            className="rounded-full border border-slate-700 px-5 py-2.5 text-sm font-semibold text-slate-100 hover:bg-slate-900"
+
+          <a
+            href="#demo-checkin"
+            className="rounded-full border border-slate-700 px-6 py-3 text-sm font-semibold text-slate-100 hover:bg-slate-800 transition flex items-center gap-2"
           >
-            I already have an account
-          </Link>
+            <span>Try a 5-second check-in</span>
+            <span>⏱️</span>
+          </a>
+        </div>
+
+        {/* Trust / reassurance line */}
+        <p className="text-xs text-slate-500">
+          No public feed, no followers, no likes. Just you, your words, and a
+          private space to breathe.
+        </p>
+      </section>
+
+      {/* DEMO CHECK-IN SECTION */}
+      <section
+        id="demo-checkin"
+        className="grid gap-6 md:grid-cols-[1.2fr,1fr] items-start"
+      >
+        {/* Left: Interactive 5-second demo */}
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <h2 className="text-sm font-semibold text-slate-100">
+                Try a 5-second check-in
+              </h2>
+              <p className="text-xs text-slate-400">
+                Choose how you feel right now. This is the exact step you’ll
+                see inside Havenly.
+              </p>
+            </div>
+            <div className="hidden sm:flex items-center gap-1 text-xs text-slate-400">
+              <span>Private by design</span>
+              <span>🔒</span>
+            </div>
+          </div>
+
+          {/* Emoji mood scale */}
+          <div className="space-y-3">
+            <div className="flex justify-between text-xs text-slate-400">
+              {MOOD_LABELS.map((m) => (
+                <div
+                  key={m.value}
+                  className="flex flex-col items-center gap-1 w-8"
+                >
+                  <span
+                    className={
+                      m.value === demoMood ? "text-lg" : "text-base opacity-70"
+                    }
+                  >
+                    {m.emoji}
+                  </span>
+                  <span className="hidden sm:block truncate text-[10px]">
+                    {m.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <input
+              type="range"
+              min={1}
+              max={5}
+              step={1}
+              value={demoMood}
+              onChange={(e) => setDemoMood(Number(e.target.value))}
+              className="w-full cursor-pointer accent-emerald-400"
+            />
+          </div>
+
+          {/* Description for current mood */}
+          <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-3 text-xs space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">{currentMood.emoji}</span>
+              <span className="font-medium text-slate-100">
+                {currentMood.label}
+              </span>
+            </div>
+            <p className="text-slate-400">{currentMood.blurb}</p>
+          </div>
+
+          {/* Disabled "preview" button */}
+          <button
+            disabled
+            className="mt-1 w-full rounded-full bg-slate-800/80 px-4 py-2 text-xs font-medium text-slate-300 cursor-default"
+          >
+            In the real app, this is where you’d write a few lines and get a
+            gentle AI reflection 💬
+          </button>
+        </div>
+
+        {/* Right: 10-reflection preview */}
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 space-y-4">
+          <h3 className="text-sm font-semibold text-slate-100">
+            See your next 10 reflections
+          </h3>
+          <p className="text-xs text-slate-400">
+            Here is a preview of how your mood could look after{" "}
+            <span className="font-semibold text-slate-200">
+              just 10 quick check-ins.
+            </span>{" "}
+            In your account, this chart is built only from your private
+            entries.
+          </p>
+
+          {/* Simple bar preview */}
+          <div className="mt-3 h-28 rounded-xl border border-slate-800 bg-slate-950/70 px-3 py-2 flex flex-col justify-between">
+            <div className="flex items-end gap-1 h-16">
+              {DEMO_HISTORY.map((mood, idx) => {
+                const height = 20 + mood * 8; // simple visual scaling
+                return (
+                  <div
+                    key={idx}
+                    className="flex-1 rounded-full bg-emerald-500/25"
+                    style={{ height: `${height}px` }}
+                  />
+                );
+              })}
+            </div>
+            <div className="flex justify-between text-[10px] text-slate-500 mt-1">
+              <span>Day 1</span>
+              <span>Day 5</span>
+              <span>Day 10</span>
+            </div>
+          </div>
+
+          {/* Supporting copy + CTA */}
+          <div className="space-y-2 text-xs">
+            <p className="text-slate-400">
+              Over time, Havenly helps you see subtle patterns: what lifts you,
+              what drains you, and how your emotional baseline shifts.
+            </p>
+            <Link
+              href="/signup"
+              className="inline-flex items-center justify-center rounded-full bg-emerald-400 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-300 transition"
+            >
+              Create a free account to start your own graph →
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* QUICK VALUE PILLARS */}
+      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 space-y-1.5">
+          <h3 className="text-emerald-300 font-medium text-sm">
+            Daily check-ins ⏰
+          </h3>
+          <p className="text-xs text-slate-400">
+            One mood slider, one reflection. No complex trackers, no endless
+            forms — just a tiny daily pause.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 space-y-1.5">
+          <h3 className="text-emerald-300 font-medium text-sm">
+            Gentle AI reflections 💬
+          </h3>
+          <p className="text-xs text-slate-400">
+            Short, human-sounding reflections help you reframe your day and
+            notice small wins that are easy to miss.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 space-y-1.5">
+          <h3 className="text-emerald-300 font-medium text-sm">
+            Private by design 🔒
+          </h3>
+          <p className="text-xs text-slate-400">
+            Your entries stay tied to your account only. No public feed, no
+            social pressure — just honest check-ins with yourself.
+          </p>
         </div>
       </section>
     </div>
