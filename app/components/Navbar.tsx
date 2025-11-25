@@ -1,26 +1,32 @@
+// app/components/Navbar.tsx
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { supabaseClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
-export default function Navbar() {
+export default function Navbar({ initialUser }: { initialUser: User | null }) {
   const pathname = usePathname();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(initialUser);
   const [menuOpen, setMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
+  // Listen to auth state changes so Navbar updates immediately
   useEffect(() => {
-    async function loadUser() {
-      const {
-        data: { user },
-      } = await supabaseClient.auth.getUser();
-      setUser(user);
-    }
-    loadUser();
+    const { data: listener } = supabaseClient.auth.onAuthStateChange(
+      async (_, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
+  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClick(event: MouseEvent) {
       if (
@@ -30,17 +36,15 @@ export default function Navbar() {
         setMenuOpen(false);
       }
     }
-
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const loggedIn = !!user;
-
   const isOnDashboard = pathname === "/dashboard";
-  const isOnJournal =
-    pathname === "/journal" || pathname.startsWith("/journal/");
+  const isOnJournal = pathname === "/journal" || pathname.startsWith("/journal/");
   const isOnSettings = pathname === "/settings";
+
+  const loggedIn = !!user;
 
   return (
     <header className="border-b border-slate-800/60 bg-slate-950/80 backdrop-blur">
@@ -103,7 +107,7 @@ export default function Navbar() {
                     {(user?.email?.[0] ?? "U").toUpperCase()}
                   </div>
                   <span className="max-w-[8rem] truncate">
-                    {user?.email}
+                    {user?.user_metadata?.display_name || user?.email}
                   </span>
                   <span className="text-slate-500">▾</span>
                 </button>
