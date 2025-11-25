@@ -17,7 +17,6 @@ export default function Navbar({ user }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClick(event: MouseEvent) {
       if (
@@ -31,18 +30,14 @@ export default function Navbar({ user }: NavbarProps) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // Simple helper to mark active links
   function isActive(href: string) {
     if (!pathname) return false;
-
-    // Treat /dashboard as active for the journaling section too
     if (href === "/dashboard") {
       return (
         pathname === "/dashboard" ||
         pathname.startsWith("/journal")
       );
     }
-
     return pathname === href;
   }
 
@@ -57,8 +52,6 @@ export default function Navbar({ user }: NavbarProps) {
       return;
     }
 
-    // Redirect to login and refresh so the server layout
-    // also sees the updated (logged-out) session
     router.push("/login?logged_out=1");
     router.refresh();
   }
@@ -66,7 +59,6 @@ export default function Navbar({ user }: NavbarProps) {
   return (
     <header className="border-b border-slate-800/60 bg-slate-950/80 backdrop-blur">
       <nav className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
-        {/* Brand */}
         <Link
           href={loggedIn ? "/dashboard" : "/"}
           className="flex items-center gap-2"
@@ -81,11 +73,9 @@ export default function Navbar({ user }: NavbarProps) {
           </span>
         </Link>
 
-        {/* Right side */}
         <div className="flex items-center gap-4">
           {loggedIn ? (
             <>
-              {/* Main links */}
               <Link
                 href="/dashboard"
                 className={`text-sm ${
@@ -108,18 +98,6 @@ export default function Navbar({ user }: NavbarProps) {
                 Journal
               </Link>
 
-              <Link
-                href="/settings"
-                className={`text-sm ${
-                  isActive("/settings")
-                    ? "text-emerald-200"
-                    : "text-slate-300 hover:text-emerald-200"
-                }`}
-              >
-                Settings
-              </Link>
-
-              {/* User dropdown */}
               <div className="relative" ref={dropdownRef}>
                 <button
                   type="button"
@@ -137,14 +115,6 @@ export default function Navbar({ user }: NavbarProps) {
 
                 {menuOpen && (
                   <div className="absolute right-0 mt-2 w-52 rounded-xl border border-slate-800 bg-slate-950 p-1 text-sm shadow-xl">
-                    <Link
-                      href="/settings"
-                      onClick={() => setMenuOpen(false)}
-                      className="block rounded-lg px-3 py-2 text-slate-200 hover:bg-slate-800"
-                    >
-                      Account &amp; settings
-                    </Link>
-
                     <button
                       type="button"
                       onClick={handleLogout}
