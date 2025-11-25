@@ -86,7 +86,7 @@ export default function DashboardPage() {
         </h2>
 
         {recentEntries.length === 0 ? (
-          <p classnName="text-slate-400 text-sm">
+          <p className="text-slate-400 text-sm">
             You haven’t written anything yet — your first reflection will appear
             here.
           </p>
