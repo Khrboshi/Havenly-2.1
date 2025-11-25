@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import "./globals.css";
+import { createServerSupabase } from "@/lib/supabase/server";
 import Navbar from "./components/Navbar";
 import type { Metadata } from "next";
 
@@ -9,15 +10,22 @@ export const metadata: Metadata = {
   description: "A calm space to reflect",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = await createServerSupabase();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  const user = session?.user ?? null;
+
   return (
     <html lang="en">
       <body className="bg-slate-950 text-slate-100 min-h-screen">
-        <Navbar />
+        <Navbar initialUser={user} />   {/* updated prop name */}
         <main className="pt-10">{children}</main>
       </body>
     </html>
