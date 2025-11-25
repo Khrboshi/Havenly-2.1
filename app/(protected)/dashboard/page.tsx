@@ -1,134 +1,109 @@
-"use client";
+export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { supabaseClient } from "@/lib/supabase/client";
+import { redirect } from "next/navigation";
+import { createServerSupabase } from "@/lib/supabase/server";
 
-interface JournalEntry {
-  id: string;
-  created_at: string;
-  mood: number | null;
-  content: string | null;
-}
+export default async function DashboardPage() {
+  const supabase = createServerSupabase();
 
-export default function DashboardPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [recentEntries, setRecentEntries] = useState<JournalEntry[]>([]);
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  useEffect(() => {
-    async function load() {
-      const {
-        data: { session },
-      } = await supabaseClient.auth.getSession();
-
-      if (!session?.user) {
-        router.replace("/login");
-        return;
-      }
-
-      setUserEmail(session.user.email ?? null);
-
-      const { data: entries } = await supabaseClient
-        .from("journal_entries")
-        .select("id, created_at, mood, content")
-        .order("created_at", { ascending: false })
-        .limit(3);
-
-      setRecentEntries(entries ?? []);
-      setLoading(false);
-    }
-
-    load();
-  }, [router]);
-
-  if (loading) {
-    return (
-      <div className="mx-auto max-w-5xl px-4 pt-20 text-center text-slate-300">
-        Loading your space…
-      </div>
-    );
+  if (!session?.user) {
+    redirect("/login");
   }
 
-  const displayName = userEmail
-    ? userEmail.split("@")[0].charAt(0).toUpperCase() +
-      userEmail.split("@")[0].slice(1)
-    : "there";
+  const meta = (session.user.user_metadata ?? {}) as { role?: string };
+  const role = meta.role ?? "free";
+  const isPremium = role === "premium";
+
+  const firstName =
+    session.user.email?.split("@")[0]?.split(".")[0] ?? "Friend";
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 space-y-12 text-slate-200">
-      {/* Welcome Section */}
-      <section className="space-y-3">
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Welcome back, <span className="text-emerald-300">{displayName}</span>
+    <div className="mx-auto max-w-4xl px-4 pt-20 pb-24 space-y-10">
+
+      {/* Greeting */}
+      <header className="space-y-2">
+        <h1 className="text-3xl font-semibold text-slate-50">
+          Welcome back,{" "}
+          <span className="text-emerald-300">
+            {firstName.charAt(0).toUpperCase() + firstName.slice(1)}
+          </span>
         </h1>
-        <p className="max-w-xl text-slate-400 text-sm md:text-base">
-          This is your calm space to slow down for a moment, breathe, and notice
-          how you are really doing today.
+
+        <p className="text-sm text-slate-300 max-w-xl">
+          This is your calm space to slow down for a moment, breathe, and
+          notice how you are really doing today.
         </p>
 
-        <div>
+        {/* Show ONLY to FREE users */}
+        {!isPremium && (
+          <div className="inline-flex items-center gap-2 rounded-full bg-slate-900/60 border border-slate-800/60 px-3 py-1 mt-2 text-[11px] text-slate-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            You’re using the free journaling plan — premium insights coming soon
+          </div>
+        )}
+
+        <div className="pt-4">
           <Link
             href="/journal/new"
-            className="inline-flex items-center rounded-full bg-emerald-400 px-6 py-3 text-sm font-semibold text-slate-950 shadow-sm hover:bg-emerald-300"
+            className="inline-flex rounded-full bg-emerald-300 px-5 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-200"
           >
             Start today’s reflection
           </Link>
         </div>
-      </section>
+      </header>
 
-      {/* Recent Entries */}
-      <section className="space-y-4">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-400">
-          Recent reflections
+      {/* Recent reflections */}
+      <section className="space-y-3 pt-6">
+        <h2 className="text-xs font-semibold tracking-[0.2em] text-emerald-300">
+          RECENT REFLECTIONS
         </h2>
 
-        {recentEntries.length === 0 ? (
-          <p className="text-slate-400 text-sm">
-            You haven’t written anything yet — your first reflection will appear
-            here.
-          </p>
-        ) : (
-          <div className="space-y-3">
-            {recentEntries.map((entry) => (
-              <Link
-                key={entry.id}
-                href={`/journal/${entry.id}`}
-                className="block rounded-2xl border border-slate-800 bg-slate-950/40 p-4 hover:border-emerald-400/40 transition-colors"
-              >
-                <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-                  <span>
-                    {new Date(entry.created_at).toLocaleDateString(undefined, {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </span>
-                  {entry.mood !== null && (
-                    <span className="text-emerald-300">
-                      Mood: {entry.mood}/5
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-slate-200 line-clamp-2">
-                  {entry.content || "(no text)"}
-                </p>
-              </Link>
-            ))}
-          </div>
-        )}
+        <p className="text-sm text-slate-400">
+          You haven’t written anything yet — your first reflection will appear here.
+        </p>
 
-        <div>
-          <Link
-            href="/journal"
-            className="text-xs font-medium text-emerald-300 hover:text-emerald-200"
-          >
-            View full journal →
-          </Link>
+        <Link
+          href="/journal"
+          className="text-xs font-medium text-emerald-300 hover:text-emerald-200"
+        >
+          View full journal →
+        </Link>
+      </section>
+
+      {/* Install-on-phone hint — visible to ALL logged-in users */}
+      <section className="pt-6 hidden install-hint">
+        <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-4 space-y-2">
+          <p className="text-xs font-semibold tracking-[0.18em] text-emerald-300">
+            ADD TO YOUR PHONE
+          </p>
+          <p className="text-sm text-slate-300">
+            Add Havenly to your home screen to open it like an app and journal without browser tabs.
+          </p>
+          <p className="text-xs text-slate-400">
+            iPhone: Share button → “Add to Home Screen”
+            <br />
+            Android: Browser menu → “Install App”
+          </p>
         </div>
       </section>
+
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+              || window.navigator.standalone === true;
+
+            if (!isStandalone) {
+              document.querySelector('.install-hint')?.classList.remove('hidden');
+            }
+          `,
+        }}
+      />
     </div>
   );
 }
