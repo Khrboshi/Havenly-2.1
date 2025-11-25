@@ -31,15 +31,14 @@ export default function LandingPage() {
               href="/magic-login"
               className="inline-flex items-center rounded-full bg-emerald-300 px-6 py-2.5 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/30 hover:bg-emerald-200"
             >
-              Start journaling now
+              Start journaling free
             </Link>
 
             <Link
               href="/login"
               className="text-sm font-medium text-slate-300 hover:text-emerald-200"
             >
-              Already have an account?{" "}
-              <span className="underline underline-offset-4">Log in</span>
+              Log in
             </Link>
           </div>
 
@@ -50,7 +49,7 @@ export default function LandingPage() {
           </ul>
         </div>
 
-        {/* Right side – “live” preview card */}
+        {/* Right side – preview */}
         <div className="flex-1">
           <div className="relative mx-auto max-w-md rounded-3xl border border-slate-800 bg-slate-900/70 p-5 shadow-2xl shadow-emerald-500/10">
             <div className="mb-4 flex items-center justify-between text-[11px] text-slate-400">
@@ -87,7 +86,7 @@ export default function LandingPage() {
             </div>
 
             <div className="mt-4 flex items-center justify-between text-[11px] text-slate-400">
-              <span>No streaks · No &quot;shoulds&quot; · Just one honest check-in</span>
+              <span>No streaks · No “shoulds” · Just one honest check-in</span>
             </div>
           </div>
         </div>
@@ -102,16 +101,15 @@ export default function LandingPage() {
           <div className="rounded-2xl border border-slate-900 bg-slate-950/70 p-4">
             <p className="text-xs font-semibold text-emerald-300">1 · CHECK IN</p>
             <p className="mt-2 text-sm text-slate-100">
-              Once a day (or whenever you like), you answer a gentle prompt and
-              jot down a few honest sentences.
+              Once a day (or whenever you like), you answer a prompt and jot down
+              a few honest sentences.
             </p>
           </div>
           <div className="rounded-2xl border border-slate-900 bg-slate-950/70 p-4">
             <p className="text-xs font-semibold text-emerald-300">2 · REFLECT</p>
             <p className="mt-2 text-sm text-slate-100">
-              Havenly&apos;s AI offers a soft reflection — not advice, not
-              fixing you, just a different angle that helps you see your day
-              with more compassion.
+              Havenly’s AI offers a soft reflection — not advice, just a kinder
+              angle that helps you see your day with more compassion.
             </p>
           </div>
           <div className="rounded-2xl border border-slate-900 bg-slate-950/70 p-4">
@@ -119,14 +117,14 @@ export default function LandingPage() {
               3 · NOTICE PATTERNS
             </p>
             <p className="mt-2 text-sm text-slate-100">
-              Over time, you start to see what energises you, what drains you,
-              and what you might want to protect or change.
+              Over time, you begin to see what energizes you, what drains you,
+              and what you want to protect or change.
             </p>
           </div>
         </div>
       </section>
 
-      {/* WHY IT FEELS DIFFERENT */}
+      {/* WHY DIFFERENT */}
       <section className="mx-auto max-w-5xl px-4 pb-16">
         <div className="grid gap-6 md:grid-cols-[1.1fr,0.9fr]">
           <div className="space-y-3 rounded-2xl border border-slate-900 bg-slate-950/80 p-5">
@@ -134,14 +132,9 @@ export default function LandingPage() {
               Built for real life, not perfect habits
             </h3>
             <p className="text-sm text-slate-300">
-              Havenly is designed for the nights you open your laptop feeling
-              tired, the mornings when you have three minutes before a meeting,
-              and the days you don&apos;t have the energy for a big routine.
-            </p>
-            <p className="text-sm text-slate-300">
-              You can disappear for a week and come back without guilt. There
-              are no streaks to break, no charts judging you — just a quiet
-              space waiting when you need it.
+              Havenly works whether you journal daily or disappear for a week.
+              There are no streaks to break, no judgment — just a quiet space
+              waiting when you need it.
             </p>
           </div>
 
@@ -150,13 +143,11 @@ export default function LandingPage() {
               A gentle use of AI
             </h3>
             <p className="text-sm text-slate-300">
-              The AI here isn&apos;t trying to optimise you or tell you how to
-              live. It simply mirrors what you&apos;ve written, highlights what
-              seems important, and invites kinder questions.
+              The AI mirrors what you write, highlights what seems important,
+              and invites kinder questions — without pushing optimization.
             </p>
             <p className="text-xs text-slate-400">
-              Your text stays private and is used only to generate your
-              reflections — not to train ads or social feeds.
+              Your entries are private and not used for ads or training feeds.
             </p>
           </div>
         </div>
@@ -171,24 +162,16 @@ export default function LandingPage() {
             </p>
             <p className="text-xs text-slate-400 md:text-[13px]">
               Start with one short check-in tonight. You can always delete your
-              account later — there&apos;s no commitment and no streak to keep.
+              account later — no commitment and no streak to maintain.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/magic-login"
-              className="inline-flex items-center rounded-full bg-emerald-300 px-5 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-200"
-            >
-              Start journaling free
-            </Link>
-            <Link
-              href="/login"
-              className="text-xs font-medium text-slate-300 hover:text-emerald-200"
-            >
-              Log in instead
-            </Link>
-          </div>
+          <Link
+            href="/magic-login"
+            className="inline-flex items-center rounded-full bg-emerald-300 px-5 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-200"
+          >
+            Start journaling free
+          </Link>
         </div>
       </section>
     </main>
