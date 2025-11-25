@@ -15,16 +15,12 @@ export function createServerSupabase() {
         set(name: string, value: string, options: CookieOptions) {
           try {
             cookieStore.set({ name, value, ...options });
-          } catch {
-            // ignore errors in server components
-          }
+          } catch {}
         },
         remove(name: string, options: CookieOptions) {
           try {
             cookieStore.set({ name, value: "", ...options });
-          } catch {
-            // ignore errors in server components
-          }
+          } catch {}
         },
       },
     }
