@@ -1,129 +1,138 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabaseClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { supabaseClient } from "@/lib/supabase/client";
 
-type JournalEntry = {
+interface JournalEntry {
   id: string;
   created_at: string;
-  mood: number | null;
   content: string | null;
-  ai_response: string | null;
-};
+  mood: number | null;
+}
 
 export default function JournalHistoryPage() {
   const router = useRouter();
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [entriesByMonth, setEntriesByMonth] = useState<
+    Record<string, JournalEntry[]>
+  >({});
 
   useEffect(() => {
-    let isMounted = true;
-
     async function load() {
       const {
-        data: { user },
-      } = await supabaseClient.auth.getUser();
+        data: { session },
+      } = await supabaseClient.auth.getSession();
 
-      if (!user) {
+      if (!session?.user) {
         router.replace("/login");
         return;
       }
 
-      const { data, error } = await supabaseClient
+      const { data } = await supabaseClient
         .from("journal_entries")
-        .select("*")
+        .select("id, created_at, mood, content")
         .order("created_at", { ascending: false });
 
-      if (!isMounted) return;
+      const grouped: Record<string, JournalEntry[]> = {};
 
-      if (error) {
-        console.error(error);
-      } else {
-        setEntries(data || []);
-      }
+      (data ?? []).forEach((entry) => {
+        const date = new Date(entry.created_at);
+        const monthLabel = date.toLocaleDateString(undefined, {
+          month: "long",
+          year: "numeric",
+        });
 
+        if (!grouped[monthLabel]) {
+          grouped[monthLabel] = [];
+        }
+        grouped[monthLabel].push(entry);
+      });
+
+      setEntriesByMonth(grouped);
       setLoading(false);
     }
 
     load();
-
-    return () => {
-      isMounted = false;
-    };
   }, [router]);
 
   if (loading) {
-    return <p className="text-sm text-slate-300 mt-6">Loading entries…</p>;
-  }
-
-  if (!entries.length) {
     return (
-      <div className="mt-6 space-y-3">
-        <p className="text-sm text-slate-300">
-          No entries yet. Start with your first reflection.
-        </p>
-        <Link
-          href="/journal/new"
-          className="inline-flex rounded-full bg-emerald-400 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-300"
-        >
-          Write today&apos;s reflection
-        </Link>
+      <div className="mx-auto max-w-5xl px-4 pt-20 text-center text-slate-300">
+        Loading your journal…
       </div>
     );
   }
 
+  const hasEntries = Object.keys(entriesByMonth).length > 0;
+
+  function moodEmoji(mood: number | null) {
+    if (mood === 1) return "😔";
+    if (mood === 2) return "😕";
+    if (mood === 3) return "😐";
+    if (mood === 4) return "🙂";
+    if (mood === 5) return "😊";
+    return "";
+  }
+
   return (
-    <div className="mt-4 space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Your reflections</h1>
-        <Link
-          href="/journal/new"
-          className="text-xs rounded-full border border-emerald-400/70 px-3 py-1.5 text-emerald-200 hover:bg-emerald-400 hover:text-slate-950 transition"
-        >
-          New entry
-        </Link>
-      </div>
+    <div className="mx-auto max-w-5xl px-4 py-12 space-y-12 text-slate-200">
+      <section className="space-y-2">
+        <h1 className="text-3xl font-semibold tracking-tight">Your journal</h1>
+        <p className="max-w-xl text-slate-400 text-sm md:text-base">
+          Browse past reflections and notice how your thoughts and emotions
+          evolve over time.
+        </p>
+      </section>
 
-      <div className="space-y-3">
-        {entries.map((entry) => (
-          <article
-            key={entry.id}
-            className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4 space-y-2"
-          >
-            <div className="flex justify-between items-center text-[11px] text-slate-400">
-              <span>
-                {new Date(entry.created_at).toLocaleString(undefined, {
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                })}
-              </span>
-              {entry.mood && (
-                <span className="text-emerald-300">
-                  Mood {entry.mood}
-                  <span className="text-slate-500">/5</span>
-                </span>
-              )}
+      {!hasEntries && (
+        <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-6 text-slate-300 text-sm">
+          You haven’t saved any reflections yet. Your writing will appear here
+          once you complete your first entry.
+          <div className="mt-4">
+            <Link
+              href="/journal/new"
+              className="rounded-full bg-emerald-400 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-emerald-300"
+            >
+              Start your first reflection
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {hasEntries &&
+        Object.entries(entriesByMonth).map(([month, entries]) => (
+          <div key={month} className="space-y-4">
+            <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-400">
+              {month}
+            </h2>
+
+            <div className="space-y-3">
+              {entries.map((entry) => (
+                <Link
+                  key={entry.id}
+                  href={`/journal/${entry.id}`}
+                  className="block rounded-2xl border border-slate-800 bg-slate-950/40 p-4 hover:border-emerald-400/40 transition-colors"
+                >
+                  <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+                    <span>
+                      {new Date(entry.created_at).toLocaleDateString(undefined, {
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                    <span className="text-lg">{moodEmoji(entry.mood)}</span>
+                  </div>
+                  <p className="text-sm text-slate-200 line-clamp-2">
+                    {entry.content || "(no text)"}
+                  </p>
+                </Link>
+              ))}
             </div>
-
-            <p className="text-sm text-slate-100 whitespace-pre-wrap">
-              {entry.content}
-            </p>
-
-            {entry.ai_response && (
-              <div className="mt-2 border-t border-slate-800 pt-2">
-                <p className="text-[11px] text-emerald-300 mb-1">
-                  Havenly reflection
-                </p>
-                <p className="text-xs text-slate-200 whitespace-pre-wrap">
-                  {entry.ai_response}
-                </p>
-              </div>
-            )}
-          </article>
+          </div>
         ))}
-      </div>
     </div>
   );
 }
