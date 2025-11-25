@@ -1,8 +1,9 @@
+// app/layout.tsx
 export const dynamic = "force-dynamic";
 
 import "./globals.css";
 import { createServerSupabase } from "@/lib/supabase/server";
-import ClientNavWrapper from "./components/ClientNavWrapper";
+import Navbar from "./components/Navbar";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -25,7 +26,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className="bg-slate-950 text-slate-100 min-h-screen">
-        <ClientNavWrapper initialUser={user} />
+        <Navbar user={user} />
         <main className="pt-10">{children}</main>
       </body>
     </html>
