@@ -8,21 +8,21 @@ export async function GET(request: Request) {
 
   const supabase = createServerSupabase();
 
-  // Exchange code for session if present
+  // Exchange auth code for a session
   if (code) {
     await supabase.auth.exchangeCodeForSession(code);
   }
 
-  // Retrieve updated session
+  // Get the authenticated session
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // Assign default role using service role
+  // Assign default role using SERVICE ROLE CLIENT
   if (session?.user && !session.user.user_metadata?.role) {
     const serviceRoleClient = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,   // must exist in Vercel env
+      process.env.SUPABASE_URL!,               // IMPORTANT: not NEXT_PUBLIC
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,  // secure admin key
       { auth: { persistSession: false } }
     );
 
@@ -31,6 +31,6 @@ export async function GET(request: Request) {
     });
   }
 
-  // Redirect to dashboard
+  // Redirect after successful handling
   return NextResponse.redirect(`${requestUrl.origin}/dashboard`);
 }
