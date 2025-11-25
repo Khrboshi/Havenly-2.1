@@ -16,46 +16,54 @@ type JournalEntry = {
 export default function DashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [lastEntry, setLastEntry] = useState<JournalEntry | null>(null);
 
   useEffect(() => {
-    let isMounted = true;
+    let active = true;
 
     async function load() {
       const {
-        data: { user },
-      } = await supabaseClient.auth.getUser();
+        data: { session },
+      } = await supabaseClient.auth.getSession();
 
-      if (!user) {
+      if (!session?.user) {
         router.replace("/login");
         return;
       }
 
+      if (active) setUserId(session.user.id);
+
       const { data: profile } = await supabaseClient
         .from("profiles")
         .select("display_name")
-        .eq("id", user.id)
+        .eq("id", session.user.id)
         .maybeSingle();
 
-      if (!isMounted) return;
-
-      setDisplayName(profile?.display_name || user.email?.split("@")[0] || "there");
+      if (active) {
+        setDisplayName(
+          profile?.display_name || session.user.email?.split("@")[0] || "there"
+        );
+      }
 
       const { data: entries } = await supabaseClient
         .from("journal_entries")
         .select("*")
+        .eq("user_id", session.user.id)
         .order("created_at", { ascending: false })
         .limit(1);
 
-      setLastEntry(entries?.[0] ?? null);
-      setLoading(false);
+      if (active) {
+        setLastEntry(entries?.[0] ?? null);
+        setLoading(false);
+      }
     }
 
     load();
 
     return () => {
-      isMounted = false;
+      active = false;
     };
   }, [router]);
 
@@ -81,10 +89,7 @@ export default function DashboardPage() {
 
       <p className="text-xs text-slate-400">
         Or{" "}
-        <Link
-          href="/journal"
-          className="text-emerald-300 hover:underline font-medium"
-        >
+        <Link href="/journal" className="text-emerald-300 hover:underline font-medium">
           review your past entries
         </Link>
         .
