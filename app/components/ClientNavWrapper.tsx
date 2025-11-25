@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabaseClient } from "@/lib/supabase/client";
 import Navbar from "./Navbar";
+import { supabaseClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
 export default function ClientNavWrapper({
@@ -19,9 +19,7 @@ export default function ClientNavWrapper({
       setUser(session?.user ?? null);
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   return <Navbar user={user} />;
