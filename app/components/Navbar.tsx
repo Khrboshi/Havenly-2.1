@@ -3,30 +3,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { supabaseClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import { useEffect, useRef, useState } from "react";
 
-export default function Navbar({ initialUser }: { initialUser: User | null }) {
+interface NavbarProps {
+  user: User | null;
+}
+
+export default function Navbar({ user }: NavbarProps) {
   const pathname = usePathname();
-  const [user, setUser] = useState<User | null>(initialUser);
   const [menuOpen, setMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
 
-  // Listen to auth state changes so Navbar updates immediately
-  useEffect(() => {
-    const { data: listener } = supabaseClient.auth.onAuthStateChange(
-      async (_, session) => {
-        setUser(session?.user ?? null);
-      }
-    );
-
-    return () => {
-      listener.subscription.unsubscribe();
-    };
-  }, []);
-
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClick(event: MouseEvent) {
       if (
@@ -41,7 +29,8 @@ export default function Navbar({ initialUser }: { initialUser: User | null }) {
   }, []);
 
   const isOnDashboard = pathname === "/dashboard";
-  const isOnJournal = pathname === "/journal" || pathname.startsWith("/journal/");
+  const isOnJournal =
+    pathname === "/journal" || pathname.startsWith("/journal/");
   const isOnSettings = pathname === "/settings";
 
   const loggedIn = !!user;
@@ -53,7 +42,7 @@ export default function Navbar({ initialUser }: { initialUser: User | null }) {
           href={loggedIn ? "/dashboard" : "/"}
           className="flex items-center gap-2"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/10 ring-1 ring-emerald-400/40 transition hover:bg-emerald-500/20 hover:ring-emerald-300">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/10 ring-1 ring-emerald-400/40">
             <span className="text-sm font-semibold tracking-wide text-emerald-300">
               H
             </span>
@@ -113,7 +102,7 @@ export default function Navbar({ initialUser }: { initialUser: User | null }) {
                 </button>
 
                 {menuOpen && (
-                  <div className="animate-fade-in absolute right-0 mt-2 w-52 rounded-xl border border-slate-800 bg-slate-950/95 p-1 text-sm shadow-xl">
+                  <div className="absolute right-0 mt-2 w-52 rounded-xl border border-slate-800 bg-slate-950/95 p-1 text-sm shadow-xl">
                     <Link
                       href="/settings"
                       onClick={() => setMenuOpen(false)}
