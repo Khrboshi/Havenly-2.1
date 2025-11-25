@@ -1,28 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabaseClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabaseClient } from "@/lib/supabase/client";
 
-type JournalEntry = {
+interface JournalEntry {
   id: string;
   created_at: string;
   mood: number | null;
   content: string | null;
-  ai_response: string | null;
-};
+}
 
 export default function DashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [displayName, setDisplayName] = useState<string | null>(null);
-  const [lastEntry, setLastEntry] = useState<JournalEntry | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [recentEntries, setRecentEntries] = useState<JournalEntry[]>([]);
 
   useEffect(() => {
-    let active = true;
-
     async function load() {
       const {
         data: { session },
@@ -33,88 +29,106 @@ export default function DashboardPage() {
         return;
       }
 
-      if (active) setUserId(session.user.id);
-
-      const { data: profile } = await supabaseClient
-        .from("profiles")
-        .select("display_name")
-        .eq("id", session.user.id)
-        .maybeSingle();
-
-      if (active) {
-        setDisplayName(
-          profile?.display_name || session.user.email?.split("@")[0] || "there"
-        );
-      }
+      setUserEmail(session.user.email ?? null);
 
       const { data: entries } = await supabaseClient
         .from("journal_entries")
-        .select("*")
-        .eq("user_id", session.user.id)
+        .select("id, created_at, mood, content")
         .order("created_at", { ascending: false })
-        .limit(1);
+        .limit(3);
 
-      if (active) {
-        setLastEntry(entries?.[0] ?? null);
-        setLoading(false);
-      }
+      setRecentEntries(entries ?? []);
+      setLoading(false);
     }
 
     load();
-
-    return () => {
-      active = false;
-    };
   }, [router]);
 
   if (loading) {
-    return <p className="text-slate-300 mt-6">Loading your space…</p>;
+    return (
+      <div className="mx-auto max-w-5xl px-4 pt-20 text-center text-slate-300">
+        Loading your space…
+      </div>
+    );
   }
 
+  const displayName = userEmail
+    ? userEmail.split("@")[0].charAt(0).toUpperCase() +
+      userEmail.split("@")[0].slice(1)
+    : "there";
+
   return (
-    <div className="space-y-6 mt-2">
-      <h1 className="text-2xl font-bold">Hey {displayName},</h1>
+    <div className="mx-auto max-w-5xl px-4 py-12 space-y-12 text-slate-200">
+      {/* Welcome Section */}
+      <section className="space-y-3">
+        <h1 className="text-3xl font-semibold tracking-tight">
+          Welcome back, <span className="text-emerald-300">{displayName}</span>
+        </h1>
+        <p className="max-w-xl text-slate-400 text-sm md:text-base">
+          This is your calm space to slow down for a moment, breathe, and notice
+          how you are really doing today.
+        </p>
 
-      <p className="text-sm text-slate-300">
-        Take 3–5 minutes to check in with yourself.
-      </p>
-
-      <Link
-        href="/journal/new"
-        className="inline-flex items-center gap-2 rounded-2xl bg-emerald-400 px-4 py-3 text-sm font-medium text-slate-950 hover:bg-emerald-300 transition"
-      >
-        Start today&apos;s reflection
-        <span className="text-xs opacity-80">· 3–5 min</span>
-      </Link>
-
-      <p className="text-xs text-slate-400">
-        Or{" "}
-        <Link href="/journal" className="text-emerald-300 hover:underline font-medium">
-          review your past entries
-        </Link>
-        .
-      </p>
-
-      {lastEntry && (
-        <div className="rounded-xl border border-slate-800 bg-slate-900 p-4 space-y-2">
-          <p className="text-[11px] text-slate-400">
-            {new Date(lastEntry.created_at).toLocaleString()}
-          </p>
-
-          <p className="text-sm text-slate-200 line-clamp-3">
-            {lastEntry.content}
-          </p>
-
-          {lastEntry.ai_response && (
-            <div className="pt-2 border-t border-slate-800">
-              <p className="text-[11px] text-emerald-300">Havenly reflection</p>
-              <p className="text-xs text-slate-200 line-clamp-4">
-                {lastEntry.ai_response}
-              </p>
-            </div>
-          )}
+        <div>
+          <Link
+            href="/journal/new"
+            className="inline-flex items-center rounded-full bg-emerald-400 px-6 py-3 text-sm font-semibold text-slate-950 shadow-sm hover:bg-emerald-300"
+          >
+            Start today’s reflection
+          </Link>
         </div>
-      )}
+      </section>
+
+      {/* Recent Entries */}
+      <section className="space-y-4">
+        <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-400">
+          Recent reflections
+        </h2>
+
+        {recentEntries.length === 0 ? (
+          <p classnName="text-slate-400 text-sm">
+            You haven’t written anything yet — your first reflection will appear
+            here.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {recentEntries.map((entry) => (
+              <Link
+                key={entry.id}
+                href={`/journal/${entry.id}`}
+                className="block rounded-2xl border border-slate-800 bg-slate-950/40 p-4 hover:border-emerald-400/40 transition-colors"
+              >
+                <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+                  <span>
+                    {new Date(entry.created_at).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </span>
+                  {entry.mood !== null && (
+                    <span className="text-emerald-300">
+                      Mood: {entry.mood}/5
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-slate-200 line-clamp-2">
+                  {entry.content || "(no text)"}
+                </p>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        <div>
+          <Link
+            href="/journal"
+            className="text-xs font-medium text-emerald-300 hover:text-emerald-200"
+          >
+            View full journal →
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
