@@ -36,7 +36,7 @@ export default async function HomePage() {
             feed.
           </p>
 
-          {/* Primary CTA + secondary login link */}
+          {/* Primary CTA */}
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-3">
               <Link
@@ -46,16 +46,6 @@ export default async function HomePage() {
                 Start journaling now ✨
               </Link>
             </div>
-
-            <p className="text-xs text-slate-400">
-              Already have an account?{" "}
-              <Link
-                href="/login"
-                className="font-medium text-emerald-300 hover:text-emerald-200"
-              >
-                Log in
-              </Link>
-            </p>
           </div>
 
           {/* Social proof / reassurance */}
