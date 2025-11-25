@@ -10,11 +10,6 @@ interface NavbarProps {
   user: User | null;
 }
 
-/**
- * Global top navigation bar.
- * - Logged out: shows logo + "Log in" + "Get started"
- * - Logged in:  shows Dashboard / Journal / Settings + account dropdown
- */
 export default function Navbar({ user }: NavbarProps) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -35,12 +30,12 @@ export default function Navbar({ user }: NavbarProps) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  const loggedIn = !!user;
+
   const isOnDashboard = pathname === "/dashboard";
   const isOnJournal =
     pathname === "/journal" || pathname.startsWith("/journal/");
   const isOnSettings = pathname === "/settings";
-
-  const loggedIn = !!user;
 
   return (
     <header className="border-b border-slate-800/60 bg-slate-950/80 backdrop-blur">
@@ -58,7 +53,7 @@ export default function Navbar({ user }: NavbarProps) {
           <span className="text-sm font-semibold text-slate-100">Havenly</span>
         </Link>
 
-        {/* Right side actions */}
+        {/* Right actions */}
         <div className="flex items-center gap-4">
           {loggedIn ? (
             <>
@@ -122,6 +117,7 @@ export default function Navbar({ user }: NavbarProps) {
                     </Link>
                     <Link
                       href="/logout"
+                      prefetch={false}
                       onClick={() => setMenuOpen(false)}
                       className="block rounded-lg px-3 py-2 text-rose-300 hover:bg-rose-900/40"
                     >
