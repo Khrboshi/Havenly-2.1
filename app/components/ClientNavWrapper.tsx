@@ -10,11 +10,10 @@ export default function ClientNavWrapper({ initialUser }: { initialUser: User | 
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabaseClient.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
+    const { data: { subscription } } =
+      supabaseClient.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null);
+      });
 
     setLoaded(true);
 
