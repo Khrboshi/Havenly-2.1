@@ -1,32 +1,25 @@
 // app/layout.tsx
-export const dynamic = "force-dynamic";
-
 import "./globals.css";
-import { createServerSupabase } from "@/lib/supabase/server";
 import Navbar from "./components/Navbar";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Havenly",
-  description: "A calm space to reflect",
+  title: "Havenly – A calm space to reflect",
+  description:
+    "Take 3–5 minutes a day to check in with yourself, jot a quick note, and get a gentle AI reflection.",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createServerSupabase();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  const user = session?.user ?? null;
-
   return (
     <html lang="en">
       <body className="bg-slate-950 text-slate-100 min-h-screen">
-        <Navbar user={user} />
+        {/* Global client-side navbar (handles auth via Supabase client) */}
+        <Navbar />
+        {/* Main content */}
         <main className="pt-10">{children}</main>
       </body>
     </html>
