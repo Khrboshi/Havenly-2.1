@@ -13,14 +13,13 @@ export default async function DashboardPage() {
   }
 
   const user = session.user;
-  const role = user.user_metadata?.role || "free";
-  const displayName = user.email?.split("@")[0] ?? "there";
+  const role = (user.user_metadata as { role?: string } | null)?.role || "free";
 
   return (
     <main className="min-h-screen bg-[#0B0F19] text-white px-6 pt-20 pb-32 max-w-4xl mx-auto">
       {/* Free Plan Label */}
       {role === "free" && (
-        <div className="mb-6 rounded-md border border-[#1d3a3d] bg-[#132225] p-3 text-sm text-[#8eeacb]">
+        <div className="mb-6 text-sm text-[#8eeacb] bg-[#132225] border border-[#1d3a3d] rounded-md p-3">
           You’re on the free plan — daily journaling is fully included.
           <br />
           <span className="text-gray-300">
@@ -30,26 +29,27 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      <h1 className="mb-3 text-3xl font-semibold">
+      <h1 className="text-3xl font-semibold mb-3">
         Welcome back,{" "}
         <span className="text-[#54E1B3]">
-          {displayName}
+          {user.email?.split("@")[0]}
         </span>
       </h1>
 
-      <p className="mb-8 text-gray-300">
+      <p className="text-gray-300 mb-8">
         Take a moment to slow down and notice how you’re really doing today.
       </p>
 
+      {/* ✅ MAIN CTA: go straight to new entry */}
       <Link
-        href="/journal"
-        className="mb-10 inline-block rounded-full bg-[#47D7A9] px-6 py-3 font-semibold text-black transition hover:bg-[#35c497]"
+        href="/journal/new"
+        className="bg-[#47D7A9] text-black font-semibold px-6 py-3 rounded-full hover:bg-[#35c497] transition inline-block mb-10"
       >
         Start today’s reflection
       </Link>
 
-      <h2 className="mb-2 text-lg font-semibold">Recent reflections</h2>
-      <p className="mb-6 text-gray-400">
+      <h2 className="text-lg font-semibold mb-2">Recent reflections</h2>
+      <p className="text-gray-400 mb-6">
         You haven’t written anything yet — your first reflection will appear
         here once you’ve checked in.
       </p>
