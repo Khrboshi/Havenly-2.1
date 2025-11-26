@@ -1,103 +1,161 @@
 "use client";
 
-import { useState } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabaseClient } from "@/lib/supabase/client";
 
 export default function MagicLoginPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
 
-  async function handleSendLink(e: React.FormEvent) {
+  // If user is already signed in (e.g. after clicking the email link),
+  // redirect straight to the dashboard.
+  useEffect(() => {
+    let isMounted = true;
+
+    async function checkSession() {
+      try {
+        const {
+          data: { session },
+        } = await supabaseClient.auth.getSession();
+
+        if (!isMounted) return;
+
+        if (session?.user) {
+          router.replace("/dashboard");
+          return;
+        }
+      } catch (err) {
+        console.error("Error checking session", err);
+      } finally {
+        if (isMounted) {
+          setCheckingSession(false);
+        }
+      }
+    }
+
+    checkSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [router]);
+
+  async function sendMagicLink(e: FormEvent) {
     e.preventDefault();
     setError("");
-    setSent(false);
+    setLoading(true);
 
-    if (!email) {
-      setError("Please enter a valid email address.");
-      return;
-    }
+    try {
+      const { error } = await supabaseClient.auth.signInWithOtp({
+        email: email.trim().toLowerCase(),
+        options: {
+          // After Supabase verifies the link, redirect back to /magic-login.
+          // This page will then see the active session and send the user
+          // straight to /dashboard.
+          emailRedirectTo: `${window.location.origin}/magic-login`,
+        },
+      });
 
-    const { error } = await supabaseClient.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
-    });
+      if (error) {
+        setError(error.message || "Unable to send magic link.");
+        return;
+      }
 
-    if (error) {
+      setSent(true);
+    } catch (err) {
+      console.error(err);
       setError("Something went wrong. Please try again.");
-      return;
+    } finally {
+      setLoading(false);
     }
+  }
 
-    setSent(true);
+  const loggedOutFlag = searchParams?.get("logged_out") === "1";
+
+  // While we are checking if a session already exists, show a simple message
+  if (checkingSession) {
+    return (
+      <div className="mx-auto max-w-md space-y-6 pt-10 text-center text-slate-200">
+        <p className="text-sm text-slate-300">Checking your session…</p>
+      </div>
+    );
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-md text-center space-y-8">
-        <h1 className="text-2xl font-semibold">Get a secure login link</h1>
+    <div className="mx-auto max-w-md space-y-6 pt-10">
+      <header className="space-y-2 text-center">
+        <h1 className="text-2xl font-semibold text-slate-50">
+          Get a secure login link
+        </h1>
+        <p className="text-sm text-slate-300">
+          No password needed — we&apos;ll email you a one-time link to open your
+          journal.
+        </p>
 
-        {!sent && (
-          <>
-            <p className="text-slate-400 text-sm max-w-sm mx-auto">
-              No password needed — we’ll email you a one-time link to open your journal.
-            </p>
-
-            <form onSubmit={handleSendLink} className="space-y-4">
-              <input
-                type="email"
-                className="w-full rounded-lg bg-slate-900 border border-slate-700 px-4 py-2 text-sm"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-
-              <button
-                type="submit"
-                className="w-full rounded-full bg-emerald-400 text-slate-950 font-semibold py-2 hover:bg-emerald-300"
-              >
-                Send magic link
-              </button>
-            </form>
-
-            {error && (
-              <p className="text-red-400 text-sm mt-2">
-                {error}
-              </p>
-            )}
-
-            <p className="text-xs text-slate-500">
-              Havenly works without passwords — just use your secure magic link.
-            </p>
-          </>
+        {loggedOutFlag && (
+          <p className="mt-2 text-xs text-slate-400">
+            You&apos;ve been logged out. When you&apos;re ready to write again, request
+            a new magic link below.
+          </p>
         )}
+      </header>
 
-        {sent && (
-          <>
-            <p className="rounded-xl border border-emerald-700 bg-emerald-900/30 px-4 py-3 text-sm text-emerald-200">
-              A login link has been sent to <strong>{email}</strong>. Please check your inbox.
+      {sent ? (
+        <div className="rounded-2xl border border-emerald-500/40 bg-emerald-900/20 p-4 text-sm text-emerald-100">
+          A login link has been sent to{" "}
+          <span className="font-semibold">{email}</span>. Please check your
+          inbox and open Havenly from there.
+          <p className="mt-2 text-xs text-emerald-100/80">
+            Didn&apos;t get it? Check spam or request another link.
+          </p>
+        </div>
+      ) : (
+        <form onSubmit={sendMagicLink} className="space-y-4">
+          <div className="space-y-1">
+            <label className="text-xs text-slate-300">Email</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-xl bg-slate-950/70 border border-slate-700 px-3 py-2 text-sm text-slate-100 outline-none focus:border-emerald-400"
+              placeholder="you@example.com"
+            />
+          </div>
+
+          {error && (
+            <p className="text-xs rounded-lg border border-red-600/50 bg-red-950/40 px-3 py-2 text-red-300">
+              {error}
             </p>
+          )}
 
-            <p className="text-xs text-slate-500">
-              Didn’t get it? Check spam or try again.
-            </p>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-300 disabled:opacity-60"
+          >
+            {loading ? "Sending link…" : "Send magic link"}
+          </button>
+        </form>
+      )}
 
-            <button
-              onClick={() => setSent(false)}
-              className="text-slate-400 text-sm underline mt-2"
-            >
-              Send again
-            </button>
-          </>
-        )}
+      <p className="text-center text-xs text-slate-400">
+        Havenly works without passwords — just use your secure magic link.
+      </p>
 
-        <Link
-          href="/"
-          className="block text-xs text-slate-500 hover:text-slate-300 mt-6"
-        >
+      <p className="text-center text-xs text-slate-500">
+        <Link href="/" className="text-emerald-300 hover:underline">
           Return to home
         </Link>
-      </div>
-    </main>
+      </p>
+    </div>
   );
 }
