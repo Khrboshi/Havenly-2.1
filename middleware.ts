@@ -1,64 +1,53 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { updateSession } from "@/lib/supabase/middleware";
 
-// Routes that require an authenticated session
+// Protected routes requiring authentication
 const protectedRoutes = [
   "/dashboard",
   "/journal",
   "/entry",
   "/settings",
-  "/account",
-  "/profile",
 ];
 
-// Routes that must be accessible even when logged in/out
+// Public routes always allowed
 const publicRoutes = [
   "/",
   "/magic-login",
   "/auth/callback",
 ];
 
-export async function middleware(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Supabase session sync handling
-  const response = await updateSession(request);
-
-  // Determine whether route is protected
-  const isProtected = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
-
-  // Determine whether route is public
-  const isPublic = publicRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
-
-  // Read session cookie
+  // Read Supabase session cookie pattern
   const accessToken = request.cookies.get(
     `${process.env.NEXT_PUBLIC_SUPABASE_URL}-auth-token`
   );
 
   const hasSession = Boolean(accessToken);
 
-  // If accessing a protected route without a session → redirect to magic login
+  const isProtected = protectedRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
+
+  const isPublic = publicRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
+
+  // Redirect logged-out users away from protected pages
   if (isProtected && !hasSession) {
-    const redirectUrl = new URL("/magic-login", request.url);
-    return NextResponse.redirect(redirectUrl);
+    return NextResponse.redirect(new URL("/magic-login", request.url));
   }
 
-  // If accessing magic-login while logged in → redirect to dashboard
+  // Redirect logged-in users away from magic-login
   if (pathname.startsWith("/magic-login") && hasSession) {
-    const redirectUrl = new URL("/dashboard", request.url);
-    return NextResponse.redirect(redirectUrl);
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  // Allow everything else
-  return response;
+  return NextResponse.next();
 }
 
-// Middleware applies to all routes except static assets and API
+// Apply middleware to all routes except static assets
 export const config = {
   matcher: [
     "/((?!_next|.*\\..*|favicon.ico).*)",
