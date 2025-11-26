@@ -15,7 +15,7 @@ export default function Navbar({ user }: NavbarProps) {
     <nav className="w-full border-b border-slate-900/40 bg-slate-950/60 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
         
-        {/* Logo / Home link */}
+        {/* Logo */}
         <Link
           href="/"
           className="text-lg font-semibold tracking-tight text-slate-100 hover:text-emerald-300 transition-colors"
@@ -23,22 +23,18 @@ export default function Navbar({ user }: NavbarProps) {
           Havenly
         </Link>
 
-        {/* RIGHT SIDE CONTENT */}
+        {/* RIGHT SIDE */}
         <div className="flex items-center gap-6">
 
-          {/* LOGGED OUT VIEW */}
           {!isLoggedIn && (
-            <>
-              <Link
-                href="/login"
-                className="text-sm font-medium text-slate-300 hover:text-white transition-colors"
-              >
-                Log in
-              </Link>
-            </>
+            <Link
+              href="/magic-login"
+              className="rounded-full bg-emerald-300 px-4 py-1.5 text-sm font-medium text-slate-950 hover:bg-emerald-200 transition"
+            >
+              Start journaling free
+            </Link>
           )}
 
-          {/* LOGGED IN VIEW */}
           {isLoggedIn && (
             <>
               <Link
@@ -67,12 +63,10 @@ export default function Navbar({ user }: NavbarProps) {
                 Premium (coming soon)
               </span>
 
-              {/* User badge */}
               <span className="rounded-full bg-slate-900 px-3 py-1 text-sm font-medium text-slate-200">
                 {user?.email}
               </span>
 
-              {/* Logout */}
               <Link
                 href="/logout"
                 className="text-sm font-medium text-slate-300 hover:text-red-300 transition-colors"
