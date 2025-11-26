@@ -44,8 +44,7 @@ export default function MagicLoginPage() {
           Get a secure login link
         </h1>
         <p className="text-sm text-slate-300">
-          No password to remember. We’ll send you a one-time link to open your
-          journal.
+          No password needed — we’ll email you a one-time link to open your journal.
         </p>
       </header>
 
@@ -53,7 +52,7 @@ export default function MagicLoginPage() {
         <div className="rounded-2xl border border-emerald-500/40 bg-emerald-900/20 p-4 text-sm text-emerald-100">
           A login link has been sent to{" "}
           <span className="font-semibold">{email}</span>.  
-          Please check your inbox and open Havenly from there.
+          Please check your inbox.
         </div>
       ) : (
         <form onSubmit={sendMagicLink} className="space-y-4">
@@ -86,10 +85,7 @@ export default function MagicLoginPage() {
       )}
 
       <p className="text-center text-xs text-slate-400">
-        Already have a password?{" "}
-        <Link href="/login" className="text-emerald-300 hover:underline">
-          Log in with password
-        </Link>
+        Havenly works without passwords — just use your secure magic link.
       </p>
     </div>
   );
