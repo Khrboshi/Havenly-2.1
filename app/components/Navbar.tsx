@@ -44,6 +44,9 @@ export default function Navbar({ user }: NavbarProps) {
   const onJournal = pathname.startsWith("/journal");
   const onPremium = pathname.startsWith("/premium");
 
+  // Detect landing page to avoid duplicate primary CTA
+  const isLanding = pathname === "/";
+
   return (
     <header className="fixed inset-x-0 top-0 z-40 border-b border-slate-900/70 bg-slate-950/80 backdrop-blur">
       <nav className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
@@ -108,12 +111,16 @@ export default function Navbar({ user }: NavbarProps) {
               >
                 Log in
               </Link>
-              <Link
-                href="/magic-login"
-                className="rounded-full bg-emerald-300 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-200"
-              >
-                Get started
-              </Link>
+
+              {/* Only show Get started when NOT on the landing page */}
+              {!isLanding && (
+                <Link
+                  href="/magic-login"
+                  className="rounded-full bg-emerald-300 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-200"
+                >
+                  Get started
+                </Link>
+              )}
             </>
           )}
         </div>
@@ -166,12 +173,16 @@ export default function Navbar({ user }: NavbarProps) {
               >
                 Log in
               </Link>
-              <Link
-                href="/magic-login"
-                className="inline-flex w-full items-center justify-center rounded-full bg-emerald-300 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-200"
-              >
-                Get started
-              </Link>
+
+              {/* Same logic on mobile: hide Get started on landing */}
+              {!isLanding && (
+                <Link
+                  href="/magic-login"
+                  className="inline-flex w-full items-center justify-center rounded-full bg-emerald-300 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-200"
+                >
+                  Get started
+                </Link>
+              )}
             </div>
           )}
         </div>
