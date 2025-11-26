@@ -10,7 +10,6 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Define protected routes
   const protectedRoutes = [
     "/dashboard",
     "/journal",
@@ -24,16 +23,14 @@ export async function middleware(request: NextRequest) {
       pathname === route || pathname.startsWith(`${route}/`)
     );
 
-  // If trying to access protected content while logged out
   if (isProtected && !session?.user) {
-    const redirectUrl = new URL("/login", request.url);
+    const redirectUrl = new URL("/magic-login", request.url);
     return NextResponse.redirect(redirectUrl);
   }
 
   return NextResponse.next();
 }
 
-// Apply middleware to all routes
 export const config = {
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico|api|public).*)",
