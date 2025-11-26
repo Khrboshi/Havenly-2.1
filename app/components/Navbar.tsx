@@ -1,59 +1,81 @@
 "use client";
 
 import Link from "next/link";
-import type { User } from "@supabase/supabase-js";
+import { usePathname } from "next/navigation";
 
 interface NavbarProps {
-  user: User | null;
+  user: { email?: string | null } | null;
 }
 
 export default function Navbar({ user }: NavbarProps) {
-  return (
-    <nav className="w-full border-b border-slate-800 bg-slate-950/40 backdrop-blur">
-      <div className="mx-auto max-w-6xl px-4 h-16 flex items-center justify-between">
+  const pathname = usePathname();
+  const isLoggedIn = !!user;
 
-        {/* Left: Logo */}
-        <Link href="/" className="text-lg font-semibold text-slate-200">
+  return (
+    <nav className="w-full border-b border-slate-900/40 bg-slate-950/60 backdrop-blur-md">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+        
+        {/* Logo / Home link */}
+        <Link
+          href="/"
+          className="text-lg font-semibold tracking-tight text-slate-100 hover:text-emerald-300 transition-colors"
+        >
           Havenly
         </Link>
 
-        {/* Right side navigation */}
-        <div className="flex items-center gap-6 text-sm">
+        {/* RIGHT SIDE CONTENT */}
+        <div className="flex items-center gap-6">
 
-          {!user && (
+          {/* LOGGED OUT VIEW */}
+          {!isLoggedIn && (
             <>
-              <Link href="/login" className="text-slate-300 hover:text-white">
-                Log in
-              </Link>
-
               <Link
-                href="/magic-login"
-                className="rounded-full bg-emerald-400 px-4 py-2 font-medium text-slate-950 hover:bg-emerald-300"
+                href="/login"
+                className="text-sm font-medium text-slate-300 hover:text-white transition-colors"
               >
-                Start journaling free
+                Log in
               </Link>
             </>
           )}
 
-          {user && (
+          {/* LOGGED IN VIEW */}
+          {isLoggedIn && (
             <>
               <Link
                 href="/dashboard"
-                className="text-slate-300 hover:text-white"
+                className={`text-sm font-medium transition-colors ${
+                  pathname === "/dashboard"
+                    ? "text-emerald-300"
+                    : "text-slate-300 hover:text-white"
+                }`}
               >
                 Dashboard
               </Link>
 
               <Link
                 href="/journal"
-                className="text-slate-300 hover:text-white"
+                className={`text-sm font-medium transition-colors ${
+                  pathname.startsWith("/journal")
+                    ? "text-emerald-300"
+                    : "text-slate-300 hover:text-white"
+                }`}
               >
                 Journal
               </Link>
 
+              <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-400">
+                Premium (coming soon)
+              </span>
+
+              {/* User badge */}
+              <span className="rounded-full bg-slate-900 px-3 py-1 text-sm font-medium text-slate-200">
+                {user?.email}
+              </span>
+
+              {/* Logout */}
               <Link
                 href="/logout"
-                className="rounded-full bg-slate-800 px-4 py-2 font-medium hover:bg-slate-700"
+                className="text-sm font-medium text-slate-300 hover:text-red-300 transition-colors"
               >
                 Log out
               </Link>
