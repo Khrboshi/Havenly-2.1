@@ -26,19 +26,13 @@ export default function LandingPage() {
             public feed.
           </p>
 
+          {/* Primary CTA only (no extra login link here) */}
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/magic-login"
               className="inline-flex items-center rounded-full bg-emerald-300 px-6 py-2.5 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/30 hover:bg-emerald-200"
             >
               Start journaling free
-            </Link>
-
-            <Link
-              href="/login"
-              className="text-sm font-medium text-slate-300 hover:text-emerald-200"
-            >
-              Log in
             </Link>
           </div>
 
@@ -53,18 +47,18 @@ export default function LandingPage() {
             data-install-hint
             className="mt-4 hidden max-w-sm rounded-xl border border-slate-800 bg-slate-900/70 p-3 text-xs text-emerald-200"
           >
-            Using your phone? Add Havenly to your home screen for faster nightly
+            Using your phone? Add Havenly to your home screen for faster
             check-ins — open it like an app, without browser tabs.
           </div>
         </div>
 
-        {/* Right side – live preview card (no external image required) */}
+        {/* Right side – preview card (no external image required) */}
         <div className="flex-1">
           <div className="relative mx-auto max-w-md rounded-3xl border border-slate-800 bg-slate-900/70 p-5 shadow-2xl shadow-emerald-500/10">
             <div className="mb-4 flex items-center justify-between text-[11px] text-slate-400">
               <span className="inline-flex items-center gap-1">
                 <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                Tonight&apos;s check-in
+                Today&apos;s check-in
               </span>
               <span>~3 min</span>
             </div>
@@ -169,25 +163,13 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* FINAL CTA BAND */}
+      {/* FINAL TEXT-ONLY BAND (no extra CTA button to avoid duplicates) */}
       <section className="border-t border-slate-900 bg-slate-950/90">
-        <div className="mx-auto flex max-w-5xl flex-col items-start gap-4 px-4 py-8 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-1">
-            <p className="text-sm font-semibold text-slate-50">
-              Ready to give your day a soft landing?
-            </p>
-            <p className="text-xs text-slate-400 md:text-[13px]">
-              Start with one short check-in tonight. You can always delete your
-              account later — no commitment and no streak to maintain.
-            </p>
-          </div>
-
-          <Link
-            href="/magic-login"
-            className="inline-flex items-center rounded-full bg-emerald-300 px-5 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-200"
-          >
-            Start journaling free
-          </Link>
+        <div className="mx-auto max-w-5xl px-4 py-8">
+          <p className="text-xs text-slate-400 md:text-[13px]">
+            Start whenever you&apos;re ready. Havenly will be here for your next
+            check-in — whether that&apos;s tonight, tomorrow, or next week.
+          </p>
         </div>
       </section>
 
