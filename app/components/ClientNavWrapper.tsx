@@ -9,10 +9,20 @@ export default function ClientNavWrapper() {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    async function load() {
+    const load = async () => {
       const { data: { session } } = await supabaseClient.auth.getSession();
       setUser(session?.user ?? null);
-    }
+
+      // Listen to auth changes and update navbar
+      const { data: listener } = supabaseClient.auth.onAuthStateChange(
+        (_event, session) => setUser(session?.user ?? null)
+      );
+
+      return () => {
+        listener.subscription.unsubscribe();
+      };
+    };
+
     load();
   }, []);
 
