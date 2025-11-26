@@ -61,7 +61,7 @@ export default function MagicLoginPage() {
             </form>
 
             {error && (
-              <p classname="text-red-400 text-sm mt-2">
+              <p className="text-red-400 text-sm mt-2">
                 {error}
               </p>
             )}
