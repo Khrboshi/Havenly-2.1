@@ -23,7 +23,9 @@ export default function JournalEntryPage() {
 
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [entry, setEntry] = useState<EntryData | null>(null);
+  const [generationStarted, setGenerationStarted] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -43,33 +45,50 @@ export default function JournalEntryPage() {
       setEntry(data ?? null);
       setLoading(false);
 
-      // Trigger reflection generation only once
-      if (data && !data.reflection && shouldGenerate) {
+      // Only generate ONCE
+      if (
+        data &&
+        !data.reflection &&
+        shouldGenerate &&
+        !generationStarted
+      ) {
+        setGenerationStarted(true);
         generateReflection(data.id, data.content, data.mood);
       }
     }
 
     load();
-  }, [entryId, router, shouldGenerate]);
+  }, [entryId, router, shouldGenerate, generationStarted]);
 
   async function generateReflection(id: string, content: string | null, mood: number | null) {
     if (!content) return;
 
     setGenerating(true);
+    setError(null);
 
-    const response = await fetch("/api/reflect", {
-      method: "POST",
-      body: JSON.stringify({ entryId: id, content, mood }),
-    });
+    try {
+      const response = await fetch("/api/reflect", {
+        method: "POST",
+        body: JSON.stringify({ entryId: id, content, mood }),
+      });
 
-    const result = await response.json();
+      const result = await response.json();
 
-    if (result.reflection) {
-      setEntry((prev) => prev ? { ...prev, reflection: result.reflection } : prev);
+      if (result.error) {
+        setError("The reflection couldn’t be generated. Please try again later.");
+        setGenerating(false);
+        return;
+      }
 
-      // remove ?reflect=1 from URL cleanly
-      const cleanUrl = `/journal/${id}`;
-      window.history.replaceState({}, "", cleanUrl);
+      if (result.reflection) {
+        setEntry((prev) => prev ? { ...prev, reflection: result.reflection } : prev);
+
+        // Clean URL
+        window.history.replaceState({}, "", `/journal/${id}`);
+      }
+    } catch (err) {
+      console.error("AI reflection error:", err);
+      setError("Something went wrong while generating your reflection.");
     }
 
     setGenerating(false);
@@ -124,14 +143,14 @@ export default function JournalEntryPage() {
         )}
       </section>
 
-      {/* Journal Content */}
+      {/* Journal content */}
       <section className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950/40 p-6">
         <p className="whitespace-pre-line text-slate-200 text-base leading-relaxed">
           {entry.content}
         </p>
       </section>
 
-      {/* Reflection section */}
+      {/* Reflection Loading Skeleton */}
       {generating && (
         <section className="space-y-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6 animate-pulse">
           <div className="h-3 w-40 bg-emerald-800/40 rounded" />
@@ -141,8 +160,16 @@ export default function JournalEntryPage() {
         </section>
       )}
 
+      {/* Error state */}
+      {error && !entry.reflection && (
+        <section className="rounded-2xl border border-red-500/40 bg-red-500/10 p-6 text-red-200 text-sm">
+          {error}
+        </section>
+      )}
+
+      {/* Final reflection */}
       {entry.reflection && !generating && (
-        <section className="space-y-3 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-6">
+        <section className="space-y-3 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-6 transition-opacity duration-500 opacity-100">
           <p className="text-xs font-medium text-emerald-300 uppercase tracking-[0.18em]">
             Gentle reflection
           </p>
@@ -176,10 +203,8 @@ export default function JournalEntryPage() {
         </Link>
       </section>
 
-      {/* Privacy note */}
       <p className="pt-8 text-xs text-slate-500">
-        Your reflections are personal and private — stored securely for your
-        eyes only.
+        Your reflections are personal and private — stored securely for your eyes only.
       </p>
     </div>
   );
