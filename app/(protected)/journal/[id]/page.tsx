@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabaseClient } from "@/lib/supabase/client";
 
@@ -16,16 +16,18 @@ interface EntryData {
 export default function JournalEntryPage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
+
   const entryId = params?.id as string;
+  const shouldGenerate = searchParams?.get("reflect") === "1";
 
   const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
   const [entry, setEntry] = useState<EntryData | null>(null);
 
   useEffect(() => {
     async function load() {
-      const {
-        data: { session },
-      } = await supabaseClient.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
 
       if (!session?.user) {
         router.replace("/login");
@@ -40,10 +42,38 @@ export default function JournalEntryPage() {
 
       setEntry(data ?? null);
       setLoading(false);
+
+      // Trigger reflection generation only once
+      if (data && !data.reflection && shouldGenerate) {
+        generateReflection(data.id, data.content, data.mood);
+      }
     }
 
     load();
-  }, [entryId, router]);
+  }, [entryId, router, shouldGenerate]);
+
+  async function generateReflection(id: string, content: string | null, mood: number | null) {
+    if (!content) return;
+
+    setGenerating(true);
+
+    const response = await fetch("/api/reflect", {
+      method: "POST",
+      body: JSON.stringify({ entryId: id, content, mood }),
+    });
+
+    const result = await response.json();
+
+    if (result.reflection) {
+      setEntry((prev) => prev ? { ...prev, reflection: result.reflection } : prev);
+
+      // remove ?reflect=1 from URL cleanly
+      const cleanUrl = `/journal/${id}`;
+      window.history.replaceState({}, "", cleanUrl);
+    }
+
+    setGenerating(false);
+  }
 
   if (loading) {
     return (
@@ -61,28 +91,20 @@ export default function JournalEntryPage() {
     );
   }
 
-  const formattedDate = new Date(entry.created_at).toLocaleDateString(
-    undefined,
-    {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    }
-  );
+  const formattedDate = new Date(entry.created_at).toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
 
   const moodEmoji =
-    entry.mood === 1
-      ? "😔"
-      : entry.mood === 2
-      ? "😕"
-      : entry.mood === 3
-      ? "😐"
-      : entry.mood === 4
-      ? "🙂"
-      : entry.mood === 5
-      ? "😊"
-      : "";
+    entry.mood === 1 ? "😔" :
+    entry.mood === 2 ? "😕" :
+    entry.mood === 3 ? "😐" :
+    entry.mood === 4 ? "🙂" :
+    entry.mood === 5 ? "😊" :
+    "";
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 space-y-12 text-slate-200">
@@ -109,8 +131,17 @@ export default function JournalEntryPage() {
         </p>
       </section>
 
-      {/* AI Reflection */}
-      {entry.reflection && (
+      {/* Reflection section */}
+      {generating && (
+        <section className="space-y-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6 animate-pulse">
+          <div className="h-3 w-40 bg-emerald-800/40 rounded" />
+          <div className="h-3 w-full bg-emerald-900/30 rounded" />
+          <div className="h-3 w-5/6 bg-emerald-900/30 rounded" />
+          <div className="h-3 w-3/4 bg-emerald-900/30 rounded" />
+        </section>
+      )}
+
+      {entry.reflection && !generating && (
         <section className="space-y-3 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-6">
           <p className="text-xs font-medium text-emerald-300 uppercase tracking-[0.18em]">
             Gentle reflection
