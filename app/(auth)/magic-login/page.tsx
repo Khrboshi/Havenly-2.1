@@ -2,54 +2,54 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
+import { createBrowserSupabaseClient } from "@/lib/supabase/browser-client";
 
 export default function MagicLoginPage() {
   const router = useRouter();
-  const params = useSearchParams();
-  const supabase = createBrowserSupabaseClient();
-  const code = params.get("code");
-  const [status, setStatus] = useState<"idle" | "processing" | "error">("idle");
+  const searchParams = useSearchParams();
+  const [status, setStatus] = useState<"idle" | "verifying" | "done" | "error">("idle");
 
   useEffect(() => {
-    if (code && status === "idle") {
-      setStatus("processing");
+    const code = searchParams.get("code");
 
-      supabase.auth.exchangeCodeForSession(code)
-        .then(({ error }) => {
-          if (error) {
-            console.error("Magic link error:", error);
-            setStatus("error");
-            return;
-          }
+    if (!code) return;
 
-          router.replace("/dashboard");
-        });
+    async function verifyMagicLink() {
+      setStatus("verifying");
+
+      const supabase = createBrowserSupabaseClient();
+      const { error } = await supabase.auth.verifyOtp({
+        type: "magiclink",
+        token_hash: code,
+      });
+
+      if (error) {
+        setStatus("error");
+        return;
+      }
+
+      setStatus("done");
+      router.push("/dashboard");
     }
-  }, [code, status, supabase, router]);
 
-  if (status === "processing") {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-white">
-        Logging you in securely…
-      </div>
-    );
-  }
-
-  if (status === "error") {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center text-white gap-3">
-        Login link expired or invalid.
-        <a href="/magic-login" className="underline">Request a new link</a>
-      </div>
-    );
-  }
+    verifyMagicLink();
+  }, [searchParams, router]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center text-white">
-      <h1>Get a secure login link</h1>
-      <p>Enter your email to receive a magic link.</p>
-      {/* Your existing email form stays here */}
+      {status === "verifying" && <p>Verifying your secure login link…</p>}
+      {status === "done" && <p>Redirecting to your journal…</p>}
+      {status === "error" && (
+        <p className="text-red-400">
+          Your link has expired or is invalid. Request a new login link.
+        </p>
+      )}
+      {status === "idle" && (
+        <>
+          <h1 className="text-2xl mb-4">Get a secure login link</h1>
+          <p>No password needed — check your inbox for your magic link.</p>
+        </>
+      )}
     </div>
   );
 }
