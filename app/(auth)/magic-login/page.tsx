@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createBrowserClient } from "@/lib/supabase/browser";
+import { createBrowserClient } from "@/lib/supabase/browser-client";
 
 export default function MagicLoginPage() {
   const router = useRouter();
@@ -33,7 +33,6 @@ export default function MagicLoginPage() {
     }
   }, [searchParams, supabase, router]);
 
-  // Send magic link email
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
