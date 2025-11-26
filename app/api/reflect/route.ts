@@ -2,20 +2,28 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
 
+// Initialize Groq server-side
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
 export async function POST(req: Request) {
   try {
-    const { content, mood, entryId, userId } = await req.json();
+    const { entryId, content, mood } = await req.json();
 
     if (!process.env.GROQ_API_KEY) {
       return NextResponse.json(
         { error: "Groq API key missing on server." },
         { status: 500 }
+      );
+    }
+
+    if (!entryId || typeof entryId !== "string") {
+      return NextResponse.json(
+        { error: "Missing or invalid entryId." },
+        { status: 400 }
       );
     }
 
@@ -26,6 +34,7 @@ export async function POST(req: Request) {
       );
     }
 
+    // Generate reflection using Groq AI
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
@@ -34,50 +43,63 @@ export async function POST(req: Request) {
           content: `
 You are Havenly — a warm, emotionally intelligent reflection companion.
 
-Your job:
-• Validate the user's feelings authentically  
-• Reflect back what is *unique* about what they wrote  
-• Gently explore what might be beneath the surface  
-• Offer 1 soft, actionable suggestion  
-• Stay supportive, human, grounded  
-• Never mention AI, therapy, diagnosis, or mental health treatment  
-• Write 3–5 short paragraphs (not too similar across entries)
-          `,
+Your role:
+• Validate the user's feelings authentically
+• Reflect back what's unique about their writing
+• Explore gently, without pressure
+• Offer one soft suggestion
+• Never sound repetitive
+• Never mention AI, therapy, mental health terminology, or diagnoses
+• Use 3–5 short paragraphs, varied tone and rhythm
+
+Mood guidance:
+• Use it subtly — not directly stated
+          `
         },
         {
           role: "user",
           content: `
-User mood: ${mood ?? "not provided"} / 5.
+User mood: ${mood ?? "not provided"} / 5
 
 User reflection:
 "${content}"
 
-Write a personalized response that acknowledges the user's unique words.
-          `,
-        },
+Write a deeply personalized response that acknowledges the user's unique emotional tone.
+          `
+        }
       ],
-      max_tokens: 320,
+      max_tokens: 380,
       temperature: 0.85,
       top_p: 0.9,
       presence_penalty: 0.8,
-      frequency_penalty: 0.3,
+      frequency_penalty: 0.35,
     });
 
-    const aiResponse =
+    const reflection =
       completion.choices?.[0]?.message?.content?.trim() ||
       "Thank you for opening up today — I’m here with you.";
 
-    // If entryId present → store reflection in DB
-    if (entryId && userId) {
-      const supabase = await createServerSupabase();
-      await supabase
-        .from("journal_entries")
-        .update({ reflection: aiResponse })
-        .eq("id", entryId)
-        .eq("user_id", userId);
+    // Store reflection back into Supabase
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!, // secure, server-only
+      { auth: { persistSession: false } }
+    );
+
+    const { error: updateError } = await supabase
+      .from("journal_entries")
+      .update({ reflection })
+      .eq("id", entryId);
+
+    if (updateError) {
+      console.error("DB update error:", updateError);
+      return NextResponse.json(
+        { error: "Failed to save reflection." },
+        { status: 500 }
+      );
     }
 
-    return NextResponse.json({ aiResponse });
+    return NextResponse.json({ reflection });
   } catch (error) {
     console.error("Groq reflection error:", error);
     return NextResponse.json(
