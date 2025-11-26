@@ -1,85 +1,42 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/browser-client";
 
-interface NavbarProps {
-  user: { email?: string | null } | null;
-}
+export default function Navbar() {
+  const supabase = createClient();
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
-export default function Navbar({ user }: NavbarProps) {
-  const pathname = usePathname();
-  const isLoggedIn = !!user;
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUserEmail(data.user?.email ?? null);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+      supabase.auth.getUser().then(({ data }) => {
+        setUserEmail(data.user?.email ?? null);
+      });
+    });
+
+    return () => listener.subscription.unsubscribe();
+  }, []);
 
   return (
-    <nav className="w-full border-b border-slate-900/40 bg-slate-950/60 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-        
-        {/* Logo / Home link */}
-        <Link
-          href="/"
-          className="text-lg font-semibold tracking-tight text-slate-100 hover:text-emerald-300 transition-colors"
-        >
-          Havenly
-        </Link>
+    <nav className="w-full flex justify-between px-6 py-4 text-sm">
+      <Link href="/">Havenly</Link>
 
-        {/* RIGHT SIDE CONTENT */}
-        <div className="flex items-center gap-6">
-
-          {/* LOGGED OUT VIEW — magic login only */}
-          {!isLoggedIn && (
-            <Link
-              href="/magic-login"
-              className="text-sm font-medium text-emerald-300 hover:text-white transition-colors"
-            >
-              Start journaling free
-            </Link>
-          )}
-
-          {/* LOGGED IN VIEW */}
-          {isLoggedIn && (
-            <>
-              <Link
-                href="/dashboard"
-                className={`text-sm font-medium transition-colors ${
-                  pathname === "/dashboard"
-                    ? "text-emerald-300"
-                    : "text-slate-300 hover:text-white"
-                }`}
-              >
-                Dashboard
-              </Link>
-
-              <Link
-                href="/journal"
-                className={`text-sm font-medium transition-colors ${
-                  pathname.startsWith("/journal")
-                    ? "text-emerald-300"
-                    : "text-slate-300 hover:text-white"
-                }`}
-              >
-                Journal
-              </Link>
-
-              <span className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-400">
-                Premium (coming soon)
-              </span>
-
-              {/* User badge */}
-              <span className="rounded-full bg-slate-900 px-3 py-1 text-sm font-medium text-slate-200">
-                {user?.email}
-              </span>
-
-              {/* Logout */}
-              <Link
-                href="/logout"
-                className="text-sm font-medium text-slate-300 hover:text-red-300 transition-colors"
-              >
-                Log out
-              </Link>
-            </>
-          )}
-        </div>
+      <div className="flex gap-4">
+        {userEmail ? (
+          <>
+            <Link href="/dashboard">Dashboard</Link>
+            <Link href="/journal">Journal</Link>
+            <span>{userEmail}</span>
+            <Link href="/logout">Log out</Link>
+          </>
+        ) : (
+          <Link href="/magic-login">Start journaling free</Link>
+        )}
       </div>
     </nav>
   );
