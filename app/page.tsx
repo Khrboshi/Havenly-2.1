@@ -7,6 +7,7 @@ export default function LandingPage() {
     <main className="min-h-screen bg-slate-950 text-slate-50">
       {/* HERO */}
       <section className="mx-auto flex max-w-6xl flex-col gap-12 px-4 pb-20 pt-28 md:flex-row md:items-center">
+
         {/* Left side – copy */}
         <div className="flex-1 space-y-6">
           <p className="text-xs font-semibold tracking-[0.22em] text-emerald-300">
@@ -26,15 +27,7 @@ export default function LandingPage() {
             public feed.
           </p>
 
-          {/* Primary CTA only (no extra login link here) */}
-          <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/magic-login"
-              className="inline-flex items-center rounded-full bg-emerald-300 px-6 py-2.5 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/30 hover:bg-emerald-200"
-            >
-              Start journaling free
-            </Link>
-          </div>
+          {/* No CTA here — navbar contains the only button */}
 
           <ul className="space-y-1 pt-3 text-xs text-slate-400 md:text-[13px]">
             <li>• Free forever for daily journaling.</li>
@@ -47,7 +40,7 @@ export default function LandingPage() {
             email so you can just write and go.
           </p>
 
-          {/* Mobile “Add to phone” hint – hidden by default, revealed via script */}
+          {/* Mobile install hint */}
           <div
             data-install-hint
             className="mt-4 hidden max-w-sm rounded-xl border border-slate-800 bg-slate-900/70 p-3 text-xs text-emerald-200"
@@ -57,7 +50,7 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Right side – preview card (no external image required) */}
+        {/* Right side – preview card */}
         <div className="flex-1">
           <div className="relative mx-auto max-w-md rounded-3xl border border-slate-800 bg-slate-900/70 p-5 shadow-2xl shadow-emerald-500/10">
             <div className="mb-4 flex items-center justify-between text-[11px] text-slate-400">
@@ -168,7 +161,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* FINAL TEXT-ONLY BAND (no extra CTA button to avoid duplicates) */}
+      {/* FINAL MESSAGE */}
       <section className="border-t border-slate-900 bg-slate-950/90">
         <div className="mx-auto max-w-5xl px-4 py-8">
           <p className="text-xs text-slate-400 md:text-[13px]">
@@ -178,7 +171,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Mobile detection script for install hint */}
+      {/* Mobile detection script */}
       <script
         dangerouslySetInnerHTML={{
           __html: `
@@ -194,9 +187,7 @@ export default function LandingPage() {
                   var el = document.querySelector("[data-install-hint]");
                   if (el) el.classList.remove("hidden");
                 }
-              } catch (e) {
-                // fail silently
-              }
+              } catch (e) {}
             })();
           `,
         }}
