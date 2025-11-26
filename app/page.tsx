@@ -42,6 +42,11 @@ export default function LandingPage() {
             <li>• Your entries stay private — no ads, no social profile.</li>
           </ul>
 
+          <p className="pt-1 text-[11px] text-slate-500">
+            No password to remember — we send a one-time magic link to your
+            email so you can just write and go.
+          </p>
+
           {/* Mobile “Add to phone” hint – hidden by default, revealed via script */}
           <div
             data-install-hint
