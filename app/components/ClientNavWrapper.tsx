@@ -1,25 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Navbar from "./Navbar";
 import { supabaseClient } from "@/lib/supabase/client";
+import Navbar from "./Navbar";
 import type { User } from "@supabase/supabase-js";
 
-export default function ClientNavWrapper({
-  initialUser,
-}: {
-  initialUser: User | null;
-}) {
-  const [user, setUser] = useState<User | null>(initialUser);
+export default function ClientNavWrapper() {
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabaseClient.auth.onAuthStateChange((_event, session) => {
+    async function load() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
       setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
+    }
+    load();
   }, []);
 
   return <Navbar user={user} />;
