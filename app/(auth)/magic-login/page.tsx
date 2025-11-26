@@ -2,17 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createBrowserSupabaseClient } from "@/lib/supabase/browser";
 
 export default function MagicLoginPage() {
   const router = useRouter();
   const params = useSearchParams();
-  const supabase = createClient();
+  const supabase = createBrowserSupabaseClient();
   const code = params.get("code");
   const [status, setStatus] = useState<"idle" | "processing" | "error">("idle");
 
   useEffect(() => {
-    // If URL has a code param, complete the login automatically
     if (code && status === "idle") {
       setStatus("processing");
 
@@ -29,7 +28,6 @@ export default function MagicLoginPage() {
     }
   }, [code, status, supabase, router]);
 
-  // UI States
   if (status === "processing") {
     return (
       <div className="min-h-screen flex items-center justify-center text-white">
@@ -47,12 +45,11 @@ export default function MagicLoginPage() {
     );
   }
 
-  // Default (no code in URL)
   return (
     <div className="min-h-screen flex flex-col items-center justify-center text-white">
       <h1>Get a secure login link</h1>
       <p>Enter your email to receive a magic link.</p>
-      {/* Your existing form stays here */}
+      {/* Your existing email form stays here */}
     </div>
   );
 }
