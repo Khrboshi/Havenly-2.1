@@ -1,99 +1,106 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase/browser-client";
 
 export default function MagicLoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [status, setStatus] = useState<"form" | "sent" | "processing" | "error">("form");
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"form" | "sent" | "verifying">("form");
+  const [error, setError] = useState("");
 
-  const supabase = createBrowserClient();
-
-  // Handle magic link callback
+  // Handle magic link callback with ?code=
   useEffect(() => {
     const code = searchParams.get("code");
 
     if (code) {
-      setStatus("verifying");
+      const processMagicLink = async () => {
+        setStatus("processing");
+        const supabase = createBrowserClient();
 
-      supabase.auth
-        .exchangeCodeForSession(code)
-        .then(({ data, error }) => {
-          if (error) {
-            console.error("Magic link verification error:", error);
-            setStatus("form");
-            return;
-          }
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
 
-          router.replace("/dashboard");
-        });
+        if (error) {
+          console.error("Magic link error:", error);
+          setStatus("error");
+          return;
+        }
+
+        // Redirect to dashboard once authenticated
+        router.push("/dashboard");
+      };
+
+      processMagicLink();
     }
-  }, [searchParams, supabase, router]);
+  }, [searchParams, router]);
 
-  const handleSend = async (e: React.FormEvent) => {
+  const sendMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    setError("");
 
-    const { error } = await supabase.auth.signInWithOtp({ email });
+    const supabase = createBrowserClient();
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/magic-login`,
+      },
+    });
 
     if (error) {
-      console.error("Magic link send error:", error);
-      return;
+      setError(error.message);
+    } else {
+      setStatus("sent");
     }
-
-    setStatus("sent");
   };
 
+  // STATE RENDERING ------------------------------------------------
+
+  if (status === "processing") {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white">
+        Authenticating…
+      </div>
+    );
+  }
+
+  if (status === "sent") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center text-center text-white">
+        <p>A login link has been sent to {email}. Check your inbox.</p>
+        <a href="/" className="mt-4 underline">Return to home</a>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 text-center text-white">
-      <h1 className="text-2xl font-semibold mb-4">Get a secure login link</h1>
+    <div className="min-h-screen flex flex-col items-center justify-center text-white">
+      <h1 className="text-xl mb-6">Get a secure login link</h1>
 
-      {status === "form" && (
-        <>
-          <p className="text-gray-300 mb-6">
-            No password needed — we'll email you a one-time link to open your journal.
-          </p>
+      <form onSubmit={sendMagicLink} className="flex flex-col gap-4 w-80">
+        <input
+          type="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="rounded px-3 py-2 bg-gray-800 border border-gray-600"
+          required
+        />
 
-          <form onSubmit={handleSend} className="w-full max-w-sm space-y-4">
-            <input
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-md bg-gray-800 border border-gray-600 text-white"
-              required
-            />
-            <button
-              type="submit"
-              className="w-full py-3 rounded-md bg-emerald-500 hover:bg-emerald-600 font-medium"
-            >
-              Send magic link
-            </button>
-          </form>
-        </>
-      )}
+        <button
+          type="submit"
+          className="bg-emerald-500 py-2 rounded font-medium"
+        >
+          Send magic link
+        </button>
 
-      {status === "sent" && (
-        <p className="text-emerald-400 mt-4 max-w-md">
-          A login link has been sent to {email}. Please check your inbox and open Havenly from there.
-        </p>
-      )}
+        {error && (
+          <p className="text-red-400 text-sm text-center">{error}</p>
+        )}
+      </form>
 
-      {status === "verifying" && (
-        <p className="text-blue-400 mt-4">
-          Verifying your secure login link… please wait…
-        </p>
-      )}
-
-      <button
-        className="mt-8 text-emerald-400 underline"
-        onClick={() => router.push("/")}
-      >
-        Return to home
-      </button>
+      <a href="/" className="mt-6 underline">Return to home</a>
     </div>
   );
 }
