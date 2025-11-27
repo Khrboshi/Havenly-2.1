@@ -5,6 +5,15 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabaseClient } from "@/lib/supabase/client";
 
+// -------------------------------------------------------
+// TYPE: Allows comingSoon to be optional on any nav link
+// -------------------------------------------------------
+type NavLink = {
+  href: string;
+  label: string;
+  comingSoon?: boolean;
+};
+
 export default function Navbar() {
   const pathname = usePathname();
   const supabase = supabaseClient;
@@ -27,14 +36,16 @@ export default function Navbar() {
   const isPremiumUser = role === "premium";
   const isLoggedIn = !!user;
 
-  /* NAVIGATION CONFIG */
-  const PUBLIC_LINKS = [
+  // -------------------------------------------------------
+  // NAVIGATION CONFIG (uses NavLink type)
+  // -------------------------------------------------------
+  const PUBLIC_LINKS: NavLink[] = [
     { href: "/", label: "Home" },
     { href: "/blog", label: "Blog" },
     { href: "/about", label: "About" },
   ];
 
-  const FREE_LINKS = [
+  const FREE_LINKS: NavLink[] = [
     { href: "/dashboard", label: "Dashboard" },
     { href: "/journal", label: "Journal" },
     { href: "/tools", label: "Tools" },
@@ -42,7 +53,7 @@ export default function Navbar() {
     { href: "/settings", label: "Settings (Coming Soon)", comingSoon: true },
   ];
 
-  const PREMIUM_LINKS = [
+  const PREMIUM_LINKS: NavLink[] = [
     { href: "/dashboard", label: "Dashboard" },
     { href: "/journal", label: "Journal" },
     { href: "/tools", label: "Tools+" },
@@ -50,7 +61,10 @@ export default function Navbar() {
     { href: "/settings", label: "Settings (Coming Soon)", comingSoon: true },
   ];
 
-  function lockedLink(link) {
+  // -------------------------------------------------------
+  // RENDER HELPERS
+  // -------------------------------------------------------
+  function lockedLink(link: NavLink) {
     return (
       <Link
         key={link.href}
@@ -62,7 +76,7 @@ export default function Navbar() {
     );
   }
 
-  function activeLink(link) {
+  function activeLink(link: NavLink) {
     const isActive = pathname === link.href;
     return (
       <Link
@@ -82,12 +96,15 @@ export default function Navbar() {
     window.location.href = "/magic-login?logged_out=1";
   }
 
-  const LINKS_TO_RENDER = isLoggedIn
+  const LINKS_TO_RENDER: NavLink[] = isLoggedIn
     ? isPremiumUser
       ? PREMIUM_LINKS
       : FREE_LINKS
     : PUBLIC_LINKS;
 
+  // -------------------------------------------------------
+  // RENDER NAVBAR
+  // -------------------------------------------------------
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
       <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
@@ -99,11 +116,8 @@ export default function Navbar() {
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-6">
-
           {LINKS_TO_RENDER.map((link) =>
-            link.comingSoon
-              ? lockedLink(link)
-              : activeLink(link)
+            link.comingSoon ? lockedLink(link) : activeLink(link)
           )}
 
           {/* UPGRADE */}
@@ -149,9 +163,7 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden px-6 pb-6 space-y-4 bg-slate-950 border-t border-slate-800">
           {LINKS_TO_RENDER.map((link) =>
-            link.comingSoon
-              ? lockedLink(link)
-              : activeLink(link)
+            link.comingSoon ? lockedLink(link) : activeLink(link)
           )}
 
           {isLoggedIn && role === "free" && (
