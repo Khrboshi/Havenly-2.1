@@ -1,12 +1,19 @@
 // app/blog/page.tsx
 
+import { posts } from "@/lib/posts";
+import BlogCard from "@/app/components/blog/BlogCard";
+
 export const metadata = {
-  title: "Havenly Journal — Blog",
+  title: "Havenly Journal — Articles",
   description:
-    "Articles and reflections on gentle journaling, emotional health, and calm use of AI.",
+    "Short, gentle articles about journaling, emotional clarity, and calm use of AI.",
 };
 
-export default function BlogPage() {
+export default function BlogIndexPage() {
+  const sorted = [...posts].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
+
   return (
     <main className="max-w-4xl mx-auto px-4 py-16 space-y-10">
       {/* Hero */}
@@ -20,37 +27,33 @@ export default function BlogPage() {
           technology.
         </h1>
         <p className="text-slate-300 text-lg max-w-2xl">
-          The Havenly blog will share short, practical pieces on reflection
-          habits, emotional awareness, and using AI in a way that feels
-          supportive — not overwhelming.
+          Short pieces that explore why small, honest check-ins matter — and
+          how AI can support reflection without overwhelming you.
         </p>
       </section>
 
-      {/* Coming soon card */}
-      <section className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-6 space-y-3">
-        <h2 className="text-xl font-semibold text-slate-50">
-          Coming soon — first articles are on the way
-        </h2>
-        <p className="text-slate-300">
-          We’re currently focused on making the core journaling experience feel
-          as smooth and reliable as possible. Once that foundation is fully
-          settled, this space will host:
-        </p>
-        <ul className="list-disc pl-5 space-y-2 text-slate-300">
-          <li>Simple prompts to make writing feel less intimidating.</li>
-          <li>Ideas for checking in with yourself in busy seasons.</li>
-          <li>
-            Behind-the-scenes notes on how Havenly uses AI in a careful, human-
-            first way.
-          </li>
-        </ul>
-        <p className="text-slate-400 text-sm">
-          For now, the best way to explore Havenly is simply to{" "}
-          <span className="text-emerald-300">
-            start a reflection from your dashboard
-          </span>{" "}
-          and see how it feels.
-        </p>
+      {/* Articles list */}
+      <section className="space-y-4">
+        {sorted.length === 0 && (
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 text-slate-300 text-sm">
+            No articles yet. New pieces will appear here as they are published.
+          </div>
+        )}
+
+        {sorted.length > 0 && (
+          <div className="grid gap-4">
+            {sorted.map((post) => (
+              <BlogCard
+                key={post.slug}
+                slug={post.slug}
+                title={post.title}
+                description={post.description}
+                date={post.date}
+                readingTime={post.readingTime}
+              />
+            ))}
+          </div>
+        )}
       </section>
     </main>
   );
