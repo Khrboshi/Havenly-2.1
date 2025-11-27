@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { createBrowserSupabaseClient } from "@/lib/supabase/client";
+import { supabaseClient } from "@/lib/supabase/client";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const supabase = createBrowserSupabaseClient();
+  const supabase = supabaseClient;
 
   const [user, setUser] = useState(null);
   const [role, setRole] = useState("free");
@@ -22,12 +22,12 @@ export default function Navbar() {
       setRole(sessionUser?.user_metadata?.role ?? "free");
     }
     loadSession();
-  }, []);
+  }, [supabase]);
 
   const isPremiumUser = role === "premium";
   const isLoggedIn = !!user;
 
-  /* NAV LINKS */
+  /* NAVIGATION CONFIG */
   const PUBLIC_LINKS = [
     { href: "/", label: "Home" },
     { href: "/blog", label: "Blog" },
@@ -106,7 +106,7 @@ export default function Navbar() {
               : activeLink(link)
           )}
 
-          {/* UPGRADE BUTTON */}
+          {/* UPGRADE */}
           {isLoggedIn && role === "free" && (
             <Link
               href="/premium"
@@ -116,7 +116,7 @@ export default function Navbar() {
             </Link>
           )}
 
-          {/* AUTH */}
+          {/* AUTH BUTTONS */}
           {!isLoggedIn && (
             <Link
               href="/magic-login"
