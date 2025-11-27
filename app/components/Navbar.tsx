@@ -5,229 +5,202 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/browser-client";
 
-type AuthState = "loading" | "authenticated" | "unauthenticated";
+// ---- USER TYPES ----
+type UserTier = "guest" | "free" | "paid";
 
-type NavLink = {
-  href: string;
-  label: string;
-  protected?: boolean;
-};
-
-const NAV_LINKS: NavLink[] = [
+// ---- PUBLIC NAV LINKS ----
+const PUBLIC_LINKS = [
   { href: "/", label: "Home" },
-  { href: "/dashboard", label: "Dashboard", protected: true },
-  { href: "/journal", label: "Journal", protected: true },
-  { href: "/tools", label: "Tools", protected: true },
   { href: "/blog", label: "Blog" },
   { href: "/about", label: "About" },
-  { href: "/settings", label: "Settings", protected: true },
+];
+
+// ---- PRIVATE FREE LINKS ----
+const FREE_LINKS = [
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/journal", label: "Journal" },
+  { href: "/tools", label: "Tools" },
+];
+
+// ---- PRIVATE PAID LINKS ----
+const PAID_LINKS = [
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/journal", label: "Journal" },
+  { href: "/tools", label: "Tools+" },
+  { href: "/insights", label: "Insights" },
+  { href: "/settings", label: "Settings" },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
   const supabase = createClient();
-  const [authState, setAuthState] = useState<AuthState>("loading");
+
+  const [tier, setTier] = useState<UserTier>("guest");
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Determine tier: guest → free → paid
   useEffect(() => {
-    let isMounted = true;
+    let active = true;
 
-    async function loadUser() {
+    async function init() {
       const { data } = await supabase.auth.getUser();
-      if (!isMounted) return;
+      if (!active) return;
 
-      if (data.user) {
-        setUserEmail(data.user.email ?? null);
-        setAuthState("authenticated");
-      } else {
+      if (!data.user) {
+        setTier("guest");
         setUserEmail(null);
-        setAuthState("unauthenticated");
+        return;
+      }
+
+      setUserEmail(data.user.email ?? null);
+
+      // Very simple role detection (extend later with Stripe)
+      const { data: sub } = await supabase
+        .from("user_profiles")
+        .select("tier")
+        .eq("id", data.user.id)
+        .maybeSingle();
+
+      if (sub?.tier === "paid") {
+        setTier("paid");
+      } else {
+        setTier("free");
       }
     }
 
-    loadUser();
+    init();
 
-    const {
-      data: subscription,
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!isMounted) return;
-
-      if (session?.user) {
-        setUserEmail(session.user.email ?? null);
-        setAuthState("authenticated");
-      } else {
-        setUserEmail(null);
-        setAuthState("unauthenticated");
-      }
-    });
-
+    const { data: listener } = supabase.auth.onAuthStateChange(() => init());
     return () => {
-      isMounted = false;
-      subscription?.subscription.unsubscribe();
+      active = false;
+      listener?.subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, []);
 
-  // Close mobile menu on route change
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
+  // Active link logic
+  const isActive = (href: string) =>
+    href === "/"
+      ? pathname === "/"
+      : pathname.startsWith(href);
 
-  const filteredLinks = NAV_LINKS.filter((link) =>
-    link.protected ? authState === "authenticated" : true
-  );
+  const linkStyle = (active: boolean) =>
+    `text-sm transition font-medium ${
+      active ? "text-emerald-300" : "text-slate-300 hover:text-emerald-300"
+    }`;
 
-  const linkBaseClass =
-    "text-xs md:text-sm font-medium transition-colors hover:text-emerald-300";
+  // Determine visible nav links
+  let navLinks = PUBLIC_LINKS;
+  if (tier === "free") navLinks = FREE_LINKS;
+  if (tier === "paid") navLinks = PAID_LINKS;
+
+  // Auth buttons
+  const renderAuth = () => {
+    if (tier === "guest") {
+      return (
+        <>
+          <Link href="/magic-login" className="text-sm text-slate-300 hover:text-emerald-300">Sign in</Link>
+          <Link href="/magic-login"
+            className="rounded-full bg-emerald-400 px-4 py-1.5 text-sm font-semibold text-slate-900 hover:bg-emerald-300">
+            Start journaling free
+          </Link>
+        </>
+      );
+    }
+
+    if (tier === "free") {
+      return (
+        <>
+          <Link href="/upgrade"
+            className="rounded-full bg-emerald-400 px-4 py-1.5 text-sm font-semibold text-slate-900 hover:bg-emerald-300">
+            Upgrade
+          </Link>
+
+          <span className="text-xs text-slate-400 max-w-[100px] truncate">{userEmail}</span>
+          <Link href="/logout"
+            className="rounded-full border border-slate-700 px-3 py-1.5 text-xs text-slate-200 hover:border-emerald-400">
+            Log out
+          </Link>
+        </>
+      );
+    }
+
+    if (tier === "paid") {
+      return (
+        <>
+          <span className="text-xs text-slate-400 max-w-[100px] truncate">{userEmail}</span>
+          <Link href="/settings"
+            className="rounded-full bg-slate-800 px-3 py-1.5 text-xs hover:bg-slate-700">
+            Manage
+          </Link>
+          <Link href="/logout"
+            className="rounded-full border border-slate-700 px-3 py-1.5 text-xs text-slate-200 hover:border-emerald-400">
+            Log out
+          </Link>
+        </>
+      );
+    }
+  };
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-slate-800/60 bg-slate-950/80 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:py-4">
-        {/* Left: logo / brand */}
-        <Link href="/" className="flex items-center gap-2">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-2xl border border-emerald-400/40 bg-emerald-400/10 text-xs font-semibold text-emerald-300">
+    <nav className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur border-b border-slate-800">
+      <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+        
+        {/* BRAND */}
+        <Link href="/" className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-xl bg-emerald-400/10 border border-emerald-400/30 flex items-center justify-center text-emerald-300 font-bold">
             H
-          </span>
-          <div className="flex flex-col leading-tight">
-            <span className="text-sm font-semibold tracking-tight md:text-base">
-              Havenly 2.1
-            </span>
-            <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400">
-              Calm space to reflect
-            </span>
+          </div>
+          <div className="leading-tight">
+            <div className="text-base font-semibold">Havenly 2.1</div>
+            <div className="text-[10px] text-slate-400 tracking-wider">Reflect. Understand. Grow.</div>
           </div>
         </Link>
 
-        {/* Desktop nav */}
-        <div className="hidden items-center gap-6 md:flex">
-          {filteredLinks.map((link) => {
-            const isActive =
-              link.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(link.href);
-
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`${linkBaseClass} ${
-                  isActive ? "text-emerald-300" : "text-slate-300"
-                }`}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
+        {/* DESKTOP NAV */}
+        <div className="hidden md:flex items-center gap-6">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={linkStyle(isActive(link.href))}
+            >
+              {link.label}
+            </Link>
+          ))}
         </div>
 
-        {/* Right side: auth / CTA */}
-        <div className="hidden items-center gap-3 md:flex">
-          {authState === "loading" && (
-            <span className="h-2 w-2 animate-pulse rounded-full bg-slate-400" />
-          )}
-
-          {authState === "authenticated" && (
-            <>
-              <span className="max-w-[180px] truncate text-xs text-slate-300">
-                {userEmail}
-              </span>
-              <Link
-                href="/logout"
-                className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs font-medium text-slate-100 transition-colors hover:border-emerald-400/60 hover:bg-slate-900/80 hover:text-emerald-200"
-              >
-                Log out
-              </Link>
-            </>
-          )}
-
-          {authState === "unauthenticated" && (
-            <>
-              <Link
-                href="/magic-login"
-                className="text-xs font-medium text-slate-300 hover:text-emerald-300"
-              >
-                Sign in
-              </Link>
-              <Link
-                href="/magic-login"
-                className="rounded-full bg-emerald-400 px-4 py-1.5 text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-emerald-300"
-              >
-                Start journaling free
-              </Link>
-            </>
-          )}
+        {/* RIGHT AUTH AREA */}
+        <div className="hidden md:flex items-center gap-4">
+          {renderAuth()}
         </div>
 
-        {/* Mobile menu button */}
+        {/* MOBILE BUTTON */}
         <button
-          type="button"
-          className="inline-flex items-center justify-center rounded-full border border-slate-700 p-2 text-slate-200 md:hidden"
-          onClick={() => setMenuOpen((open) => !open)}
-          aria-label="Toggle navigation"
+          className="md:hidden p-2 rounded-full border border-slate-700 text-slate-200"
+          onClick={() => setMobileOpen((x) => !x)}
         >
-          <span className="sr-only">Toggle navigation</span>
+          <span className="sr-only">Toggle</span>
           <div className="space-y-1.5">
-            <span className="block h-0.5 w-4 rounded-full bg-current" />
-            <span className="block h-0.5 w-4 rounded-full bg-current" />
-            <span className="block h-0.5 w-4 rounded-full bg-current" />
+            <span className="block h-0.5 w-4 bg-current"></span>
+            <span className="block h-0.5 w-4 bg-current"></span>
+            <span className="block h-0.5 w-4 bg-current"></span>
           </div>
         </button>
       </div>
 
-      {/* Mobile nav panel */}
-      {menuOpen && (
-        <div className="border-t border-slate-800/60 bg-slate-950/95 px-4 pb-4 pt-2 md:hidden">
+      {/* MOBILE NAV */}
+      {mobileOpen && (
+        <div className="md:hidden px-4 pb-3 border-t border-slate-800 bg-slate-950">
           <div className="flex flex-col gap-3">
-            {filteredLinks.map((link) => {
-              const isActive =
-                link.href === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(link.href);
+            {navLinks.map((link) => (
+              <Link key={link.href} href={link.href} className={linkStyle(isActive(link.href))}>
+                {link.label}
+              </Link>
+            ))}
 
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`${linkBaseClass} ${
-                    isActive ? "text-emerald-300" : "text-slate-300"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-
-            <div className="mt-2 flex flex-wrap items-center gap-3">
-              {authState === "authenticated" && (
-                <>
-                  <span className="w-full truncate text-xs text-slate-300">
-                    {userEmail}
-                  </span>
-                  <Link
-                    href="/logout"
-                    className="w-full rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-center text-xs font-medium text-slate-100 transition-colors hover:border-emerald-400/60 hover:bg-slate-900/80 hover:text-emerald-200"
-                  >
-                    Log out
-                  </Link>
-                </>
-              )}
-
-              {authState === "unauthenticated" && (
-                <>
-                  <Link
-                    href="/magic-login"
-                    className="w-full rounded-full bg-emerald-400 px-4 py-2 text-center text-xs font-semibold text-slate-950 shadow-sm transition-colors hover:bg-emerald-300"
-                  >
-                    Start journaling free
-                  </Link>
-                  <Link
-                    href="/magic-login"
-                    className="w-full text-center text-xs font-medium text-slate-300 hover:text-emerald-300"
-                  >
-                    Sign in
-                  </Link>
-                </>
-              )}
+            <div className="mt-3 flex flex-col gap-3">
+              {renderAuth()}
             </div>
           </div>
         </div>
