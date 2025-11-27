@@ -38,3 +38,19 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico|public).*)",
   ],
 };
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { updateSession } from "@/lib/supabase/middleware";
+
+export async function middleware(request: NextRequest) {
+  const response = await updateSession(request);
+
+  // Placeholder until Stripe is added
+  response.headers.set("x-user-plan", "free");
+
+  return response;
+}
+
+export const config = {
+  matcher: ["/dashboard/:path*", "/journal/:path*", "/tools/:path*"],
+};
