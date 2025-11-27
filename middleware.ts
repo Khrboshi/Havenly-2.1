@@ -2,7 +2,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
 // Protected routes that require login
-const PROTECTED_PATHS = ["/dashboard", "/journal", "/settings", "/tools"];
+const PROTECTED_PATHS = [
+  "/dashboard",
+  "/journal",
+  "/settings",
+  "/tools",
+  "/insights",
+];
 
 export async function middleware(request: NextRequest) {
   // Sync Supabase auth session and cookies
@@ -24,15 +30,14 @@ export async function middleware(request: NextRequest) {
   }
 
   // 2. USER PLAN (Placeholder until Stripe is integrated)
-  //    This ensures the app behaves consistently for now.
-  response.headers.set("x-user-plan", "free"); // always free for now
+  response.headers.set("x-user-plan", "free");
 
   return response;
 }
 
 export const config = {
   matcher: [
-    // Apply middleware to everything EXCEPT static files:
+    // Apply middleware to everything EXCEPT static files/public assets
     "/((?!_next/static|_next/image|favicon.ico|public).*)",
   ],
 };
