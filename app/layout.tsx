@@ -1,49 +1,47 @@
 // app/layout.tsx
-import "./globals.css";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-
-import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
-import { AddToHomeScreenPrompt } from "@/components/AddToHomeScreenPrompt";
-import { SiteHeader } from "@/components/site-header";
-
-const inter = Inter({ subsets: ["latin"] });
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Havenly 2.1 – A calm space to understand your day",
+  title: "Havenly 2.1 — A calm space to understand your day",
   description:
-    "Havenly is a calm, private micro-journal with gentle AI reflections that help you slow down, notice how you’re really doing, and feel a little lighter — without pressure, streaks, or judgment.",
-  applicationName: "Havenly 2.1",
+    "Havenly is a gentle private micro-journal with AI reflections that help you slow down, notice how you're doing, and feel a little lighter — without pressure or judgment.",
   manifest: "/manifest.json",
   themeColor: "#0f172a",
-  icons: {
-    icon: "/icon.svg",
-    shortcut: "/icon.svg",
-    apple: "/icon.svg"
-  }
+  appleWebApp: {
+    capable: true,
+    title: "Havenly 2.1",
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export default function RootLayout({
-  children
+  children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body
-        className={`${inter.className} bg-slate-950 text-slate-50 antialiased`}
-      >
-        {/* Register service worker for PWA behavior */}
-        <ServiceWorkerRegister />
+    <html lang="en" className="bg-slate-950">
+      <body className="min-h-screen antialiased">
+        {/* 
+          IMPORTANT:
+          The header/navbar is NOT imported here anymore.
+          It is rendered inside the page components just like in your repo.
+        */}
+        {children}
 
-        {/* Global add-to-home-screen hint for mobile users */}
-        <AddToHomeScreenPrompt />
-
-        {/* Main site header / navigation */}
-        <SiteHeader />
-
-        {/* Page content */}
-        <main className="min-h-screen">{children}</main>
+        {/* Mobile install hint */}
+        <div className="fixed bottom-4 inset-x-0 px-4 md:hidden z-50">
+          <div className="bg-slate-800/90 backdrop-blur-sm border border-slate-700 rounded-xl p-3 text-center shadow-lg">
+            <p className="text-slate-200 text-sm leading-relaxed">
+              Add Havenly 2.1 to your home screen:
+              <br />
+              <span className="text-emerald-300 font-medium">
+                On iPhone: tap Share → Add to Home Screen
+              </span>
+            </p>
+          </div>
+        </div>
       </body>
     </html>
   );
