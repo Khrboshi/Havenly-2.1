@@ -1,50 +1,38 @@
-import { redirect } from "next/navigation";
-import { createServerSupabase } from "@/lib/supabase/server";
+export const dynamic = "force-dynamic";
 
-export default async function SettingsPage() {
-  const supabase = createServerSupabase();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session?.user) {
-    redirect("/magic-login?from=settings");
-  }
-
-  const user = session.user;
-  const email = user.email;
-  const role = user.user_metadata?.role ?? "free";
-  const isPremium = role === "premium";
-
+export default function SettingsPage() {
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
-      <section className="max-w-3xl mx-auto px-4 pt-28 pb-20">
+    <div className="min-h-screen px-6 md:px-10 py-16 max-w-4xl mx-auto text-white">
+      <h1 className="text-4xl font-bold mb-4">Settings</h1>
+      <p className="text-gray-400 mb-10">
+        Settings are not yet available. The first version will include account
+        email, cloud backup, and deletion options.
+      </p>
 
-        <h1 className="text-3xl md:text-4xl font-bold mb-6">
-          Settings
-        </h1>
-
-        <div className="p-6 border border-slate-800 rounded-xl bg-slate-900/40">
-          <p className="text-slate-300 mb-3">
-            <span className="text-slate-400">Email:</span> {email}
-          </p>
-
-          <p className="text-slate-300">
-            <span className="text-slate-400">Plan:</span>{" "}
-            {isPremium ? (
-              <span className="text-emerald-300 font-medium">Havenly Plus</span>
-            ) : (
-              <span className="text-slate-400">Free</span>
-            )}
+      <div className="space-y-6">
+        <div className="p-6 rounded-xl border border-gray-700 bg-[#0F1A24]">
+          <h2 className="text-xl font-semibold">Account email</h2>
+          <p className="text-gray-400 text-sm mt-2">
+            Changing your email will be available in a future update.
           </p>
         </div>
 
-        {!isPremium && (
-          <div className="mt-10 p-4 border border-emerald-500 rounded-xl bg-emerald-500/10 text-emerald-300 text-sm">
-            Premium settings will be available once Havenly Plus launches.
-          </div>
-        )}
-      </section>
-    </main>
+        <div className="p-6 rounded-xl border border-gray-700 bg-[#0F1A24]">
+          <h2 className="text-xl font-semibold">Cloud backup</h2>
+          <p className="text-gray-400 text-sm mt-2">
+            Encrypted cloud storage for your journal entries is planned for
+            Havenly Premium.
+          </p>
+        </div>
+
+        <div className="p-6 rounded-xl border border-gray-700 bg-[#0F1A24]">
+          <h2 className="text-xl font-semibold text-red-400">Delete account</h2>
+          <p className="text-gray-400 text-sm mt-2">
+            Account deletion will be enabled once full account management is
+            implemented.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
