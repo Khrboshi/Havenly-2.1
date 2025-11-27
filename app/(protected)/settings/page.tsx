@@ -1,132 +1,50 @@
-"use client";
+import { redirect } from "next/navigation";
+import { createServerSupabase } from "@/lib/supabase/server";
 
-import { FormEvent, useEffect, useState } from "react";
-import { supabaseClient } from "@/lib/supabase/client";
-import { useRouter } from "next/navigation";
+export default async function SettingsPage() {
+  const supabase = createServerSupabase();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-export default function SettingsPage() {
-  const router = useRouter();
-  const [displayName, setDisplayName] = useState("");
-  const [focus, setFocus] = useState("Stress relief");
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function load() {
-      const {
-        data: { user },
-      } = await supabaseClient.auth.getUser();
-
-      if (!user) {
-        router.replace("/login");
-        return;
-      }
-
-      const { data } = await supabaseClient
-        .from("profiles")
-        .select("display_name, main_focus")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (!isMounted) return;
-
-      setDisplayName(data?.display_name ?? "");
-      setFocus(data?.main_focus ?? "Stress relief");
-      setLoading(false);
-    }
-
-    load();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [router]);
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    setSaving(true);
-    setMessage("");
-
-    const {
-      data: { user },
-    } = await supabaseClient.auth.getUser();
-
-    if (!user) {
-      router.replace("/login");
-      return;
-    }
-
-    const { error } = await supabaseClient
-      .from("profiles")
-      .upsert({ id: user.id, display_name: displayName || null, main_focus: focus });
-
-    setSaving(false);
-
-    if (error) {
-      console.error(error);
-      setMessage("Could not save your settings. Please try again.");
-      return;
-    }
-
-    setMessage("Settings saved. Thanks for taking a moment for yourself.");
+  if (!session?.user) {
+    redirect("/magic-login?from=settings");
   }
 
-  if (loading) {
-    return <p className="mt-6 text-sm text-slate-300">Loading settings…</p>;
-  }
+  const user = session.user;
+  const email = user.email;
+  const role = user.user_metadata?.role ?? "free";
+  const isPremium = role === "premium";
 
   return (
-    <div className="mt-4 max-w-md space-y-4">
-      <h1 className="text-xl font-semibold">Settings</h1>
-      <p className="text-sm text-slate-300">
-        A few small details to make Havenly feel more like yours.
-      </p>
+    <main className="min-h-screen bg-slate-950 text-white">
+      <section className="max-w-3xl mx-auto px-4 pt-28 pb-20">
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-1">
-          <label className="text-xs text-slate-300">Preferred name</label>
-          <input
-            type="text"
-            className="w-full rounded-xl bg-slate-900/60 border border-slate-700 px-3 py-2 text-sm outline-none focus:border-emerald-400"
-            placeholder="Optional"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-          />
-        </div>
+        <h1 className="text-3xl md:text-4xl font-bold mb-6">
+          Settings
+        </h1>
 
-        <div className="space-y-1">
-          <label className="text-xs text-slate-300">
-            Main reason you&apos;re here
-          </label>
-          <select
-            className="w-full rounded-xl bg-slate-900/60 border border-slate-700 px-3 py-2 text-xs outline-none focus:border-emerald-400"
-            value={focus}
-            onChange={(e) => setFocus(e.target.value)}
-          >
-            <option>Stress relief</option>
-            <option>Clarity & decisions</option>
-            <option>Gratitude</option>
-            <option>Tracking my mood</option>
-          </select>
-        </div>
-
-        {message && (
-          <p className="text-xs text-emerald-300 border border-emerald-500/30 bg-emerald-500/5 rounded-lg px-3 py-2">
-            {message}
+        <div className="p-6 border border-slate-800 rounded-xl bg-slate-900/40">
+          <p className="text-slate-300 mb-3">
+            <span className="text-slate-400">Email:</span> {email}
           </p>
-        )}
 
-        <button
-          type="submit"
-          disabled={saving}
-          className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-medium text-slate-950 hover:bg-emerald-300 disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {saving ? "Saving…" : "Save settings"}
-        </button>
-      </form>
-    </div>
+          <p className="text-slate-300">
+            <span className="text-slate-400">Plan:</span>{" "}
+            {isPremium ? (
+              <span className="text-emerald-300 font-medium">Havenly Plus</span>
+            ) : (
+              <span className="text-slate-400">Free</span>
+            )}
+          </p>
+        </div>
+
+        {!isPremium && (
+          <div className="mt-10 p-4 border border-emerald-500 rounded-xl bg-emerald-500/10 text-emerald-300 text-sm">
+            Premium settings will be available once Havenly Plus launches.
+          </div>
+        )}
+      </section>
+    </main>
   );
 }
