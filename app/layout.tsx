@@ -1,5 +1,3 @@
-// app/layout.tsx
-
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -33,7 +31,7 @@ export default function RootLayout({
 
         <Footer />
 
-        {/* Mobile-only PWA installer */}
+        {/* Mobile-only PWA behavior is handled inside */}
         <PwaInstaller />
       </body>
     </html>
