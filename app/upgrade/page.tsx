@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import PricingCard from "@/app/components/PricingCard";
+import PricingCard from "../components/PricingCard";
 
 export default function UpgradePage() {
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
@@ -15,7 +15,6 @@ export default function UpgradePage() {
         and clarity reports. Your writing always stays private.
       </p>
 
-      {/* Billing Selection */}
       <div className="flex gap-3 mb-10">
         <button
           onClick={() => setBilling("monthly")}
@@ -39,7 +38,6 @@ export default function UpgradePage() {
         </button>
       </div>
 
-      {/* Pricing Cards */}
       <div className="grid md:grid-cols-2 gap-8">
         <PricingCard
           title="Free Plan"
