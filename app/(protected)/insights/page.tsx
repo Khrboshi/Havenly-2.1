@@ -1,46 +1,33 @@
-import { redirect } from "next/navigation";
-import { createServerSupabase } from "@/lib/supabase/server";
-import Link from "next/link";
+import PremiumBadge from "../../components/PremiumBadge";
 
-export default async function InsightsPage() {
-  const supabase = createServerSupabase();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+export const dynamic = "force-dynamic";
 
-  if (!session?.user) {
-    redirect("/magic-login?from=insights");
-  }
-
-  const role = session.user.user_metadata?.role ?? "free";
-  const isPremium = role === "premium";
-
+export default function InsightsPage() {
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
-      <section className="max-w-3xl mx-auto px-4 pt-28">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">Insights</h1>
+    <div className="min-h-screen px-6 md:px-10 py-16 max-w-4xl mx-auto text-white">
+      <h1 className="text-4xl font-bold mb-4 flex items-center">
+        Insights <PremiumBadge />
+      </h1>
 
-        {!isPremium && (
-          <div className="mb-6 p-4 border border-emerald-500 bg-emerald-500/10 rounded-xl text-emerald-300 text-sm">
-            Insights are part of Havenly Plus and will be available soon.
-          </div>
-        )}
+      <p className="text-gray-400 mb-10">
+        Weekly summaries, emotional pattern tracking, and clarity reports
+        will be available in Havenly Premium.
+      </p>
 
-        {isPremium ? (
-          <p className="text-slate-300">
-            Premium insights will appear here once Havenly Plus launches.
-          </p>
-        ) : (
-          <div className="mt-6">
-            <Link
-              href="/premium"
-              className="rounded-full bg-emerald-400 px-6 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-300"
-            >
-              View Premium Features
-            </Link>
-          </div>
-        )}
-      </section>
-    </main>
+      <div className="p-8 rounded-2xl border border-gray-700 bg-[#0F1A24] text-gray-300 space-y-4">
+        <p>
+          Havenly will use your reflections to gently highlight themes — what
+          energises you, what drains you, and where you might need more care.
+        </p>
+        <p>
+          This area will show your weekly summary, emotional trends, and
+          personalised prompts. For now, it’s a preview of what we’re building.
+        </p>
+        <p className="text-sm text-gray-500">
+          Premium features are not yet active. When payments are enabled, this
+          section will unlock automatically for premium accounts.
+        </p>
+      </div>
+    </div>
   );
 }
