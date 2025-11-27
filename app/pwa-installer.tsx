@@ -4,24 +4,21 @@ import { useEffect, useState } from "react";
 import AddToHomeScreenPrompt from "@/components/AddToHomeScreenPrompt";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 
-function isMobile() {
-  if (typeof navigator === "undefined") return false;
-  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-}
-
 export default function PwaInstaller() {
-  const [showPrompt, setShowPrompt] = useState(false);
+  const [show, setShow] = useState(false);
 
   useEffect(() => {
-    if (isMobile()) {
-      setShowPrompt(true);
-    }
+    const isMobile =
+      typeof navigator !== "undefined" &&
+      /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if (isMobile) setShow(true);
   }, []);
 
   return (
     <>
       <ServiceWorkerRegister />
-      {showPrompt && <AddToHomeScreenPrompt />}
+      {show && <AddToHomeScreenPrompt />}
     </>
   );
 }
