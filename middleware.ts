@@ -1,14 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
-// Protected routes (only for authenticated users)
+// Protected routes that require login
 const PROTECTED_PATHS = ["/dashboard", "/journal", "/settings", "/tools"];
 
 export async function middleware(request: NextRequest) {
-  // Update Supabase session and cookies
+  // Sync Supabase auth session and cookies
   const { supabase, response } = await updateSession(request);
 
-  // Retrieve the active session
+  // Retrieve user session
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -16,41 +16,23 @@ export async function middleware(request: NextRequest) {
   const isLoggedIn = !!session;
   const path = request.nextUrl.pathname;
 
-  // Block unauthenticated access to protected routes
+  // 1. AUTH PROTECTION — redirect unauthenticated users
   if (!isLoggedIn && PROTECTED_PATHS.some((p) => path.startsWith(p))) {
     const url = request.nextUrl.clone();
     url.pathname = "/magic-login";
     return NextResponse.redirect(url);
   }
 
+  // 2. USER PLAN (Placeholder until Stripe is integrated)
+  //    This ensures the app behaves consistently for now.
+  response.headers.set("x-user-plan", "free"); // always free for now
+
   return response;
 }
 
 export const config = {
   matcher: [
-    /*
-     * Apply the middleware on ALL routes EXCEPT:
-     * - _next/static
-     * - _next/image
-     * - favicon.ico
-     * - public assets
-     */
+    // Apply middleware to everything EXCEPT static files:
     "/((?!_next/static|_next/image|favicon.ico|public).*)",
   ],
-};
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { updateSession } from "@/lib/supabase/middleware";
-
-export async function middleware(request: NextRequest) {
-  const response = await updateSession(request);
-
-  // Placeholder until Stripe is added
-  response.headers.set("x-user-plan", "free");
-
-  return response;
-}
-
-export const config = {
-  matcher: ["/dashboard/:path*", "/journal/:path*", "/tools/:path*"],
 };
