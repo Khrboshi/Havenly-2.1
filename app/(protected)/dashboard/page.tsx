@@ -36,13 +36,12 @@ export default async function DashboardPage() {
 
   return (
     <div className="max-w-4xl mx-auto pt-32 pb-24 px-6 text-slate-200">
-
       {/* Free Tier Banner */}
       <div className="mb-10 p-4 rounded-lg bg-emerald-900/20 border border-emerald-700/30 text-emerald-200 text-sm">
         You’re using the free plan — daily journaling is included.
         <br />
-        Premium features such as weekly summaries, emotional patterns, and
-        deep insights will be available soon.
+        Premium features such as weekly summaries, emotional patterns, and deep
+        insights will be available soon.
       </div>
 
       {/* Greeting */}
@@ -55,7 +54,7 @@ export default async function DashboardPage() {
 
       {/* Primary Action */}
       <Link
-        href="/journal"
+        href="/journal/new"
         className="inline-block bg-emerald-400 text-slate-900 px-6 py-3 rounded-full font-semibold hover:bg-emerald-300 transition mb-12"
       >
         Start today’s reflection
@@ -63,7 +62,6 @@ export default async function DashboardPage() {
 
       {/* Quick Action Cards */}
       <div className="grid md:grid-cols-3 gap-6 mb-16">
-
         {/* Journal Card */}
         <Link
           href="/journal"
@@ -117,7 +115,6 @@ export default async function DashboardPage() {
           View full journal →
         </Link>
       </div>
-
     </div>
   );
 }
