@@ -1,69 +1,123 @@
-import { createServerSupabase } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
-  const supabase = createServerSupabase();
+  const cookieStore = cookies();
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { get: (name) => cookieStore.get(name)?.value } }
+  );
+
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
   if (!session?.user) {
-    redirect("/magic-login");
+    return (
+      <div className="pt-32 text-center text-slate-300">
+        <p>You must login first.</p>
+        <Link href="/magic-login" className="text-emerald-300 underline">
+          Go to magic login →
+        </Link>
+      </div>
+    );
   }
 
   const user = session.user;
-  const role =
-    (user.user_metadata as { role?: string } | null)?.role || "free";
+  const displayName =
+    user.user_metadata?.full_name ||
+    user.email?.split("@")[0] ||
+    "Friend";
 
   return (
-    <main className="min-h-screen bg-[#0B0F19] text-white px-6 pt-20 pb-32 max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto pt-32 pb-24 px-6 text-slate-200">
 
-      {/* Free Plan Label */}
-      {role === "free" && (
-        <div className="mb-6 text-sm text-[#8eeacb] bg-[#132225] border border-[#1d3a3d] rounded-md p-3">
-          You’re on the free plan — daily journaling is fully included.
-          <br />
-          <span className="text-gray-300">
-            Soon you’ll be able to upgrade for deeper weekly insights,
-            emotion patterns, and clarity summaries — optional add-on.
-          </span>
-        </div>
-      )}
+      {/* Free Tier Banner */}
+      <div className="mb-10 p-4 rounded-lg bg-emerald-900/20 border border-emerald-700/30 text-emerald-200 text-sm">
+        You’re using the free plan — daily journaling is included.
+        <br />
+        Premium features such as weekly summaries, emotional patterns, and
+        deep insights will be available soon.
+      </div>
 
-      {/* Welcome */}
-      <h1 className="text-3xl font-semibold mb-3">
-        Welcome back,{" "}
-        <span className="text-[#54E1B3]">
-          {user.email?.split("@")[0]}
-        </span>
+      {/* Greeting */}
+      <h1 className="text-3xl font-semibold text-white mb-2">
+        Welcome back, <span className="text-emerald-300">{displayName}</span>
       </h1>
-
-      <p className="text-gray-300 mb-8">
-        Take a moment to slow down and notice how you’re really doing today.
+      <p className="text-slate-400 mb-8">
+        Take a moment to breathe and check in with yourself today.
       </p>
 
-      {/* ✅ MAIN CTA — always goes to /journal/new */}
+      {/* Primary Action */}
       <Link
-        href="/journal/new"
-        className="bg-[#47D7A9] text-black font-semibold px-6 py-3 rounded-full hover:bg-[#35c497] transition inline-block mb-10"
+        href="/journal"
+        className="inline-block bg-emerald-400 text-slate-900 px-6 py-3 rounded-full font-semibold hover:bg-emerald-300 transition mb-12"
       >
         Start today’s reflection
       </Link>
 
-      {/* Recent reflections placeholder */}
-      <h2 className="text-lg font-semibold mb-2">
-        Recent reflections
-      </h2>
+      {/* Quick Action Cards */}
+      <div className="grid md:grid-cols-3 gap-6 mb-16">
 
-      <p className="text-gray-400 mb-6">
-        You haven’t written anything yet — your first reflection will appear
-        here once you’ve checked in.
-      </p>
+        {/* Journal Card */}
+        <Link
+          href="/journal"
+          className="block rounded-xl bg-slate-800/40 border border-slate-700/40 p-5 hover:bg-slate-800/60 transition"
+        >
+          <h3 className="text-lg font-semibold text-white mb-1">Journal</h3>
+          <p className="text-slate-400 text-sm">
+            Write a daily reflection and see it summarized by gentle AI.
+          </p>
+        </Link>
 
-      <Link href="/journal" className="text-[#54E1B3] underline">
-        View full journal →
-      </Link>
-    </main>
+        {/* Tools */}
+        <Link
+          href="/tools"
+          className="block rounded-xl bg-slate-800/40 border border-slate-700/40 p-5 hover:bg-slate-800/60 transition"
+        >
+          <h3 className="text-lg font-semibold text-white mb-1">Tools</h3>
+          <p className="text-slate-400 text-sm">
+            Use quick prompts and calming exercises.
+          </p>
+        </Link>
+
+        {/* Insights Coming Soon */}
+        <Link
+          href="/premium"
+          className="block rounded-xl bg-slate-800/40 border border-slate-700/40 p-5 hover:bg-slate-800/60 transition"
+        >
+          <h3 className="text-lg font-semibold text-white mb-1">
+            Insights (Coming Soon)
+          </h3>
+          <p className="text-slate-400 text-sm">
+            Emotional patterns, weekly summaries, and clarity insights.
+          </p>
+        </Link>
+      </div>
+
+      {/* Recent Reflections */}
+      <div>
+        <h2 className="text-xl font-semibold text-white mb-3">
+          Recent reflections
+        </h2>
+        <p className="text-slate-400 mb-6">
+          You haven’t written anything yet — your first entry will appear here
+          once you check in.
+        </p>
+
+        <Link
+          href="/journal"
+          className="text-emerald-300 hover:underline text-sm"
+        >
+          View full journal →
+        </Link>
+      </div>
+
+    </div>
   );
 }
