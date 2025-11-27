@@ -111,7 +111,7 @@ export default function Navbar() {
     if (tier === "free") {
       return (
         <>
-          <Link href="/upgrade"
+          <Link href="/premium"
             className="rounded-full bg-emerald-400 px-4 py-1.5 text-sm font-semibold text-slate-900 hover:bg-emerald-300">
             Upgrade
           </Link>
