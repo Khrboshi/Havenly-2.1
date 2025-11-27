@@ -1,36 +1,40 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
-const protectedRoutes = ["/dashboard", "/journal", "/settings", "/premium"];
+// Protected routes (only for authenticated users)
+const PROTECTED_PATHS = ["/dashboard", "/journal", "/settings", "/tools"];
 
 export async function middleware(request: NextRequest) {
-  const response = await updateSession(request);
+  // Update Supabase session and cookies
+  const { supabase, response } = await updateSession(request);
 
-  const { supabaseToken } = response;
+  // Retrieve the active session
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  const isLoggedIn = !!supabaseToken;
+  const isLoggedIn = !!session;
   const path = request.nextUrl.pathname;
 
-  const isProtected = protectedRoutes.some((route) =>
-    path === route || path.startsWith(route + "/")
-  );
-
-  const isMagicLogin = path.startsWith("/magic-login");
-
-  if (!isLoggedIn && isProtected) {
-    return NextResponse.redirect(new URL("/magic-login", request.url));
+  // Block unauthenticated access to protected routes
+  if (!isLoggedIn && PROTECTED_PATHS.some((p) => path.startsWith(p))) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/magic-login";
+    return NextResponse.redirect(url);
   }
 
-  if (isLoggedIn && isMagicLogin) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
-  return response.nextResponse;
+  return response;
 }
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|icon.svg).*)",
+    /*
+     * Apply the middleware on ALL routes EXCEPT:
+     * - _next/static
+     * - _next/image
+     * - favicon.ico
+     * - public assets
+     */
+    "/((?!_next/static|_next/image|favicon.ico|public).*)",
   ],
 };
