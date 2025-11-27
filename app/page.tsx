@@ -1,123 +1,84 @@
 import Link from "next/link";
 
-export default function LandingPage() {
+export default function HomePage() {
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
-      {/* HERO SECTION */}
-      <section className="max-w-6xl mx-auto px-4 pt-28 pb-20 flex flex-col md:flex-row items-center gap-12">
+    <main className="min-h-screen py-20">
+      <div className="max-w-3xl mx-auto px-6">
+        {/* Hero */}
+        <h1 className="text-5xl font-bold leading-tight text-white">
+          Slow down. Check in.  
+          <span className="block text-brand-primary">
+            Feel a little lighter.
+          </span>
+        </h1>
 
-        {/* LEFT SIDE */}
-        <div className="flex-1">
-          <div className="text-emerald-300 text-xs font-semibold tracking-widest uppercase mb-4">
-            Havenly 2.1 • Early Access
-          </div>
+        <p className="mt-6 text-lg text-gray-300 leading-relaxed">
+          Havenly helps you reflect gently, in just a few minutes a day.  
+          No pressure. No goals. Just honest check-ins supported by quiet, kind AI.
+        </p>
 
-          <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-6">
-            A calm space to{" "}
-            <span className="text-emerald-300">understand your day</span>{" "}
-            in just a few minutes.
-          </h1>
+        <div className="mt-8">
+          <Link
+            href="/magic-login"
+            className="inline-block rounded-full bg-brand-primary px-6 py-3 text-white font-medium hover:bg-brand-primary-dark transition"
+          >
+            Start now — it’s free
+          </Link>
+        </div>
 
-          <p className="text-slate-300 text-lg leading-relaxed mb-6">
-            Havenly is a private micro-journal with gentle AI reflections that
-            help you see your day with clarity and compassion — no pressure,
-            no streaks, and no public feed. Just a quiet place to slow down
-            and breathe.
+        {/* Divider */}
+        <div className="h-px bg-white/10 my-16" />
+
+        {/* ▌ START HERE — Blog Recommendation */}
+        <section>
+          <p className="uppercase tracking-wide font-medium text-brand-primary mb-3">
+            Start here
           </p>
 
-          <div className="flex gap-4 mt-8">
-            <Link
-              href="/magic-login"
-              className="rounded-full bg-emerald-400 px-6 py-2.5 text-slate-900 font-semibold hover:bg-emerald-300 transition"
-            >
-              Start journaling free
-            </Link>
+          <h2 className="text-3xl font-semibold text-white mb-4">
+            A short read before you begin
+          </h2>
 
-            <Link
-              href="/about"
-              className="px-5 py-2.5 border border-slate-700 rounded-full text-slate-200 hover:border-emerald-400 transition"
-            >
-              Learn more
-            </Link>
-          </div>
-        </div>
+          <p className="text-gray-300 leading-relaxed mb-8">
+            A gentle introduction to why tiny check-ins matter — and how a few
+            honest sentences can already change how you feel today.
+          </p>
 
-        {/* RIGHT SIDE */}
-        <div className="flex-1 w-full">
-          <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 shadow-xl">
-            <div className="text-emerald-300 text-sm font-medium mb-3">
-              Today’s gentle reflection
+          <Link href="/blog/why-gentle-journaling-works" className="block group">
+            <div className="rounded-xl bg-white/[0.05] border border-white/[0.08] p-6 hover:bg-white/[0.08] transition">
+              <p className="text-sm text-gray-400 mb-1">Jan 1, 2025 · 5 min read</p>
+
+              <h3 className="text-xl font-semibold text-white group-hover:text-brand-primary transition">
+                Why gentle journaling works (even if you only write for 5 minutes)
+              </h3>
+
+              <p className="mt-2 text-gray-400">
+                A tiny check-in can shift your whole day. Here’s why.
+              </p>
+
+              <span className="inline-block mt-4 text-brand-primary font-medium">
+                Read the article →
+              </span>
             </div>
+          </Link>
+        </section>
 
-            <div className="text-slate-300 text-sm leading-relaxed mb-4">
-              “It sounds like today brought a lot to your plate. What helped
-              you get through it? What made things even a little lighter?”
-            </div>
+        {/* Divider */}
+        <div className="h-px bg-white/10 my-16" />
 
-            <div className="text-slate-400 text-xs">
-              Private • AI-assisted • No tracking • No judgments
-            </div>
-          </div>
-        </div>
-      </section>
+        {/* ABOUT / PROMISE */}
+        <section className="mt-10">
+          <h2 className="text-3xl font-semibold text-white mb-4">
+            A calmer way to use technology
+          </h2>
 
-      {/* HOW IT WORKS */}
-      <section className="max-w-6xl mx-auto px-4 pb-20">
-        <h2 className="text-emerald-300 text-sm font-semibold tracking-widest uppercase mb-10">
-          How Havenly Works
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          <div className="p-6 border border-slate-800 rounded-2xl bg-slate-900/40">
-            <h3 className="text-emerald-300 text-sm font-semibold mb-2">1 — Check In</h3>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Once a day (or whenever you like), you answer a gentle prompt
-              and jot down a few honest sentences.
-            </p>
-          </div>
-
-          <div className="p-6 border border-slate-800 rounded-2xl bg-slate-900/40">
-            <h3 className="text-emerald-300 text-sm font-semibold mb-2">2 — Reflect</h3>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Havenly’s AI offers a soft reflection — not advice, just a kind
-              angle that helps you see your day with more compassion.
-            </p>
-          </div>
-
-          <div className="p-6 border border-slate-800 rounded-2xl bg-slate-900/40">
-            <h3 className="text-emerald-300 text-sm font-semibold mb-2">3 — Notice Patterns</h3>
-            <p className="text-slate-300 text-sm leading-relaxed">
-              Over time, you begin to see what energizes you, what drains you,
-              and what you want to protect or change.
-            </p>
-          </div>
-        </div>
-
-        <h3 className="text-xl font-semibold mb-4">
-          Built for real life, not perfect habits
-        </h3>
-
-        <p className="text-slate-300 leading-relaxed mb-8">
-          Havenly is designed for the nights you open your laptop feeling tired,
-          the mornings when you have three minutes before a meeting, and the days
-          you don’t have energy for a big routine. There are no streaks to break,
-          no charts judging you — just a quiet space waiting when you need it.
-        </p>
-
-        <h3 className="text-xl font-semibold mb-4">A gentle use of AI</h3>
-
-        <p className="text-slate-300 leading-relaxed">
-          Havenly’s AI isn’t trying to tell you how to live or optimize your day.
-          It mirrors what you write, highlights what seems important, and invites
-          kinder questions. Your text stays private and is used only to generate
-          your reflections — not for ads or social feeds.
-        </p>
-      </section>
-
-      {/* FOOTER */}
-      <footer className="border-t border-slate-800 py-6 mt-10 text-center text-slate-500 text-xs">
-        Havenly 2.1 — Your personal calm space to reflect.
-      </footer>
+          <p className="text-gray-300 leading-relaxed">
+            Havenly stays intentionally simple — no streaks, no pressure, no
+            achievement systems. Just a quiet space made for real people having
+            real days.
+          </p>
+        </section>
+      </div>
     </main>
   );
 }
