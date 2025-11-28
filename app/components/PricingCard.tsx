@@ -1,46 +1,18 @@
-"use client";
-
-interface PricingCardProps {
+interface Props {
   title: string;
   price: string;
-  period: string;
-  items: string[];
-  buttonLabel: string;
-  disabled?: boolean;
+  description: string;
 }
 
-export default function PricingCard({
-  title,
-  price,
-  period,
-  items,
-  buttonLabel,
-  disabled,
-}: PricingCardProps) {
+export default function PricingCard({ title, price, description }: Props) {
   return (
-    <div className="border border-gray-700 rounded-2xl p-6 bg-[#0F1A24]">
-      <h2 className="text-2xl font-semibold mb-2">{title}</h2>
-      <p className="text-4xl font-bold mb-1">{price}</p>
-      <p className="text-gray-400 mb-6">{period}</p>
+    <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-6 text-slate-200">
+      <h3 className="text-xl font-semibold text-emerald-400">{title}</h3>
+      <p className="text-3xl font-bold mt-2">{price}</p>
+      <p className="text-slate-400 text-sm mt-4">{description}</p>
 
-      <ul className="space-y-2 mb-6">
-        {items.map((i, index) => (
-          <li key={index} className="text-gray-300 flex items-start gap-2">
-            <span className="text-emerald-400 mt-[2px]">•</span>
-            {i}
-          </li>
-        ))}
-      </ul>
-
-      <button
-        disabled={disabled}
-        className={`w-full py-3 rounded-xl font-medium ${
-          disabled
-            ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-            : "bg-emerald-600 hover:bg-emerald-700"
-        }`}
-      >
-        {buttonLabel}
+      <button className="mt-6 w-full rounded-lg bg-emerald-500 px-4 py-2 text-slate-900 font-medium hover:bg-emerald-400 transition">
+        Choose Plan
       </button>
     </div>
   );
