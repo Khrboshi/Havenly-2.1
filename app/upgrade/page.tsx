@@ -1,84 +1,55 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
-import PricingCard from "../components/PricingCard";
+import PricingCard from "@/app/components/PricingCard";
 
 export default function UpgradePage() {
-  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
-
   return (
-    <div className="min-h-screen px-6 md:px-10 py-16 max-w-5xl mx-auto text-white">
-      <h1 className="text-4xl font-bold mb-4">Upgrade to Havenly Premium</h1>
-      <p className="text-gray-300 max-w-2xl mb-10">
-        Unlock deeper weekly insights, emotional patterns, cloud backup,
-        and clarity reports. Your writing always stays private.
-      </p>
-
-      <div className="flex gap-3 mb-10">
-        <button
-          onClick={() => setBilling("monthly")}
-          className={`px-4 py-2 rounded-lg border ${
-            billing === "monthly"
-              ? "bg-emerald-700 border-emerald-500"
-              : "border-gray-600"
-          }`}
-        >
-          Monthly
-        </button>
-        <button
-          onClick={() => setBilling("yearly")}
-          className={`px-4 py-2 rounded-lg border ${
-            billing === "yearly"
-              ? "bg-emerald-700 border-emerald-500"
-              : "border-gray-600"
-          }`}
-        >
-          Yearly (Save 18%)
-        </button>
+    <div className="min-h-screen bg-slate-900 text-slate-100 py-20 px-6">
+      <div className="max-w-4xl mx-auto text-center mb-14">
+        <h1 className="text-4xl font-semibold text-white mb-4">
+          Choose Your Havenly Plan
+        </h1>
+        <p className="text-slate-300 text-lg">
+          Start with the free plan or unlock deeper insights with Havenly Premium.
+        </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        
+        {/* FREE PLAN */}
         <PricingCard
           title="Free Plan"
-          price="$0"
-          period="forever"
+          price="$0 / forever"
           items={[
             "Daily journaling",
             "Local-only storage",
-            "Basic text editor",
-            "Private — no ads, no feed",
+            "1 active journal",
+            "Basic insights"
           ]}
           buttonLabel="Current Plan"
-          disabled
+          disabled={true}
         />
 
+        {/* PREMIUM PLAN */}
         <PricingCard
           title="Premium"
-          price={billing === "monthly" ? "$5" : "$49"}
-          period={billing === "monthly" ? "per month" : "per year"}
+          price="$5 / month"
           items={[
-            "Weekly AI summaries",
-            "Emotion pattern insights",
-            "Deep clarity reports",
-            "Cloud backup (end-to-end encrypted)",
-            "Priority feature access",
+            "Unlimited Journals",
+            "AI-guided journaling",
+            "Deep emotional insights",
+            "Sentiment trends & analytics",
+            "Advanced privacy & syncing",
+            "Priority feature access"
           ]}
           buttonLabel="Coming Soon"
-          disabled
+          disabled={true}
         />
       </div>
 
-      <p className="text-gray-400 text-sm mt-10">
-        Payments are not yet enabled — premium is coming soon.
+      <p className="text-center text-slate-400 text-sm mt-10">
+        Annual plan ($49/year) coming soon.
       </p>
-
-      <Link
-        href="/dashboard"
-        className="inline-block mt-6 text-emerald-400 underline"
-      >
-        Return to dashboard →
-      </Link>
     </div>
   );
 }
