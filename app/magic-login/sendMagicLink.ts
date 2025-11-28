@@ -4,10 +4,6 @@ import { createServerSupabase } from "@/lib/supabase/server";
 
 export default async function sendMagicLink(email: string) {
   try {
-    if (!email || !email.includes("@")) {
-      return { error: "Please enter a valid email address." };
-    }
-
     const supabase = await createServerSupabase();
 
     const { error } = await supabase.auth.signInWithOtp({
@@ -18,11 +14,13 @@ export default async function sendMagicLink(email: string) {
     });
 
     if (error) {
-      return { error: error.message };
+      console.error("Magic link error:", error.message);
+      return { success: false, error: error.message };
     }
 
     return { success: true };
   } catch (err: any) {
-    return { error: "Unexpected error sending magic link." };
+    console.error("Magic link exception:", err);
+    return { success: false, error: "Unexpected server error" };
   }
 }
