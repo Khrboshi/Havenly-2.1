@@ -1,43 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+interface ToastMessageProps {
+  message: string;
+}
 
-export default function ToastMessage() {
-  const searchParams = useSearchParams();
-  const [visible, setVisible] = useState(false);
-  const [text, setText] = useState("");
-
-  useEffect(() => {
-    const from = searchParams.get("from");
-    const message = searchParams.get("message");
-
-    let toastText = "";
-
-    if (from === "login") {
-      toastText = "Welcome back. You’re now logged in.";
-    } else if (message === "logged_out") {
-      toastText =
-        "You’re signed out for now. Come back any time you need a quiet moment.";
-    }
-
-    if (!toastText) {
-      setVisible(false);
-      return;
-    }
-
-    setText(toastText);
-    setVisible(true);
-
-    const timer = setTimeout(() => setVisible(false), 4500);
-    return () => clearTimeout(timer);
-  }, [searchParams]);
-
-  if (!visible) return null;
-
+export default function ToastMessage({ message }: ToastMessageProps) {
   return (
-    <div className="toast-container">
-      <div className="toast animate-fade-in">{text}</div>
+    <div className="fixed top-4 right-4 z-50 rounded-xl bg-slate-900/90 border border-slate-700 px-4 py-2 text-slate-100 shadow-lg">
+      {message}
     </div>
   );
 }
