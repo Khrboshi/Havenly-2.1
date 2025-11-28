@@ -2,35 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* === HAVENLY GLOBAL BRANDING === */
-:root {
-  --brand-primary: #4CA7A3;
-  --brand-primary-light: #76C5C0;
-  --brand-primary-dark: #2E837F;
-
-  --brand-bg: #0c0f17; /* unified background */
-  --brand-surface: #11141f; 
-  --brand-text: #e8f0f2;
-}
-
-/* Apply global Havenly background */
-html,
-body {
-  background-color: var(--brand-bg) !important;
-  color: var(--brand-text);
-  overflow-x: hidden;
-  min-height: 100%;
-}
-
-/* Fix pages that were using white backgrounds */
-section,
-main,
-div,
-article {
-  background-color: transparent !important;
-}
-
-/* Fade-in animation */
+/* Smooth fade */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -44,4 +16,24 @@ article {
 
 .animate-fade-in {
   animation: fade-in 0.22s ease-out forwards;
+}
+
+/* Prevent side scrolling */
+html,
+body {
+  overflow-x: hidden;
+  background: var(--brand-bg);
+  color: var(--brand-text);
+}
+
+/* Ensure all pages render on the same canvas */
+main {
+  width: 100%;
+}
+
+/* Card shadow softness */
+.card {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
 }
