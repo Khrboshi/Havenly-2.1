@@ -1,123 +1,226 @@
-"use client";
-
+// app/page.tsx
 import Link from "next/link";
-import {
-  PenLine,
-  BarChart3,
-  Sparkles,
-  ShieldCheck,
-} from "lucide-react";
 
-export default function HomePage() {
+export default function LandingPage() {
   return (
-    <div className="min-h-screen">
+    <div className="bg-transparent">
+      {/* HERO */}
+      <section className="px-4 pt-20 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-center lg:gap-14">
+          {/* Left: copy + CTAs */}
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-hvn-subtle/60 bg-hvn-bg/60 px-3 py-1 text-xs font-medium text-hvn-text-muted backdrop-blur">
+              <span className="h-1.5 w-1.5 rounded-full bg-hvn-accent-mint-soft" />
+              A kinder way to understand your day
+            </div>
 
-      {/* HERO SECTION */}
-      <section className="pt-20 pb-24 px-6 text-center bg-gradient-to-b from-white via-[var(--brand-bg)] to-[var(--brand-bg)]">
-        <div className="max-w-3xl mx-auto">
+            <h1 className="text-balance text-3xl font-semibold tracking-tight text-hvn-text-primary sm:text-4xl md:text-5xl lg:text-[3.1rem]">
+              Journaling that feels{" "}
+              <span className="text-hvn-accent-mint">soft</span>, honest, and{" "}
+              <span className="text-hvn-accent-blue">simple</span>.
+            </h1>
 
-          <h1 className="text-4xl md:text-5xl font-bold text-[var(--brand-primary)] leading-tight mb-4 animate-fade-in">
-            A Calmer Mind Starts With Two Sentences
-          </h1>
+            <p className="max-w-xl text-base text-hvn-text-muted sm:text-lg">
+              Havenly 2.1 is a calm, private space to write a few honest
+              sentences and receive gentle AI reflections—no streaks, no public
+              feed, and no pressure to be “productive.”
+            </p>
 
-          <p className="text-lg md:text-xl text-gray-700 mb-8 animate-fade-in">
-            Havenly helps you slow down, reflect gently, and build a mindful
-            journaling habit—no pressure, no judgment.
-          </p>
+            {/* CTAs */}
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <Link
+                href="/magic-login"
+                className="inline-flex items-center justify-center rounded-full bg-hvn-accent-mint px-6 py-2.5 text-sm font-semibold text-slate-950 shadow-md shadow-emerald-500/25 transition hover:bg-emerald-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hvn-accent-mint focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+              >
+                Start journaling free
+              </Link>
 
-          <div className="flex justify-center gap-4 animate-fade-in">
-            <Link
-              href="/journal/new"
-              className="px-6 py-3 rounded-xl bg-[var(--brand-primary)] text-white font-semibold hover:bg-[var(--brand-primary-dark)] transition"
-            >
-              Start Journaling
-            </Link>
+              <Link
+                href="/about"
+                className="inline-flex items-center justify-center rounded-full border border-hvn-subtle/70 bg-transparent px-5 py-2.5 text-sm font-medium text-hvn-accent-blue transition hover:bg-hvn-accent-blue-soft/25"
+              >
+                Learn how Havenly works
+              </Link>
 
-            <Link
-              href="/about"
-              className="px-6 py-3 rounded-xl border border-[var(--brand-primary)] text-[var(--brand-primary)] font-semibold hover:bg-[var(--brand-primary-light)] hover:text-white transition"
-            >
-              Learn More
-            </Link>
+              <p className="w-full text-xs text-hvn-text-muted sm:w-auto sm:pl-2">
+                No credit card. Just you and a blank, gentle page.
+              </p>
+            </div>
+          </div>
+
+          {/* Right: preview card */}
+          <div className="mt-10 lg:mt-0">
+            <div className="relative">
+              <div className="absolute inset-0 -translate-y-4 translate-x-6 scale-105 rounded-[30px] bg-hvn-accent-blue-soft blur-3xl" />
+              <div className="relative rounded-[26px] border border-hvn-card bg-hvn-bg-elevated/95 p-5 shadow-[0_20px_80px_rgba(15,23,42,0.9)] backdrop-blur">
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-medium uppercase tracking-[0.15em] text-hvn-accent-mint">
+                      Today&apos;s check-in
+                    </p>
+                    <p className="text-[11px] text-hvn-text-muted">
+                      2–3 minutes · Private · AI-assisted
+                    </p>
+                  </div>
+                  <span className="inline-flex items-center rounded-full bg-hvn-accent-mint-soft/40 px-2.5 py-1 text-[11px] text-hvn-accent-mint">
+                    Gentle mode
+                  </span>
+                </div>
+
+                <div className="space-y-3 rounded-2xl bg-hvn-bg-soft/80 p-4">
+                  <p className="text-xs font-medium text-hvn-text-secondary">
+                    Prompt
+                  </p>
+                  <p className="text-sm text-hvn-text-primary">
+                    “What felt heavier than usual today, and what helped you get
+                    through it even a little?”
+                  </p>
+                </div>
+
+                <div className="mt-4 space-y-3 rounded-2xl bg-black/20 p-4">
+                  <p className="text-xs font-medium text-hvn-text-secondary">
+                    Your reflection
+                  </p>
+                  <p className="text-sm text-hvn-text-muted">
+                    I woke up already tired. Work was noisy, and I kept worrying
+                    I was behind. A short walk and a message from a friend made
+                    things feel more bearable.
+                  </p>
+                </div>
+
+                <div className="mt-4 space-y-3 rounded-2xl bg-hvn-accent-mint-soft/10 p-4">
+                  <div className="flex items-center gap-2">
+                    <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-hvn-accent-mint-soft text-[11px] text-hvn-accent-mint">
+                      AI
+                    </span>
+                    <p className="text-xs font-medium text-hvn-text-secondary">
+                      Havenly reflection (just for you)
+                    </p>
+                  </div>
+                  <p className="text-sm text-hvn-text-secondary">
+                    It sounds like you carried a lot today with very little
+                    energy. Even so, you still reached for a walk and stayed
+                    open to support—that matters. Your body is asking for a bit
+                    more gentleness than your schedule currently allows.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* FEATURES */}
-      <section className="py-20 px-6 bg-white">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-3xl font-bold text-center text-[var(--brand-primary)] mb-12">
-            Gentle Tools for Your Mind
+      {/* WHY HAVENLY FEELS DIFFERENT */}
+      <section className="px-4 pb-14 pt-14 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl space-y-8">
+          <div className="max-w-2xl space-y-3">
+            <h2 className="text-2xl font-semibold text-hvn-text-primary sm:text-3xl">
+              Built for tired brains, not perfect habits.
+            </h2>
+            <p className="text-sm text-hvn-text-muted sm:text-base">
+              Havenly is a tiny ritual you can keep even on the messy days.
+              Write when you can, stop when you need, and let the AI gently
+              highlight what mattered—without judging you or trying to “optimize”
+              your life.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <FeatureCard
+              title="Low-pressure by design"
+              body="No streaks, public feed, or metrics telling you how you “should” feel. Just a quiet page where a few honest sentences are enough."
+            />
+            <FeatureCard
+              title="Gentle AI reflections"
+              body="Havenly summarizes what you wrote in soft, human language—pointing out themes, emotions, and small wins you might have missed."
+            />
+            <FeatureCard
+              title="Privacy comes first"
+              body="Your entries are private and used only to generate reflections for you. No ads, no selling data, and no social-media style engagement tricks."
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className="px-4 pb-18 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl rounded-[26px] border border-hvn-card bg-hvn-bg-elevated/90 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.85)] backdrop-blur-sm sm:p-8">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-hvn-accent-blue">
+            How Havenly works
+          </p>
+          <h2 className="mt-3 text-xl font-semibold text-hvn-text-primary sm:text-2xl">
+            A 3-step routine that fits between everything else.
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-
-            <FeatureCard
-              icon={<PenLine className="w-8 h-8 text-[var(--brand-primary)]" />}
-              title="Daily Journaling"
-              description="Write freely using a clean, distraction-free editor designed for calm reflection."
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <StepCard
+              step="1"
+              title="Check in"
+              body="Once a day—or whenever you like—open Havenly and answer a short, gentle prompt about your day or your moment."
             />
-
-            <FeatureCard
-              icon={<BarChart3 className="w-8 h-8 text-[var(--brand-primary)]" />}
-              title="Emotional Insights"
-              description="See trends over time and understand what shapes your emotional patterns."
+            <StepCard
+              step="2"
+              title="Let AI reflect back"
+              body="Havenly summarizes what it heard, highlights emotional patterns, and echoes back what seemed to matter most."
             />
-
-            <FeatureCard
-              icon={<Sparkles className="w-8 h-8 text-[var(--brand-primary)]" />}
-              title="Helpful Tools"
-              description="Prompts, mood tracking, and clarity exercises designed to support your wellbeing."
+            <StepCard
+              step="3"
+              title="Notice the patterns"
+              body="Over time, your entries and reflections make it easier to see what supports you, what drains you, and what needs protecting."
             />
+          </div>
 
-            <FeatureCard
-              icon={<ShieldCheck className="w-8 h-8 text-[var(--brand-primary)]" />}
-              title="Privacy First"
-              description="Your reflections belong to you. Havenly protects your personal space."
-            />
-
+          <div className="mt-7 flex flex-wrap items-center justify-between gap-3 border-t border-hvn-subtle/40 pt-5 text-sm text-hvn-text-muted">
+            <p>Free plan includes daily journaling and gentle reflections.</p>
+            <Link
+              href="/upgrade"
+              className="text-xs font-medium text-hvn-accent-blue underline-offset-4 hover:underline"
+            >
+              See what Havenly Plus will add →
+            </Link>
           </div>
         </div>
       </section>
-
-      {/* CALL TO ACTION */}
-      <section className="py-20 px-6 bg-[var(--brand-bg)] text-center">
-        <h3 className="text-3xl font-bold text-[var(--brand-primary)] mb-4">
-          Begin Your Reflection Journey
-        </h3>
-
-        <p className="text-lg text-gray-700 mb-8">
-          It only takes a minute to create an account and start journaling.
-        </p>
-
-        <Link
-          href="/magic-login"
-          className="px-8 py-3 rounded-xl bg-[var(--brand-primary)] text-white font-semibold hover:bg-[var(--brand-primary-dark)] transition"
-        >
-          Create Free Account
-        </Link>
-      </section>
-
     </div>
   );
 }
 
-function FeatureCard({
-  icon,
-  title,
-  description,
-}: {
-  icon: React.ReactNode;
+type FeatureProps = {
   title: string;
-  description: string;
-}) {
+  body: string;
+};
+
+function FeatureCard({ title, body }: FeatureProps) {
   return (
-    <div className="p-6 rounded-2xl bg-[var(--brand-bg)] shadow-sm border">
-      <div className="mb-3">{icon}</div>
-      <h3 className="text-xl font-semibold text-[var(--brand-primary)] mb-2">
+    <div className="h-full rounded-2xl border border-hvn-card bg-hvn-bg-elevated/80 p-4 shadow-sm shadow-black/40">
+      <h3 className="text-sm font-semibold text-hvn-text-secondary">
         {title}
       </h3>
-      <p className="text-gray-700 text-sm leading-relaxed">{description}</p>
+      <p className="mt-2 text-xs text-hvn-text-muted sm:text-[13px]">
+        {body}
+      </p>
+    </div>
+  );
+}
+
+type StepProps = {
+  step: string;
+  title: string;
+  body: string;
+};
+
+function StepCard({ step, title, body }: StepProps) {
+  return (
+    <div className="h-full rounded-2xl border border-hvn-card bg-hvn-bg-soft/70 p-4">
+      <div className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-hvn-accent-mint-soft text-xs font-semibold text-hvn-accent-mint">
+        {step}
+      </div>
+      <h3 className="mt-3 text-sm font-semibold text-hvn-text-secondary">
+        {title}
+      </h3>
+      <p className="mt-2 text-xs text-hvn-text-muted sm:text-[13px]">
+        {body}
+      </p>
     </div>
   );
 }
