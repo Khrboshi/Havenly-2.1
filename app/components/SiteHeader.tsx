@@ -1,88 +1,61 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
-import { useState } from "react";
 
 export default function SiteHeader() {
   const [open, setOpen] = useState(false);
-  const pathname = usePathname();
 
-  const nav = [
-    { name: "Home", href: "/" },
-    { name: "Blog", href: "/blog" },
-    { name: "About", href: "/about" },
-  ];
+  // Disable scrolling when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "auto";
+  }, [open]);
 
   return (
-    <header className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-lg border-b border-slate-800">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+    <header className="w-full border-b border-white/5 bg-[#0B1120]/80 backdrop-blur-md sticky top-0 z-40">
+      <nav className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+        
         {/* Logo */}
-        <Link href="/" className="text-xl font-semibold text-emerald-300">
+        <Link href="/" className="text-emerald-400 font-semibold text-xl">
           Havenly
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-8">
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`text-sm transition ${
-                pathname === item.href
-                  ? "text-emerald-300"
-                  : "text-slate-300 hover:text-emerald-200"
-              }`}
-            >
-              {item.name}
-            </Link>
-          ))}
-
+        {/* Desktop navigation */}
+        <div className="hidden md:flex items-center gap-8 text-slate-300 text-sm">
+          <Link href="/" className="hover:text-white transition">Home</Link>
+          <Link href="/blog" className="hover:text-white transition">Blog</Link>
+          <Link href="/about" className="hover:text-white transition">About</Link>
           <Link
             href="/magic-login"
-            className="rounded-full border border-emerald-400 px-4 py-1.5 text-sm font-medium text-emerald-300 hover:bg-emerald-400 hover:text-slate-950 transition"
+            className="px-4 py-1.5 rounded-full border border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/10 transition"
           >
             Magic Login
           </Link>
-        </nav>
+        </div>
 
-        {/* Mobile menu button */}
+        {/* Mobile menu toggle */}
         <button
-          className="md:hidden text-slate-300 hover:text-emerald-300"
+          className="md:hidden text-slate-300"
           onClick={() => setOpen(!open)}
         >
-          {open ? <X size={22} /> : <Menu size={22} />}
+          {open ? <X size={24} /> : <Menu size={24} />}
         </button>
-      </div>
+      </nav>
 
-      {/* Mobile menu */}
+      {/* Mobile Menu */}
       {open && (
-        <div className="md:hidden border-t border-slate-800 bg-slate-950">
-          <div className="flex flex-col gap-3 px-4 py-4">
-            {nav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className={`text-sm ${
-                  pathname === item.href
-                    ? "text-emerald-300"
-                    : "text-slate-300 hover:text-emerald-200"
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
-
-            <Link
-              href="/magic-login"
-              onClick={() => setOpen(false)}
-              className="rounded-full border border-emerald-400 px-4 py-1.5 text-center text-sm font-medium text-emerald-300 hover:bg-emerald-400 hover:text-slate-950 transition"
-            >
-              Magic Login
-            </Link>
-          </div>
+        <div className="md:hidden bg-[#0B1120] border-t border-white/5 px-4 pb-6 pt-4 space-y-4 text-slate-200 text-base">
+          <Link href="/" className="block" onClick={() => setOpen(false)}>Home</Link>
+          <Link href="/blog" className="block" onClick={() => setOpen(false)}>Blog</Link>
+          <Link href="/about" className="block" onClick={() => setOpen(false)}>About</Link>
+          <Link
+            href="/magic-login"
+            onClick={() => setOpen(false)}
+            className="inline-block w-full text-center px-4 py-2 rounded-full border border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/10 transition"
+          >
+            Magic Login
+          </Link>
         </div>
       )}
     </header>
