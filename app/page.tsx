@@ -93,4 +93,134 @@ export default function LandingPage() {
                     <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-hvn-accent-mint-soft text-[11px] text-hvn-accent-mint">
                       AI
                     </span>
-                    <
+                    <p className="text-xs font-medium text-hvn-text-secondary">
+                      Havenly reflection (just for you)
+                    </p>
+                  </div>
+                  <p className="text-sm text-hvn-text-secondary">
+                    It sounds like you carried a lot today with very little
+                    energy. Even so, you still reached for a walk and stayed
+                    open to support—that matters. Your body is asking for a bit
+                    more gentleness than your schedule currently allows.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* WHY HAVENLY FEELS DIFFERENT */}
+      <section className="px-4 pb-14 pt-14 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl space-y-8">
+          <div className="max-w-2xl space-y-3">
+            <h2 className="text-2xl font-semibold text-hvn-text-primary sm:text-3xl">
+              Built for tired brains, not perfect habits.
+            </h2>
+            <p className="text-sm text-hvn-text-muted sm:text-base">
+              Havenly is a tiny ritual you can keep even on the messy days.
+              Write when you can, stop when you need, and let the AI gently
+              highlight what mattered—without judging you or trying to “optimize”
+              your life.
+            </p>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <FeatureCard
+              title="Low-pressure by design"
+              body="No streaks, public feed, or metrics telling you how you “should” feel. Just a quiet page where a few honest sentences are enough."
+            />
+            <FeatureCard
+              title="Gentle AI reflections"
+              body="Havenly summarizes what you wrote in soft, human language—pointing out themes, emotions, and small wins you might have missed."
+            />
+            <FeatureCard
+              title="Privacy comes first"
+              body="Your entries are private and used only to generate reflections for you. No ads, no selling data, and no social-media style engagement tricks."
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className="px-4 pb-18 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl rounded-[26px] border border-hvn-card bg-hvn-bg-elevated/90 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.85)] backdrop-blur-sm sm:p-8">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-hvn-accent-blue">
+            How Havenly works
+          </p>
+          <h2 className="mt-3 text-xl font-semibold text-hvn-text-primary sm:text-2xl">
+            A 3-step routine that fits between everything else.
+          </h2>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <StepCard
+              step="1"
+              title="Check in"
+              body="Once a day—or whenever you like—open Havenly and answer a short, gentle prompt about your day or your moment."
+            />
+            <StepCard
+              step="2"
+              title="Let AI reflect back"
+              body="Havenly summarizes what it heard, highlights emotional patterns, and echoes back what seemed to matter most."
+            />
+            <StepCard
+              step="3"
+              title="Notice the patterns"
+              body="Over time, your entries and reflections make it easier to see what supports you, what drains you, and what needs protecting."
+            />
+          </div>
+
+          <div className="mt-7 flex flex-wrap items-center justify-between gap-3 border-t border-hvn-subtle/40 pt-5 text-sm text-hvn-text-muted">
+            <p>Free plan includes daily journaling and gentle reflections.</p>
+            <Link
+              href="/upgrade"
+              className="text-xs font-medium text-hvn-accent-blue underline-offset-4 hover:underline"
+            >
+              See what Havenly Plus will add →
+            </Link>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+type FeatureProps = {
+  title: string;
+  body: string;
+};
+
+function FeatureCard({ title, body }: FeatureProps) {
+  return (
+    <div className="h-full rounded-2xl border border-hvn-card bg-hvn-bg-elevated/80 p-4 shadow-sm shadow-black/40">
+      <h3 className="text-sm font-semibold text-hvn-text-secondary">
+        {title}
+      </h3>
+      <p className="mt-2 text-xs text-hvn-text-muted sm:text-[13px]">
+        {body}
+      </p>
+    </div>
+  );
+}
+
+type StepProps = {
+  step: string;
+  title: string;
+  body: string;
+};
+
+function StepCard({ step, title, body }: StepProps) {
+  return (
+    <div className="h-full rounded-2xl border border-hvn-card bg-hvn-bg-soft/70 p-4">
+      <div className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-hvn-accent-mint-soft text-xs font-semibold text-hvn-accent-mint">
+        {step}
+      </div>
+      <h3 className="mt-3 text-sm font-semibold text-hvn-text-secondary">
+        {title}
+      </h3>
+      <p className="mt-2 text-xs text-hvn-text-muted sm:text-[13px]">
+        {body}
+      </p>
+    </div>
+  );
+}
