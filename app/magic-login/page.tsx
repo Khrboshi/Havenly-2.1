@@ -5,72 +5,66 @@ import sendMagicLink from "./sendMagicLink";
 
 export default function MagicLoginPage() {
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
-  const [error, setError] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">(
+    "idle"
+  );
+  const [message, setMessage] = useState("");
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setStatus("loading");
+    setMessage("");
 
     const result = await sendMagicLink(email);
 
-    if (result?.error) {
-      setError(result.error);
-      return;
+    if (result.success) {
+      setStatus("sent");
+      setMessage("Magic login link sent! Please check your inbox.");
+    } else {
+      setStatus("error");
+      setMessage(result.error || "Something went wrong.");
     }
-
-    setSent(true);
-  }
+  };
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-[70vh] space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--brand-bg)] px-4">
+      <div className="w-full max-w-md bg-white shadow-lg rounded-xl p-8">
+        <h1 className="text-2xl font-bold text-center text-[var(--brand-text)] mb-2">
+          Magic Login
+        </h1>
+        <p className="text-center text-gray-600 mb-6">
+          Enter your email to receive a login link.
+        </p>
 
-      <h1 className="text-3xl font-bold">Get a secure login link</h1>
-
-      {!sent && (
-        <form
-          onSubmit={handleSubmit}
-          className="w-full max-w-md space-y-6 bg-[var(--brand-surface)]/60 p-8 rounded-xl border border-white/10 shadow-md"
-        >
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="email"
-            placeholder="you@example.com"
-            className="w-full p-3 rounded-lg bg-[#0f1320] border border-white/10 text-[var(--brand-text)] placeholder-white/40"
+            required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
+            placeholder="you@example.com"
+            className="w-full px-4 py-3 border rounded-lg focus:ring focus:ring-[var(--brand-primary-light)] focus:outline-none"
           />
 
           <button
             type="submit"
+            disabled={status === "loading"}
             className="w-full py-3 rounded-lg bg-[var(--brand-primary)] text-white font-semibold hover:bg-[var(--brand-primary-dark)] transition"
           >
-            Send magic link
+            {status === "loading" ? "Sending..." : "Send Magic Link"}
           </button>
-
-          {error && (
-            <p className="text-red-400 text-sm text-center">{error}</p>
-          )}
-
-          <p className="text-center text-[var(--brand-text)]/70">
-            <a href="/" className="underline hover:text-[var(--brand-primary)]">
-              Return to home
-            </a>
-          </p>
         </form>
-      )}
 
-      {sent && (
-        <div className="bg-[var(--brand-surface)]/60 p-8 rounded-xl border border-white/10 shadow-md text-center max-w-md">
-          <p className="text-lg font-medium text-[var(--brand-primary-light)]">
-            Magic link sent!
-          </p>
-          <p className="text-[var(--brand-text)]/75 mt-2">
-            Check your inbox to continue.
-          </p>
-        </div>
-      )}
-
-    </main>
+        {message && (
+          <div
+            className={`mt-4 text-center ${
+              status === "error" ? "text-red-600" : "text-green-600"
+            }`}
+          >
+            {message}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
