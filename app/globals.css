@@ -2,7 +2,116 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Smooth fade */
+/* ===========================
+   HAVENLY BRAND THEME
+   Dark, calm, premium
+   =========================== */
+
+:root {
+  /* Backgrounds */
+  --hvn-bg: #020617; /* main page background (very dark navy) */
+  --hvn-bg-elevated: #02091a; /* cards / sections */
+  --hvn-bg-soft: #0b1220;
+
+  /* Text */
+  --hvn-text-primary: #e2e8f0;
+  --hvn-text-secondary: #cbd5f5;
+  --hvn-text-muted: #94a3b8;
+
+  /* Accents: Option A (Mint primary, Blue secondary) */
+  --hvn-accent-mint: #3ee7b0;
+  --hvn-accent-mint-soft: rgba(62, 231, 176, 0.16);
+  --hvn-accent-blue: #60a5fa;
+  --hvn-accent-blue-soft: rgba(96, 165, 250, 0.16);
+
+  /* Borders & shadows */
+  --hvn-border-subtle: rgba(148, 163, 184, 0.25);
+  --hvn-card-border: rgba(148, 163, 184, 0.2);
+  --hvn-shadow-soft: 0 18px 60px rgba(15, 23, 42, 0.85);
+
+  /* Radii */
+  --hvn-radius-lg: 18px;
+  --hvn-radius-md: 14px;
+  --hvn-radius-sm: 10px;
+}
+
+/* Utility classes mapped to Tailwind via CSS vars */
+body {
+  margin: 0;
+  background-color: var(--hvn-bg);
+  color: var(--hvn-text-primary);
+}
+
+/* Big radial glow behind pages */
+.bg-hvn-page-gradient {
+  background:
+    radial-gradient(
+      circle at 0% 0%,
+      rgba(62, 231, 176, 0.3),
+      transparent 45%
+    ),
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(96, 165, 250, 0.22),
+      transparent 45%
+    ),
+    radial-gradient(
+      circle at 50% 120%,
+      rgba(15, 23, 42, 0.95),
+      #020617 80%
+    );
+}
+
+/* Helper utility classes used in TSX */
+.bg-hvn-bg {
+  background-color: var(--hvn-bg);
+}
+
+.bg-hvn-elevated {
+  background-color: var(--hvn-bg-elevated);
+}
+
+.text-hvn-text-primary {
+  color: var(--hvn-text-primary);
+}
+
+.text-hvn-text-secondary {
+  color: var(--hvn-text-secondary);
+}
+
+.text-hvn-text-muted {
+  color: var(--hvn-text-muted);
+}
+
+.border-hvn-subtle {
+  border-color: var(--hvn-border-subtle);
+}
+
+.border-hvn-card {
+  border-color: var(--hvn-card-border);
+}
+
+.bg-hvn-accent-mint {
+  background-color: var(--hvn-accent-mint);
+}
+
+.bg-hvn-accent-mint-soft {
+  background-color: var(--hvn-accent-mint-soft);
+}
+
+.bg-hvn-accent-blue-soft {
+  background-color: var(--hvn-accent-blue-soft);
+}
+
+.text-hvn-accent-mint {
+  color: var(--hvn-accent-mint);
+}
+
+.text-hvn-accent-blue {
+  color: var(--hvn-accent-blue);
+}
+
+/* Fade-in animation for header / drawers */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -18,22 +127,20 @@
   animation: fade-in 0.22s ease-out forwards;
 }
 
-/* Prevent side scrolling */
+/* Prevent horizontal scroll on mobile */
 html,
 body {
   overflow-x: hidden;
-  background: var(--brand-bg);
-  color: var(--brand-text);
 }
 
-/* Ensure all pages render on the same canvas */
-main {
-  width: 100%;
+/* Optional: hide scrollbars on WebKit for cleaner look */
+body::-webkit-scrollbar {
+  width: 8px;
 }
-
-/* Card shadow softness */
-.card {
-  background: white;
-  border-radius: 1rem;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+body::-webkit-scrollbar-track {
+  background: transparent;
+}
+body::-webkit-scrollbar-thumb {
+  background: rgba(30, 64, 175, 0.4);
+  border-radius: 999px;
 }
