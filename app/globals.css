@@ -2,71 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
-/* -----------------------------------------------------
-   BRAND VARIABLES
------------------------------------------------------ */
+/* === HAVENLY GLOBAL BRANDING === */
 :root {
   --brand-primary: #4CA7A3;
   --brand-primary-light: #76C5C0;
   --brand-primary-dark: #2E837F;
-  --brand-bg: #F7FBFA;
-  --brand-text: #1F2937;
 
-  --accent-yellow: #F9D976;
-  --accent-peach: #F6B8A1;
-  --accent-pink: #FCE7F3;
-
-  --radius-lg: 16px;
-  --radius-md: 12px;
-  --radius-sm: 8px;
-
-  --font-sans: 'Inter', 'SF Pro Rounded', system-ui, sans-serif;
-
-  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --brand-bg: #0c0f17; /* unified background */
+  --brand-surface: #11141f; 
+  --brand-text: #e8f0f2;
 }
 
-/* -----------------------------------------------------
-   UNIVERSAL CARD STYLE
------------------------------------------------------ */
-.h-card {
-  background: white;
-  border-radius: var(--radius-lg);
-  padding: 1.25rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-  transition: box-shadow 0.2s var(--ease-smooth),
-              transform 0.2s var(--ease-smooth);
+/* Apply global Havenly background */
+html,
+body {
+  background-color: var(--brand-bg) !important;
+  color: var(--brand-text);
+  overflow-x: hidden;
+  min-height: 100%;
 }
 
-.h-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.08);
+/* Fix pages that were using white backgrounds */
+section,
+main,
+div,
+article {
+  background-color: transparent !important;
 }
 
-/* -----------------------------------------------------
-   TEXT SELECTION COLOR
------------------------------------------------------ */
-::selection {
-  background: var(--brand-primary);
-  color: white;
-}
-
-/* -----------------------------------------------------
-   SCROLLBAR (OPTIONAL)
------------------------------------------------------ */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--brand-primary-dark);
-  border-radius: 8px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-/* -----------------------------------------------------
-   FADE-IN ANIMATION (HEADER, DRAWER)
------------------------------------------------------ */
+/* Fade-in animation */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -80,33 +44,4 @@
 
 .animate-fade-in {
   animation: fade-in 0.22s ease-out forwards;
-}
-
-/* -----------------------------------------------------
-   FLOATING MOBILE PWA BUTTON (BASE LAYER SUPPORT)
------------------------------------------------------ */
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.pwa-fade-up {
-  animation: fade-up 0.35s ease-out forwards;
-}
-
-/* -----------------------------------------------------
-   PREVENT SCROLL SHIFT ON MOBILE NAV
------------------------------------------------------ */
-html,
-body {
-  overflow-x: hidden;
-  background: var(--brand-bg);
-  color: var(--brand-text);
-}
-
-/* -----------------------------------------------------
-   LINK HIGHLIGHT RESET
------------------------------------------------------ */
-a {
-  -webkit-tap-highlight-color: transparent;
 }
