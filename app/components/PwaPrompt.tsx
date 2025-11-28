@@ -1,42 +1,34 @@
-// components/PwaPrompt.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 
 export default function PwaPrompt() {
-  const [show, setShow] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
     const isMobile =
-      /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      typeof navigator !== "undefined" &&
+      /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-    const isStandalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      // iOS Safari
-      (window.navigator as any).standalone === true;
-
-    if (isMobile && !isStandalone) {
-      setTimeout(() => setShow(true), 1200);
+    if (isMobile) {
+      setTimeout(() => setVisible(true), 2000);
     }
   }, []);
 
-  if (!show) return null;
+  if (!visible) return null;
 
   return (
-    <div className="fixed bottom-5 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-[#0d1624] text-slate-100 p-4 rounded-xl shadow-lg border border-white/10 z-50">
-      <p className="text-sm font-medium mb-2">
-        Add Havenly 2.1 to your home screen
+    <div className="fixed bottom-4 left-4 right-4 z-50 rounded-xl border border-emerald-700/60 bg-emerald-800/80 p-4 text-slate-50 backdrop-blur">
+      <b>Add Havenly to your home screen</b>
+      <p className="text-xs opacity-90 mt-1">
+        Tap Share → Add to Home Screen.
       </p>
-      <p className="text-xs text-slate-400 mb-3">
-        Tap Share → Add to Home Screen to install Havenly 2.1 as an app.
-      </p>
+
       <button
-        className="text-xs text-slate-400 underline"
-        onClick={() => setShow(false)}
+        className="text-xs underline mt-2 opacity-80"
+        onClick={() => setVisible(false)}
       >
-        Dismiss
+        Close
       </button>
     </div>
   );
