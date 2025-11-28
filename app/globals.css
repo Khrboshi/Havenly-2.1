@@ -2,15 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-/* --------------------------------------------------
+/* -----------------------------------------------------
    BRAND VARIABLES
--------------------------------------------------- */
+----------------------------------------------------- */
 :root {
   --brand-primary: #4CA7A3;
   --brand-primary-light: #76C5C0;
   --brand-primary-dark: #2E837F;
-  --brand-bg: #0B1120;
-  --brand-text: #E2E8F0;
+  --brand-bg: #F7FBFA;
+  --brand-text: #1F2937;
+
+  --accent-yellow: #F9D976;
+  --accent-peach: #F6B8A1;
+  --accent-pink: #FCE7F3;
 
   --radius-lg: 16px;
   --radius-md: 12px;
@@ -21,40 +25,48 @@
   --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* --------------------------------------------------
-   GLOBAL STYLES
--------------------------------------------------- */
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-  background: var(--brand-bg);
-  color: var(--brand-text);
-  font-family: var(--font-sans);
-  scroll-behavior: smooth;
-}
-
-* {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* --------------------------------------------------
-   CARD STYLE (used across pages)
--------------------------------------------------- */
-
+/* -----------------------------------------------------
+   UNIVERSAL CARD STYLE
+----------------------------------------------------- */
 .h-card {
   background: white;
   border-radius: var(--radius-lg);
   padding: 1.25rem;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s var(--ease-smooth),
+              transform 0.2s var(--ease-smooth);
 }
 
-/* --------------------------------------------------
-   NEW MINI ANIMATION HELPER
-   (Used by the header + mobile menu)
--------------------------------------------------- */
+.h-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.08);
+}
 
+/* -----------------------------------------------------
+   TEXT SELECTION COLOR
+----------------------------------------------------- */
+::selection {
+  background: var(--brand-primary);
+  color: white;
+}
+
+/* -----------------------------------------------------
+   SCROLLBAR (OPTIONAL)
+----------------------------------------------------- */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--brand-primary-dark);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* -----------------------------------------------------
+   FADE-IN ANIMATION (HEADER, DRAWER)
+----------------------------------------------------- */
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -67,24 +79,34 @@ body {
 }
 
 .animate-fade-in {
-  animation: fade-in 0.18s ease-out forwards;
+  animation: fade-in 0.22s ease-out forwards;
 }
 
-/* --------------------------------------------------
-   OPTIONAL: SMOOTH FADE FOR HERO TEXT
--------------------------------------------------- */
-
-@keyframes rise-fade {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* -----------------------------------------------------
+   FLOATING MOBILE PWA BUTTON (BASE LAYER SUPPORT)
+----------------------------------------------------- */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.animate-rise {
-  animation: rise-fade 0.35s var(--ease-smooth) forwards;
+.pwa-fade-up {
+  animation: fade-up 0.35s ease-out forwards;
+}
+
+/* -----------------------------------------------------
+   PREVENT SCROLL SHIFT ON MOBILE NAV
+----------------------------------------------------- */
+html,
+body {
+  overflow-x: hidden;
+  background: var(--brand-bg);
+  color: var(--brand-text);
+}
+
+/* -----------------------------------------------------
+   LINK HIGHLIGHT RESET
+----------------------------------------------------- */
+a {
+  -webkit-tap-highlight-color: transparent;
 }
