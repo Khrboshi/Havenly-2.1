@@ -1,58 +1,82 @@
-// components/SiteHeader.tsx
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
+import { useState } from "react";
+import { usePathname } from "next/navigation";
+
+const navLinks = [
+  { name: "Home", href: "/" },
+  { name: "Blog", href: "/blog" },
+  { name: "About", href: "/about" },
+];
 
 export default function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
-    <header className="w-full border-b border-white/5 bg-[#040b14]/80 backdrop-blur-sm sticky top-0 z-50">
-      <div className="max-w-screen-xl mx-auto flex items-center justify-between px-4 py-4">
-
-        {/* Logo */}
-        <Link href="/" className="text-xl font-semibold text-emerald-300">
+    <header className="w-full border-b border-slate-800/60 bg-slate-900/40 backdrop-blur-lg">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+        <Link href="/" className="text-2xl font-semibold text-emerald-400">
           Havenly
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-8 text-sm">
-          <Link href="/" className="hover:text-emerald-300">Home</Link>
-          <Link href="/blog" className="hover:text-emerald-300">Blog</Link>
-          <Link href="/about" className="hover:text-emerald-300">About</Link>
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex items-center gap-8 text-slate-200">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`hover:text-emerald-400 transition ${
+                pathname === link.href ? "text-emerald-400" : ""
+              }`}
+            >
+              {link.name}
+            </Link>
+          ))}
 
           <Link
-            href="/magic-login"
-            className="px-4 py-1.5 rounded-full border border-white/20 hover:border-emerald-300 hover:text-emerald-300 transition"
+            href="/auth/login"
+            className="px-4 py-1.5 rounded-full border border-emerald-400 text-emerald-400 hover:bg-emerald-400 hover:text-slate-900 transition"
           >
             Magic Login
           </Link>
         </nav>
 
-        {/* Mobile Hamburger */}
+        {/* Mobile menu toggle */}
         <button
-          className="md:hidden text-slate-100 text-2xl"
+          className="md:hidden text-slate-200"
           onClick={() => setOpen(!open)}
-          aria-label="Toggle menu"
         >
-          ☰
+          <span className="text-xl">≡</span>
         </button>
       </div>
 
-      {/* Mobile Menu Drawer */}
+      {/* Mobile Nav Drawer */}
       {open && (
-        <div className="md:hidden bg-[#040b14] border-t border-white/10 px-4 py-4 text-base space-y-4">
-          <Link href="/" onClick={() => setOpen(false)}>Home</Link>
-          <Link href="/blog" onClick={() => setOpen(false)}>Blog</Link>
-          <Link href="/about" onClick={() => setOpen(false)}>About</Link>
-          <Link
-            href="/magic-login"
-            onClick={() => setOpen(false)}
-            className="block px-4 py-2 rounded-full border border-white/20 text-center mt-2"
-          >
-            Magic Login
-          </Link>
+        <div className="md:hidden bg-slate-900/90 backdrop-blur-lg border-t border-slate-800/60 px-4 pb-4">
+          <nav className="flex flex-col text-slate-200 gap-4 py-4">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setOpen(false)}
+                className={`hover:text-emerald-400 transition ${
+                  pathname === link.href ? "text-emerald-400" : ""
+                }`}
+              >
+                {link.name}
+              </Link>
+            ))}
+
+            <Link
+              href="/auth/login"
+              onClick={() => setOpen(false)}
+              className="w-full text-center px-4 py-2 rounded-full border border-emerald-400 text-emerald-400 hover:bg-emerald-400 hover:text-slate-900 transition"
+            >
+              Magic Login
+            </Link>
+          </nav>
         </div>
       )}
     </header>
