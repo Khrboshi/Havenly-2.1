@@ -1,12 +1,4 @@
-export type BlogPost = {
-  slug: string;
-  title: string;
-  excerpt: string;
-  date: string;
-  minutes: number;
-};
-
-export const posts: BlogPost[] = [
+export const posts = [
   {
     slug: "how-to-talk-to-yourself-more-kindly",
     title: "How to talk to yourself more kindly (backed by psychology)",
@@ -27,7 +19,7 @@ export const posts: BlogPost[] = [
     slug: "the-three-minute-journal-that-works",
     title: "The 3-minute journal that actually works (even on busy days)",
     excerpt:
-      "A simple 3-minute template you can reuse whenever life feels crowded but you still want to check in.",
+      "A simple 3-minute template to support emotional clarity even on crowded days.",
     date: "Jan 8, 2025",
     minutes: 4,
   },
@@ -35,7 +27,7 @@ export const posts: BlogPost[] = [
     slug: "why-gentle-journaling-works",
     title: "Why gentle journaling works (even if you only write for 5 minutes)",
     excerpt:
-      "A softer approach to journaling — no pressure, no perfectionism, no daily streaks.",
+      "A softer approach to reflection — no streaks, no pressure, no perfection.",
     date: "Jan 1, 2025",
     minutes: 5,
   },
