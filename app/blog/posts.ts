@@ -1,45 +1,42 @@
-const posts = [
-  {
-    slug: "why-gentle-journaling-works",
-    title: "Why Gentle Journaling Works",
-    date: "2024",
-    excerpt:
-      "Journaling does not need to be long or intense. Two minutes can clear your mind.",
-    content: `
-      <p>Most people think journaling requires long emotional writing...</p>
-      <p>But research shows that even <strong>two minutes</strong> of reflective thinking...</p>
-    `,
-  },
-  {
-    slug: "the-3-minute-journal-that-actually-works",
-    title: "The 3-Minute Journal That Actually Works",
-    date: "2024",
-    excerpt:
-      "A simple formula for a sustainable daily habit that reduces stress.",
-    content: `
-      <p>The trick is consistency, not volume...</p>
-    `,
-  },
-  {
-    slug: "why-your-mind-feels-lighter-after-two-sentences",
-    title: "Why Your Mind Feels Lighter After Two Sentences",
-    date: "2024",
-    excerpt:
-      "Your brain relaxes when you externalize thoughts. Even two lines help.",
-    content: `
-      <p>This effect is called cognitive off-loading...</p>
-    `,
-  },
+export type BlogPost = {
+  slug: string;
+  title: string;
+  excerpt: string;
+  date: string;
+  minutes: number;
+};
+
+export const posts: BlogPost[] = [
   {
     slug: "how-to-talk-to-yourself-more-kindly",
-    title: "How to Talk to Yourself More Kindly",
-    date: "2024",
+    title: "How to talk to yourself more kindly (backed by psychology)",
     excerpt:
-      "A short guide to building an internal voice that supports rather than criticizes.",
-    content: `
-      <p>Your inner voice shapes your stress and decision-making...</p>
-    `,
+      "Practical ways to shift your self-talk from harsh to supportive — without pretending everything is fine.",
+    date: "Jan 22, 2025",
+    minutes: 6,
+  },
+  {
+    slug: "why-your-mind-feels-lighter-after-writing",
+    title: "Why your mind feels lighter after writing just 2 sentences",
+    excerpt:
+      "A look at how ‘mental load’ works, and why even a few lines of writing can free up space in your mind.",
+    date: "Jan 15, 2025",
+    minutes: 5,
+  },
+  {
+    slug: "the-three-minute-journal-that-works",
+    title: "The 3-minute journal that actually works (even on busy days)",
+    excerpt:
+      "A simple 3-minute template you can reuse whenever life feels crowded but you still want to check in.",
+    date: "Jan 8, 2025",
+    minutes: 4,
+  },
+  {
+    slug: "why-gentle-journaling-works",
+    title: "Why gentle journaling works (even if you only write for 5 minutes)",
+    excerpt:
+      "A softer approach to journaling — no pressure, no perfectionism, no daily streaks.",
+    date: "Jan 1, 2025",
+    minutes: 5,
   },
 ];
-
-export default posts;
