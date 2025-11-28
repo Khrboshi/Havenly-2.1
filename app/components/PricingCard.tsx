@@ -1,18 +1,47 @@
+"use client";
+
+import { Check } from "lucide-react";
+
 interface Props {
   title: string;
   price: string;
-  description: string;
+  items: string[];
+  buttonLabel: string;
+  disabled?: boolean;
 }
 
-export default function PricingCard({ title, price, description }: Props) {
+export default function PricingCard({
+  title,
+  price,
+  items,
+  buttonLabel,
+  disabled = false,
+}: Props) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-6 text-slate-200">
-      <h3 className="text-xl font-semibold text-emerald-400">{title}</h3>
-      <p className="text-3xl font-bold mt-2">{price}</p>
-      <p className="text-slate-400 text-sm mt-4">{description}</p>
+    <div className="border border-slate-800 bg-slate-900/40 rounded-2xl p-8 flex flex-col justify-between shadow-lg">
+      <div>
+        <h2 className="text-xl font-semibold text-white mb-2">{title}</h2>
+        <p className="text-3xl font-bold text-emerald-300 mb-4">{price}</p>
 
-      <button className="mt-6 w-full rounded-lg bg-emerald-500 px-4 py-2 text-slate-900 font-medium hover:bg-emerald-400 transition">
-        Choose Plan
+        <ul className="space-y-3 mb-8">
+          {items.map((item, i) => (
+            <li key={i} className="flex items-center text-slate-300">
+              <Check className="h-4 w-4 text-emerald-400 mr-2" />
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <button
+        disabled={disabled}
+        className={`w-full py-3 rounded-xl font-medium transition ${
+          disabled
+            ? "bg-slate-700 text-slate-400 cursor-not-allowed"
+            : "bg-emerald-400 text-slate-900 hover:bg-emerald-300"
+        }`}
+      >
+        {buttonLabel}
       </button>
     </div>
   );
