@@ -4,27 +4,33 @@ import { Inter } from "next/font/google";
 
 import ClientNavWrapper from "./components/ClientNavWrapper";
 import SiteHeader from "./components/SiteHeader";
+import PwaInstallHint from "./components/PwaInstallHint";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Havenly 2.1",
-  description: "A calmer, kinder way to understand your day.",
+  title: "Havenly Journal",
+  description: "A gentle journaling experience designed to help you breathe deeper and feel lighter.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body className={inter.className}>
+        {/* NAVIGATION WRAPPER + HEADER */}
         <ClientNavWrapper>
           <SiteHeader />
         </ClientNavWrapper>
 
-        <main className="min-h-screen">{children}</main>
+        {/* MOBILE-ONLY INSTALL BANNER */}
+        <PwaInstallHint />
 
-        <footer className="text-center py-10 text-slate-500 text-sm">
-          Havenly 2.1 · A calmer, kinder way to understand your day. © 2025
-        </footer>
+        {/* MAIN CONTENT */}
+        {children}
       </body>
     </html>
   );
