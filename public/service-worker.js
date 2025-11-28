@@ -1,23 +1,43 @@
-self.addEventListener("install", () => {
+// Simple PWA service worker for caching static assets & offline use.
+
+const CACHE_NAME = "havenly-cache-v1";
+
+// Cache on install
+self.addEventListener("install", event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(["/", "/offline"]);
+    })
+  );
   self.skipWaiting();
 });
 
-self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
-});
+// Serve from cache
+self.addEventListener("fetch", event => {
+  if (event.request.method !== "GET") return;
 
-// Basic offline fallback
-self.addEventListener("fetch", (event) => {
   event.respondWith(
-    caches.open("havenly-cache").then(async (cache) => {
-      const cached = await cache.match(event.request);
-      const fetched = fetch(event.request).catch(() => cached);
-
-      if (fetched) {
-        cache.put(event.request, fetched.clone());
-      }
-
-      return fetched || cached || Response.error();
+    caches.match(event.request).then(cachedResponse => {
+      return (
+        cachedResponse ||
+        fetch(event.request).catch(() =>
+          caches.match("/offline")
+        )
+      );
     })
   );
+});
+
+// Cleanup old caches
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys
+          .filter(key => key !== CACHE_NAME)
+          .map(key => caches.delete(key))
+      )
+    )
+  );
+  self.clients.claim();
 });
