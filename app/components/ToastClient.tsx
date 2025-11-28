@@ -1,26 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState } from "react";
+import ToastMessage from "./ToastMessage";
 
 export default function ToastClient() {
-  const params = useSearchParams();
-  const [message, setMessage] = useState<string | null>(null);
+  const [toast, setToast] = useState("");
 
-  useEffect(() => {
-    const msg = params.get("msg");
-    if (msg) {
-      setMessage(msg);
-      const timeout = setTimeout(() => setMessage(null), 4500);
-      return () => clearTimeout(timeout);
-    }
-  }, [params]);
+  // Call this to trigger a toast
+  (globalThis as any).toast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(""), 2500);
+  };
 
-  if (!message) return null;
-
-  return (
-    <div className="toast-container">
-      <div className="toast animate-fade-in">{message}</div>
-    </div>
-  );
+  return toast ? <ToastMessage message={toast} /> : null;
 }
