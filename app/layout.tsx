@@ -1,59 +1,23 @@
 import "./globals.css";
-
 import type { Metadata } from "next";
 import SiteHeader from "./components/SiteHeader";
 import PwaInstallHint from "./components/PwaInstallHint";
 
 export const metadata: Metadata = {
   title: "Havenly 2.1",
-  description: "A calmer, kinder way to understand your day.",
-  manifest: "/manifest.json",
-  themeColor: "#4CA7A3",
-  icons: {
-    icon: "/pwa/icon-192.png",
-    apple: "/pwa/icon-192.png",
-  },
+  description: "A calmer, kinder journaling experience.",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <head>
-        {/* PWA Required Meta Tags */}
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Havenly" />
-        <link rel="apple-touch-icon" href="/pwa/icon-192.png" />
-        <link rel="manifest" href="/manifest.json" />
-
-        {/* Service Worker Registration */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ("serviceWorker" in navigator) {
-                window.addEventListener("load", () => {
-                  navigator.serviceWorker.register("/service-worker.js");
-                });
-              }
-            `,
-          }}
-        />
-      </head>
-
-      <body>
-        {/* Top Navigation */}
+      <body className="bg-[var(--brand-bg)] text-[var(--brand-text)] antialiased">
         <SiteHeader />
 
-        {/* Floating mobile install hint */}
+        {/* Floating mobile install prompt */}
         <PwaInstallHint />
 
-        {/* Page content */}
-        {children}
+        <main className="max-w-5xl mx-auto px-4 py-8">{children}</main>
       </body>
     </html>
   );
