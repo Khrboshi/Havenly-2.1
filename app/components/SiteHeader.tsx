@@ -9,7 +9,7 @@ export default function SiteHeader() {
   const nav = [
     { href: "/", label: "Home" },
     { href: "/journal", label: "Journal" },
-    { href: "/blog", label: "Blog" },    // RESTORED
+    { href: "/blog", label: "Blog" },
     { href: "/about", label: "About" },
     { href: "/tools", label: "Tools" },
   ];
