@@ -1,33 +1,33 @@
 export const posts = [
   {
     slug: "how-to-talk-to-yourself-more-kindly",
-    title: "How to talk to yourself more kindly (backed by psychology)",
+    title: "How to Talk to Yourself More Kindly",
     excerpt:
-      "Practical ways to shift your self-talk from harsh to supportive — without pretending everything is fine.",
+      "A gentle guide on shifting your inner voice from harsh to supportive — backed by psychology.",
     date: "Jan 22, 2025",
     minutes: 6,
   },
   {
     slug: "why-your-mind-feels-lighter-after-writing",
-    title: "Why your mind feels lighter after writing just 2 sentences",
+    title: "Why Your Mind Feels Lighter After Writing Two Sentences",
     excerpt:
-      "A look at how ‘mental load’ works, and why even a few lines of writing can free up space in your mind.",
+      "Why even a tiny journaling practice can reduce emotional load and help you breathe again.",
     date: "Jan 15, 2025",
     minutes: 5,
   },
   {
     slug: "the-three-minute-journal-that-works",
-    title: "The 3-minute journal that actually works (even on busy days)",
+    title: "The 3-Minute Journal That Actually Works",
     excerpt:
-      "A simple 3-minute template to support emotional clarity even on crowded days.",
+      "A calm, low-pressure template for reflection — perfect for tired days and busy schedules.",
     date: "Jan 8, 2025",
     minutes: 4,
   },
   {
     slug: "why-gentle-journaling-works",
-    title: "Why gentle journaling works (even if you only write for 5 minutes)",
+    title: "Why Gentle Journaling Works (Even When Life Is Heavy)",
     excerpt:
-      "A softer approach to reflection — no streaks, no pressure, no perfection.",
+      "A softer approach to emotional clarity — no streaks, no pressure, no perfection.",
     date: "Jan 1, 2025",
     minutes: 5,
   },
