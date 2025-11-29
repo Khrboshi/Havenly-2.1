@@ -10,8 +10,8 @@ export default function BlogPage() {
         </h1>
 
         <p className="mt-3 max-w-2xl text-lg text-hvn-text-muted">
-          Gentle notes on reflection, emotions, calm technology, and tiny
-          check-ins that make your days feel a little lighter.
+          Gentle notes on reflection, emotional wellbeing, calm technology, and
+          tiny check-ins that make life feel lighter.
         </p>
 
         <div className="mt-12 space-y-8">
@@ -24,10 +24,15 @@ export default function BlogPage() {
               <p className="text-xs text-hvn-text-muted">
                 {post.date} • {post.minutes} min read
               </p>
+
               <h2 className="mt-2 text-xl font-semibold text-hvn-text-primary">
                 {post.title}
               </h2>
-              <p className="mt-2 text-sm text-hvn-text-muted">{post.excerpt}</p>
+
+              <p className="mt-2 text-sm text-hvn-text-muted">
+                {post.excerpt}
+              </p>
+
               <p className="mt-3 text-sm font-medium text-hvn-accent-mint">
                 Read article →
               </p>
