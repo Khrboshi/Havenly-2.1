@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createBrowserSupabase } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/client";
 
 /**
  * Auth callback page:
@@ -16,8 +16,9 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     async function handleAuthCallback() {
-      const supabase = createBrowserSupabase();
+      const supabase = createClient();
 
+      // Confirm session
       const { data, error } = await supabase.auth.getSession();
 
       const redirectTo = searchParams.get("redirectTo") || "/dashboard";
