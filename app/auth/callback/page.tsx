@@ -2,13 +2,12 @@
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { supabaseClient } from "@/lib/supabase/client";
 
 /**
  * Auth callback page:
- * - Triggered after the user clicks the magic link.
- * - Confirms the session with Supabase.
- * - Redirects the user to the proper destination.
+ * Triggered after the user clicks the magic link in the email.
+ * Confirms Supabase session and redirects the user accordingly.
  */
 export default function AuthCallbackPage() {
   const router = useRouter();
@@ -16,11 +15,13 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     async function handleAuthCallback() {
-      const supabase = createClient();
+      // Use your existing browser Supabase client
+      const supabase = supabaseClient;
 
-      // Confirm session
+      // Get the user session
       const { data, error } = await supabase.auth.getSession();
 
+      // Default redirect is /dashboard unless specified
       const redirectTo = searchParams.get("redirectTo") || "/dashboard";
 
       if (error) {
