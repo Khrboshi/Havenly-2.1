@@ -6,15 +6,12 @@ export default async function sendMagicLink(email: string) {
   try {
     const supabase = await createServerSupabase();
 
-    // We send the user to /auth/callback with a redirectTo=/dashboard param
-    const callbackUrl =
+    const redirectUrl =
       "https://havenly-2-1.vercel.app/auth/callback?redirectTo=/dashboard";
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: {
-        emailRedirectTo: callbackUrl,
-      },
+      options: { emailRedirectTo: redirectUrl },
     });
 
     if (error) {
