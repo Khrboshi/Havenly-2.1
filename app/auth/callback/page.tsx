@@ -1,34 +1,33 @@
 "use client";
 
-import { useEffect } from "react";
+export const dynamic = "force-dynamic";
+
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabaseClient } from "@/lib/supabase/client";
 
 /**
- * Auth callback page:
- * Triggered after the user clicks the magic link in the email.
- * Confirms Supabase session and redirects the user accordingly.
+ * Handles Supabase email magic link callback:
+ * - Confirms the browser session
+ * - Redirects to redirectTo or /dashboard
  */
-export default function AuthCallbackPage() {
+function CallbackInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    async function handleAuthCallback() {
-      // Use your existing browser Supabase client
+    async function finishSignIn() {
       const supabase = supabaseClient;
 
-      // Get the user session
       const { data, error } = await supabase.auth.getSession();
 
-      // Default redirect is /dashboard unless specified
-      const redirectTo = searchParams.get("redirectTo") || "/dashboard";
-
       if (error) {
-        console.error("Auth callback error:", error.message);
+        console.error("Callback error:", error.message);
         router.replace("/magic-login");
         return;
       }
+
+      const redirectTo = searchParams.get("redirectTo") || "/dashboard";
 
       if (data.session) {
         router.replace(redirectTo);
@@ -37,7 +36,7 @@ export default function AuthCallbackPage() {
       }
     }
 
-    handleAuthCallback();
+    finishSignIn();
   }, [router, searchParams]);
 
   return (
@@ -49,5 +48,13 @@ export default function AuthCallbackPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={<div className="text-white p-8">Loading…</div>}>
+      <CallbackInner />
+    </Suspense>
   );
 }
