@@ -1,24 +1,54 @@
-export const dynamic = "force-dynamic";
+"use client";
 
-import { NextResponse } from "next/server";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { createBrowserSupabase } from "@/lib/supabase/client";
 
-export async function GET(request: Request) {
-  const requestUrl = new URL(request.url);
-  const code = requestUrl.searchParams.get("code");
+/**
+ * Auth callback page:
+ * - Called after the user clicks the magic link in the email.
+ * - Confirms the session with Supabase.
+ * - Redirects to ?redirectTo=... or /dashboard by default.
+ */
+export default function AuthCallbackPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  if (!code) {
-    return NextResponse.redirect(new URL("/magic-login?error=missing_code", request.url));
-  }
+  useEffect(() => {
+    async function handleAuthCallback() {
+      const supabase = createBrowserSupabase();
 
-  const supabase = await createServerSupabase();
+      // Double-check session from Supabase
+      const { data, error } = await supabase.auth.getSession();
 
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
+      const redirectTo = searchParams.get("redirectTo") || "/dashboard";
 
-  if (error) {
-    console.error("Auth callback error:", error.message);
-    return NextResponse.redirect(new URL("/magic-login?error=callback_failed", request.url));
-  }
+      if (error) {
+        console.error("Auth callback error:", error.message);
+        router.replace("/magic-login");
+        return;
+      }
 
-  return NextResponse.redirect(new URL("/dashboard", request.url));
+      if (data.session) {
+        // User is authenticated – send them where we want
+        router.replace(redirectTo);
+      } else {
+        // No session – back to login
+        router.replace("/magic-login");
+      }
+    }
+
+    handleAuthCallback();
+  }, [router, searchParams]);
+
+  return (
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-950">
+      <div className="text-center text-slate-100">
+        <p className="text-lg font-medium mb-2">Signing you in…</p>
+        <p className="text-sm text-slate-300">
+          Please wait a moment while we complete your login.
+        </p>
+      </div>
+    </main>
+  );
 }
