@@ -1,70 +1,103 @@
 "use client";
 
 import { useState } from "react";
-import sendMagicLink from "./sendMagicLink";
+import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function MagicLoginPage() {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">(
-    "idle"
-  );
-  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("loading");
-    setMessage("");
+    setErrorMessage("");
 
-    const result = await sendMagicLink(email);
+    try {
+      const res = await fetch("/api/auth/send-magic-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
 
-    if (result.success) {
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to send magic link.");
+      }
+
       setStatus("sent");
-      setMessage("Magic login link sent! Please check your inbox.");
-    } else {
+    } catch (err: any) {
+      setErrorMessage(err.message || "Something went wrong.");
       setStatus("error");
-      setMessage(result.error || "Something went wrong.");
     }
-  };
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--brand-bg)] px-4">
-      <div className="w-full max-w-md bg-white shadow-lg rounded-xl p-8">
-        <h1 className="text-2xl font-bold text-center text-[var(--brand-text)] mb-2">
-          Magic Login
-        </h1>
-        <p className="text-center text-gray-600 mb-6">
-          Enter your email to receive a login link.
-        </p>
+    <div className="min-h-screen flex items-center justify-center bg-[var(--brand-bg)] relative px-4">
+      {/* Subtle gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[rgba(255,255,255,0.1)] to-transparent pointer-events-none" />
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            className="w-full px-4 py-3 border rounded-lg focus:ring focus:ring-[var(--brand-primary-light)] focus:outline-none"
-          />
+      <Card className="w-full max-w-md shadow-xl border-none bg-white rounded-2xl relative z-10">
+        <CardContent className="py-10 px-8">
+          <h1 className="text-2xl font-semibold text-center text-[var(--brand-text)]">
+            Magic Login
+          </h1>
 
-          <button
-            type="submit"
-            disabled={status === "loading"}
-            className="w-full py-3 rounded-lg bg-[var(--brand-primary)] text-white font-semibold hover:bg-[var(--brand-primary-dark)] transition"
-          >
-            {status === "loading" ? "Sending..." : "Send Magic Link"}
-          </button>
-        </form>
+          <p className="mt-2 text-center text-[var(--brand-text)]/70 text-sm">
+            Enter your email to receive a secure one-time login link.
+          </p>
 
-        {message && (
-          <div
-            className={`mt-4 text-center ${
-              status === "error" ? "text-red-600" : "text-green-600"
-            }`}
-          >
-            {message}
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-800 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-transparent"
+            />
+
+            {/* VISIBLE BUTTON */}
+            <button
+              type="submit"
+              disabled={status === "loading"}
+              className="
+                w-full py-3 rounded-lg text-white font-semibold shadow-md
+                bg-[var(--brand-primary)] 
+                hover:bg-[var(--brand-primary-dark)]
+                transition
+                disabled:opacity-60 disabled:cursor-not-allowed
+              "
+            >
+              {status === "loading"
+                ? "Sending..."
+                : status === "sent"
+                ? "Magic Link Sent!"
+                : "Send Magic Link"}
+            </button>
+
+            {errorMessage && (
+              <p className="text-red-600 text-center text-sm">{errorMessage}</p>
+            )}
+
+            {status === "sent" && (
+              <p className="text-green-600 text-center text-sm">
+                Check your inbox for the login link!
+              </p>
+            )}
+          </form>
+
+          <div className="mt-6 text-center">
+            <Link
+              href="/"
+              className="text-[var(--brand-primary)] hover:underline text-sm font-medium"
+            >
+              ← Back to Home
+            </Link>
           </div>
-        )}
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
