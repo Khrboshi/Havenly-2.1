@@ -1,27 +1,32 @@
-"use server";
+import { NextResponse } from "next/server";
+import sendMagicLink from "@/app/magic-login/sendMagicLink";
 
-import { createServerSupabase } from "@/lib/supabase/server";
-
-export default async function sendMagicLink(email: string) {
+export async function POST(req: Request) {
   try {
-    const supabase = await createServerSupabase();
+    const { email } = await req.json();
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        // Directly set redirect URL for Supabase magic link
-        emailRedirectTo: "https://havenly-2-1.vercel.app/auth/callback",
-      },
-    });
-
-    if (error) {
-      console.error("Magic link error:", error.message);
-      return { success: false, error: error.message };
+    if (!email) {
+      return NextResponse.json(
+        { error: "Email is required" },
+        { status: 400 }
+      );
     }
 
-    return { success: true };
+    const result = await sendMagicLink(email);
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: result.error || "Magic link failed" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (err: any) {
-    console.error("Magic link exception:", err);
-    return { success: false, error: "Unexpected server error" };
+    console.error("API route error:", err);
+    return NextResponse.json(
+      { error: "Server error" },
+      { status: 500 }
+    );
   }
 }
