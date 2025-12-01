@@ -9,7 +9,8 @@ export default async function sendMagicLink(email: string) {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+        // Directly set redirect URL for Supabase magic link
+        emailRedirectTo: "https://havenly-2-1.vercel.app/auth/callback",
       },
     });
 
