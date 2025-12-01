@@ -33,17 +33,15 @@ export default function MagicLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--brand-bg)] relative px-4">
-      {/* Light gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/10 to-transparent pointer-events-none" />
-
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 relative z-10">
-        <h1 className="text-2xl font-semibold text-center text-[var(--brand-text)]">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-800 px-4">
+      {/* Dark, elegant login card */}
+      <div className="w-full max-w-md bg-gray-900/90 backdrop-blur-lg border border-white/10 rounded-2xl shadow-2xl p-10">
+        <h1 className="text-3xl font-semibold text-center text-white">
           Magic Login
         </h1>
 
-        <p className="mt-2 text-center text-[var(--brand-text)]/70 text-sm">
-          Enter your email to receive a secure one-time login link.
+        <p className="mt-3 text-center text-gray-300 text-sm">
+          Enter your email and we’ll send you a secure one-time login link.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5">
@@ -53,18 +51,24 @@ export default function MagicLoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-800 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] focus:border-transparent"
+            className="
+              w-full px-4 py-3 rounded-lg
+              bg-gray-800 text-white border border-gray-600
+              placeholder-gray-400
+              focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]
+            "
           />
 
           <button
             type="submit"
             disabled={status === "loading"}
             className="
-              w-full py-3 rounded-lg text-white font-semibold shadow-md
-              bg-[var(--brand-primary)] 
+              w-full py-3 rounded-lg
+              text-white font-semibold shadow-lg
+              bg-[var(--brand-primary)]
               hover:bg-[var(--brand-primary-dark)]
               transition
-              disabled:opacity-60 disabled:cursor-not-allowed
+              disabled:opacity-50 disabled:cursor-not-allowed
             "
           >
             {status === "loading"
@@ -75,20 +79,20 @@ export default function MagicLoginPage() {
           </button>
 
           {errorMessage && (
-            <p className="text-red-600 text-center text-sm">{errorMessage}</p>
+            <p className="text-red-400 text-center text-sm">{errorMessage}</p>
           )}
 
           {status === "sent" && (
-            <p className="text-green-600 text-center text-sm">
+            <p className="text-green-400 text-center text-sm">
               Check your inbox for the login link!
             </p>
           )}
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-8 text-center">
           <Link
             href="/"
-            className="text-[var(--brand-primary)] hover:underline text-sm font-medium"
+            className="text-[var(--brand-primary-light)] hover:underline text-sm font-medium"
           >
             ← Back to Home
           </Link>
