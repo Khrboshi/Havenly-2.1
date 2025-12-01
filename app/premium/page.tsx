@@ -1,6 +1,16 @@
 import { redirect } from "next/navigation";
-import { createServerSupabase } from "@/lib/supabase/server";
 import Link from "next/link";
+import { createServerSupabase } from "@/lib/supabase/server";
+
+type PlanType = "FREE" | "ESSENTIAL" | "PREMIUM";
+
+function getPlanLabel(planType: PlanType): string {
+  if (planType === "PREMIUM") return "Premium";
+  if (planType === "ESSENTIAL") return "Essential";
+  return "Free";
+}
+
+export const dynamic = "force-dynamic";
 
 export default async function PremiumPage() {
   const supabase = createServerSupabase();
@@ -14,55 +24,114 @@ export default async function PremiumPage() {
   }
 
   const user = session.user;
-  const role = user.user_metadata?.role ?? "free";
-  const isPremium = role === "premium";
+
+  let planType: PlanType = "FREE";
+  let credits = 0;
+  let renewalDate: string | null = null;
+
+  try {
+    const { data: planRow, error } = await supabase
+      .from("user_plans")
+      .select("plan_type, credits_balance, renewal_date")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!error && planRow) {
+      planType = (planRow.plan_type as PlanType) || "FREE";
+      credits = planRow.credits_balance ?? 0;
+      renewalDate = planRow.renewal_date ?? null;
+    }
+  } catch (err) {
+    console.error("Error loading plan in PremiumPage:", err);
+  }
+
+  const isPremium = planType === "PREMIUM";
+  const planLabel = getPlanLabel(planType);
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
-      <section className="max-w-3xl mx-auto px-4 pt-28 pb-20">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">Havenly Plus</h1>
+    <main className="min-h-screen bg-slate-950 text-slate-100">
+      <section className="mx-auto max-w-4xl px-4 pt-28 pb-20">
+        <h1 className="mb-3 text-3xl md:text-4xl font-bold">Havenly Premium</h1>
+        <p className="mb-8 max-w-2xl text-slate-300">
+          Premium is designed for people who want a steadier emotional baseline,
+          deeper clarity, and a gentle AI companion for reflection over time.
+        </p>
 
-        {/* If user is premium (future state) */}
+        <div className="mb-10 rounded-2xl border border-slate-700 bg-slate-900/70 p-4 text-sm text-slate-200">
+          <p className="mb-1">
+            Current plan:{" "}
+            <span className="font-semibold text-emerald-300">
+              {planLabel}
+            </span>
+          </p>
+          <p className="text-slate-400">
+            Credits:{" "}
+            <span className="font-semibold text-slate-100">{credits}</span>
+            {renewalDate && (
+              <>
+                {" "}
+                · Renews on{" "}
+                <span className="font-semibold">
+                  {new Date(renewalDate).toLocaleDateString()}
+                </span>
+              </>
+            )}
+          </p>
+        </div>
+
         {isPremium ? (
           <>
-            <p className="text-slate-300 mb-6">
-              You are already a Havenly Plus member. Premium features will
-              appear here as soon as they go live.
+            <p className="mb-6 text-slate-300">
+              You are already a Havenly Premium member. As new features roll
+              out, they will appear automatically in your dashboard and tools.
             </p>
-            <Link
-              href="/settings"
-              className="rounded-full bg-slate-800 px-6 py-2.5 text-sm hover:bg-slate-700"
-            >
-              Go to Settings
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/dashboard"
+                className="rounded-full bg-emerald-400 px-6 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-300"
+              >
+                Go to dashboard
+              </Link>
+              <Link
+                href="/settings"
+                className="rounded-full bg-slate-800 px-6 py-2.5 text-sm hover:bg-slate-700"
+              >
+                Manage settings
+              </Link>
+            </div>
           </>
         ) : (
           <>
-            {/* Coming Soon message */}
-            <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500 text-emerald-300 text-sm">
-              Premium features are coming soon. You’ll be able to unlock deeper
-              insights, richer reflections, and advanced tools.
+            <div className="mb-6 rounded-xl border border-emerald-500 bg-emerald-500/10 p-4 text-sm text-emerald-300">
+              Premium features are rolling out gradually. You can upgrade now to
+              be among the first to receive deeper AI reflections, weekly
+              wellness summaries, and personalised guidance.
             </div>
 
-            <p className="text-slate-300 mb-8">
-              Havenly Plus will include:
+            <p className="mb-6 text-slate-300">
+              Havenly Premium will include:
             </p>
-
-            <ul className="text-slate-300 space-y-3 mb-10 text-sm">
-              <li>• Full AI analysis and insights</li>
-              <li>• Unlimited daily reflections</li>
-              <li>• Pattern tracking and mood timeline</li>
-              <li>• Advanced Tools+ suite</li>
-              <li>• Backup & full history</li>
-              <li>• Early access to new features</li>
+            <ul className="mb-10 space-y-3 text-sm text-slate-300">
+              <li>• Deep AI reflections on important journal entries</li>
+              <li>• Weekly wellness reports across mood and themes</li>
+              <li>• Personalised roadmap suggestions for the month ahead</li>
+              <li>• Priority access to new tools and experiments</li>
+              <li>• Better use of your credits across richer features</li>
             </ul>
 
-            <div className="p-4 border border-slate-700 rounded-xl text-center text-slate-300">
-              Premium will be available soon.
-              <br />
-              <span className="text-emerald-300 font-medium">
-                Stay tuned for updates.
-              </span>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/upgrade"
+                className="rounded-full bg-emerald-400 px-6 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-300"
+              >
+                View plans & upgrade
+              </Link>
+              <Link
+                href="/dashboard"
+                className="rounded-full bg-slate-800 px-6 py-2.5 text-sm hover:bg-slate-700"
+              >
+                Back to dashboard
+              </Link>
             </div>
           </>
         )}
