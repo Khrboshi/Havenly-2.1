@@ -1,8 +1,8 @@
 // app/(protected)/layout.tsx
 import { ReactNode } from "react";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { SupabaseSessionProvider } from "@/app/components/SupabaseSessionProvider";
 import ProtectedNavBar from "@/app/components/ProtectedNavBar";
 
 export const dynamic = "force-dynamic";
@@ -18,25 +18,18 @@ export default async function ProtectedLayout({
     data: { session },
   } = await supabase.auth.getSession();
 
-  // Extract pathname safely from headers on the server.
-  // This avoids using "window" which is undefined in SSR.
-  const referer = headers().get("x-pathname") ?? "/";
+  // Extract pathname from request headers
+  const hdrs = headers();
+  const referer = hdrs.get("x-pathname") ?? "/";
 
   if (!session?.user) {
-    redirect(
-      `/magic-login?redirectedFrom=${encodeURIComponent(referer)}`
-    );
+    redirect(`/magic-login?redirectedFrom=${encodeURIComponent(referer)}`);
   }
 
   return (
-    <SupabaseSessionProvider>
-      {/* Protected Navigation */}
+    <div className="min-h-screen bg-slate-950 text-white">
       <ProtectedNavBar />
-
-      {/* Protected content container */}
-      <main className="min-h-screen bg-slate-950 text-white pt-20">
-        {children}
-      </main>
-    </SupabaseSessionProvider>
+      <main className="pt-20">{children}</main>
+    </div>
   );
 }
