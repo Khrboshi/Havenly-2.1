@@ -120,8 +120,8 @@ export default function LandingPage() {
             <p className="text-sm text-hvn-text-muted sm:text-base">
               Havenly is a tiny ritual you can keep even on the messy days.
               Write when you can, stop when you need, and let the AI gently
-              highlight what mattered—without judging you or trying to “optimize”
-              your life.
+              highlight what mattered—without judging you or trying to
+              “optimize” your life.
             </p>
           </div>
 
