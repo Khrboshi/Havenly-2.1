@@ -3,70 +3,92 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import LogoutButton from "./auth/LogoutButton";
-import { useUserPlan } from "./useUserPlan";
+
+type NavItem = {
+  href: string;
+  label: string;
+};
+
+const NAV_ITEMS: NavItem[] = [
+  { href: "/journal", label: "Journal" },
+  { href: "/blog", label: "Blog" },
+  { href: "/about", label: "About" },
+  { href: "/tools", label: "Tools" },
+];
+
+function NavLink({ href, label }: NavItem) {
+  const pathname = usePathname();
+
+  const isActive =
+    pathname === href ||
+    (href !== "/" && pathname.startsWith(href));
+
+  return (
+    <Link
+      href={href}
+      className={[
+        "text-sm transition-colors",
+        isActive
+          ? "text-white"
+          : "text-slate-300/80 hover:text-white",
+      ].join(" ")}
+    >
+      {label}
+    </Link>
+  );
+}
 
 export default function SiteHeader() {
   const pathname = usePathname();
-  const { plan, credits } = useUserPlan();
 
-  const isProtected =
-    pathname?.startsWith("/dashboard") ||
-    pathname?.startsWith("/journal") ||
-    pathname?.startsWith("/insights") ||
-    pathname?.startsWith("/tools") ||
-    pathname === "/settings" ||
-    pathname === "/settings/billing";
+  // Show "Log out" on all authenticated sections
+  const showLogout =
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/journal") ||
+    pathname.startsWith("/tools") ||
+    pathname.startsWith("/upgrade");
 
   return (
-    <header className="w-full border-b border-white/10 backdrop-blur-md bg-black/20 sticky top-0 z-50">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-        {/* Logo */}
-        <Link href="/" className="font-semibold text-lg text-white">
+    <header className="sticky top-0 z-30 border-b border-slate-800/60 bg-slate-950/70 backdrop-blur-md">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        {/* Brand */}
+        <Link
+          href="/"
+          className="text-base font-semibold tracking-tight text-white"
+        >
           Havenly
         </Link>
 
-        {/* Desktop navigation */}
-        <nav className="hidden md:flex items-center gap-6 text-sm text-gray-300">
-          <Link className="hover:text-white transition" href="/journal">
-            Journal
-          </Link>
-          <Link className="hover:text-white transition" href="/blog">
-            Blog
-          </Link>
-          <Link className="hover:text-white transition" href="/about">
-            About
-          </Link>
-          <Link className="hover:text-white transition" href="/tools">
-            Tools
-          </Link>
+        {/* Center nav */}
+        <nav className="hidden items-center gap-6 md:flex">
+          {NAV_ITEMS.map((item) => (
+            <NavLink key={item.href} {...item} />
+          ))}
+        </nav>
 
-          {/* Plan badge */}
-          <span className="ml-3 rounded-full bg-white/10 px-3 py-1 text-xs text-white">
-            {plan ? `${plan} plan` : "Free plan"}
+        {/* Right side: plan, credits, upgrade, logout */}
+        <div className="flex items-center gap-3 text-xs">
+          {/* Plan pill – static for now (Free) */}
+          <span className="rounded-full bg-slate-800/80 px-3 py-1 text-[11px] font-medium text-slate-200">
+            free plan
           </span>
 
-          {/* Credits */}
-          <span className="text-xs text-gray-300">
-            Credits: {credits ?? 0}
+          {/* Credits – static 0 for now */}
+          <span className="hidden text-slate-300/80 sm:inline">
+            Credits:{" "}
+            <span className="font-semibold text-slate-50">0</span>
           </span>
 
-          {/* Upgrade */}
+          {/* Upgrade button */}
           <Link
             href="/upgrade"
-            className="ml-2 rounded-full bg-emerald-500 px-3 py-1 text-xs text-black hover:bg-emerald-400 transition"
+            className="rounded-full bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-slate-950 shadow-sm transition hover:bg-emerald-400"
           >
             Upgrade
           </Link>
 
-          {/* Logout only in protected areas */}
-          {isProtected && <LogoutButton />}
-        </nav>
-
-        {/* Mobile badge */}
-        <div className="md:hidden flex items-center gap-3">
-          <span className="rounded-full bg-white/10 px-2 py-1 text-xs text-white">
-            {plan ? `${plan} plan` : "Free"}
-          </span>
+          {/* Logout – only on logged-in sections */}
+          {showLogout && <LogoutButton />}
         </div>
       </div>
     </header>
