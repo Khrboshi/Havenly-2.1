@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import LogoutButton from "./auth/LogoutButton";
-import { useSupabaseSession } from "./SupabaseSessionProvider";
+import { useSession } from "./SupabaseSessionProvider";   // ✅ CORRECT IMPORT
 import { useUserPlan } from "./useUserPlan";
 
 const NAV_LINKS = [
@@ -16,11 +16,11 @@ const NAV_LINKS = [
 export default function SiteHeader() {
   const pathname = usePathname();
 
-  // ✅ TRUE login state comes from Supabase session
-  const { session, loading } = useSupabaseSession();
+  // ✅ REAL login state from Supabase
+  const { session, loading } = useSession();
   const isLoggedIn = !!session;
 
-  // ✅ Plan + credits still come from your existing hook
+  // Plan & credits from your hook
   const planInfo = useUserPlan() as any;
   const planLabel =
     planInfo?.planLabel ??
@@ -59,7 +59,7 @@ export default function SiteHeader() {
           })}
         </nav>
 
-        {/* Right side: plan badge, credits, auth */}
+        {/* Right side */}
         <div className="ml-auto flex items-center gap-3 text-xs sm:text-sm">
           <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-white/80">
             {planLabel}
@@ -69,7 +69,7 @@ export default function SiteHeader() {
             Credits: {credits}
           </span>
 
-          {/* Only show Log out when we REALLY have a Supabase session */}
+          {/* Show Log out only when actually logged in */}
           {!loading && isLoggedIn && <LogoutButton />}
         </div>
       </div>
