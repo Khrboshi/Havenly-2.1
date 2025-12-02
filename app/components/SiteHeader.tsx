@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import LogoutButton from "./auth/LogoutButton";
-import useUserPlan from "./blog/useUserPlan";
+import useUserPlan from "./useUserPlan";  // ✅ FIXED IMPORT
 
 const NAV_ITEMS = [
   { href: "/", label: "Home" },
@@ -24,7 +24,6 @@ export default function SiteHeader() {
   const resolvedPlan = plan || "Free";
   const resolvedCredits = typeof credits === "number" ? credits : 0;
 
-  // Where we want Logout to appear
   const isProtected =
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/journal") ||
@@ -34,7 +33,8 @@ export default function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-800/60 bg-slate-950/70 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-        {/* Left: logo + nav */}
+        
+        {/* Left side: menu */}
         <div className="flex items-center gap-8">
           <Link
             href="/"
@@ -67,8 +67,9 @@ export default function SiteHeader() {
           </nav>
         </div>
 
-        {/* Right: plan badge, credits, upgrade, logout */}
+        {/* Right side: plan + credits + upgrade + logout */}
         <div className="flex items-center gap-3 text-xs md:text-sm">
+          
           {/* Plan badge */}
           <span className="rounded-full bg-emerald-500/10 px-3 py-1 font-medium text-emerald-300">
             {resolvedPlan} plan
@@ -82,7 +83,7 @@ export default function SiteHeader() {
             </span>
           </span>
 
-          {/* Upgrade button (hide for Premium) */}
+          {/* Upgrade button */}
           {resolvedPlan.toLowerCase() !== "premium" && (
             <Link
               href="/upgrade"
@@ -92,7 +93,7 @@ export default function SiteHeader() {
             </Link>
           )}
 
-          {/* Logout only on protected pages */}
+          {/* Logout only for protected sections */}
           {isProtected && <LogoutButton />}
         </div>
       </div>
