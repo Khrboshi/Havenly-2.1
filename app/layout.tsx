@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Inter } from "next/font/google";
 
-import ClientNavWrapper from "./components/ClientNavWrapper";
 import SiteHeader from "./components/SiteHeader";
 import ToastClient from "./components/ToastClient";
 import PwaInstallHint from "./components/PwaInstallHint";
@@ -32,10 +31,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
         {/* Global background glow */}
         <div className="pointer-events-none fixed inset-0 -z-10 bg-hvn-page-gradient" />
 
-        {/* Top navigation + logo */}
-        <ClientNavWrapper>
-          <SiteHeader />
-        </ClientNavWrapper>
+        {/* Top navigation */}
+        <SiteHeader />
 
         {/* Mobile-only floating install hint */}
         <PwaInstallHint />
@@ -45,7 +42,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           {children}
         </main>
 
-        {/* Toasts / toasts from existing system */}
+        {/* Toast system */}
         <ToastClient />
       </body>
     </html>
