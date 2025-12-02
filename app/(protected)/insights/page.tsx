@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 
+/* ------------------------------
+   Types & Local Storage constants
+--------------------------------*/
 type Reflection = {
   id: string;
   createdAt: string;
@@ -10,6 +13,9 @@ type Reflection = {
 
 const STORAGE_KEY = "havenly_journal_entries";
 
+/* ------------------------------
+   Insights Page
+--------------------------------*/
 export default function InsightsPage() {
   const [entries, setEntries] = useState<Reflection[]>([]);
 
@@ -19,7 +25,6 @@ export default function InsightsPage() {
       if (!raw) return;
 
       const parsed = JSON.parse(raw) as Reflection[];
-
       const sorted = parsed.sort((a, b) =>
         a.createdAt < b.createdAt ? 1 : -1
       );
@@ -31,34 +36,36 @@ export default function InsightsPage() {
   }, []);
 
   const totalEntries = entries.length;
-
-  // Very soft "word count"
   const totalWords = entries.reduce(
     (acc, e) => acc + e.content.split(/\s+/).length,
     0
   );
 
   return (
-    <div className="mx-auto max-w-4xl px-6 pt-24 pb-20 text-slate-200">
-      {/* ---- Page header ---- */}
-      <h1 className="text-3xl font-semibold tracking-tight mb-2">
-        Insights
-      </h1>
-      <p className="text-slate-400 mb-10">
-        A gentle overview of your journaling pattern so far.
-      </p>
+    <div className="mx-auto max-w-5xl px-6 pt-32 pb-28 text-slate-200">
 
-      {/* ---- No data: encourage journaling ---- */}
+      {/* HEADER */}
+      <section className="mb-14 animate-fadeIn">
+        <h1 className="text-4xl font-semibold tracking-tight text-white mb-2">
+          Insights
+        </h1>
+        <p className="text-slate-400 text-base">
+          A gentle overview of your journaling pattern so far.
+        </p>
+      </section>
+
+      {/* IF EMPTY */}
       {totalEntries === 0 && (
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-slate-300 text-sm">
-          You haven&apos;t written any reflections yet.  
-          Once you add a few entries, you’ll see patterns appear here.
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-slate-300 text-sm animate-fadeInUp">
+          You haven’t written any reflections yet.
+          <br />
+          Once you add a few entries, patterns will appear here.
         </div>
       )}
 
-      {/* ---- Stats cards ---- */}
+      {/* STAT CARDS */}
       {totalEntries > 0 && (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-12">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-16 animate-fadeInUp">
           <StatCard label="Total reflections" value={totalEntries} />
           <StatCard label="Total words" value={totalWords} />
           <StatCard
@@ -68,11 +75,12 @@ export default function InsightsPage() {
         </div>
       )}
 
-      {/* ---- Coming soon premium section ---- */}
-      <section className="rounded-xl border border-slate-800 bg-slate-950/40 p-6 mt-10">
+      {/* COMING SOON */}
+      <section className="rounded-2xl border border-slate-800 bg-slate-950/40 p-8 animate-fadeInUp">
         <h2 className="text-lg font-semibold text-slate-100 mb-2">
           Coming soon ✨
         </h2>
+
         <p className="text-sm text-slate-400 leading-relaxed">
           Future Havenly Plus features will include emotional trends,
           sentiment patterns, gentle AI observations, and week-over-week
@@ -83,14 +91,14 @@ export default function InsightsPage() {
   );
 }
 
-/* --------------------------
-   Small reusable stat card
-----------------------------*/
+/* ------------------------------
+   Stat Card Component
+--------------------------------*/
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-sm shadow-black/20">
       <p className="text-xs text-slate-500">{label}</p>
-      <p className="text-2xl font-semibold text-white mt-1">{value}</p>
+      <p className="text-3xl font-semibold text-white mt-1">{value}</p>
     </div>
   );
 }
