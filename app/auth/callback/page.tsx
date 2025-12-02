@@ -6,11 +6,6 @@ import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabaseClient } from "@/lib/supabase/client";
 
-/**
- * Handles Supabase email magic link callback:
- * - Confirms the browser session
- * - Redirects to redirectTo or /dashboard
- */
 function CallbackInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -19,6 +14,7 @@ function CallbackInner() {
     async function finishSignIn() {
       const supabase = supabaseClient;
 
+      // Get session from Supabase
       const { data, error } = await supabase.auth.getSession();
 
       if (error) {
@@ -27,6 +23,7 @@ function CallbackInner() {
         return;
       }
 
+      // 100% correct return path
       const redirectTo = searchParams.get("redirectTo") || "/dashboard";
 
       if (data.session) {
