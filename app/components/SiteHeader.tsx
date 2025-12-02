@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import ClientNavWrapper from "./ClientNavWrapper";
 import LogoutButton from "./auth/LogoutButton";
 
 export default function SiteHeader() {
   const pathname = usePathname();
 
-  // Hide the navbar on auth pages
+  // Hide navbar on auth pages
   const hideOnAuth =
     pathname.startsWith("/magic-login") ||
     pathname.startsWith("/auth");
@@ -52,10 +51,12 @@ export default function SiteHeader() {
 
       {/* RIGHT SIDE */}
       <div className="flex items-center gap-4">
-        {/* Plan badge + Credits */}
-        <ClientNavWrapper />
+        {/* Plan badge placeholder */}
+        <span className="text-slate-400 text-sm">
+          Free plan
+        </span>
 
-        {/* Show Logout only for logged-in sections */}
+        {/* Logout for logged-in users */}
         {isProtected && <LogoutButton />}
       </div>
     </div>
