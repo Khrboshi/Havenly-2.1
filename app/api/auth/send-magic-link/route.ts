@@ -5,11 +5,14 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
-    const { email, redirectedFrom = "/" } = await req.json();
+    const { email, redirectedFrom } = await req.json();
 
     if (!email) {
       return NextResponse.json({ error: "Email is required." }, { status: 400 });
     }
+
+    // Default redirect = dashboard
+    const target = redirectedFrom || "/dashboard";
 
     const supabase = createServerSupabase();
 
@@ -17,7 +20,7 @@ export async function POST(req: Request) {
       email,
       options: {
         emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?redirectTo=${encodeURIComponent(
-          redirectedFrom
+          target
         )}`,
       },
     });
