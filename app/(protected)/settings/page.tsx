@@ -1,38 +1,90 @@
-export const dynamic = "force-dynamic";
+"use client";
+
+import Link from "next/link";
+import { useSupabase } from "@/app/components/SupabaseSessionProvider";
+import { useUserPlan } from "@/app/components/useUserPlan";
 
 export default function SettingsPage() {
+  const { session } = useSupabase();
+  const { plan, credits } = useUserPlan();
+
+  const userEmail = session?.user?.email || "Unknown user";
+
   return (
-    <div className="min-h-screen px-6 md:px-10 py-16 max-w-4xl mx-auto text-white">
-      <h1 className="text-4xl font-bold mb-4">Settings</h1>
-      <p className="text-gray-400 mb-10">
-        Settings are not yet available. The first version will include account
-        email, cloud backup, and deletion options.
+    <div className="mx-auto max-w-3xl px-6 pt-24 pb-20 text-slate-200">
+      {/* HEADER */}
+      <h1 className="text-3xl font-semibold tracking-tight mb-2">Settings</h1>
+      <p className="text-slate-400 mb-10">
+        Manage your account, preferences, and plan.
       </p>
 
-      <div className="space-y-6">
-        <div className="p-6 rounded-xl border border-gray-700 bg-[#0F1A24]">
-          <h2 className="text-xl font-semibold">Account email</h2>
-          <p className="text-gray-400 text-sm mt-2">
-            Changing your email will be available in a future update.
-          </p>
-        </div>
+      {/* ACCOUNT SECTION */}
+      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 mb-10">
+        <h2 className="text-lg font-semibold text-white mb-3">
+          Account details
+        </h2>
 
-        <div className="p-6 rounded-xl border border-gray-700 bg-[#0F1A24]">
-          <h2 className="text-xl font-semibold">Cloud backup</h2>
-          <p className="text-gray-400 text-sm mt-2">
-            Encrypted cloud storage for your journal entries is planned for
-            Havenly Premium.
-          </p>
-        </div>
+        <div className="space-y-3 text-sm text-slate-300">
+          <div className="flex items-center justify-between">
+            <span className="text-slate-400">Email</span>
+            <span className="font-medium">{userEmail}</span>
+          </div>
 
-        <div className="p-6 rounded-xl border border-gray-700 bg-[#0F1A24]">
-          <h2 className="text-xl font-semibold text-red-400">Delete account</h2>
-          <p className="text-gray-400 text-sm mt-2">
-            Account deletion will be enabled once full account management is
-            implemented.
-          </p>
+          <div className="flex items-center justify-between">
+            <span className="text-slate-400">Current plan</span>
+            <span className="font-medium capitalize">{plan ?? "free"}</span>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <span className="text-slate-400">Credits</span>
+            <span className="font-medium">{credits ?? 0}</span>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* PREFERENCES SECTION */}
+      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 mb-10">
+        <h2 className="text-lg font-semibold text-white mb-3">
+          Preferences
+        </h2>
+
+        <p className="text-sm text-slate-400 mb-4">
+          Personalization options will be added soon — such as themes, journaling
+          reminders, and data export settings.
+        </p>
+      </section>
+
+      {/* BILLING SECTION (only a link for now) */}
+      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 mb-10">
+        <h2 className="text-lg font-semibold text-white mb-3">Billing</h2>
+
+        <p className="text-sm text-slate-400 mb-4">
+          If you upgrade in the future, you’ll manage payment methods and invoices here.
+        </p>
+
+        <Link
+          href="/settings/billing"
+          className="inline-block rounded-full bg-emerald-400 px-5 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-300 transition"
+        >
+          Go to billing
+        </Link>
+      </section>
+
+      {/* SECURITY SECTION */}
+      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-6">
+        <h2 className="text-lg font-semibold text-white mb-3">Security</h2>
+
+        <p className="text-sm text-slate-400 mb-5">
+          Havenly uses passwordless authentication via secure magic links.
+        </p>
+
+        <Link
+          href="/logout"
+          className="inline-block rounded-full bg-slate-800 px-5 py-2 text-sm hover:bg-slate-700"
+        >
+          Log out
+        </Link>
+      </section>
     </div>
   );
 }
