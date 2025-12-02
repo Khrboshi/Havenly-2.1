@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+/* ------------------------------
+   Types & Local Storage constants
+--------------------------------*/
 type Reflection = {
   id: string;
   createdAt: string;
@@ -11,6 +14,9 @@ type Reflection = {
 
 const STORAGE_KEY = "havenly_journal_entries";
 
+/* ------------------------------
+   Dashboard Page
+--------------------------------*/
 export default function DashboardPage() {
   const [entries, setEntries] = useState<Reflection[]>([]);
 
@@ -33,45 +39,48 @@ export default function DashboardPage() {
   const latest = entries[0];
 
   return (
-    <div className="mx-auto max-w-4xl px-6 pt-24 pb-24 text-slate-200">
-      {/* ---- Header ---- */}
-      <section className="mb-10">
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Welcome back 👋
+    <div className="mx-auto max-w-4xl px-6 pt-32 pb-28 text-slate-200">
+
+      {/* HEADER */}
+      <section className="mb-12 animate-fadeIn">
+        <h1 className="text-4xl font-semibold tracking-tight text-white mb-2">
+          Welcome back <span className="inline-block">👋</span>
         </h1>
-        <p className="text-slate-400 mt-1">
+
+        <p className="text-slate-400 text-base">
           A gentle space to check in with yourself.
         </p>
       </section>
 
-      {/* ---- Quick actions ---- */}
-      <section className="mb-12 flex flex-wrap gap-4">
+      {/* QUICK ACTIONS */}
+      <section className="flex flex-wrap gap-4 mb-14 animate-fadeInUp">
         <Link
           href="/journal/new"
-          className="bg-emerald-400 text-slate-900 px-6 py-3 rounded-full text-sm font-semibold hover:bg-emerald-300 transition"
+          className="bg-emerald-400 text-slate-900 px-6 py-3 rounded-full text-sm font-semibold hover:bg-emerald-300 transition-all shadow-lg shadow-emerald-400/20"
         >
           Start a new reflection
         </Link>
 
         <Link
           href="/journal"
-          className="bg-slate-800 px-6 py-3 rounded-full text-sm hover:bg-slate-700"
+          className="bg-slate-800 px-6 py-3 rounded-full text-sm hover:bg-slate-700 transition-all border border-slate-700/50"
         >
           View journal history
         </Link>
       </section>
 
-      {/* ---- Latest entry preview ---- */}
+      {/* MOST RECENT REFLECTION */}
       {!latest && (
-        <div className="rounded-xl bg-slate-900/60 border border-slate-800 p-6 text-slate-400 text-sm">
-          You haven’t saved any reflections yet.  
+        <div className="rounded-2xl bg-slate-900/60 border border-slate-800 p-8 text-slate-400 text-sm animate-fadeInUp">
+          You haven’t saved any reflections yet.
+          <br />
           Your first entry will appear here.
         </div>
       )}
 
       {latest && (
-        <section className="space-y-4 rounded-xl bg-slate-900/60 border border-slate-800 p-6">
-          <h2 className="text-lg font-medium text-slate-100">
+        <section className="rounded-2xl bg-slate-900/60 border border-slate-800 p-8 mb-16 animate-fadeInUp space-y-4">
+          <h2 className="text-lg font-medium text-white">
             Most recent reflection
           </h2>
 
@@ -79,7 +88,7 @@ export default function DashboardPage() {
             {new Date(latest.createdAt).toLocaleString()}
           </p>
 
-          <p className="whitespace-pre-wrap text-slate-200 text-sm leading-relaxed">
+          <p className="whitespace-pre-wrap text-slate-300 text-sm leading-relaxed">
             {latest.content.length > 350
               ? latest.content.slice(0, 350) + "…"
               : latest.content}
@@ -87,24 +96,23 @@ export default function DashboardPage() {
 
           <Link
             href={`/journal/${latest.id}`}
-            className="inline-block mt-2 text-emerald-400 text-sm hover:underline"
+            className="inline-block text-emerald-400 text-sm hover:underline"
           >
             Read full entry →
           </Link>
         </section>
       )}
 
-      {/* ---- Coming soon (premium) ---- */}
-      <section className="mt-12">
-        <div className="rounded-xl bg-slate-950/40 border border-slate-800 p-6">
-          <h2 className="text-lg font-semibold mb-2 text-slate-100">
-            Coming soon ✨
-          </h2>
-          <p className="text-sm text-slate-400">
-            AI-assisted reflections, cloud backup, and cross-device sync will be
-            available in future premium plans.
-          </p>
-        </div>
+      {/* COMING SOON */}
+      <section className="rounded-2xl bg-slate-950/40 border border-slate-800 p-8 animate-fadeInUp">
+        <h2 className="text-lg font-semibold mb-2 text-white">
+          Coming soon ✨
+        </h2>
+
+        <p className="text-sm text-slate-400 leading-relaxed">
+          AI-assisted reflections, cloud backup, and cross-device sync will be
+          available in future premium plans.
+        </p>
       </section>
     </div>
   );
