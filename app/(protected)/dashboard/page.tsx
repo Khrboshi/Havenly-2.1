@@ -1,159 +1,111 @@
+"use client";
+
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { useEffect, useState } from "react";
 
-export const dynamic = "force-dynamic";
+type Reflection = {
+  id: string;
+  createdAt: string;
+  content: string;
+};
 
-type PlanType = "FREE" | "ESSENTIAL" | "PREMIUM";
+const STORAGE_KEY = "havenly_journal_entries";
 
-function getPlanCopy(planType: PlanType) {
-  if (planType === "PREMIUM") {
-    return {
-      label: "Premium",
-      message:
-        "You’re on the Premium plan — all tools and AI reflections are available as they roll out.",
-    };
-  }
-  if (planType === "ESSENTIAL") {
-    return {
-      label: "Essential",
-      message:
-        "You’re on the Essential plan — journaling, habits, and light AI summaries are included.",
-    };
-  }
-  return {
-    label: "Free",
-    message:
-      "You’re using the Free plan — daily journaling and calming tools are always available.",
-  };
-}
+export default function DashboardPage() {
+  const [entries, setEntries] = useState<Reflection[]>([]);
 
-export default async function DashboardPage() {
-  const supabase = createServerSupabase();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
 
-  if (!session?.user) {
-    redirect("/magic-login?from=dashboard");
-  }
+      const parsed = JSON.parse(raw) as Reflection[];
+      const sorted = parsed.sort((a, b) =>
+        a.createdAt < b.createdAt ? 1 : -1
+      );
 
-  const user = session.user;
-
-  let planType: PlanType = "FREE";
-  let credits = 0;
-
-  try {
-    const { data: planRow, error } = await supabase
-      .from("user_plans")
-      .select("plan_type, credits_balance")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (!error && planRow) {
-      planType = (planRow.plan_type as PlanType) || "FREE";
-      credits = planRow.credits_balance ?? 0;
+      setEntries(sorted);
+    } catch (err) {
+      console.error("Failed loading journal entries:", err);
     }
-  } catch (err) {
-    console.error("Error loading plan in DashboardPage:", err);
-  }
+  }, []);
 
-  const displayName =
-    (user.user_metadata as any)?.full_name ||
-    user.email?.split("@")[0] ||
-    "Friend";
-
-  const { label: planLabel, message: planMessage } = getPlanCopy(planType);
+  const latest = entries[0];
 
   return (
-    <div className="max-w-4xl mx-auto pt-32 pb-24 px-6 text-slate-200">
-      {/* Plan banner */}
-      <div className="mb-10 rounded-lg border border-emerald-700/30 bg-emerald-900/20 p-4 text-sm text-emerald-100">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <p>
-            <span className="font-semibold text-emerald-300">
-              {planLabel} plan
-            </span>{" "}
-            · {planMessage}
+    <div className="mx-auto max-w-4xl px-6 pt-24 pb-24 text-slate-200">
+      {/* ---- Header ---- */}
+      <section className="mb-10">
+        <h1 className="text-3xl font-semibold tracking-tight">
+          Welcome back 👋
+        </h1>
+        <p className="text-slate-400 mt-1">
+          A gentle space to check in with yourself.
+        </p>
+      </section>
+
+      {/* ---- Quick actions ---- */}
+      <section className="mb-12 flex flex-wrap gap-4">
+        <Link
+          href="/journal/new"
+          className="bg-emerald-400 text-slate-900 px-6 py-3 rounded-full text-sm font-semibold hover:bg-emerald-300 transition"
+        >
+          Start a new reflection
+        </Link>
+
+        <Link
+          href="/journal"
+          className="bg-slate-800 px-6 py-3 rounded-full text-sm hover:bg-slate-700"
+        >
+          View journal history
+        </Link>
+      </section>
+
+      {/* ---- Latest entry preview ---- */}
+      {!latest && (
+        <div className="rounded-xl bg-slate-900/60 border border-slate-800 p-6 text-slate-400 text-sm">
+          You haven’t saved any reflections yet.  
+          Your first entry will appear here.
+        </div>
+      )}
+
+      {latest && (
+        <section className="space-y-4 rounded-xl bg-slate-900/60 border border-slate-800 p-6">
+          <h2 className="text-lg font-medium text-slate-100">
+            Most recent reflection
+          </h2>
+
+          <p className="text-xs text-slate-500">
+            {new Date(latest.createdAt).toLocaleString()}
           </p>
-          <p className="text-emerald-200/80 text-xs sm:text-sm">
-            Credits:{" "}
-            <span className="font-semibold text-emerald-100">{credits}</span>
+
+          <p className="whitespace-pre-wrap text-slate-200 text-sm leading-relaxed">
+            {latest.content.length > 350
+              ? latest.content.slice(0, 350) + "…"
+              : latest.content}
+          </p>
+
+          <Link
+            href={`/journal/${latest.id}`}
+            className="inline-block mt-2 text-emerald-400 text-sm hover:underline"
+          >
+            Read full entry →
+          </Link>
+        </section>
+      )}
+
+      {/* ---- Coming soon (premium) ---- */}
+      <section className="mt-12">
+        <div className="rounded-xl bg-slate-950/40 border border-slate-800 p-6">
+          <h2 className="text-lg font-semibold mb-2 text-slate-100">
+            Coming soon ✨
+          </h2>
+          <p className="text-sm text-slate-400">
+            AI-assisted reflections, cloud backup, and cross-device sync will be
+            available in future premium plans.
           </p>
         </div>
-      </div>
-
-      {/* Greeting */}
-      <h1 className="text-3xl font-semibold text-white mb-2">
-        Welcome back, <span className="text-emerald-300">{displayName}</span>
-      </h1>
-      <p className="text-slate-400 mb-8">
-        Take a moment to breathe and check in with yourself today.
-      </p>
-
-      {/* Primary Action */}
-      <Link
-        href="/journal/new"
-        className="mb-12 inline-block rounded-full bg-emerald-400 px-6 py-3 font-semibold text-slate-900 transition hover:bg-emerald-300"
-      >
-        Start today’s reflection
-      </Link>
-
-      {/* Quick Action Cards */}
-      <div className="mb-16 grid gap-6 md:grid-cols-3">
-        <Link
-          href="/journal"
-          className="block rounded-xl border border-slate-700/40 bg-slate-800/40 p-5 transition hover:bg-slate-800/60"
-        >
-          <h3 className="mb-1 text-lg font-semibold text-white">Journal</h3>
-          <p className="text-sm text-slate-400">
-            Write a daily reflection and build a gentle record of your days.
-          </p>
-        </Link>
-
-        <Link
-          href="/tools"
-          className="block rounded-xl border border-slate-700/40 bg-slate-800/40 p-5 transition hover:bg-slate-800/60"
-        >
-          <h3 className="mb-1 text-lg font-semibold text-white">
-            Breathing & tools
-          </h3>
-          <p className="text-sm text-slate-400">
-            Use simple breathing and check-in tools when things feel heavy.
-          </p>
-        </Link>
-
-        <Link
-          href="/insights"
-          className="block rounded-xl border border-slate-700/40 bg-slate-800/40 p-5 transition hover:bg-slate-800/60"
-        >
-          <h3 className="mb-1 text-lg font-semibold text-white">
-            Insights (coming online)
-          </h3>
-          <p className="text-sm text-slate-400">
-            Emotional patterns, weekly summaries, and clarity insights powered
-            by your reflections.
-          </p>
-        </Link>
-      </div>
-
-      {/* Recent reflections placeholder */}
-      <div>
-        <h2 className="mb-3 text-xl font-semibold text-white">
-          Recent reflections
-        </h2>
-        <p className="mb-6 text-slate-400">
-          You haven’t written anything yet — your first entry will appear here
-          once you check in.
-        </p>
-
-        <Link
-          href="/journal"
-          className="text-sm text-emerald-300 hover:underline"
-        >
-          View full journal →
-        </Link>
-      </div>
+      </section>
     </div>
   );
 }
