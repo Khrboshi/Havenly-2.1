@@ -22,32 +22,28 @@ const NAV_LINKS: NavLink[] = [
 export default function SiteHeader() {
   const pathname = usePathname();
   const { session } = useSupabase();
-  const { planLabel } = useUserPlan(session ?? undefined);
+
+  // Your hook does NOT provide planLabel → we normalize it here
+  const { plan } = useUserPlan(session ?? undefined);
+  const planLabel = plan ?? "free";
 
   const isActive = (href: string) => {
     if (!pathname) return false;
 
-    // Home = only "/"
-    if (href === "/") {
-      return pathname === "/";
-    }
-
-    // Other links are "startsWith" so /blog/article/123 still highlights Blog
+    if (href === "/") return pathname === "/";
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-800/60 bg-slate-950/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-5xl items-center gap-6 px-4 sm:h-20 sm:px-6 lg:px-8">
-        {/* Brand / logo */}
-        <Link
-          href="/"
-          className="text-lg font-semibold tracking-tight text-slate-50"
-        >
+        
+        {/* Brand */}
+        <Link href="/" className="text-lg font-semibold tracking-tight text-slate-50">
           Havenly
         </Link>
 
-        {/* Primary navigation */}
+        {/* Navigation */}
         <nav className="flex items-center gap-4 text-sm">
           {NAV_LINKS.map(({ href, label }) => (
             <Link
@@ -65,19 +61,19 @@ export default function SiteHeader() {
           ))}
         </nav>
 
-        {/* Right side: plan, credits, upgrade, logout */}
+        {/* Right Side */}
         <div className="ml-auto flex items-center gap-3 text-xs">
-          {/* Plan pill (always visible; falls back to "free") */}
+          {/* Plan */}
           <span className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 font-medium text-emerald-300">
-            {planLabel ?? "free"}
+            {planLabel}
           </span>
 
-          {/* Credits pill (static for now) */}
+          {/* Credits */}
           <span className="rounded-full border border-slate-500/40 bg-slate-900/60 px-3 py-1 font-medium text-slate-300">
             Credits: 0
           </span>
 
-          {/* Upgrade button (always visible) */}
+          {/* Upgrade */}
           <Link
             href="/upgrade"
             className="rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-slate-950 shadow-sm hover:bg-emerald-400"
@@ -85,7 +81,7 @@ export default function SiteHeader() {
             Upgrade
           </Link>
 
-          {/* Logout only when session exists */}
+          {/* Logout when logged in */}
           {session && (
             <div className="pl-3">
               <LogoutButton />
