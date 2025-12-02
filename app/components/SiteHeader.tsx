@@ -23,13 +23,12 @@ export default function SiteHeader() {
   const pathname = usePathname();
   const { session } = useSupabase();
 
-  // Your hook does NOT provide planLabel → we normalize it here
-  const { plan } = useUserPlan(session ?? undefined);
+  // Your hook accepts NO arguments → call it with zero params
+  const { plan } = useUserPlan();
   const planLabel = plan ?? "free";
 
   const isActive = (href: string) => {
     if (!pathname) return false;
-
     if (href === "/") return pathname === "/";
     return pathname === href || pathname.startsWith(`${href}/`);
   };
@@ -37,7 +36,7 @@ export default function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-800/60 bg-slate-950/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-5xl items-center gap-6 px-4 sm:h-20 sm:px-6 lg:px-8">
-        
+
         {/* Brand */}
         <Link href="/" className="text-lg font-semibold tracking-tight text-slate-50">
           Havenly
@@ -61,8 +60,12 @@ export default function SiteHeader() {
           ))}
         </nav>
 
+        {/* Spacer */}
+        <div className="flex-1" />
+
         {/* Right Side */}
-        <div className="ml-auto flex items-center gap-3 text-xs">
+        <div className="flex items-center gap-3 text-xs">
+
           {/* Plan */}
           <span className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 font-medium text-emerald-300">
             {planLabel}
@@ -81,7 +84,7 @@ export default function SiteHeader() {
             Upgrade
           </Link>
 
-          {/* Logout when logged in */}
+          {/* Logout only when logged in */}
           {session && (
             <div className="pl-3">
               <LogoutButton />
