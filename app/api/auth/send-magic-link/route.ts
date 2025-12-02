@@ -1,31 +1,38 @@
 import { NextResponse } from "next/server";
-import sendMagicLink from "@/app/magic-login/sendMagicLink";
+import { createServerSupabase } from "@/lib/supabase/server";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
-    const { email } = await req.json();
+    const { email, redirectedFrom = "/" } = await req.json();
 
     if (!email) {
-      return NextResponse.json(
-        { error: "Email is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Email is required." }, { status: 400 });
     }
 
-    const result = await sendMagicLink(email);
+    const supabase = createServerSupabase();
 
-    if (!result.success) {
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?redirectTo=${encodeURIComponent(
+          redirectedFrom
+        )}`,
+      },
+    });
+
+    if (error) {
       return NextResponse.json(
-        { error: result.error || "Magic link failed" },
+        { error: error.message },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ success: true }, { status: 200 });
+    return NextResponse.json({ ok: true });
   } catch (err: any) {
-    console.error("API route error:", err);
     return NextResponse.json(
-      { error: "Server error" },
+      { error: err.message || "Unknown error." },
       { status: 500 }
     );
   }
