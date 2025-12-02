@@ -1,3 +1,4 @@
+// app/components/SiteHeader.tsx
 "use client";
 
 import Link from "next/link";
@@ -6,90 +7,72 @@ import LogoutButton from "./auth/LogoutButton";
 import { useSupabase } from "./SupabaseSessionProvider";
 import { useUserPlan } from "./useUserPlan";
 
-type NavLink = {
-  label: string;
-  href: string;
-};
-
-const NAV_LINKS: NavLink[] = [
-  { label: "Home", href: "/" },
-  { label: "Journal", href: "/journal" },
-  { label: "Blog", href: "/blog" },
-  { label: "About", href: "/about" },
-  { label: "Tools", href: "/tools" },
+const NAV_LINKS = [
+  { href: "/", label: "Home" },
+  { href: "/journal", label: "Journal" },
+  { href: "/blog", label: "Blog" },
+  { href: "/about", label: "About" },
+  { href: "/tools", label: "Tools" },
 ];
 
 export default function SiteHeader() {
   const pathname = usePathname();
   const { session } = useSupabase();
-
-  // Your hook accepts NO arguments → call it with zero params
-  const { plan } = useUserPlan();
+  const { plan, credits } = useUserPlan();
   const planLabel = plan ?? "free";
 
   const isActive = (href: string) => {
     if (!pathname) return false;
     if (href === "/") return pathname === "/";
-    return pathname === href || pathname.startsWith(`${href}/`);
+    return pathname.startsWith(href);
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-800/60 bg-slate-950/70 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-5xl items-center gap-6 px-4 sm:h-20 sm:px-6 lg:px-8">
+    <header className="w-full border-b border-white/5 bg-slate-950/80 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        {/* Left: logo + nav links */}
+        <div className="flex items-center gap-8">
+          <Link
+            href="/"
+            className="text-lg font-semibold tracking-tight text-white"
+          >
+            Havenly
+          </Link>
 
-        {/* Brand */}
-        <Link href="/" className="text-lg font-semibold tracking-tight text-slate-50">
-          Havenly
-        </Link>
+          <nav className="flex items-center gap-4 sm:gap-6">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`text-sm font-medium transition-colors ${
+                  isActive(link.href)
+                    ? "text-white"
+                    : "text-white/70 hover:text-white"
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
 
-        {/* Navigation */}
-        <nav className="flex items-center gap-4 text-sm">
-          {NAV_LINKS.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className={[
-                "transition-colors",
-                isActive(href)
-                  ? "font-semibold text-slate-50"
-                  : "text-slate-300 hover:text-slate-50",
-              ].join(" ")}
-            >
-              {label}
-            </Link>
-          ))}
-        </nav>
-
-        {/* Spacer */}
-        <div className="flex-1" />
-
-        {/* Right Side */}
-        <div className="flex items-center gap-3 text-xs">
-
-          {/* Plan */}
-          <span className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 font-medium text-emerald-300">
+        {/* Right: plan / credits / upgrade / logout */}
+        <div className="flex items-center gap-3">
+          <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-medium text-white/80">
             {planLabel}
           </span>
-
-          {/* Credits */}
-          <span className="rounded-full border border-slate-500/40 bg-slate-900/60 px-3 py-1 font-medium text-slate-300">
-            Credits: 0
+          <span className="rounded-full border border-white/10 px-3 py-1 text-xs font-medium text-white/80">
+            Credits: {credits ?? 0}
           </span>
 
-          {/* Upgrade */}
           <Link
             href="/upgrade"
-            className="rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-slate-950 shadow-sm hover:bg-emerald-400"
+            className="rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-slate-950 hover:bg-emerald-400 transition-colors"
           >
             Upgrade
           </Link>
 
-          {/* Logout only when logged in */}
-          {session && (
-            <div className="pl-3">
-              <LogoutButton />
-            </div>
-          )}
+          {session && <LogoutButton />}
         </div>
       </div>
     </header>
