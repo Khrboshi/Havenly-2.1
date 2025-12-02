@@ -2,7 +2,6 @@
 import { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
-import SiteHeader from "@/app/components/SiteHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -26,10 +25,7 @@ export default async function ProtectedLayout({
   // Authenticated → render protected area
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      {/* Global navbar that now works consistently */}
-      <SiteHeader />
-
-      {/* Protected content area */}
+      {/* ❌ NO SiteHeader here — global layout already renders it */}
       <main>{children}</main>
     </div>
   );
