@@ -2,81 +2,62 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useUserPlan } from "./useUserPlan";
+import ClientNavWrapper from "./ClientNavWrapper";
+import LogoutButton from "./auth/LogoutButton";
 
 export default function SiteHeader() {
   const pathname = usePathname();
-  const { authenticated, planType, credits, loading } = useUserPlan();
 
-  const nav = [
-    { href: "/", label: "Home" },
+  // Hide the navbar on auth pages
+  const hideOnAuth =
+    pathname.startsWith("/magic-login") ||
+    pathname.startsWith("/auth");
+
+  if (hideOnAuth) return null;
+
+  const navItems = [
     { href: "/journal", label: "Journal" },
     { href: "/blog", label: "Blog" },
     { href: "/about", label: "About" },
     { href: "/tools", label: "Tools" },
   ];
 
-  const planLabel =
-    planType === "PREMIUM"
-      ? "Premium"
-      : planType === "ESSENTIAL"
-      ? "Essential"
-      : "Free";
-
-  const planBadgeClass =
-    planType === "PREMIUM"
-      ? "border-emerald-400 text-emerald-300 bg-emerald-500/10"
-      : planType === "ESSENTIAL"
-      ? "border-sky-400 text-sky-300 bg-sky-500/10"
-      : "border-slate-600 text-slate-300 bg-slate-800/60";
+  const isProtected =
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/journal") ||
+    pathname.startsWith("/settings") ||
+    pathname.startsWith("/insights");
 
   return (
-    <header className="w-full border-b border-hvn-card bg-hvn-bg/80 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-        <Link href="/" className="text-lg font-semibold text-hvn-text-primary">
-          Havenly
-        </Link>
+    <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
+      {/* LEFT SIDE */}
+      <Link href="/" className="text-xl font-semibold text-white">
+        Havenly
+      </Link>
 
-        <div className="flex items-center gap-4">
-          <nav className="hidden gap-6 text-sm font-medium text-hvn-text-muted sm:flex">
-            {nav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={
-                  pathname === item.href
-                    ? "text-hvn-accent-mint"
-                    : "hover:text-hvn-text-primary"
-                }
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+      {/* NAV LINKS */}
+      <nav className="hidden md:flex items-center gap-6 text-slate-300">
+        {navItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`hover:text-white transition ${
+              pathname.startsWith(item.href) ? "text-white font-medium" : ""
+            }`}
+          >
+            {item.label}
+          </Link>
+        ))}
+      </nav>
 
-          {/* Plan + credits summary (only when logged in) */}
-          {!loading && authenticated && (
-            <div className="hidden items-center gap-2 text-xs sm:flex sm:text-sm">
-              <span
-                className={`rounded-full border px-3 py-1 font-medium ${planBadgeClass}`}
-              >
-                {planLabel} plan
-              </span>
-              <span className="text-hvn-text-muted">
-                Credits: <span className="font-semibold">{credits}</span>
-              </span>
-              {planType !== "PREMIUM" && (
-                <Link
-                  href="/upgrade"
-                  className="rounded-full bg-hvn-accent-mint px-3 py-1 font-semibold text-slate-900 hover:bg-hvn-accent-mint/90"
-                >
-                  Upgrade
-                </Link>
-              )}
-            </div>
-          )}
-        </div>
+      {/* RIGHT SIDE */}
+      <div className="flex items-center gap-4">
+        {/* Plan badge + Credits */}
+        <ClientNavWrapper />
+
+        {/* Show Logout only for logged-in sections */}
+        {isProtected && <LogoutButton />}
       </div>
-    </header>
+    </div>
   );
 }
