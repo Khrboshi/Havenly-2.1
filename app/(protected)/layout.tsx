@@ -16,13 +16,21 @@ export default async function ProtectedLayout({
     data: { session },
   } = await supabase.auth.getSession();
 
+  // Compute full URL user is trying to visit
+  const targetUrl =
+    typeof window !== "undefined"
+      ? window.location.pathname
+      : ""; // server fallback
+
   if (!session?.user) {
-    redirect(`/magic-login?redirectedFrom=${encodeURIComponent("/")}`);
+    redirect(
+      `/magic-login?redirectedFrom=${encodeURIComponent(targetUrl || "/")}`
+    );
   }
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      {/* Header is already in RootLayout → do NOT re-render it */}
+      {/* Protected content */}
       <main>{children}</main>
     </div>
   );
