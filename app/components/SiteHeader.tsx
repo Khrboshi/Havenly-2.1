@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useSupabase } from "./SupabaseSessionProvider";
 import { useUserPlan } from "./useUserPlan";
 import LogoutButton from "./auth/LogoutButton";
+import { useState, useRef, useEffect } from "react";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -18,14 +19,31 @@ export default function SiteHeader() {
   const pathname = usePathname();
   const { session } = useSupabase();
   const { plan, credits } = useUserPlan();
-
   const planLabel = plan ?? "free";
+
+  // Dropdown Menu State
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   function isActive(href: string) {
     if (!pathname) return false;
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
   }
+
+  const userInitial =
+    session?.user?.email?.charAt(0)?.toUpperCase() ?? "☺";
 
   return (
     <header className="w-full border-b border-white/5 bg-slate-950/80 backdrop-blur">
@@ -57,7 +75,7 @@ export default function SiteHeader() {
           </nav>
         </div>
 
-        {/* RIGHT — PLAN / CREDITS / UPGRADE / LOGOUT */}
+        {/* RIGHT — PLAN / CREDITS / UPGRADE / AVATAR */}
         <div className="flex items-center gap-3">
           <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/80">
             {planLabel}
@@ -74,7 +92,48 @@ export default function SiteHeader() {
             Upgrade
           </Link>
 
-          {session && <LogoutButton />}
+          {/* AVATAR DROPDOWN (only if logged in) */}
+          {session && (
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setMenuOpen((v) => !v)}
+                className="h-9 w-9 flex items-center justify-center rounded-full bg-white/10 text-white font-semibold hover:bg-white/20 transition"
+              >
+                {userInitial}
+              </button>
+
+              {menuOpen && (
+                <div className="absolute right-0 mt-2 w-44 rounded-xl border border-white/10 bg-slate-900 shadow-xl py-2 z-50">
+                  <Link
+                    href="/dashboard"
+                    className="block px-4 py-2 text-sm text-white/80 hover:bg-slate-800"
+                  >
+                    Dashboard
+                  </Link>
+
+                  <Link
+                    href="/insights"
+                    className="block px-4 py-2 text-sm text-white/80 hover:bg-slate-800"
+                  >
+                    Insights
+                  </Link>
+
+                  <Link
+                    href="/settings"
+                    className="block px-4 py-2 text-sm text-white/80 hover:bg-slate-800"
+                  >
+                    Settings
+                  </Link>
+
+                  <div className="border-t border-white/10 my-2" />
+
+                  <div className="px-4 py-2">
+                    <LogoutButton />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </header>
