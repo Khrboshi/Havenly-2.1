@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import LogoutButton from "./auth/LogoutButton";
-import useUserPlan from "./useUserPlan";
+import { useUserPlan } from "./useUserPlan";
 
 export default function SiteHeader() {
   const pathname = usePathname();
@@ -20,12 +20,12 @@ export default function SiteHeader() {
   return (
     <header className="w-full border-b border-white/10 backdrop-blur-md bg-black/20 sticky top-0 z-50">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-        {/* Left side - Logo */}
+        {/* Logo */}
         <Link href="/" className="font-semibold text-lg text-white">
           Havenly
         </Link>
 
-        {/* Navigation */}
+        {/* Desktop navigation */}
         <nav className="hidden md:flex items-center gap-6 text-sm text-gray-300">
           <Link className="hover:text-white transition" href="/journal">
             Journal
@@ -40,7 +40,7 @@ export default function SiteHeader() {
             Tools
           </Link>
 
-          {/* Plan Badge */}
+          {/* Plan badge */}
           <span className="ml-3 rounded-full bg-white/10 px-3 py-1 text-xs text-white">
             {plan ? `${plan} plan` : "Free plan"}
           </span>
@@ -50,7 +50,7 @@ export default function SiteHeader() {
             Credits: {credits ?? 0}
           </span>
 
-          {/* Upgrade button */}
+          {/* Upgrade */}
           <Link
             href="/upgrade"
             className="ml-2 rounded-full bg-emerald-500 px-3 py-1 text-xs text-black hover:bg-emerald-400 transition"
@@ -58,13 +58,12 @@ export default function SiteHeader() {
             Upgrade
           </Link>
 
-          {/* Logout (only on protected pages) */}
+          {/* Logout only in protected areas */}
           {isProtected && <LogoutButton />}
         </nav>
 
-        {/* Mobile menu (right side) */}
+        {/* Mobile badge */}
         <div className="md:hidden flex items-center gap-3">
-          {/* Plan badge */}
           <span className="rounded-full bg-white/10 px-2 py-1 text-xs text-white">
             {plan ? `${plan} plan` : "Free"}
           </span>
