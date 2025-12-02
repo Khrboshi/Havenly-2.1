@@ -17,55 +17,71 @@ const NAV_LINKS = [
 export default function SiteHeader() {
   const pathname = usePathname();
   const { session } = useSupabase();
-  const { plan } = useUserPlan();
+  const { plan, credits } = useUserPlan();
+
+  const isLoggedIn = !!session;
 
   return (
-    <header className="w-full flex items-center justify-between px-6 py-4 bg-transparent">
-      {/* Left: Logo */}
-      <Link href="/" className="text-xl font-semibold text-white">
-        Havenly
-      </Link>
+    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#0b1529]/70 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
+        {/* Logo */}
+        <Link href="/" className="text-lg font-semibold">
+          Havenly
+        </Link>
 
-      {/* Middle: Navigation */}
-      <nav className="hidden md:flex gap-6">
-        {NAV_LINKS.map((item) => {
-          const isActive =
-            pathname === item.href ||
-            (item.href !== "/" && pathname.startsWith(item.href));
+        {/* Navigation */}
+        <nav className="hidden md:flex items-center gap-6 text-sm">
+          {NAV_LINKS.map((link) => {
+            const isActive =
+              link.href === "/"
+                ? pathname === "/"
+                : pathname.startsWith(link.href);
 
-          return (
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`transition ${
+                  isActive
+                    ? "text-white font-semibold"
+                    : "text-white/60 hover:text-white"
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Right section */}
+        <div className="flex items-center gap-4">
+
+          {/* Show plan + credits only for logged-in users */}
+          {isLoggedIn && (
+            <>
+              <span className="text-xs text-white/70 px-2 py-1 rounded-md bg-white/10">
+                {plan || "free plan"}
+              </span>
+
+              <span className="text-xs text-white/70 px-2 py-1 rounded-md bg-white/10">
+                Credits: {credits ?? 0}
+              </span>
+            </>
+          )}
+
+          {/* Upgrade button only if logged in and not premium */}
+          {isLoggedIn && plan !== "premium" && (
             <Link
-              key={item.href}
-              href={item.href}
-              className={`transition ${
-                isActive ? "text-white font-semibold" : "text-gray-300"
-              }`}
+              href="/upgrade"
+              className="rounded-md bg-green-600 px-3 py-1 text-sm text-white hover:bg-green-700"
             >
-              {item.label}
+              Upgrade
             </Link>
-          );
-        })}
-      </nav>
+          )}
 
-      {/* Right side: Plan + Credits + Login / Logout */}
-      <div className="flex items-center gap-4">
-        {/* Show plan badge only when logged in */}
-        {session ? (
-          <>
-            <span className="px-3 py-1 text-sm bg-gray-800 text-gray-200 rounded-lg">
-              {plan ?? "free plan"}
-            </span>
-
-            <LogoutButton />
-          </>
-        ) : (
-          <Link
-            href="/magic-login"
-            className="text-gray-200 hover:text-white transition"
-          >
-            Log in
-          </Link>
-        )}
+          {/* Logout only when logged in */}
+          {isLoggedIn && <LogoutButton />}
+        </div>
       </div>
     </header>
   );
