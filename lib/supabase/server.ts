@@ -1,3 +1,4 @@
+// lib/supabase/server.ts
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 
@@ -13,10 +14,28 @@ export function createServerSupabase() {
           return cookieStore.get(name)?.value;
         },
         set(name: string, value: string, options: any) {
-          cookieStore.set(name, value, options);
+          try {
+            cookieStore.set(name, value, {
+              ...options,
+              path: "/",            // IMPORTANT
+              secure: true,         // IMPORTANT
+              sameSite: "lax",      // IMPORTANT
+            });
+          } catch (err) {
+            console.error("Cookie set error:", err);
+          }
         },
         remove(name: string, options: any) {
-          cookieStore.set(name, "", options);
+          try {
+            cookieStore.set(name, "", {
+              ...options,
+              path: "/", 
+              secure: true,
+              sameSite: "lax",
+            });
+          } catch (err) {
+            console.error("Cookie remove error:", err);
+          }
         },
       },
     }
