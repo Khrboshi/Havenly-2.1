@@ -3,6 +3,7 @@
 import { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
+import SessionHeartbeat from "@/app/components/auth/SessionHeartbeat";
 
 export const dynamic = "force-dynamic";
 
@@ -13,18 +14,19 @@ export default async function ProtectedLayout({
 }) {
   const supabase = createServerSupabase();
 
-  // Correct server-side session check
+  // Server-side check for active session
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // If no session → redirect safely (no SSR errors)
   if (!session) {
     redirect("/magic-login");
   }
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
+      {/* Keeps Supabase session alive on Free Tier */}
+      <SessionHeartbeat />
       <main>{children}</main>
     </div>
   );
