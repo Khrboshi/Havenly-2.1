@@ -1,46 +1,58 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
-const PROTECTED = [
-  "/dashboard",
-  "/journal",
-  "/settings",
-  "/tools",
-  "/insights",
-];
-
 export async function middleware(request: NextRequest) {
+  // Sync Supabase session
+  const { supabase, response } = await updateSession(request);
   const { pathname } = request.nextUrl;
 
-  const isAuthRoute =
-    pathname.startsWith("/magic-login") ||
-    pathname.startsWith("/auth/callback") ||
-    pathname.startsWith("/api/auth");
+  // Paths that never require auth:
+  const PUBLIC_PATHS = [
+    "/magic-login",
+    "/auth/callback",
+    "/api/auth",
+    "/",
+    "/favicon.ico",
+    "/favicon.png",
+    "/icon.svg",
+  ];
 
-  // Public routes → no auth needed
-  if (isAuthRoute) {
-    return NextResponse.next();
-  }
+  const isPublic = PUBLIC_PATHS.some((p) =>
+    pathname === p || pathname.startsWith(`${p}/`)
+  );
 
-  // Only sync session for protected pages
-  if (PROTECTED.some((p) => pathname.startsWith(p))) {
-    const { supabase, response } = await updateSession(request);
+  // Routes that are protected
+  const PROTECTED_PATHS = [
+    "/dashboard",
+    "/journal",
+    "/settings",
+    "/tools",
+    "/insights",
+  ];
 
+  const isProtected = PROTECTED_PATHS.some((p) =>
+    pathname === p || pathname.startsWith(`${p}/`)
+  );
+
+  // If the route is protected, check if user is logged in
+  if (isProtected) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.redirect(new URL("/magic-login", request.url));
+      const loginUrl = new URL("/magic-login", request.url);
+      loginUrl.searchParams.set("redirectedFrom", pathname);
+      return NextResponse.redirect(loginUrl);
     }
-
-    return response;
   }
 
-  // Default
-  return NextResponse.next();
+  return response;
 }
 
+// IMPORTANT — only include these matchers.
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|favicon.png|icon.svg).*)",
+  ],
 };
