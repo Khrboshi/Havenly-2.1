@@ -11,17 +11,13 @@ import PwaInstaller from "./pwa-installer";
 export const metadata: Metadata = {
   title: "Havenly 2.1",
   description:
-    "A calm, private journaling companion with gentle AI reflections—no streaks, no feeds, no pressure.",
+    "A calm, private journaling companion with gentle AI reflections.",
 };
 
 /**
- * Root layout
- * - Public for all routes
- * - Provides Supabase session context for client components
- * - Renders shared navigation + PWA helpers
- * NOTE: Authentication protection lives in:
- *   - app/(protected)/layout.tsx
- *   - middleware.ts (session sync)
+ * PUBLIC ROOT LAYOUT
+ * No redirects. No auth checks.
+ * Provides Supabase session context globally.
  */
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
