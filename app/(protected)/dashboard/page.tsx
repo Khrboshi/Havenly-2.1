@@ -2,117 +2,115 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useSupabase } from "@/app/components/SupabaseSessionProvider";
 
-/* ------------------------------
-   Types & Local Storage constants
---------------------------------*/
-type Reflection = {
+type JournalEntry = {
   id: string;
-  createdAt: string;
-  content: string;
+  created_at: string;
+  title: string | null;
+  content: string | null;
 };
 
-const STORAGE_KEY = "havenly_journal_entries";
-
-/* ------------------------------
-   Dashboard Page
---------------------------------*/
 export default function DashboardPage() {
-  const [entries, setEntries] = useState<Reflection[]>([]);
+  const { supabase, session } = useSupabase();
+  const [latest, setLatest] = useState<JournalEntry | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
+    if (!session?.user) return;
 
-      const parsed = JSON.parse(raw) as Reflection[];
-      const sorted = parsed.sort((a, b) =>
-        a.createdAt < b.createdAt ? 1 : -1
-      );
+    async function loadLatest() {
+      setLoading(true);
+      const { data } = await supabase
+        .from("journal_entries")
+        .select("id, created_at, title, content")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      setEntries(sorted);
-    } catch (err) {
-      console.error("Failed loading journal entries:", err);
+      setLatest(data ?? null);
+      setLoading(false);
     }
-  }, []);
 
-  const latest = entries[0];
+    loadLatest();
+  }, [supabase, session]);
 
   return (
-    <div className="mx-auto max-w-4xl px-6 pt-32 pb-28 text-slate-200">
-
-      {/* HEADER */}
-      <section className="mb-12 animate-fadeIn">
-        <h1 className="text-4xl font-semibold tracking-tight text-white mb-2">
-          Welcome back <span className="inline-block">👋</span>
+    <div className="mx-auto max-w-4xl px-6 pt-24 pb-24 text-slate-200">
+      <section className="mb-10">
+        <h1 className="text-3xl font-semibold tracking-tight">
+          Welcome back 👋
         </h1>
-
-        <p className="text-slate-400 text-base">
+        <p className="text-slate-400 mt-1">
           A gentle space to check in with yourself.
         </p>
       </section>
 
-      {/* QUICK ACTIONS */}
-      <section className="flex flex-wrap gap-4 mb-14 animate-fadeInUp">
+      <section className="mb-12 flex flex-wrap gap-4">
         <Link
           href="/journal/new"
-          className="bg-emerald-400 text-slate-900 px-6 py-3 rounded-full text-sm font-semibold hover:bg-emerald-300 transition-all shadow-lg shadow-emerald-400/20"
+          className="bg-emerald-400 text-slate-900 px-6 py-3 rounded-full text-sm font-semibold hover:bg-emerald-300 transition"
         >
           Start a new reflection
         </Link>
 
         <Link
           href="/journal"
-          className="bg-slate-800 px-6 py-3 rounded-full text-sm hover:bg-slate-700 transition-all border border-slate-700/50"
+          className="bg-slate-800 px-6 py-3 rounded-full text-sm hover:bg-slate-700"
         >
           View journal history
         </Link>
       </section>
 
-      {/* MOST RECENT REFLECTION */}
-      {!latest && (
-        <div className="rounded-2xl bg-slate-900/60 border border-slate-800 p-8 text-slate-400 text-sm animate-fadeInUp">
-          You haven’t saved any reflections yet.
-          <br />
-          Your first entry will appear here.
+      {loading && (
+        <div className="rounded-xl bg-slate-900/60 border border-slate-800 p-6 text-slate-400 text-sm">
+          Loading your latest reflection…
         </div>
       )}
 
-      {latest && (
-        <section className="rounded-2xl bg-slate-900/60 border border-slate-800 p-8 mb-16 animate-fadeInUp space-y-4">
-          <h2 className="text-lg font-medium text-white">
+      {!loading && !latest && (
+        <div className="rounded-xl bg-slate-900/60 border border-slate-800 p-6 text-slate-400 text-sm">
+          You haven&apos;t saved any reflections yet. Your first entry will
+          appear here.
+        </div>
+      )}
+
+      {!loading && latest && (
+        <section className="space-y-4 rounded-xl bg-slate-900/60 border border-slate-800 p-6">
+          <h2 className="text-lg font-medium text-slate-100">
             Most recent reflection
           </h2>
 
           <p className="text-xs text-slate-500">
-            {new Date(latest.createdAt).toLocaleString()}
+            {new Date(latest.created_at).toLocaleString()}
           </p>
 
-          <p className="whitespace-pre-wrap text-slate-300 text-sm leading-relaxed">
-            {latest.content.length > 350
+          <p className="whitespace-pre-wrap text-slate-200 text-sm leading-relaxed">
+            {latest.content && latest.content.length > 350
               ? latest.content.slice(0, 350) + "…"
               : latest.content}
           </p>
 
           <Link
             href={`/journal/${latest.id}`}
-            className="inline-block text-emerald-400 text-sm hover:underline"
+            className="inline-block mt-2 text-emerald-400 text-sm hover:underline"
           >
             Read full entry →
           </Link>
         </section>
       )}
 
-      {/* COMING SOON */}
-      <section className="rounded-2xl bg-slate-950/40 border border-slate-800 p-8 animate-fadeInUp">
-        <h2 className="text-lg font-semibold mb-2 text-white">
-          Coming soon ✨
-        </h2>
-
-        <p className="text-sm text-slate-400 leading-relaxed">
-          AI-assisted reflections, cloud backup, and cross-device sync will be
-          available in future premium plans.
-        </p>
+      <section className="mt-12">
+        <div className="rounded-xl bg-slate-950/40 border border-slate-800 p-6">
+          <h2 className="text-lg font-semibold mb-2 text-slate-100">
+            Coming soon ✨
+          </h2>
+          <p className="text-sm text-slate-400">
+            AI-assisted reflections, cloud backup, and cross-device sync will be
+            available in future premium plans.
+          </p>
+        </div>
       </section>
     </div>
   );
