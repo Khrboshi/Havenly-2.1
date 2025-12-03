@@ -1,35 +1,44 @@
-// app/(protected)/layout.tsx
+// app/layout.tsx
+import type { ReactNode } from "react";
+import type { Metadata } from "next";
+import "./globals.css";
 
-import { ReactNode } from "react";
-import { redirect } from "next/navigation";
-import { createServerSupabase } from "@/lib/supabase/server";
-import SessionHeartbeat from "@/app/components/auth/SessionHeartbeat";
+import Navbar from "./components/Navbar";
+import ToastClient from "./components/ToastClient";
+import { SupabaseSessionProvider } from "./components/SupabaseSessionProvider";
+import PwaInstaller from "./pwa-installer";
 
-export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Havenly 2.1",
+  description:
+    "A gentle journaling companion that helps you understand your day without pressure, streaks, or productivity hacks.",
+};
 
-export default async function ProtectedLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  const supabase = createServerSupabase();
-
-  // Correct server-side session check
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  // If no session → redirect safely
-  if (!session) {
-    redirect("/magic-login");
-  }
-
+/**
+ * Root layout
+ * - Applies global styles
+ * - Provides Supabase session context for client components (Navbar, dashboard, etc.)
+ * - Renders shared UI (navbar, toasts, PWA helpers)
+ * NOTE: No auth checks here – authentication is handled in:
+ *   - middleware.ts (for protected routes)
+ *   - app/(protected)/layout.tsx (server-side redirect if no session)
+ */
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      {/* 🔥 Keep the Supabase session alive */}
-      <SessionHeartbeat />
+    <html lang="en" className="h-full">
+      <body className="min-h-screen bg-slate-950 text-white antialiased">
+        <SupabaseSessionProvider>
+          {/* Global navigation with live Supabase session */}
+          <Navbar />
 
-      <main>{children}</main>
-    </div>
+          {/* Main content area – padded for navbar height */}
+          <main className="pt-16">{children}</main>
+
+          {/* Global helpers */}
+          <ToastClient />
+          <PwaInstaller />
+        </SupabaseSessionProvider>
+      </body>
+    </html>
   );
 }
