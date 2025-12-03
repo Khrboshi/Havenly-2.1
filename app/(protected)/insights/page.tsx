@@ -1,104 +1,91 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSupabase } from "@/app/components/SupabaseSessionProvider";
 
-/* ------------------------------
-   Types & Local Storage constants
---------------------------------*/
-type Reflection = {
+type JournalEntry = {
   id: string;
-  createdAt: string;
-  content: string;
+  created_at: string;
+  content: string | null;
 };
 
-const STORAGE_KEY = "havenly_journal_entries";
-
-/* ------------------------------
-   Insights Page
---------------------------------*/
 export default function InsightsPage() {
-  const [entries, setEntries] = useState<Reflection[]>([]);
+  const { supabase, session } = useSupabase();
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
+    if (!session?.user) return;
 
-      const parsed = JSON.parse(raw) as Reflection[];
-      const sorted = parsed.sort((a, b) =>
-        a.createdAt < b.createdAt ? 1 : -1
-      );
+    async function loadEntries() {
+      setLoading(true);
+      const { data } = await supabase
+        .from("journal_entries")
+        .select("id, created_at, content")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: false });
 
-      setEntries(sorted);
-    } catch (err) {
-      console.error("Failed to load insights:", err);
+      setEntries((data as JournalEntry[]) || []);
+      setLoading(false);
     }
-  }, []);
+
+    loadEntries();
+  }, [supabase, session]);
 
   const totalEntries = entries.length;
-  const totalWords = entries.reduce(
-    (acc, e) => acc + e.content.split(/\s+/).length,
-    0
-  );
+  const totalWords = entries.reduce((acc, e) => {
+    if (!e.content) return acc;
+    return acc + e.content.split(/\s+/).filter(Boolean).length;
+  }, 0);
+  const avgWords = totalEntries > 0 ? Math.round(totalWords / totalEntries) : 0;
 
   return (
-    <div className="mx-auto max-w-5xl px-6 pt-32 pb-28 text-slate-200">
+    <div className="mx-auto max-w-4xl px-6 pt-24 pb-20 text-slate-200">
+      <h1 className="text-3xl font-semibold tracking-tight mb-2">Insights</h1>
+      <p className="text-slate-400 mb-10">
+        A gentle overview of your journaling pattern so far.
+      </p>
 
-      {/* HEADER */}
-      <section className="mb-14 animate-fadeIn">
-        <h1 className="text-4xl font-semibold tracking-tight text-white mb-2">
-          Insights
-        </h1>
-        <p className="text-slate-400 text-base">
-          A gentle overview of your journaling pattern so far.
-        </p>
-      </section>
+      {loading && (
+        <p className="text-sm text-slate-400">Loading your insights…</p>
+      )}
 
-      {/* IF EMPTY */}
-      {totalEntries === 0 && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-8 text-slate-300 text-sm animate-fadeInUp">
-          You haven’t written any reflections yet.
-          <br />
-          Once you add a few entries, patterns will appear here.
+      {!loading && totalEntries === 0 && (
+        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-slate-300 text-sm">
+          You haven&apos;t written any reflections yet. Once you add a few
+          entries, you&apos;ll see patterns appear here.
         </div>
       )}
 
-      {/* STAT CARDS */}
-      {totalEntries > 0 && (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-16 animate-fadeInUp">
-          <StatCard label="Total reflections" value={totalEntries} />
-          <StatCard label="Total words" value={totalWords} />
-          <StatCard
-            label="Average words per entry"
-            value={Math.round(totalWords / totalEntries)}
-          />
-        </div>
+      {!loading && totalEntries > 0 && (
+        <>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-12">
+            <StatCard label="Total reflections" value={totalEntries} />
+            <StatCard label="Total words" value={totalWords} />
+            <StatCard label="Average words per entry" value={avgWords} />
+          </div>
+
+          <section className="rounded-xl border border-slate-800 bg-slate-950/40 p-6 mt-10">
+            <h2 className="text-lg font-semibold text-slate-100 mb-2">
+              Coming soon ✨
+            </h2>
+            <p className="text-sm text-slate-400 leading-relaxed">
+              Future Havenly Plus features will include emotional trends,
+              sentiment patterns, gentle AI observations, and week-over-week
+              progress insights — all private and for your eyes only.
+            </p>
+          </section>
+        </>
       )}
-
-      {/* COMING SOON */}
-      <section className="rounded-2xl border border-slate-800 bg-slate-950/40 p-8 animate-fadeInUp">
-        <h2 className="text-lg font-semibold text-slate-100 mb-2">
-          Coming soon ✨
-        </h2>
-
-        <p className="text-sm text-slate-400 leading-relaxed">
-          Future Havenly Plus features will include emotional trends,
-          sentiment patterns, gentle AI observations, and week-over-week
-          progress insights — all private and for your eyes only.
-        </p>
-      </section>
     </div>
   );
 }
 
-/* ------------------------------
-   Stat Card Component
---------------------------------*/
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 shadow-sm shadow-black/20">
+    <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
       <p className="text-xs text-slate-500">{label}</p>
-      <p className="text-3xl font-semibold text-white mt-1">{value}</p>
+      <p className="text-2xl font-semibold text-white mt-1">{value}</p>
     </div>
   );
 }
