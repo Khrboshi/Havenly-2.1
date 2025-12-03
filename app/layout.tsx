@@ -11,30 +11,25 @@ import PwaInstaller from "./pwa-installer";
 export const metadata: Metadata = {
   title: "Havenly 2.1",
   description:
-    "A gentle journaling companion that helps you understand your day without pressure, streaks, or productivity hacks.",
+    "A calm, private journaling companion with gentle AI reflections—no streaks, no feeds, no pressure.",
 };
 
 /**
  * Root layout
- * - Applies global styles
- * - Provides Supabase session context for client components (Navbar, dashboard, etc.)
- * - Renders shared UI (navbar, toasts, PWA helpers)
- * NOTE: No auth checks here – authentication is handled in:
- *   - middleware.ts (for protected routes)
- *   - app/(protected)/layout.tsx (server-side redirect if no session)
+ * - Public for all routes
+ * - Provides Supabase session context for client components
+ * - Renders shared navigation + PWA helpers
+ * NOTE: Authentication protection lives in:
+ *   - app/(protected)/layout.tsx
+ *   - middleware.ts (session sync)
  */
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="h-full">
       <body className="min-h-screen bg-slate-950 text-white antialiased">
         <SupabaseSessionProvider>
-          {/* Global navigation with live Supabase session */}
           <Navbar />
-
-          {/* Main content area – padded for navbar height */}
           <main className="pt-16">{children}</main>
-
-          {/* Global helpers */}
           <ToastClient />
           <PwaInstaller />
         </SupabaseSessionProvider>
