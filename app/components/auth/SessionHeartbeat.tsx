@@ -1,4 +1,3 @@
-// app/components/auth/SessionHeartbeat.tsx
 "use client";
 
 import { useEffect } from "react";
