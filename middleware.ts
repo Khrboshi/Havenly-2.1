@@ -2,27 +2,25 @@ import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
 export async function middleware(request: NextRequest) {
-  // Sync Supabase session
-  const { supabase, response } = await updateSession(request);
   const { pathname } = request.nextUrl;
 
-  // Paths that never require auth:
-  const PUBLIC_PATHS = [
+  // Public routes that NEVER require auth
+  const PUBLIC_ROUTES = [
+    "/",
     "/magic-login",
     "/auth/callback",
     "/api/auth",
-    "/",
-    "/favicon.ico",
-    "/favicon.png",
-    "/icon.svg",
   ];
 
-  const isPublic = PUBLIC_PATHS.some((p) =>
-    pathname === p || pathname.startsWith(`${p}/`)
+  const isPublic = PUBLIC_ROUTES.some((route) =>
+    pathname === route || pathname.startsWith(`${route}/`)
   );
 
-  // Routes that are protected
-  const PROTECTED_PATHS = [
+  // Sync session but DO NOT redirect yet
+  const { supabase, response } = await updateSession(request);
+
+  // Protected routes (must be logged in)
+  const PROTECTED_ROUTES = [
     "/dashboard",
     "/journal",
     "/settings",
@@ -30,29 +28,33 @@ export async function middleware(request: NextRequest) {
     "/insights",
   ];
 
-  const isProtected = PROTECTED_PATHS.some((p) =>
-    pathname === p || pathname.startsWith(`${p}/`)
+  const isProtected = PROTECTED_ROUTES.some((route) =>
+    pathname === route || pathname.startsWith(`${route}/`)
   );
 
-  // If the route is protected, check if user is logged in
-  if (isProtected) {
+  // If protected route → check user
+  if (isProtected && !isPublic) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) {
-      const loginUrl = new URL("/magic-login", request.url);
-      loginUrl.searchParams.set("redirectedFrom", pathname);
-      return NextResponse.redirect(loginUrl);
+      const redirectUrl = new URL("/magic-login", request.url);
+      redirectUrl.searchParams.set("redirectedFrom", pathname);
+      return NextResponse.redirect(redirectUrl);
     }
   }
 
+  // Otherwise, continue
   return response;
 }
 
-// IMPORTANT — only include these matchers.
+/**
+ * CRITICAL: Middleware matcher MUST NOT include static assets
+ * AND MUST NOT catch magic-login unnecessarily.
+ */
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|favicon.png|icon.svg).*)",
+    "/((?!_next/static|_next/image|favicon.ico|favicon.png|icon.svg|apple-touch-icon).*)",
   ],
 };
