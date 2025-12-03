@@ -1,35 +1,27 @@
-// app/(protected)/layout.tsx
-import { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
+import ProtectedNavBar from "@/app/components/ProtectedNavBar";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProtectedLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  const supabase = createServerSupabase();
+export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
+  // Create server client (ASYNC – required)
+  const supabase = await createServerSupabase();
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  // Fetch user directly (most stable)
+  const { data: { user } } = await supabase.auth.getUser();
 
-  // SERVER-SAFE redirect target
-  // Next.js exposes the URL through headers instead of window
-  const url = new URL(
-    // @ts-ignore
-    (await import("next/headers")).headers().get("x-url") || "/"
-  );
-
-  if (!session?.user) {
-    redirect(`/magic-login?redirectedFrom=${encodeURIComponent(url.pathname)}`);
+  // If no user → redirect to login
+  if (!user) {
+    redirect("/magic-login?redirectedFrom=/dashboard");
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <main>{children}</main>
+    <div className="min-h-screen bg-bgPrimary text-white">
+      <ProtectedNavBar />
+      <div className="pt-24 max-w-4xl mx-auto px-4">
+        {children}
+      </div>
     </div>
   );
 }
