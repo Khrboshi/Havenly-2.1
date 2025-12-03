@@ -1,88 +1,135 @@
+"use client";
+
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useSupabase } from "@/app/components/SupabaseSessionProvider";
 
-export const dynamic = "force-dynamic";
-
-type PageProps = {
-  params: { id: string };
+type JournalEntry = {
+  id: string;
+  created_at: string;
+  title: string | null;
+  content: string | null;
+  ai_response: string | null;
 };
 
-export default async function JournalEntryPage({ params }: PageProps) {
-  const supabase = createServerSupabase();
+export default function JournalEntryPage() {
+  const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const { supabase, session } = useSupabase();
 
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
+  const [entry, setEntry] = useState<JournalEntry | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (userError || !user) {
-    redirect(`/magic-login?redirectedFrom=/journal/${params.id}`);
+  useEffect(() => {
+    if (!params?.id || !session?.user) return;
+
+    async function loadEntry() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const { data, error: fetchError } = await supabase
+          .from("journal_entries")
+          .select("id, created_at, title, content, ai_response")
+          .eq("id", params.id)
+          .eq("user_id", session.user.id)
+          .single();
+
+        if (fetchError || !data) {
+          console.error(fetchError);
+          throw new Error("Could not find this reflection.");
+        }
+
+        setEntry(data);
+      } catch (err: any) {
+        setError(err.message ?? "Error loading reflection.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadEntry();
+  }, [params?.id, supabase, session]);
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-3xl px-6 pt-24 pb-24 text-slate-200">
+        <p className="text-sm text-slate-400">Loading reflection…</p>
+      </div>
+    );
   }
 
-  const { data, error } = await supabase
-    .from("journal_entries")
-    .select("id, content, created_at")
-    .eq("user_id", user!.id)
-    .eq("id", params.id)
-    .single();
-
-  if (error || !data) {
-    console.error("Error loading journal entry:", error);
-    notFound();
+  if (error || !entry) {
+    return (
+      <div className="mx-auto max-w-3xl px-6 pt-24 pb-24 text-slate-200 space-y-4">
+        <p className="text-sm text-rose-400">{error ?? "Reflection not found."}</p>
+        <button
+          onClick={() => router.push("/journal")}
+          className="inline-flex rounded-full bg-slate-800 px-5 py-2 text-sm hover:bg-slate-700"
+        >
+          Back to journal
+        </button>
+      </div>
+    );
   }
-
-  const createdAt = new Date(data.created_at);
-
-  const nicelyFormatted = createdAt.toLocaleString(undefined, {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
 
   return (
-    <div className="mx-auto max-w-3xl px-6 pt-24 pb-20 text-slate-200">
-      <p className="text-xs tracking-[0.2em] text-slate-500 uppercase mb-2">
+    <div className="mx-auto max-w-3xl px-6 pt-24 pb-24 text-slate-200">
+      <p className="text-xs uppercase tracking-[0.2em] text-emerald-400 mb-2">
         Reflection from
       </p>
-      <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-6">
-        {nicelyFormatted}
+      <h1 className="text-2xl font-semibold text-slate-50 mb-2">
+        {new Date(entry.created_at).toLocaleString()}
       </h1>
 
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 mb-8">
+      {entry.title && (
+        <p className="text-lg font-medium text-slate-100 mb-4">
+          {entry.title}
+        </p>
+      )}
+
+      <div className="rounded-xl bg-slate-900/60 border border-slate-800 p-6 mb-8">
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-100">
-          {data.content}
+          {entry.content}
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-3 text-sm">
+      {entry.ai_response && (
+        <div className="rounded-xl bg-emerald-950/40 border border-emerald-700/40 p-6 mb-8">
+          <p className="text-xs uppercase tracking-[0.2em] text-emerald-300 mb-2">
+            Gentle AI reflection
+          </p>
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-emerald-50">
+            {entry.ai_response}
+          </p>
+        </div>
+      )}
+
+      <div className="flex flex-wrap gap-3">
         <Link
           href="/journal"
-          className="rounded-full bg-slate-800 px-5 py-2 hover:bg-slate-700"
+          className="rounded-full bg-slate-800 px-5 py-2 text-sm hover:bg-slate-700"
         >
           Back to journal history
         </Link>
-
         <Link
           href="/journal/new"
-          className="rounded-full bg-emerald-400 px-5 py-2 font-semibold text-slate-900 hover:bg-emerald-300"
+          className="rounded-full bg-emerald-400 px-5 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-300"
         >
           Write a new reflection
         </Link>
-
         <Link
           href="/dashboard"
-          className="rounded-full bg-slate-800 px-5 py-2 hover:bg-slate-700"
+          className="rounded-full bg-slate-800 px-5 py-2 text-sm hover:bg-slate-700"
         >
           Return to dashboard
         </Link>
       </div>
 
-      <p className="mt-4 text-xs text-slate-500">
-        Your reflections are private and tied to your account.
+      <p className="mt-6 text-xs text-slate-500">
+        Your reflections are stored privately in your Havenly account.
       </p>
     </div>
   );
