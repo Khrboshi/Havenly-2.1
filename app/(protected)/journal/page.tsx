@@ -2,77 +2,53 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useSupabase } from "@/app/components/SupabaseSessionProvider";
 
-type Entry = {
+type JournalEntry = {
   id: string;
-  content: string;
-  createdAt: string;
+  created_at: string;
+  title: string | null;
+  content: string | null;
 };
 
-const STORAGE_KEY = "havenly_journal_entries";
-
-export default function JournalPage() {
-  const [entries, setEntries] = useState<Entry[]>([]);
+export default function JournalListPage() {
+  const { supabase, session } = useSupabase();
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
-    let cancelled = false;
+    if (!session?.user) return;
 
-    async function load() {
+    async function loadEntries() {
       try {
         setLoading(true);
         setError(null);
 
-        const res = await fetch("/api/journal/list", {
-          method: "GET",
-          credentials: "include",
-        });
+        const { data, error: fetchError } = await supabase
+          .from("journal_entries")
+          .select("id, created_at, title, content")
+          .eq("user_id", session.user.id)
+          .order("created_at", { ascending: false });
 
-        if (res.status === 401) {
-          router.push("/magic-login?redirectedFrom=/journal");
-          return;
+        if (fetchError) {
+          console.error(fetchError);
+          throw new Error("Could not load your journal entries.");
         }
 
-        if (!res.ok) {
-          throw new Error("Failed to load reflections.");
-        }
-
-        const data = await res.json();
-        const entriesFromApi: Entry[] = data.entries ?? [];
-
-        if (!cancelled) {
-          setEntries(entriesFromApi);
-
-          // Keep localStorage in sync so Dashboard/Insights (old logic)
-          // still work during the transition.
-          try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(entriesFromApi));
-          } catch (e) {
-            console.error("Failed syncing journal to localStorage:", e);
-          }
-        }
+        setEntries(data || []);
       } catch (err: any) {
-        console.error(err);
-        if (!cancelled) {
-          setError(err.message || "Error loading reflections.");
-        }
+        setError(err.message ?? "Unexpected error loading entries.");
       } finally {
-        if (!cancelled) setLoading(false);
+        setLoading(false);
       }
     }
 
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [router]);
+    loadEntries();
+  }, [supabase, session]);
 
   return (
-    <div className="mx-auto max-w-4xl px-6 pt-24 pb-20 text-slate-200">
-      {/* Header */}
+    <div className="mx-auto max-w-4xl px-6 pt-24 pb-24 text-slate-200">
       <h1 className="text-3xl font-semibold tracking-tight mb-2">
         Your journal
       </h1>
@@ -81,55 +57,50 @@ export default function JournalPage() {
         evolve over time.
       </p>
 
-      {/* Actions */}
-      <div className="mb-10">
+      <div className="mb-8">
         <Link
           href="/journal/new"
-          className="inline-flex items-center rounded-full bg-emerald-400 px-6 py-3 text-sm font-semibold text-slate-900 hover:bg-emerald-300 transition"
+          className="inline-flex rounded-full bg-emerald-400 px-5 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-300 transition"
         >
           Start a new reflection
         </Link>
       </div>
 
-      {/* Loading / error states */}
       {loading && (
         <p className="text-sm text-slate-400">Loading your reflections…</p>
       )}
 
-      {error && !loading && (
-        <p className="text-sm text-red-400 mb-4">{error}</p>
+      {error && (
+        <p className="text-sm text-rose-400 bg-rose-900/20 border border-rose-700/40 rounded-lg px-3 py-2">
+          {error}
+        </p>
       )}
 
-      {/* Empty state */}
       {!loading && !error && entries.length === 0 && (
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-slate-300 text-sm">
-          You haven&apos;t written any reflections yet. Your first entry will
-          appear here once you save it.
-        </div>
+        <p className="text-sm text-slate-400">
+          You haven&apos;t written anything yet — your first entry will appear
+          here once you check in.
+        </p>
       )}
 
-      {/* Entries list */}
-      <div className="space-y-3">
-        {entries.map((entry) => {
-          const date = new Date(entry.createdAt);
-          const preview =
-            entry.content.length > 140
-              ? entry.content.slice(0, 140) + "…"
-              : entry.content;
-
-          return (
-            <Link
-              key={entry.id}
-              href={`/journal/${entry.id}`}
-              className="block rounded-xl border border-slate-800 bg-slate-900/60 px-5 py-4 hover:bg-slate-900 transition"
-            >
-              <p className="text-xs text-slate-500 mb-1">
-                {date.toLocaleString()}
-              </p>
-              <p className="text-sm text-slate-200">{preview || "—"}</p>
-            </Link>
-          );
-        })}
+      <div className="space-y-4 mt-4">
+        {entries.map((entry) => (
+          <Link
+            key={entry.id}
+            href={`/journal/${entry.id}`}
+            className="block rounded-xl bg-slate-900/60 border border-slate-800 px-5 py-4 hover:border-emerald-400/60 transition"
+          >
+            <p className="text-xs text-slate-500 mb-1">
+              {new Date(entry.created_at).toLocaleString()}
+            </p>
+            <p className="text-sm font-medium text-slate-100 mb-1">
+              {entry.title?.trim() || "Untitled reflection"}
+            </p>
+            <p className="text-sm text-slate-300 line-clamp-2">
+              {entry.content || ""}
+            </p>
+          </Link>
+        ))}
       </div>
     </div>
   );
