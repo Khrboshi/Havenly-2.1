@@ -1,3 +1,4 @@
+// app/api/auth/send-magic-link/route.ts
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 
@@ -8,28 +9,28 @@ export async function POST(req: Request) {
     const { email, redirectedFrom } = await req.json();
 
     if (!email) {
-      return NextResponse.json({ error: "Email is required." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Email is required." },
+        { status: 400 }
+      );
     }
 
-    // Default redirect = dashboard
-    const target = redirectedFrom || "/dashboard";
+    const redirectTo = redirectedFrom || "/dashboard";
 
     const supabase = createServerSupabase();
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?redirectTo=${encodeURIComponent(
-          target
-        )}`,
+        emailRedirectTo:
+          `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?redirectTo=${encodeURIComponent(
+            redirectTo
+          )}`,
       },
     });
 
     if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ ok: true });
