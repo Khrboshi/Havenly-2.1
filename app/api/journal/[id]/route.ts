@@ -1,52 +1,24 @@
-import { NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 import { createServerSupabase } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
 
-interface RouteContext {
-  params: { id: string };
-}
+export async function GET(req: Request, { params }: any) {
+  const supabase = createServerSupabase();
 
-export async function GET(_req: Request, ctx: RouteContext) {
-  const { id } = ctx.params;
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
 
-  try {
-    const supabase = createServerSupabase();
+  if (!user) return NextResponse.json(null);
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+  const { data } = await supabase
+    .from("journal")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("id", params.id)
+    .maybeSingle();
 
-    if (userError || !user) {
-      return NextResponse.json(
-        { error: "Not authenticated." },
-        { status: 401 }
-      );
-    }
-
-    const { data, error } = await supabase
-      .from("journal_entries")
-      .select("id, content, created_at")
-      .eq("user_id", user.id)
-      .eq("id", id)
-      .single();
-
-    if (error || !data) {
-      console.error("Error loading journal entry:", error);
-      return NextResponse.json({ error: "Not found." }, { status: 404 });
-    }
-
-    return NextResponse.json({
-      entry: {
-        id: data.id,
-        content: data.content,
-        createdAt: data.created_at,
-      },
-    });
-  } catch (err: any) {
-    console.error("Unexpected error in /api/journal/[id]:", err);
-    return NextResponse.json(
-      { error: "Unexpected error." },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json(data);
 }
