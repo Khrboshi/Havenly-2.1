@@ -1,121 +1,88 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { notFound, redirect } from "next/navigation";
+import { createServerSupabase } from "@/lib/supabase/server";
 
-type Reflection = {
-  id: string;
-  createdAt: string;
-  content: string;
+export const dynamic = "force-dynamic";
+
+type PageProps = {
+  params: { id: string };
 };
 
-const STORAGE_KEY = "havenly_journal_entries";
+export default async function JournalEntryPage({ params }: PageProps) {
+  const supabase = createServerSupabase();
 
-function loadLocalEntries(): Reflection[] {
-  try {
-    const stored =
-      typeof window !== "undefined"
-        ? localStorage.getItem(STORAGE_KEY)
-        : null;
-    return stored ? (JSON.parse(stored) as Reflection[]) : [];
-  } catch {
-    return [];
-  }
-}
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
-export default function JournalEntryPage() {
-  const params = useParams();
-  const router = useRouter();
-  const entryId = params?.id as string;
-
-  const [entry, setEntry] = useState<Reflection | null>(null);
-  const [notFound, setNotFound] = useState(false);
-
-  useEffect(() => {
-    if (!entryId) return;
-
-    const all = loadLocalEntries();
-    const found = all.find((e) => e.id === entryId);
-
-    if (!found) {
-      setNotFound(true);
-    } else {
-      setEntry(found);
-    }
-  }, [entryId]);
-
-  if (notFound) {
-    return (
-      <div className="mx-auto max-w-5xl px-4 pt-20 text-center text-slate-300">
-        Entry not found.
-      </div>
-    );
+  if (userError || !user) {
+    redirect(`/magic-login?redirectedFrom=/journal/${params.id}`);
   }
 
-  if (!entry) {
-    return (
-      <div className="mx-auto max-w-5xl px-4 pt-20 text-center text-slate-300">
-        Loading...
-      </div>
-    );
+  const { data, error } = await supabase
+    .from("journal_entries")
+    .select("id, content, created_at")
+    .eq("user_id", user!.id)
+    .eq("id", params.id)
+    .single();
+
+  if (error || !data) {
+    console.error("Error loading journal entry:", error);
+    notFound();
   }
 
-  const formattedDate = new Date(entry.createdAt).toLocaleString(undefined, {
+  const createdAt = new Date(data.created_at);
+
+  const nicelyFormatted = createdAt.toLocaleString(undefined, {
     weekday: "long",
+    year: "numeric",
     month: "long",
     day: "numeric",
-    year: "numeric",
     hour: "numeric",
     minute: "2-digit",
   });
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12 space-y-12 text-slate-200">
-      {/* Header */}
-      <section className="space-y-2">
-        <p className="text-xs uppercase tracking-[0.25em] text-slate-400">
-          Reflection from
+    <div className="mx-auto max-w-3xl px-6 pt-24 pb-20 text-slate-200">
+      <p className="text-xs tracking-[0.2em] text-slate-500 uppercase mb-2">
+        Reflection from
+      </p>
+      <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight mb-6">
+        {nicelyFormatted}
+      </h1>
+
+      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 mb-8">
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-100">
+          {data.content}
         </p>
+      </div>
 
-        <h1 className="text-3xl font-semibold tracking-tight">
-          {formattedDate}
-        </h1>
-      </section>
-
-      {/* Content */}
-      <section className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950/40 p-6">
-        <p className="whitespace-pre-line text-slate-200 text-base leading-relaxed">
-          {entry.content}
-        </p>
-      </section>
-
-      {/* Navigation */}
-      <section className="flex flex-wrap gap-4 pt-4">
+      <div className="flex flex-wrap gap-3 text-sm">
         <Link
           href="/journal"
-          className="rounded-full bg-slate-800 px-5 py-2 text-sm hover:bg-slate-700"
+          className="rounded-full bg-slate-800 px-5 py-2 hover:bg-slate-700"
         >
           Back to journal history
         </Link>
 
         <Link
           href="/journal/new"
-          className="rounded-full bg-emerald-400 px-5 py-2 text-sm text-slate-900 hover:bg-emerald-300"
+          className="rounded-full bg-emerald-400 px-5 py-2 font-semibold text-slate-900 hover:bg-emerald-300"
         >
           Write a new reflection
         </Link>
 
         <Link
           href="/dashboard"
-          className="rounded-full bg-slate-900 px-5 py-2 text-sm hover:bg-slate-800"
+          className="rounded-full bg-slate-800 px-5 py-2 hover:bg-slate-700"
         >
           Return to dashboard
         </Link>
-      </section>
+      </div>
 
-      <p className="pt-8 text-xs text-slate-500">
-        Your reflections are stored locally on this device only.
+      <p className="mt-4 text-xs text-slate-500">
+        Your reflections are private and tied to your account.
       </p>
     </div>
   );
