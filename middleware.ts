@@ -1,51 +1,65 @@
+// middleware.ts
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
-// Paths that require authentication
-const PROTECTED_PATHS = ["/dashboard", "/journal", "/settings", "/tools", "/insights"];
+const PROTECTED_PATHS = [
+  "/dashboard",
+  "/journal",
+  "/settings",
+  "/tools",
+  "/insights",
+];
 
-function isProtected(pathname: string) {
+function isProtectedPath(pathname: string): boolean {
   return PROTECTED_PATHS.some(
-    (route) => pathname === route || pathname.startsWith(`${route}/`)
+    (base) => pathname === base || pathname.startsWith(`${base}/`)
   );
 }
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Never block auth routes or callback routes
-  const isAuthRoute =
+  // ❗ Directly allow magic login and auth callback
+  if (
     pathname.startsWith("/magic-login") ||
     pathname.startsWith("/auth/callback") ||
-    pathname.startsWith("/api/auth");
+    pathname.startsWith("/api/auth")
+  ) {
+    return NextResponse.next();
+  }
 
-  // Update Supabase session and cookies first
+  // Sync Supabase session + cookies
   const { supabase, response } = await updateSession(request);
 
-  // If this route is not protected → allow it
-  if (!isProtected(pathname) || isAuthRoute) {
-    return response; // always return updated cookies
+  // Apply protection only on protected pages
+  if (isProtectedPath(pathname)) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      const loginUrl = new URL("/magic-login", request.url);
+      loginUrl.searchParams.set("redirectedFrom", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    return response;
   }
 
-  // Check user session
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // If not logged in → redirect to magic login (NO LOOP)
-  if (!user) {
-    const loginUrl = new URL("/magic-login", request.url);
-    loginUrl.searchParams.set("redirectedFrom", pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  // Logged-in users continue
   return response;
 }
 
 export const config = {
+  // ❗ Correct matcher — avoids triggering middleware globally
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.svg|.*\\.png|.*\\.jpg|public).*)",
+    "/dashboard/:path*",
+    "/journal/:path*",
+    "/settings/:path*",
+    "/tools/:path*",
+    "/insights/:path*",
+    "/api/auth/:path*",
+    "/auth/callback",
+    "/magic-login",
   ],
   runtime: "nodejs",
 };
