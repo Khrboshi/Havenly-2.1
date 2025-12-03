@@ -1,110 +1,112 @@
 "use client";
 
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useState, FormEvent } from "react";
 
-type Reflection = {
+type ApiEntry = {
   id: string;
-  createdAt: string;
   content: string;
+  createdAt: string;
 };
 
 const STORAGE_KEY = "havenly_journal_entries";
 
-function loadLocalEntries(): Reflection[] {
-  try {
-    const stored =
-      typeof window !== "undefined"
-        ? localStorage.getItem(STORAGE_KEY)
-        : null;
-    return stored ? (JSON.parse(stored) as Reflection[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveLocalEntries(entries: Reflection[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
-  } catch {
-    // ignore
-  }
-}
-
 export default function NewJournalEntryPage() {
-  const router = useRouter();
-  const [text, setText] = useState("");
+  const [content, setContent] = useState("");
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (!content.trim()) {
+      setError("Please write a few words for your reflection.");
+      return;
+    }
 
-    const content = text.trim();
-    if (!content) return;
+    try {
+      setSaving(true);
+      setError(null);
 
-    setSaving(true);
+      const res = await fetch("/api/journal/create", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
 
-    // Generate entry object
-    const newEntry: Reflection = {
-      id: crypto.randomUUID(),
-      createdAt: new Date().toISOString(),
-      content,
-    };
+      if (res.status === 401) {
+        router.push("/magic-login?redirectedFrom=/journal/new");
+        return;
+      }
 
-    const existing = loadLocalEntries();
-    existing.push(newEntry);
-    saveLocalEntries(existing);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to save reflection.");
+      }
 
-    setSaving(false);
+      const data = (await res.json()) as { entry: ApiEntry };
+      const entry = data.entry;
 
-    // Go back to journal
-    router.push("/journal");
+      // Mirror into localStorage so existing Dashboard/Insights keep working
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const existing: ApiEntry[] = raw ? JSON.parse(raw) : [];
+        const updated = [
+          {
+            id: entry.id,
+            content: entry.content,
+            createdAt: entry.createdAt,
+          },
+          ...existing,
+        ];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch (e) {
+        console.error("Failed to update localStorage journal:", e);
+      }
+
+      router.push(`/journal/${entry.id}`);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Something went wrong.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
-    <div className="max-w-3xl mx-auto pt-32 pb-24 px-6 text-slate-200">
-      <h1 className="text-3xl font-semibold mb-3">Today&apos;s reflection</h1>
-
-      <p className="text-slate-400 mb-8 text-sm">
-        Take a few minutes to write honestly about how you're doing.
-        There's no right way — this is a gentle check-in just for you.
+    <div className="mx-auto max-w-3xl px-6 pt-24 pb-20 text-slate-200">
+      <h1 className="text-3xl font-semibold tracking-tight mb-2">
+        Today&apos;s reflection
+      </h1>
+      <p className="text-slate-400 mb-8 max-w-xl">
+        Take a few minutes to write honestly about how you&apos;re doing.
+        There&apos;s no right way — just a gentle check-in for you.
       </p>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
+          className="w-full min-h-[220px] rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-3 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-400/60"
           placeholder="What stood out about today? What felt heavy or light? What do you want to remember?"
-          className="
-            w-full min-h-[220px] rounded-xl bg-slate-900/70
-            border border-slate-800 px-4 py-3 text-sm
-            text-slate-200 placeholder:text-slate-500
-            focus:outline-none focus:border-emerald-400
-            focus:ring-1 focus:ring-emerald-400
-            transition resize-vertical
-          "
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
         />
 
-        <div className="flex items-center justify-between gap-4">
-          <button
-            type="submit"
-            disabled={saving || !text.trim()}
-            className="
-              bg-emerald-400 disabled:bg-emerald-400/60
-              disabled:cursor-not-allowed text-slate-900
-              px-6 py-2.5 rounded-full text-sm font-semibold
-              hover:bg-emerald-300 transition
-            "
-          >
-            {saving ? "Saving..." : "Save reflection"}
-          </button>
+        {error && <p className="text-sm text-red-400">{error}</p>}
 
-          <p className="text-xs text-slate-500">
-            Stored locally on this device.  
-            Cloud sync coming in the premium version.
-          </p>
-        </div>
+        <button
+          type="submit"
+          disabled={saving}
+          className="inline-flex items-center rounded-full bg-emerald-400 px-6 py-3 text-sm font-semibold text-slate-900 hover:bg-emerald-300 disabled:opacity-60 disabled:cursor-not-allowed transition"
+        >
+          {saving ? "Saving…" : "Save reflection"}
+        </button>
       </form>
+
+      <p className="mt-4 text-xs text-slate-500">
+        Stored securely in your Havenly account. Local backup on this device is
+        also kept for now.
+      </p>
     </div>
   );
 }
