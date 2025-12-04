@@ -19,7 +19,6 @@ export default function SiteHeader() {
   const pathname = usePathname();
   const { session } = useSupabase();
 
-  // Dropdown Menu State
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -71,7 +70,7 @@ export default function SiteHeader() {
           </nav>
         </div>
 
-        {/* RIGHT — UPGRADE + AVATAR (if logged in) */}
+        {/* RIGHT — Upgrade + avatar (if logged in) */}
         <div className="flex items-center gap-3">
           <Link
             href="/upgrade"
