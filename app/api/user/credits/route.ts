@@ -1,6 +1,7 @@
 // app/api/user/credits/route.ts
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { getUserPlan } from "@/lib/userPlan";
 
 export async function GET() {
   try {
@@ -18,38 +19,29 @@ export async function GET() {
       );
     }
 
-    // Read from user_plans (your existing table)
-    const { data: planRow, error: planError } = await supabase
-      .from("user_plans")
-      .select("plan_type, credits_balance")
-      .eq("user_id", user.id)
-      .maybeSingle();
+    const planRow = await getUserPlan(supabase, user.id);
 
-    if (planError) {
-      console.error("Error fetching user_plans in GET /credits:", planError);
+    if (!planRow) {
       return NextResponse.json(
-        { error: "Could not load current credits." },
-        { status: 500 }
+        {
+          planType: "FREE",
+          credits: 0,
+        },
+        { status: 200 }
       );
     }
 
-    const planType = (planRow?.plan_type || "FREE") as string;
-    const creditsBalance = planRow?.credits_balance ?? 0;
-
-    const isPremium = planType === "PREMIUM";
-
     return NextResponse.json(
       {
-        planType,
-        isPremium,
-        credits: isPremium ? "UNLIMITED" : creditsBalance,
+        planType: planRow.plan_type ?? "FREE",
+        credits: planRow.credits_balance ?? 0,
       },
       { status: 200 }
     );
   } catch (err) {
-    console.error("Unexpected error in GET /api/user/credits:", err);
+    console.error("GET /api/user/credits error:", err);
     return NextResponse.json(
-      { error: "Unexpected error while loading credits." },
+      { error: "Failed to load credits." },
       { status: 500 }
     );
   }
