@@ -11,14 +11,13 @@ export default function MagicLoginPage({ searchParams }: MagicLoginPageProps) {
   const redirectTo = searchParams?.redirectedFrom || "/dashboard";
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* MAIN CONTENT CENTERED */}
-      <main className="flex flex-grow items-center justify-center px-4 py-10">
+    <div className="flex min-h-screen flex-col">
+      {/* PAGE CENTERED CONTENT */}
+      <div className="flex flex-1 items-center justify-center px-4 py-16">
         <div className="w-full max-w-md rounded-2xl border border-hvn-card bg-hvn-bg-elevated/90 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.85)] backdrop-blur-sm">
           <h1 className="text-center text-2xl font-semibold text-hvn-text-primary">
             Sign in to Havenly
           </h1>
-
           <p className="mt-2 text-center text-sm text-hvn-text-muted">
             We will send you a secure one-time login link.
           </p>
@@ -31,7 +30,6 @@ export default function MagicLoginPage({ searchParams }: MagicLoginPageProps) {
               >
                 Email address
               </label>
-
               <input
                 id="email"
                 name="email"
@@ -42,6 +40,7 @@ export default function MagicLoginPage({ searchParams }: MagicLoginPageProps) {
                 placeholder="you@example.com"
               />
 
+              {/* Hidden redirect field */}
               <input type="hidden" name="redirectTo" value={redirectTo} />
             </div>
 
@@ -61,8 +60,7 @@ export default function MagicLoginPage({ searchParams }: MagicLoginPageProps) {
             after signing in.
           </p>
         </div>
-      </main>
-      {/* FOOTER is handled by RootLayout */}
+      </div>
     </div>
   );
 }
