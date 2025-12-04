@@ -1,4 +1,3 @@
-// app/magic-login/page.tsx
 "use client";
 
 import { FormEvent, useState, Suspense } from "react";
@@ -14,6 +13,8 @@ function MagicLoginInner() {
   const [status, setStatus] =
     useState<"idle" | "sending" | "sent" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
+
+  const comingFromUpgrade = redirectedFrom === "/upgrade";
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -46,9 +47,18 @@ function MagicLoginInner() {
   return (
     <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center px-4">
       <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/80 p-8 shadow-xl">
+
+        {/* FRIENDLY UPGRADE MESSAGE */}
+        {comingFromUpgrade && (
+          <div className="mb-5 rounded-xl bg-emerald-500/10 border border-emerald-500/40 px-4 py-3 text-sm text-emerald-300">
+            Please sign in first to upgrade your plan.
+          </div>
+        )}
+
         <h1 className="text-2xl font-semibold text-center mb-2">
           Sign in to Havenly
         </h1>
+
         <p className="text-sm text-slate-300 text-center mb-6">
           We will send you a secure one-time login link.
         </p>
@@ -87,9 +97,7 @@ function MagicLoginInner() {
 
         <p className="mt-6 text-xs text-slate-500 text-center">
           You will be redirected to{" "}
-          <span className="font-medium text-slate-300">
-            {redirectedFrom}
-          </span>{" "}
+          <span className="font-medium text-slate-300">{redirectedFrom}</span>{" "}
           after signing in.
         </p>
       </div>
