@@ -7,20 +7,23 @@ import { useSupabase } from "./SupabaseSessionProvider";
 import LogoutButton from "./auth/LogoutButton";
 import { useState, useRef, useEffect } from "react";
 
-const NAV_LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/journal", label: "Journal" },
-  { href: "/blog", label: "Blog" },
-  { href: "/about", label: "About" },
-  { href: "/tools", label: "Tools" },
-];
-
 export default function SiteHeader() {
   const pathname = usePathname();
   const { session } = useSupabase();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+
+  // Navigation items — Journal only when logged in
+  const NAV_LINKS = [
+    { href: "/", label: "Home" },
+    ...(session
+      ? [{ href: "/journal", label: "Journal" }]
+      : []),
+    { href: "/blog", label: "Blog" },
+    { href: "/about", label: "About" },
+    { href: "/tools", label: "Tools" },
+  ];
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -44,7 +47,8 @@ export default function SiteHeader() {
   return (
     <header className="w-full border-b border-white/5 bg-slate-950/80 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* LEFT — LOGO + NAV */}
+        
+        {/* LEFT — LOGO + NAVIGATION */}
         <div className="flex items-center gap-8">
           <Link
             href="/"
@@ -70,7 +74,7 @@ export default function SiteHeader() {
           </nav>
         </div>
 
-        {/* RIGHT — Upgrade + avatar (if logged in) */}
+        {/* RIGHT — Upgrade (always visible) + User avatar (when logged in) */}
         <div className="flex items-center gap-3">
           <Link
             href="/upgrade"
@@ -96,12 +100,14 @@ export default function SiteHeader() {
                   >
                     Dashboard
                   </Link>
+
                   <Link
                     href="/insights"
                     className="block px-4 py-2 text-sm text-white/80 hover:bg-slate-800"
                   >
                     Insights
                   </Link>
+
                   <Link
                     href="/settings"
                     className="block px-4 py-2 text-sm text-white/80 hover:bg-slate-800"
