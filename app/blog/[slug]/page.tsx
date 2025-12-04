@@ -1,40 +1,42 @@
-import { notFound } from "next/navigation";
-import { posts } from "../posts";
+// app/blog/[slug]/page.tsx
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
-  const post = posts.find((p) => p.slug === params.slug);
+import { blogPosts } from "../posts";
+import MarkdownRenderer from "@/app/components/blog/MarkdownRenderer";
+import ArticleHeader from "@/app/components/blog/ArticleHeader";
+import Link from "next/link";
 
-  if (!post) return notFound();
+export function generateStaticParams() {
+  return blogPosts.map((post) => ({
+    slug: post.slug,
+  }));
+}
+
+export default function ArticlePage({ params }: { params: { slug: string } }) {
+  const post = blogPosts.find((p) => p.slug === params.slug);
+
+  if (!post) {
+    return (
+      <div className="mx-auto max-w-xl pt-20 text-center text-hvn-text-muted">
+        <p>Article not found.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="px-4 pb-24 pt-20 sm:px-6 lg:px-8 bg-transparent">
-      <div className="mx-auto max-w-3xl">
-        <p className="text-xs text-hvn-text-muted">
-          {post.date} • {post.minutes} min read
-        </p>
+    <div className="mx-auto max-w-3xl px-5 pt-20 pb-28">
+      <ArticleHeader title={post.title} readingTime={post.readingTime} />
 
-        <h1 className="mt-2 text-3xl font-semibold text-hvn-text-primary sm:text-4xl">
-          {post.title}
-        </h1>
+      <div className="prose prose-invert max-w-none text-sm leading-relaxed">
+        <MarkdownRenderer content={post.content} />
+      </div>
 
-        <div className="mt-10 space-y-6 text-lg leading-relaxed text-hvn-text-muted">
-          <p>
-            This is placeholder content. If you want, I can automatically
-            generate full articles for every blog post in high-quality Havenly
-            tone — warm, emotional, and calm.
-          </p>
-
-          <p>
-            Havenly’s writing style focuses on emotional safety, clarity, and
-            reflective gentleness. The goal is not to give advice, but to help
-            you notice what matters inside your own experience.
-          </p>
-
-          <p>
-            Let me know if you'd like me to generate full long-form versions for
-            all posts.
-          </p>
-        </div>
+      <div className="mt-10 border-t border-hvn-subtle/40 pt-6 text-center">
+        <Link
+          href="/blog"
+          className="text-xs text-hvn-accent-blue underline-offset-4 hover:underline"
+        >
+          ← Back to all articles
+        </Link>
       </div>
     </div>
   );
