@@ -9,13 +9,16 @@ interface UserPlanState {
   loading: boolean;
   error: string | null;
 
-  // legacy compatibility
+  // Legacy fields required by older pages
   plan: PlanType;
 
-  // new improved value
+  // New field used by updated layout/pages
   planType: PlanType;
 
   credits: number | null;
+
+  // Required by premium/page.tsx
+  renewalDate: string | null;
 }
 
 export function useUserPlan(): UserPlanState {
@@ -25,6 +28,7 @@ export function useUserPlan(): UserPlanState {
     plan: null,
     planType: null,
     credits: null,
+    renewalDate: null, // added default
   });
 
   useEffect(() => {
@@ -32,10 +36,9 @@ export function useUserPlan(): UserPlanState {
 
     async function fetchPlan() {
       try {
-        const res = await fetch("/api/user/credits", {
-          method: "GET",
-        });
+        const res = await fetch("/api/user/credits", { method: "GET" });
 
+        // Not logged in → treat as FREE
         if (res.status === 401) {
           if (!cancelled) {
             setState({
@@ -43,7 +46,8 @@ export function useUserPlan(): UserPlanState {
               error: null,
               plan: "FREE",
               planType: "FREE",
-              credits: null,
+              credits: 0,
+              renewalDate: null,
             });
           }
           return;
@@ -54,34 +58,40 @@ export function useUserPlan(): UserPlanState {
         }
 
         const data = await res.json();
+
         const planValue: PlanType = data.planType ?? "FREE";
+        const renewal =
+          typeof data.renewalDate === "string" ? data.renewalDate : null;
 
         if (!cancelled) {
           setState({
             loading: false,
             error: null,
-            plan: planValue,        // legacy field
-            planType: planValue,    // new field
+            plan: planValue,
+            planType: planValue,
             credits:
-              typeof data.credits === "number" ? data.credits : null,
+              typeof data.credits === "number" ? data.credits : 0,
+            renewalDate: renewal,
           });
         }
       } catch (err) {
         console.error("useUserPlan error:", err);
 
         if (!cancelled) {
-          setState((prev) => ({
-            ...prev,
+          setState({
             loading: false,
             error: "Could not load plan info",
             plan: "FREE",
             planType: "FREE",
-          }));
+            credits: 0,
+            renewalDate: null,
+          });
         }
       }
     }
 
     fetchPlan();
+
     return () => {
       cancelled = true;
     };
