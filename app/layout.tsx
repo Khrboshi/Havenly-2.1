@@ -17,27 +17,22 @@ export const metadata: Metadata = {
   themeColor: "#4CA7A3",
 };
 
-/**
- * PUBLIC ROOT LAYOUT
- * - No redirects
- * - No auth checks
- * - Global Supabase session context
- * - Navbar + Footer on all public pages
- */
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="h-full">
-      <body className="min-h-screen bg-slate-950 text-white antialiased flex flex-col">
+      <body className="min-h-screen flex flex-col bg-slate-950 text-white antialiased">
         <SupabaseSessionProvider>
           <Navbar />
 
-          {/* Page content */}
-          <main className="pt-16 flex-1">{children}</main>
+          {/* Page content wrapper */}
+          <main className="flex-1 w-full">
+            <div className="mx-auto w-full max-w-7xl px-4 pt-10">
+              {children}
+            </div>
+          </main>
 
-          {/* Global footer (public only) */}
           <Footer />
 
-          {/* Global utilities */}
           <ToastClient />
           <PwaInstaller />
         </SupabaseSessionProvider>
