@@ -13,6 +13,7 @@ export default function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
+  // Navigation items
   const NAV_LINKS = [
     { href: "/", label: "Home" },
     ...(session
@@ -22,9 +23,10 @@ export default function SiteHeader() {
         ]
       : []),
     { href: "/blog", label: "Blog" },
-    { href: "/about", label: "About" },
+    { href: "/about", label: "About" }
   ];
 
+  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -32,8 +34,7 @@ export default function SiteHeader() {
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   function isActive(href: string) {
@@ -45,15 +46,12 @@ export default function SiteHeader() {
   const userInitial = session?.user?.email?.charAt(0)?.toUpperCase() ?? "☺";
 
   return (
-    <div className="w-full bg-slate-950/80 backdrop-blur border-b border-white/5">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header className="w-full h-16 flex items-center border-b border-white/5 bg-slate-950/80 backdrop-blur z-40">
+      <div className="mx-auto flex h-full w-full max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
 
-        {/* LEFT — LOGO + NAVIGATION */}
+        {/* LEFT — Logo + Nav */}
         <div className="flex items-center gap-8">
-          <Link
-            href="/"
-            className="text-lg font-semibold tracking-tight text-white"
-          >
+          <Link href="/" className="text-lg font-semibold tracking-tight text-white">
             Havenly
           </Link>
 
@@ -74,8 +72,8 @@ export default function SiteHeader() {
           </nav>
         </div>
 
-        {/* RIGHT — UPGRADE BUTTON + AVATAR */}
-        <div className="flex items-center gap-3 relative" ref={menuRef}>
+        {/* RIGHT — Upgrade + Avatar Menu */}
+        <div className="flex items-center gap-3">
           <Link
             href="/upgrade"
             className="rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-slate-950 hover:bg-emerald-400"
@@ -84,7 +82,8 @@ export default function SiteHeader() {
           </Link>
 
           {session && (
-            <>
+            <div className="relative" ref={menuRef}>
+              {/* Avatar Button */}
               <button
                 onClick={() => setMenuOpen((v) => !v)}
                 className="h-9 w-9 flex items-center justify-center rounded-full bg-white/10 text-white font-semibold hover:bg-white/20 transition"
@@ -92,45 +91,51 @@ export default function SiteHeader() {
                 {userInitial}
               </button>
 
-              {/* DROPDOWN MENU */}
+              {/* Dropdown Menu */}
               {menuOpen && (
                 <div
                   className="
-                    absolute right-0 mt-3 w-48 rounded-xl border border-white/10 
-                    bg-slate-900/95 shadow-xl shadow-black/40 
-                    backdrop-blur-md py-2 z-50 animate-dropdown
+                    absolute right-0 mt-3 
+                    w-48 rounded-xl border border-white/10 bg-slate-900 shadow-2xl 
+                    animate-dropdown py-2 z-50
                   "
                 >
                   <Link
                     href="/dashboard"
-                    className="block px-4 py-2 text-sm text-white/80 hover:bg-white/10 rounded-md transition"
+                    className="block px-4 py-2 text-sm text-white/90 hover:bg-slate-800 transition"
+                    onClick={() => setMenuOpen(false)}
                   >
                     Dashboard
                   </Link>
+
                   <Link
                     href="/insights"
-                    className="block px-4 py-2 text-sm text-white/80 hover:bg-white/10 rounded-md transition"
+                    className="block px-4 py-2 text-sm text-white/90 hover:bg-slate-800 transition"
+                    onClick={() => setMenuOpen(false)}
                   >
                     Insights
                   </Link>
+
                   <Link
                     href="/settings"
-                    className="block px-4 py-2 text-sm text-white/80 hover:bg-white/10 rounded-md transition"
+                    className="block px-4 py-2 text-sm text-white/90 hover:bg-slate-800 transition"
+                    onClick={() => setMenuOpen(false)}
                   >
                     Settings
                   </Link>
 
                   <div className="border-t border-white/10 my-2" />
 
-                  <div className="px-4 py-2">
+                  <div className="px-4 py-1">
                     <LogoutButton />
                   </div>
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
+
       </div>
-    </div>
+    </header>
   );
 }
