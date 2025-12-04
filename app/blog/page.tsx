@@ -4,52 +4,49 @@ import Link from "next/link";
 import { blogPosts } from "./posts";
 
 export const metadata = {
-  title: "Havenly Journal – Emotional Micro-Articles",
+  title: "Havenly Journal — Emotional Micro-Articles",
   description:
-    "Gentle, emotional, short-form articles designed to help you breathe, reflect, and feel understood.",
+    "Short, emotional, calming micro-articles written to help you pause, feel understood, and breathe again.",
 };
 
 export default function BlogIndexPage() {
   return (
     <div className="px-4 pt-20 pb-24 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl space-y-6">
-        {/* Header */}
-        <div className="space-y-2">
+      <div className="mx-auto max-w-5xl space-y-8">
+        
+        <div className="space-y-3">
           <p className="text-xs font-medium uppercase tracking-[0.18em] text-hvn-accent-mint">
             Havenly Journal
           </p>
-
-          <h1 className="text-3xl font-semibold text-hvn-text-primary sm:text-4xl">
-            A collection of gentle emotional reflections.
+          <h1 className="text-3xl sm:text-4xl font-semibold text-hvn-text-primary">
+            Emotional reflections for real, tired humans.
           </h1>
-
-          <p className="text-sm text-hvn-text-muted sm:text-base max-w-2xl">
-            Short, soft, emotional micro-articles — written to help you pause,
-            understand yourself, and breathe again, even on difficult days.
+          <p className="max-w-2xl text-sm sm:text-base text-hvn-text-muted">
+            Micro-articles that blend emotional clarity, self-compassion, and gentle healing —
+            written for the days you need softness the most.
           </p>
         </div>
 
-        {/* Articles grid */}
-        <div className="grid gap-4 pt-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           {blogPosts.map((post) => (
             <Link
               key={post.slug}
               href={`/blog/${post.slug}`}
-              className="group flex h-full flex-col rounded-2xl border border-hvn-card bg-hvn-bg-elevated/80 p-4 transition hover:border-hvn-accent-mint-soft hover:bg-hvn-bg-soft/90"
+              className="group rounded-2xl border border-hvn-card bg-hvn-bg-elevated/80 p-5 transition hover:border-hvn-accent-mint-soft hover:bg-hvn-bg-soft/90 flex flex-col"
             >
-              <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-hvn-accent-blue">
-                Journal article
+              <p className="text-[11px] uppercase tracking-[0.18em] text-hvn-accent-blue">
+                {post.category}
               </p>
 
-              <h3 className="mt-2 text-sm font-semibold text-hvn-text-secondary group-hover:text-hvn-accent-mint">
+              <h3 className="mt-2 text-base font-semibold text-hvn-text-secondary group-hover:text-hvn-accent-mint">
                 {post.title}
               </h3>
 
-              <p className="mt-2 flex-1 text-xs text-hvn-text-muted sm:text-[13px]">
+              <p className="mt-2 text-xs sm:text-[13px] text-hvn-text-muted flex-1">
                 {post.description}
               </p>
 
-              <p className="mt-3 text-[11px] text-hvn-text-muted">
+              <p className="mt-4 text-[11px] text-hvn-text-muted">
                 {post.readingTime}
               </p>
             </Link>
