@@ -1,120 +1,104 @@
+// app/magic-login/page.tsx
 "use client";
 
-import { FormEvent, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { sendMagicLink } from "./sendMagicLinkAction";
 
-export const dynamic = "force-dynamic";
-
-function MagicLoginInner() {
-  const searchParams = useSearchParams();
-  const redirectedFrom = searchParams.get("redirectedFrom") || "/dashboard";
-
+export default function MagicLoginPage() {
   const [email, setEmail] = useState("");
-  const [status, setStatus] =
-    useState<"idle" | "sending" | "sent" | "error">("idle");
-  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<null | string>(null);
 
-  const comingFromUpgrade = redirectedFrom === "/upgrade";
-
-  async function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setStatus("loading");
 
-    setStatus("sending");
-    setError(null);
+    const result = await sendMagicLink(email);
 
-    try {
-      const res = await fetch("/api/auth/send-magic-link", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          redirectedFrom,
-        }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.error || "Failed to send magic link");
-      }
-
+    if (result?.error) {
+      setStatus(result.error);
+    } else {
       setStatus("sent");
-    } catch (err: any) {
-      setStatus("error");
-      setError(err.message || "Something went wrong.");
     }
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center px-4">
-      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900/80 p-8 shadow-xl">
-
-        {/* FRIENDLY UPGRADE MESSAGE */}
-        {comingFromUpgrade && (
-          <div className="mb-5 rounded-xl bg-emerald-500/10 border border-emerald-500/40 px-4 py-3 text-sm text-emerald-300">
-            Please sign in first to upgrade your plan.
-          </div>
-        )}
-
-        <h1 className="text-2xl font-semibold text-center mb-2">
+    <main
+      className="
+        min-h-[calc(100vh-60px)] 
+        flex items-center justify-center 
+        px-4 py-14
+      "
+    >
+      <div
+        className="
+          w-full max-w-md 
+          rounded-2xl 
+          bg-hvn-bg-elevated/90 
+          border border-hvn-card 
+          p-8 
+          shadow-[0_20px_80px_rgba(15,23,42,0.75)]
+          backdrop-blur
+        "
+      >
+        <h1 className="text-center text-xl font-semibold text-white">
           Sign in to Havenly
         </h1>
 
-        <p className="text-sm text-slate-300 text-center mb-6">
+        <p className="mt-2 text-center text-sm text-hvn-text-muted">
           We will send you a secure one-time login link.
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <label className="block text-sm font-medium text-slate-200">
-            Email address
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-hvn-text-secondary mb-1">
+              Email address
+            </label>
             <input
               type="email"
               required
+              className="
+                w-full rounded-lg 
+                bg-black/20 border border-white/10 
+                px-3 py-2 text-sm text-white 
+                focus:outline-none focus:ring-2 focus:ring-hvn-accent-mint
+              "
+              placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-white outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400"
-              placeholder="you@example.com"
             />
-          </label>
+          </div>
 
           <button
             type="submit"
-            disabled={status === "sending"}
-            className="w-full rounded-full bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-slate-950 shadow-sm transition hover:bg-emerald-400 disabled:opacity-60"
+            className="
+              w-full rounded-full 
+              bg-hvn-accent-mint 
+              py-2.5 text-sm font-semibold text-slate-950 
+              hover:bg-emerald-300 
+              shadow-md shadow-emerald-500/20 
+              transition
+            "
           >
-            {status === "sending" ? "Sending magic link…" : "Send Magic Link"}
+            Send Magic Link
           </button>
+
+          {status === "loading" && (
+            <p className="text-center text-sm text-hvn-text-muted">Sending…</p>
+          )}
+          {status === "sent" && (
+            <p className="text-center text-sm text-emerald-400">
+              Magic link sent!
+            </p>
+          )}
+          {status && status !== "sent" && status !== "loading" && (
+            <p className="text-center text-sm text-red-400">{status}</p>
+          )}
         </form>
 
-        {status === "sent" && (
-          <p className="mt-4 text-sm text-emerald-300 text-center">
-            Magic link sent! Check your inbox.
-          </p>
-        )}
-
-        {status === "error" && (
-          <p className="mt-4 text-sm text-red-400 text-center">{error}</p>
-        )}
-
-        <p className="mt-6 text-xs text-slate-500 text-center">
-          You will be redirected to{" "}
-          <span className="font-medium text-slate-300">{redirectedFrom}</span>{" "}
-          after signing in.
+        <p className="mt-4 text-center text-xs text-hvn-text-muted">
+          You will be redirected to <strong>/dashboard</strong> after signing in.
         </p>
       </div>
-    </div>
-  );
-}
-
-export default function MagicLoginPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
-          <p className="text-sm text-slate-200">Loading…</p>
-        </div>
-      }
-    >
-      <MagicLoginInner />
-    </Suspense>
+    </main>
   );
 }
