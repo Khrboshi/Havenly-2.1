@@ -1,43 +1,56 @@
-// Simple PWA service worker for caching static assets & offline use.
+// public/service-worker.js
 
-const CACHE_NAME = "havenly-cache-v1";
+const CACHE_NAME = "havenly-2-1-v1";
 
-// Cache on install
-self.addEventListener("install", event => {
+const ASSETS_TO_CACHE = [
+  "/",
+  "/manifest.json",
+  "/icon.svg"
+];
+
+// Install: pre-cache basic assets
+self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(["/", "/offline"]);
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS_TO_CACHE).catch(() => null);
     })
   );
   self.skipWaiting();
 });
 
-// Serve from cache
-self.addEventListener("fetch", event => {
-  if (event.request.method !== "GET") return;
-
-  event.respondWith(
-    caches.match(event.request).then(cachedResponse => {
-      return (
-        cachedResponse ||
-        fetch(event.request).catch(() =>
-          caches.match("/offline")
-        )
-      );
-    })
-  );
-});
-
-// Cleanup old caches
-self.addEventListener("activate", event => {
+// Activate: clean up old caches
+self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then(keys =>
+    caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter(key => key !== CACHE_NAME)
-          .map(key => caches.delete(key))
+          .filter((key) => key !== CACHE_NAME)
+          .map((key) => caches.delete(key))
       )
     )
   );
   self.clients.claim();
+});
+
+// Fetch: cache-first for same-origin GET requests
+self.addEventListener("fetch", (event) => {
+  const { request } = event;
+
+  if (request.method !== "GET" || !request.url.startsWith(self.location.origin)) {
+    return;
+  }
+
+  event.respondWith(
+    caches.match(request).then((cached) => {
+      if (cached) return cached;
+
+      return fetch(request)
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+          return response;
+        })
+        .catch(() => caches.match("/"));
+    })
+  );
 });
