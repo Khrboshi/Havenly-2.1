@@ -40,7 +40,7 @@ export default function MagicLoginPage() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-10">
+    <div className="flex min-h-[70vh] items-center justify-center px-4 py-10">
       <div className="w-full max-w-md rounded-2xl border border-hvn-card bg-hvn-bg-elevated/90 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.85)] backdrop-blur-sm">
         <h1 className="text-center text-2xl font-semibold text-hvn-text-primary">
           Sign in to Havenly
