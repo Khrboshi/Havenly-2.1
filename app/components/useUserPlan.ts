@@ -1,84 +1,79 @@
+// app/components/useUserPlan.ts
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 
-export type PlanType = "FREE" | "ESSENTIAL" | "PREMIUM";
+export type PlanType = "FREE" | "PREMIUM" | "TRIAL" | null;
 
-export interface UserPlanState {
+interface UserPlanState {
   loading: boolean;
-  authenticated: boolean;
+  error: string | null;
   planType: PlanType;
-  plan: "free" | "essential" | "premium";
-  premium: boolean;
-  essential: boolean;
-  credits: number;
-  renewalDate: string | null;
-  error?: string;
+  credits: number | null;
 }
 
-/**
- * Reads the user's plan + credits from /api/user/plan.
- * Always falls back to a FREE plan so the UI never breaks.
- */
-export function useUserPlan(): UserPlanState & { refresh: () => Promise<void> } {
+export function useUserPlan(): UserPlanState {
   const [state, setState] = useState<UserPlanState>({
     loading: true,
-    authenticated: false,
-    planType: "FREE",
-    plan: "free",
-    premium: false,
-    essential: false,
-    credits: 0,
-    renewalDate: null,
+    error: null,
+    planType: null,
+    credits: null,
   });
 
-  const load = useCallback(async () => {
-    try {
-      setState((prev) => ({ ...prev, loading: true }));
-      const res = await fetch("/api/user/plan", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
+  useEffect(() => {
+    let cancelled = false;
 
-      if (!res.ok) {
-        throw new Error(`Request failed with status ${res.status}`);
+    async function fetchPlan() {
+      try {
+        const res = await fetch("/api/user/credits", {
+          method: "GET",
+        });
+
+        if (res.status === 401) {
+          if (!cancelled) {
+            setState({
+              loading: false,
+              error: null,
+              planType: "FREE",
+              credits: null,
+            });
+          }
+          return;
+        }
+
+        if (!res.ok) {
+          throw new Error("Failed to load plan info");
+        }
+
+        const data = await res.json();
+
+        if (!cancelled) {
+          setState({
+            loading: false,
+            error: null,
+            planType: data.planType ?? "FREE",
+            credits:
+              typeof data.credits === "number" ? data.credits : null,
+          });
+        }
+      } catch (err) {
+        console.error("useUserPlan error:", err);
+        if (!cancelled) {
+          setState((prev) => ({
+            ...prev,
+            loading: false,
+            error: "Could not load plan info",
+          }));
+        }
       }
-
-      const data = await res.json();
-
-      setState({
-        loading: false,
-        authenticated: Boolean(data.authenticated),
-        planType: (data.planType as PlanType) || "FREE",
-        plan: (data.plan as "free" | "essential" | "premium") || "free",
-        premium: Boolean(data.premium),
-        essential: Boolean(data.essential),
-        credits: Number.isFinite(data.credits) ? Number(data.credits) : 0,
-        renewalDate: data.renewalDate ?? null,
-      });
-    } catch (err) {
-      console.error("useUserPlan error:", err);
-      setState({
-        loading: false,
-        authenticated: false,
-        planType: "FREE",
-        plan: "free",
-        premium: false,
-        essential: false,
-        credits: 0,
-        renewalDate: null,
-        error: "Unable to load plan information.",
-      });
     }
+
+    fetchPlan();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  const refresh = useCallback(async () => {
-    await load();
-  }, [load]);
-
-  return { ...state, refresh };
+  return state;
 }
