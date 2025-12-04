@@ -7,6 +7,7 @@ export default function LandingPage() {
       {/* HERO */}
       <section className="px-4 pt-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl lg:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-center lg:gap-14">
+
           {/* Left: copy + CTAs */}
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 rounded-full border border-hvn-subtle/60 bg-hvn-bg/60 px-3 py-1 text-xs font-medium text-hvn-text-muted backdrop-blur">
@@ -53,6 +54,7 @@ export default function LandingPage() {
             <div className="relative">
               <div className="absolute inset-0 -translate-y-4 translate-x-6 scale-105 rounded-[30px] bg-hvn-accent-blue-soft blur-3xl" />
               <div className="relative rounded-[26px] border border-hvn-card bg-hvn-bg-elevated/95 p-5 shadow-[0_20px_80px_rgba(15,23,42,0.9)] backdrop-blur">
+
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div>
                     <p className="text-xs font-medium uppercase tracking-[0.15em] text-hvn-accent-mint">
@@ -99,14 +101,16 @@ export default function LandingPage() {
                   </div>
                   <p className="text-sm text-hvn-text-secondary">
                     It sounds like you carried a lot today with very little
-                    energy. Even so, you still reached for a walk and stayed
-                    open to support—that matters. Your body is asking for a bit
-                    more gentleness than your schedule currently allows.
+                    energy. Even so, you still reached for a walk and stayed open
+                    to support—that matters. Your body is asking for a bit more
+                    gentleness than your schedule currently allows.
                   </p>
                 </div>
+
               </div>
             </div>
           </div>
+
         </div>
       </section>
 
@@ -166,7 +170,8 @@ export default function LandingPage() {
             <StepCard
               step="3"
               title="Notice the patterns"
-              body="Over time, your entries and reflections make it easier to see what supports you, what drains you, and what needs protecting."
+              body="Over time, your entries and reflections make it easier
+to see what supports you, what drains you, and what needs protecting."
             />
           </div>
 
@@ -186,7 +191,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* FROM THE HAVENLY JOURNAL (BLOG PREVIEW) */}
+      {/* FIXED BLOG PREVIEW SECTION */}
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl space-y-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -208,32 +213,36 @@ export default function LandingPage() {
 
           <div className="grid gap-4 md:grid-cols-2">
             <BlogPreviewCard
-              href="/blog/why-gentle-journaling-works"
-              title="Why gentle journaling works better than strict routines"
-              description="How low-pressure writing helps your nervous system relax enough to be honest."
-              readingTime="5 min read"
+              href="/blog/why-your-mind-feels-heavy"
+              title="Why your mind feels so heavy on quiet days"
+              description="Quiet moments make the emotional load louder. Here's why that heaviness shows up — and what it really means."
+              readingTime="1 min read"
             />
+
             <BlogPreviewCard
-              href="/blog/the-3-minute-journal-that-actually-works"
-              title="The 3-minute journal that actually works on busy days"
-              description="A tiny template you can finish between meetings, chores, or childcare."
-              readingTime="4 min read"
+              href="/blog/you-are-not-behind"
+              title="You’re not behind — you’re exhausted"
+              description="Most people who feel 'behind' are carrying exhaustion, not failure. Here's how to recognize the difference."
+              readingTime="1 min read"
             />
+
             <BlogPreviewCard
-              href="/blog/why-your-mind-feels-lighter-after-two-sentences"
-              title="Why your mind feels lighter after two honest sentences"
-              description="Your brain isn’t asking for pages—it’s asking for a safe place to land."
-              readingTime="4 min read"
+              href="/blog/talk-to-yourself-when-unworthy"
+              title="How to talk to yourself on the days you feel unworthy"
+              description="Unworthiness isn’t truth — it’s overwhelm. Here’s a softer way to speak to yourself when it happens."
+              readingTime="1 min read"
             />
+
             <BlogPreviewCard
-              href="/blog/how-to-talk-to-yourself-more-kindly"
-              title="How to talk to yourself more kindly (without faking it)"
-              description="Simple prompts to shift your inner voice from harsh to honest-but-soft."
-              readingTime="6 min read"
+              href="/blog/small-emotional-wins"
+              title="Small emotional wins count more than big breakthroughs"
+              description="Healing often looks like tiny honest choices — and they matter more than dramatic breakthroughs."
+              readingTime="1 min read"
             />
           </div>
         </div>
       </section>
+
     </div>
   );
 }
@@ -246,12 +255,8 @@ type FeatureProps = {
 function FeatureCard({ title, body }: FeatureProps) {
   return (
     <div className="h-full rounded-2xl border border-hvn-card bg-hvn-bg-elevated/80 p-4 shadow-sm shadow-black/40">
-      <h3 className="text-sm font-semibold text-hvn-text-secondary">
-        {title}
-      </h3>
-      <p className="mt-2 text-xs text-hvn-text-muted sm:text-[13px]">
-        {body}
-      </p>
+      <h3 className="text-sm font-semibold text-hvn-text-secondary">{title}</h3>
+      <p className="mt-2 text-xs text-hvn-text-muted sm:text-[13px]">{body}</p>
     </div>
   );
 }
@@ -271,9 +276,7 @@ function StepCard({ step, title, body }: StepProps) {
       <h3 className="mt-3 text-sm font-semibold text-hvn-text-secondary">
         {title}
       </h3>
-      <p className="mt-2 text-xs text-hvn-text-muted sm:text-[13px]">
-        {body}
-      </p>
+      <p className="mt-2 text-xs text-hvn-text-muted sm:text-[13px]">{body}</p>
     </div>
   );
 }
@@ -285,12 +288,7 @@ type BlogPreviewProps = {
   readingTime: string;
 };
 
-function BlogPreviewCard({
-  href,
-  title,
-  description,
-  readingTime,
-}: BlogPreviewProps) {
+function BlogPreviewCard({ href, title, description, readingTime }: BlogPreviewProps) {
   return (
     <Link
       href={href}
