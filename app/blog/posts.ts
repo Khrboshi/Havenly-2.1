@@ -7,14 +7,17 @@ export type BlogPost = {
   category: string;
   date?: string;
   content: string;
+  readingTime?: string; // FIXED: added readingTime so TS does not fail
 };
 
+// Estimate reading time from content
 function estimateReadingTime(content: string): string {
   const words = content.split(/\s+/).length;
   const minutes = Math.max(1, Math.round(words / 160));
   return `${minutes} min read`;
 }
 
+// Blog posts
 export const blogPosts: BlogPost[] = [
   {
     slug: "why-your-mind-feels-heavy",
@@ -123,7 +126,7 @@ Naming is the first step toward understanding what your mind and body need.
   },
 ];
 
-// Add automatic readingTimes
+// Append automatic reading time to each post
 blogPosts.forEach((p: any) => {
   p.readingTime = estimateReadingTime(p.content);
 });
