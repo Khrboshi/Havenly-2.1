@@ -1,4 +1,3 @@
-// app/tools/page.tsx
 "use client";
 
 import RequirePremium from "@/app/components/RequirePremium";
