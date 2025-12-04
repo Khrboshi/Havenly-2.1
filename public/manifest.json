@@ -1,13 +1,13 @@
 {
   "name": "Havenly 2.1",
   "short_name": "Havenly",
-  "description": "A calmer, kinder way to understand your day.",
+  "description": "Havenly 2.1 is a calm, private journaling space with gentle AI reflections.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#4CA7A3",
-  "background_color": "#0B1215",
+  "background_color": "#000121",
   "icons": [
     {
       "src": "/pwa/icon-192.png",
