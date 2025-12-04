@@ -1,80 +1,80 @@
+// app/components/useCredits.ts
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-type CreditsState = {
-  loading: boolean;
-  error: string | null;
-  planType: string | null;
-  isPremium: boolean;
-  credits: number | "UNLIMITED" | null;
-};
+interface UseCreditsResult {
+  using: boolean;
+  lastError: string | null;
+  lastSuccessMessage: string | null;
+  useCredits: (opts: {
+    amount: number;
+    feature?: string;
+    description?: string;
+  }) => Promise<{
+    success: boolean;
+    credits?: number;
+    error?: string;
+    message?: string;
+  }>;
+}
 
-export function useCredits() {
-  const [state, setState] = useState<CreditsState>({
-    loading: true,
-    error: null,
-    planType: null,
-    isPremium: false,
-    credits: null,
-  });
+export function useCredits(): UseCreditsResult {
+  const [using, setUsing] = useState(false);
+  const [lastError, setLastError] = useState<string | null>(null);
+  const [lastSuccessMessage, setLastSuccessMessage] =
+    useState<string | null>(null);
 
-  async function loadCredits() {
+  async function useCredits(opts: {
+    amount: number;
+    feature?: string;
+    description?: string;
+  }) {
+    setUsing(true);
+    setLastError(null);
+    setLastSuccessMessage(null);
+
     try {
-      setState((s) => ({ ...s, loading: true, error: null }));
-
-      const res = await fetch("/api/user/credits", {
-        method: "GET",
+      const res = await fetch("/api/user/credits/use", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(opts),
       });
 
-      if (res.status === 401) {
-        // Not logged in
-        setState({
-          loading: false,
-          error: null,
-          planType: null,
-          isPremium: false,
-          credits: null,
-        });
-        return;
-      }
+      const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        setState((s) => ({
-          ...s,
-          loading: false,
-          error: data?.error || "Failed to load credits.",
-        }));
-        return;
+        const errMsg =
+          data?.message ||
+          data?.error ||
+          "Failed to use credits. Please try again.";
+        setLastError(errMsg);
+        return {
+          success: false,
+          error: errMsg,
+          credits: data?.credits,
+        };
       }
 
-      const data = await res.json();
+      if (typeof data.message === "string") {
+        setLastSuccessMessage(data.message);
+      }
 
-      setState({
-        loading: false,
-        error: null,
-        planType: data.planType || null,
-        isPremium: Boolean(data.isPremium),
-        credits: data.credits ?? null,
-      });
-    } catch (err: any) {
-      console.error("useCredits error:", err);
-      setState((s) => ({
-        ...s,
-        loading: false,
-        error: "Unexpected error while loading credits.",
-      }));
+      return {
+        success: true,
+        credits: data?.credits,
+        message: data?.message,
+      };
+    } catch (err) {
+      console.error("useCredits hook error:", err);
+      const fallback =
+        "Unexpected error while using credits. Please try again.";
+      setLastError(fallback);
+      return { success: false, error: fallback };
+    } finally {
+      setUsing(false);
     }
   }
 
-  useEffect(() => {
-    loadCredits();
-  }, []);
-
-  return {
-    ...state,
-    reloadCredits: loadCredits,
-  };
+  return { using, lastError, lastSuccessMessage, useCredits };
 }
