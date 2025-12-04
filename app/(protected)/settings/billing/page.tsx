@@ -2,11 +2,11 @@
 "use client";
 
 import Link from "next/link";
-import { useSupabase } from "@/lib/supabase/client";   // FIXED IMPORT
+import { useSession } from "@/app/components/SupabaseSessionProvider"; // ✔ Correct hook
 import { useUserPlan } from "@/app/components/useUserPlan";
 
 export default function BillingPage() {
-  const { session } = useSupabase();
+  const session = useSession(); // ✔ Your actual session getter
   const { loading, error, planType, credits } = useUserPlan();
 
   const userEmail = session?.user?.email ?? "Unknown user";
@@ -30,25 +30,25 @@ export default function BillingPage() {
           </p>
         </div>
 
-        {/* Loading */}
+        {/* Loading State */}
         {loading && (
           <div className="rounded-2xl border border-slate-800 bg-slate-900/70 px-5 py-4 text-sm text-slate-200">
             Checking your plan and credits…
           </div>
         )}
 
-        {/* Error */}
+        {/* Error State */}
         {error && !loading && (
           <div className="rounded-2xl border border-red-500/40 bg-red-950/40 px-5 py-4 text-sm text-red-200">
             {error}
           </div>
         )}
 
-        {/* Main content */}
+        {/* Content */}
         {!loading && (
           <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-lg space-y-6">
             
-            {/* Account Row */}
+            {/* Account summary */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.16em] text-emerald-300">
@@ -76,18 +76,17 @@ export default function BillingPage() {
 
             <div className="h-px bg-slate-800" />
 
-            {/* Features */}
+            {/* Benefits */}
             <div className="grid gap-6 md:grid-cols-2">
               <div>
                 <h2 className="text-sm font-semibold mb-2">What you have now</h2>
                 <ul className="space-y-2 text-sm text-white/75">
                   <li>• Private journaling with gentle AI reflections.</li>
                   <li>• No ads, feeds, or streak pressure.</li>
-                  <li>• Your data stays tied to your account only.</li>
+                  <li>• Your data stays securely tied to your account.</li>
                 </ul>
               </div>
 
-              {/* Premium */}
               <div>
                 <h2 className="text-sm font-semibold mb-2">What Premium adds</h2>
                 <ul className="space-y-2 text-sm text-white/75 mb-3">
@@ -98,7 +97,7 @@ export default function BillingPage() {
 
                 {planType === "PREMIUM" ? (
                   <p className="text-xs text-emerald-300">
-                    You’re already on Premium. Thank you for supporting Havenly.
+                    You are already on Premium. Thank you for supporting Havenly.
                   </p>
                 ) : (
                   <Link
