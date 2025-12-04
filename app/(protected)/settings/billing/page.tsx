@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSupabase } from "@/app/components/SupabaseProvider";
+import { useSupabase } from "@/lib/supabase/client";   // FIXED IMPORT
 import { useUserPlan } from "@/app/components/useUserPlan";
 
 export default function BillingPage() {
@@ -21,31 +21,34 @@ export default function BillingPage() {
   return (
     <div className="min-h-screen bg-slate-950 text-white px-4 py-10 sm:px-6 lg:px-10">
       <div className="mx-auto max-w-4xl space-y-8">
-        {/* Page header */}
+        
+        {/* Header */}
         <div>
           <h1 className="text-3xl font-bold mb-2">Billing & plan</h1>
           <p className="text-sm text-white/70 max-w-xl">
-            See your current Havenly plan, available credits, and options to
-            upgrade when you are ready.
+            See your current Havenly plan, available credits, and upgrade options.
           </p>
         </div>
 
-        {/* Loading / error states */}
+        {/* Loading */}
         {loading && (
           <div className="rounded-2xl border border-slate-800 bg-slate-900/70 px-5 py-4 text-sm text-slate-200">
             Checking your plan and credits…
           </div>
         )}
 
+        {/* Error */}
         {error && !loading && (
-          <div className="rounded-2xl border border-red-500/50 bg-red-950/40 px-5 py-4 text-sm text-red-200">
+          <div className="rounded-2xl border border-red-500/40 bg-red-950/40 px-5 py-4 text-sm text-red-200">
             {error}
           </div>
         )}
 
-        {/* Main card */}
+        {/* Main content */}
         {!loading && (
           <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-lg space-y-6">
+            
+            {/* Account Row */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.16em] text-emerald-300">
@@ -58,12 +61,8 @@ export default function BillingPage() {
                 <p className="text-xs uppercase tracking-[0.16em] text-slate-400">
                   Current plan
                 </p>
-                <p className="text-sm font-semibold">
-                  {planLabel}{" "}
-                  <span className="ml-1 text-xs font-normal text-slate-400">
-                    (Havenly 2.1)
-                  </span>
-                </p>
+                <p className="text-sm font-semibold">{planLabel}</p>
+
                 {typeof credits === "number" && (
                   <p className="text-xs text-slate-300">
                     Credits:{" "}
@@ -77,6 +76,7 @@ export default function BillingPage() {
 
             <div className="h-px bg-slate-800" />
 
+            {/* Features */}
             <div className="grid gap-6 md:grid-cols-2">
               <div>
                 <h2 className="text-sm font-semibold mb-2">What you have now</h2>
@@ -87,27 +87,25 @@ export default function BillingPage() {
                 </ul>
               </div>
 
+              {/* Premium */}
               <div>
-                <h2 className="text-sm font-semibold mb-2">
-                  What Premium adds
-                </h2>
+                <h2 className="text-sm font-semibold mb-2">What Premium adds</h2>
                 <ul className="space-y-2 text-sm text-white/75 mb-3">
                   <li>• Deeper AI reflections over time.</li>
-                  <li>• Patterns & mood timelines across entries.</li>
-                  <li>• Advanced wellbeing tools in the Tools section.</li>
+                  <li>• Patterns & mood timelines.</li>
+                  <li>• All advanced wellbeing tools unlocked.</li>
                 </ul>
 
                 {planType === "PREMIUM" ? (
                   <p className="text-xs text-emerald-300">
-                    You’re already on Premium. Thank you for supporting
-                    Havenly.
+                    You’re already on Premium. Thank you for supporting Havenly.
                   </p>
                 ) : (
                   <Link
                     href="/upgrade"
                     className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-400"
                   >
-                    View Premium options
+                    Upgrade to Premium
                   </Link>
                 )}
               </div>
@@ -115,10 +113,8 @@ export default function BillingPage() {
           </section>
         )}
 
-        {/* Footer note */}
         <p className="text-xs text-slate-500">
-          Need help with billing or your plan? You can reach out via the
-          support channel linked in the app.
+          Need help with billing or your plan? Contact support through the in-app link.
         </p>
       </div>
     </div>
