@@ -37,10 +37,10 @@ export default function Navbar() {
 
   return (
     <header className="w-full border-b border-slate-800 bg-slate-900/60 backdrop-blur-md">
-      {/* Main nav (logo + links + Upgrade button + avatar) */}
+      {/* Main header including navigation */}
       <SiteHeader />
 
-      {/* Slim status bar under the main header */}
+      {/* Slim status row */}
       <div className="border-t border-slate-800/70 bg-slate-950/80 text-[11px] text-slate-400 px-4 sm:px-8 py-1.5 flex items-center justify-between">
         <div className="flex items-center gap-2">{leftStatus}</div>
 
