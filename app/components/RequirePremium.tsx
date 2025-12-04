@@ -1,46 +1,57 @@
+// app/components/RequirePremium.tsx
 "use client";
 
-import { ReactNode } from "react";
-import { useUserPlan } from "./useUserPlan";
+import type { ReactNode } from "react";
 import Link from "next/link";
+import { useUserPlan } from "./useUserPlan";
 
-export default function RequirePremium({ children }: { children: ReactNode }) {
-  const { authenticated, premium, planType } = useUserPlan();
+interface RequirePremiumProps {
+  children: ReactNode;
+}
 
-  // Loading or unauthenticated
-  if (!authenticated) {
+export default function RequirePremium({ children }: RequirePremiumProps) {
+  const { loading, planType } = useUserPlan();
+
+  if (loading) {
     return (
-      <div className="p-8 text-center text-white">
-        <p className="text-lg font-semibold mb-4">Please sign in</p>
-        <Link
-          href="/magic-login"
-          className="inline-block px-4 py-2 rounded-full bg-emerald-500 text-slate-950 text-sm font-semibold hover:bg-emerald-400"
-        >
-          Sign in
-        </Link>
+      <div className="min-h-[60vh] flex items-center justify-center bg-slate-950 text-slate-200">
+        <p className="text-sm text-slate-300">Checking your plan…</p>
       </div>
     );
   }
 
-  // Free or wrong plan
-  if (!premium) {
+  if (!planType || planType === "FREE") {
     return (
-      <div className="flex flex-col items-center justify-center px-6 py-16 text-center text-white">
-        <h2 className="text-2xl font-bold mb-4">Premium Feature</h2>
-        <p className="text-white/80 max-w-sm mb-6">
-          This feature is available only to Havenly Premium members.  
-          Upgrade now to unlock full access.
-        </p>
-        <Link
-          href="/upgrade"
-          className="px-5 py-3 rounded-full bg-emerald-500 text-slate-950 font-semibold text-sm hover:bg-emerald-400"
-        >
-          Upgrade to Premium
-        </Link>
+      <div className="min-h-[60vh] bg-slate-950 text-white flex items-center justify-center px-4">
+        <div className="max-w-md rounded-2xl border border-slate-800 bg-slate-900/80 p-6 text-center shadow-xl">
+          <h1 className="text-xl font-semibold mb-2">
+            Premium tools need a Premium plan
+          </h1>
+          <p className="text-sm text-slate-300 mb-5">
+            Advanced tools like mood breakdown and AI suggestions are part of{" "}
+            <span className="font-medium text-emerald-300">
+              Havenly Premium
+            </span>
+            . Upgrade to unlock them, or keep using the free journal anytime.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              href="/upgrade"
+              className="rounded-full bg-emerald-500 px-5 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
+            >
+              See Premium benefits
+            </Link>
+            <Link
+              href="/journal"
+              className="rounded-full border border-slate-700 px-5 py-2 text-sm text-slate-200 hover:bg-slate-800"
+            >
+              Continue journaling free
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
 
-  // Premium — show content
   return <>{children}</>;
 }
