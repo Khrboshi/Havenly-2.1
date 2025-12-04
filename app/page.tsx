@@ -39,7 +39,7 @@ export default function LandingPage() {
                 href="/about"
                 className="inline-flex items-center justify-center rounded-full border border-hvn-subtle/70 bg-transparent px-5 py-2.5 text-sm font-medium text-hvn-accent-blue transition hover:bg-hvn-accent-blue-soft/25"
               >
-                Learn how Havenly works
+                See how it works
               </Link>
 
               <p className="w-full text-xs text-hvn-text-muted sm:w-auto sm:pl-2">
@@ -171,12 +171,16 @@ export default function LandingPage() {
           </div>
 
           <div className="mt-7 flex flex-wrap items-center justify-between gap-3 border-t border-hvn-subtle/40 pt-5 text-sm text-hvn-text-muted">
-            <p>Free plan includes daily journaling and gentle reflections.</p>
+            <p>
+              Free plan includes daily journaling and gentle reflections.
+              Premium unlocks deeper insights and advanced tools when you&apos;re
+              ready.
+            </p>
             <Link
               href="/upgrade"
               className="text-xs font-medium text-hvn-accent-blue underline-offset-4 hover:underline"
             >
-              See what Havenly Plus will add →
+              Compare Free vs Premium →
             </Link>
           </div>
         </div>
