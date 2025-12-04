@@ -1,3 +1,4 @@
+// app/api/user/credits/use/route.ts
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 
@@ -45,6 +46,20 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "Could not load current credits." },
         { status: 500 }
+      );
+    }
+
+    const planType = (planRow.plan_type || "FREE") as string;
+
+    // PREMIUM users: no deduction, unlimited usage
+    if (planType === "PREMIUM") {
+      return NextResponse.json(
+        {
+          success: true,
+          credits: "UNLIMITED",
+          message: "Premium user – no credits deducted.",
+        },
+        { status: 200 }
       );
     }
 
