@@ -1,35 +1,46 @@
+// app/components/Navbar.tsx
 "use client";
 
 import SiteHeader from "./SiteHeader";
-import { useCredits } from "./useCredits";
+import { useUserPlan } from "./useUserPlan";
 
 export default function Navbar() {
-  const { loading, error, planType, isPremium, credits } = useCredits();
+  const { loading, planType, credits } = useUserPlan();
 
   return (
-    <header className="w-full border-b border-slate-800 bg-slate-900/50 backdrop-blur-md">
+    <header className="w-full border-b border-slate-800 bg-slate-900/60 backdrop-blur-md">
+      {/* Main nav (logo + links + Upgrade button) */}
       <SiteHeader />
 
-      {/* Credits / plan bar */}
-      <div className="border-t border-slate-800 bg-slate-900/70">
-        <div className="mx-auto max-w-6xl px-4 py-1.5 flex items-center justify-end gap-3 text-[11px] text-slate-300">
+      {/* Slim status bar under the main header */}
+      <div className="border-t border-slate-800/70 bg-slate-950/80 text-[11px] text-slate-400 px-4 sm:px-8 py-1.5 flex items-center justify-between">
+        <div className="flex items-center gap-2">
           {loading ? (
-            <span className="text-slate-500">Loading plan…</span>
-          ) : error ? (
-            <span className="text-red-400">{error}</span>
-          ) : !planType ? (
-            <span className="text-slate-500">
-              Not signed in
-            </span>
-          ) : isPremium ? (
-            <span className="inline-flex items-center rounded-full bg-emerald-500/15 px-3 py-0.5 text-emerald-300">
-              Premium · Unlimited access
-            </span>
+            <span>Checking account…</span>
+          ) : planType ? (
+            <>
+              <span className="inline-flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                {planType === "PREMIUM" ? "Premium plan" : "Free plan"}
+              </span>
+              {typeof credits === "number" && (
+                <span className="text-slate-300">
+                  · Credits: <span className="font-medium">{credits}</span>
+                </span>
+              )}
+            </>
           ) : (
-            <span className="inline-flex items-center rounded-full bg-slate-800 px-3 py-0.5 text-slate-200">
-              Plan: {planType} · Credits: {credits ?? 0}
-            </span>
+            <>
+              <span className="h-1.5 w-1.5 rounded-full bg-slate-500" />
+              <span>Not signed in</span>
+            </>
           )}
+        </div>
+
+        <div className="hidden sm:block">
+          <span className="text-slate-500">
+            Havenly 2.1 · Calm, private journaling with gentle AI reflections
+          </span>
         </div>
       </div>
     </header>
