@@ -1,4 +1,3 @@
-// app/upgrade/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -13,31 +12,11 @@ const premiumBenefits = [
 ];
 
 const freeVsPremiumRows = [
-  {
-    label: "Daily private journaling",
-    free: "Included",
-    premium: "Included",
-  },
-  {
-    label: "Gentle AI reflections on recent entries",
-    free: "Light",
-    premium: "Richer, more detailed",
-  },
-  {
-    label: "Patterns & mood over time",
-    free: "Not available",
-    premium: "Full timeline view",
-  },
-  {
-    label: "Advanced wellbeing tools",
-    free: "Limited",
-    premium: "All tools unlocked",
-  },
-  {
-    label: "Priority access to new features",
-    free: "No",
-    premium: "Yes",
-  },
+  { label: "Daily private journaling", free: "Included", premium: "Included" },
+  { label: "Gentle AI reflections on recent entries", free: "Light", premium: "Richer, more detailed" },
+  { label: "Patterns & mood over time", free: "Not available", premium: "Full timeline view" },
+  { label: "Advanced wellbeing tools", free: "Limited", premium: "All tools unlocked" },
+  { label: "Priority access to new features", free: "No", premium: "Yes" },
 ];
 
 const whoItsFor = [
@@ -50,6 +29,9 @@ const whoItsFor = [
 export default function UpgradePage() {
   const { planType } = useUserPlan();
   const [loading, setLoading] = useState(false);
+  const alreadyUpgraded = planType && planType !== "FREE";
+
+  const [loginRequired, setLoginRequired] = useState(false);
 
   async function handleUpgrade() {
     try {
@@ -62,10 +44,9 @@ export default function UpgradePage() {
       });
 
       if (res.status === 401) {
-        // Not logged in – ask user to sign in first
-        alert("Please sign in to upgrade your plan.");
-        window.location.href =
-          "/magic-login?redirectedFrom=" + encodeURIComponent("/upgrade");
+        // Show friendly inline banner instead of alert()
+        setLoginRequired(true);
+        setLoading(false);
         return;
       }
 
@@ -75,7 +56,6 @@ export default function UpgradePage() {
         return;
       }
 
-      // On success, send user to Premium dashboard
       window.location.href = "/premium";
     } catch (error) {
       console.error("Upgrade error:", error);
@@ -84,11 +64,25 @@ export default function UpgradePage() {
     }
   }
 
-  const alreadyUpgraded = planType && planType !== "FREE";
-
   return (
     <div className="min-h-screen px-4 py-10 sm:px-6 lg:px-10 text-white bg-slate-950">
-      {/* Hero */}
+
+      {/* LOGIN REQUIRED BANNER */}
+      {loginRequired && (
+        <div className="mx-auto max-w-5xl mb-6">
+          <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-emerald-300 text-sm">
+            You need to sign in before upgrading.
+            <Link
+              href="/magic-login?redirectedFrom=/upgrade"
+              className="ml-2 underline hover:text-emerald-200"
+            >
+              Sign in here →
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* HERO SECTION */}
       <section className="mx-auto max-w-5xl mb-12">
         <span className="inline-flex items-center rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300 mb-4">
           Havenly Premium
@@ -99,11 +93,12 @@ export default function UpgradePage() {
             <h1 className="text-3xl sm:text-4xl font-bold mb-4">
               Upgrade to deeper, calmer insights.
             </h1>
+
             <p className="text-white/70 text-base sm:text-lg mb-6 max-w-xl">
               The free version of Havenly gives you a quiet page to write a few
               honest sentences. Premium goes a step further—helping you see
               emotional patterns over time, understand what supports you, and
-              feel a little less alone with what you&apos;re carrying.
+              feel a little less alone with what you're carrying.
             </p>
 
             <div className="flex flex-wrap items-center gap-4">
@@ -125,16 +120,15 @@ export default function UpgradePage() {
             </div>
           </div>
 
-          {/* Highlight card */}
+          {/* RIGHT CARD */}
           <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-6 shadow-xl">
-            <h2 className="text-lg font-semibold mb-3">
-              What Premium adds to your ritual
-            </h2>
+            <h2 className="text-lg font-semibold mb-3">What Premium adds to your ritual</h2>
+
             <ul className="space-y-3 text-sm text-white/75">
-              {premiumBenefits.map((item) => (
-                <li key={item} className="flex gap-2">
+              {premiumBenefits.map((b) => (
+                <li key={b} className="flex gap-2">
                   <span className="mt-1 h-2 w-2 rounded-full bg-emerald-400" />
-                  <span>{item}</span>
+                  <span>{b}</span>
                 </li>
               ))}
             </ul>
@@ -142,50 +136,41 @@ export default function UpgradePage() {
             <div className="mt-5 rounded-xl bg-slate-800/60 px-4 py-3 text-xs text-white/70">
               Havenly Premium is intentionally quiet. There are no streaks,
               productivity scores, or growth-hacking tricks—just a gentler way
-              to see what&apos;s been weighing on you, and what&apos;s been
-              helping.
+              to see what’s been weighing on you.
             </div>
           </div>
         </div>
       </section>
 
-      {/* Comparison section */}
+      {/* COMPARISON TABLE */}
       <section className="mx-auto max-w-5xl mb-12">
         <h2 className="text-2xl font-semibold mb-4">Free vs Premium</h2>
+
         <p className="text-white/70 text-sm sm:text-base mb-6 max-w-2xl">
           Havenly will always offer a free way to journal. Premium is for when
-          you&apos;re ready to understand more about how you&apos;ve really
-          been feeling—without turning your life into a dashboard.
+          you're ready to understand more about how you've really been feeling—
+          without turning your life into a dashboard.
         </p>
 
         <div className="overflow-hidden rounded-2xl border border-white/10 bg-slate-900/70">
           <table className="w-full text-sm">
             <thead className="bg-slate-900/80">
               <tr className="text-left">
-                <th className="px-4 sm:px-6 py-3 text-white/60 font-medium">
-                  Feature
-                </th>
-                <th className="px-4 sm:px-6 py-3 text-white/60 font-medium">
-                  Free
-                </th>
-                <th className="px-4 sm:px-6 py-3 text-emerald-300 font-semibold">
-                  Premium
-                </th>
+                <th className="px-6 py-3 text-white/60 font-medium">Feature</th>
+                <th className="px-6 py-3 text-white/60 font-medium">Free</th>
+                <th className="px-6 py-3 text-emerald-300 font-semibold">Premium</th>
               </tr>
             </thead>
+
             <tbody>
               {freeVsPremiumRows.map((row, i) => (
                 <tr
                   key={row.label}
                   className={i % 2 === 0 ? "bg-slate-900/40" : "bg-slate-900/20"}
                 >
-                  <td className="px-4 sm:px-6 py-3 text-white/80">
-                    {row.label}
-                  </td>
-                  <td className="px-4 sm:px-6 py-3 text-white/65">
-                    {row.free}
-                  </td>
-                  <td className="px-4 sm:px-6 py-3 text-emerald-300 font-medium">
+                  <td className="px-6 py-3 text-white/80">{row.label}</td>
+                  <td className="px-6 py-3 text-white/60">{row.free}</td>
+                  <td className="px-6 py-3 text-emerald-300 font-medium">
                     {row.premium}
                   </td>
                 </tr>
@@ -195,59 +180,55 @@ export default function UpgradePage() {
         </div>
       </section>
 
-      {/* Who it's for */}
+      {/* WHO ITS FOR */}
       <section className="mx-auto max-w-5xl mb-12 grid gap-8 lg:grid-cols-[1.6fr,1.2fr]">
         <div>
-          <h2 className="text-2xl font-semibold mb-4">
-            Who Havenly Premium is for
-          </h2>
+          <h2 className="text-2xl font-semibold mb-4">Who Havenly Premium is for</h2>
+
           <p className="text-white/70 text-sm sm:text-base mb-6 max-w-xl">
-            Premium isn&apos;t about becoming “more productive.” It&apos;s for
-            people who want a kinder way to track how they&apos;re actually
-            doing—and what&apos;s been quietly helping.
+            Premium isn't about becoming more productive. It’s for people who want
+            a kinder way to track how they’re actually doing—and what’s been quietly helping.
           </p>
+
           <ul className="space-y-3 text-sm text-white/80">
-            {whoItsFor.map((item) => (
-              <li key={item} className="flex gap-2">
+            {whoItsFor.map((b) => (
+              <li key={b} className="flex gap-2">
                 <span className="mt-1 h-2 w-2 rounded-full bg-emerald-400" />
-                <span>{item}</span>
+                <span>{b}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* How upgrade works */}
         <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-6">
           <h3 className="text-lg font-semibold mb-3">How upgrading works</h3>
+
           <ol className="space-y-3 text-sm text-white/75 list-decimal list-inside">
             <li>Sign in or create your free Havenly account.</li>
-            <li>Click “Upgrade to Premium” on this page.</li>
-            <li>
-              Your account is marked as Premium, and additional tools and
-              insights unlock automatically.
-            </li>
+            <li>Click "Upgrade to Premium" on this page.</li>
+            <li>Your account unlocks Premium automatically.</li>
           </ol>
 
           <p className="mt-4 text-xs text-white/60">
-            You&apos;re always in control. You can continue using the free
-            version at any time if Premium doesn&apos;t feel right for you.
+            You’re always in control. You can continue using the free version at any time.
           </p>
         </div>
       </section>
 
-      {/* Final CTA */}
+      {/* FINAL CTA */}
       <section className="mx-auto max-w-5xl pb-12">
         <div className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 px-6 py-6 sm:px-8 sm:py-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-semibold mb-2">
               Ready for a deeper, calmer view of your days?
             </h2>
+
             <p className="text-sm text-white/75 max-w-xl">
               Upgrade to Premium to see patterns, get richer reflections, and
-              let Havenly quietly highlight what&apos;s been heavy—and what&apos;s
-              been helping.
+              let Havenly gently highlight what’s been heavy—and what’s been helping.
             </p>
           </div>
+
           <button
             onClick={handleUpgrade}
             disabled={loading || alreadyUpgraded}
@@ -262,16 +243,7 @@ export default function UpgradePage() {
         </div>
 
         <p className="mt-4 text-xs text-white/55">
-          Prefer to stay on the free version? That&apos;s completely fine.
-          Havenly is designed to stay gentle, whether you upgrade or not.
-        </p>
-
-        <p className="mt-2 text-xs text-white/55">
-          You can always continue journaling for free or return to the{" "}
-          <Link href="/" className="text-emerald-300 hover:text-emerald-200">
-            home page
-          </Link>
-          .
+          Prefer to stay on the free version? That’s completely fine.
         </p>
       </section>
     </div>
