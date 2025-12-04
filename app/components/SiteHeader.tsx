@@ -46,7 +46,6 @@ export default function SiteHeader() {
   return (
     <header className="w-full border-b border-white/5 bg-slate-950/80 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-
         {/* LEFT */}
         <div className="flex items-center gap-8">
           <Link
@@ -140,7 +139,6 @@ export default function SiteHeader() {
             </div>
           )}
         </div>
-
       </div>
     </header>
   );
