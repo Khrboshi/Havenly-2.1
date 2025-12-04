@@ -9,8 +9,8 @@
 
 :root {
   /* Backgrounds */
-  --hvn-bg: #020617; /* main page background (very dark navy) */
-  --hvn-bg-elevated: #02091a; /* cards / sections */
+  --hvn-bg: #020617;
+  --hvn-bg-elevated: #02091a;
   --hvn-bg-soft: #0b1220;
 
   /* Text */
@@ -18,7 +18,7 @@
   --hvn-text-secondary: #cbd5f5;
   --hvn-text-muted: #94a3b8;
 
-  /* Accents: Option A (Mint primary, Blue secondary) */
+  /* Accents */
   --hvn-accent-mint: #3ee7b0;
   --hvn-accent-mint-soft: rgba(62, 231, 176, 0.16);
   --hvn-accent-blue: #60a5fa;
@@ -35,36 +35,29 @@
   --hvn-radius-sm: 10px;
 }
 
-/* Utility classes mapped to Tailwind via CSS vars */
 body {
   margin: 0;
   background-color: var(--hvn-bg);
   color: var(--hvn-text-primary);
 }
 
-/* Big radial glow behind pages */
+/* Global page background gradient */
 .bg-hvn-page-gradient {
   background:
-    radial-gradient(
-      circle at 0% 0%,
-      rgba(62, 231, 176, 0.3),
-      transparent 45%
-    ),
-    radial-gradient(
-      circle at 100% 0%,
-      rgba(96, 165, 250, 0.22),
-      transparent 45%
-    ),
-    radial-gradient(
-      circle at 50% 120%,
-      rgba(15, 23, 42, 0.95),
-      #020617 80%
-    );
+    radial-gradient(circle at 0% 0%, rgba(62, 231, 176, 0.3), transparent 45%),
+    radial-gradient(circle at 100% 0%, rgba(96, 165, 250, 0.22), transparent 45%),
+    radial-gradient(circle at 50% 120%, rgba(15, 23, 42, 0.95), #020617 80%);
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
-/* Helper utility classes used in TSX */
+/* Utility mappings */
 .bg-hvn-bg {
   background-color: var(--hvn-bg);
+}
+
+.bg-hvn-bg-elevated {
+  background-color: var(--hvn-bg-elevated);
 }
 
 .bg-hvn-elevated {
@@ -111,11 +104,11 @@ body {
   color: var(--hvn-accent-blue);
 }
 
-/* Fade-in animation for header / drawers */
-@keyframes fade-in {
+/* Fade-in animation */
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -123,17 +116,16 @@ body {
   }
 }
 
-.animate-fade-in {
-  animation: fade-in 0.22s ease-out forwards;
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out both;
 }
 
-/* Prevent horizontal scroll on mobile */
+/* Mobile scrollbar cleanup */
 html,
 body {
   overflow-x: hidden;
 }
 
-/* Optional: hide scrollbars on WebKit for cleaner look */
 body::-webkit-scrollbar {
   width: 8px;
 }
