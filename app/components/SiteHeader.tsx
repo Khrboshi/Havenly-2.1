@@ -1,4 +1,3 @@
-// app/components/SiteHeader.tsx
 "use client";
 
 import Link from "next/link";
@@ -14,7 +13,6 @@ export default function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  // Navigation items (Journal + Tools only when logged in)
   const NAV_LINKS = [
     { href: "/", label: "Home" },
     ...(session
@@ -27,7 +25,6 @@ export default function SiteHeader() {
     { href: "/about", label: "About" },
   ];
 
-  // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -48,10 +45,10 @@ export default function SiteHeader() {
   const userInitial = session?.user?.email?.charAt(0)?.toUpperCase() ?? "☺";
 
   return (
-    <header className="w-full border-b border-white/5 bg-slate-950/80 backdrop-blur">
+    <div className="w-full bg-slate-950/80 backdrop-blur border-b border-white/5">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        
-        {/* LEFT — LOGO + NAV */}
+
+        {/* LEFT — LOGO + NAVIGATION */}
         <div className="flex items-center gap-8">
           <Link
             href="/"
@@ -77,8 +74,8 @@ export default function SiteHeader() {
           </nav>
         </div>
 
-        {/* RIGHT — Upgrade + Avatar */}
-        <div className="flex items-center gap-3">
+        {/* RIGHT — UPGRADE BUTTON + AVATAR */}
+        <div className="flex items-center gap-3 relative" ref={menuRef}>
           <Link
             href="/upgrade"
             className="rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-slate-950 hover:bg-emerald-400"
@@ -87,7 +84,7 @@ export default function SiteHeader() {
           </Link>
 
           {session && (
-            <div className="relative" ref={menuRef}>
+            <>
               <button
                 onClick={() => setMenuOpen((v) => !v)}
                 className="h-9 w-9 flex items-center justify-center rounded-full bg-white/10 text-white font-semibold hover:bg-white/20 transition"
@@ -95,23 +92,30 @@ export default function SiteHeader() {
                 {userInitial}
               </button>
 
+              {/* DROPDOWN MENU */}
               {menuOpen && (
-                <div className="absolute right-0 mt-2 w-44 rounded-xl border border-white/10 bg-slate-900 shadow-xl py-2 z-50">
+                <div
+                  className="
+                    absolute right-0 mt-3 w-48 rounded-xl border border-white/10 
+                    bg-slate-900/95 shadow-xl shadow-black/40 
+                    backdrop-blur-md py-2 z-50 animate-dropdown
+                  "
+                >
                   <Link
                     href="/dashboard"
-                    className="block px-4 py-2 text-sm text-white/80 hover:bg-slate-800"
+                    className="block px-4 py-2 text-sm text-white/80 hover:bg-white/10 rounded-md transition"
                   >
                     Dashboard
                   </Link>
                   <Link
                     href="/insights"
-                    className="block px-4 py-2 text-sm text-white/80 hover:bg-slate-800"
+                    className="block px-4 py-2 text-sm text-white/80 hover:bg-white/10 rounded-md transition"
                   >
                     Insights
                   </Link>
                   <Link
                     href="/settings"
-                    className="block px-4 py-2 text-sm text-white/80 hover:bg-slate-800"
+                    className="block px-4 py-2 text-sm text-white/80 hover:bg-white/10 rounded-md transition"
                   >
                     Settings
                   </Link>
@@ -123,11 +127,10 @@ export default function SiteHeader() {
                   </div>
                 </div>
               )}
-            </div>
+            </>
           )}
         </div>
-
       </div>
-    </header>
+    </div>
   );
 }
