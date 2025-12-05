@@ -1,119 +1,113 @@
-/* Landing Page v3.2 – Soft Blue Calm (Hero Gradient Only)
-   - Minimal, therapeutic, premium
-   - No glow, no neon, no harsh whites
-   - Gradient restricted to hero for clarity + comfort
-*/
+// app/page.tsx
+// Havenly Landing – Soft Blue Calm, rich content, high-conversion structure
+// - No glow, no neon, no harsh whites
+// - Clear free vs premium story
+// - Designed for psychological safety and engagement
 
 import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen w-full bg-[#0B1220] text-gray-200">
-      {/* HERO SECTION */}
-      <section
-        className="
-          w-full 
-          pt-24 pb-32 
-          px-6 md:px-12 lg:px-24 
-          bg-gradient-to-b from-[#162236]/70 via-[#141A28]/60 to-[#0B1220] 
-        "
-      >
-        {/* Intro badge */}
-        <div className="text-sm mb-6 text-teal-300/70 border border-teal-300/30 rounded-full px-4 py-1 w-fit">
-          A quiet place to unwind your thoughts
-        </div>
+    <main className="min-h-screen w-full bg-[#050816] text-gray-100">
+      {/* ================= HERO ================= */}
+      <section className="w-full bg-gradient-to-b from-[#111827] via-[#0D1422] to-[#050816] px-6 pb-28 pt-24 md:px-12 lg:px-24">
+        <div className="mx-auto flex max-w-6xl flex-col gap-12 lg:flex-row lg:items-center lg:justify-between">
+          {/* LEFT: Hero copy */}
+          <div className="max-w-xl space-y-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-teal-300/30 bg-black/20 px-4 py-1 text-xs font-medium text-teal-200/80">
+              <span className="h-1.5 w-1.5 rounded-full bg-teal-300" />
+              A calm space for overloaded minds
+            </div>
 
-        {/* HERO CONTENT */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* LEFT SIDE */}
-          <div>
-            <h1 className="text-4xl md:text-5xl font-semibold leading-tight text-gray-100">
-              When your mind feels full,  
+            <h1 className="text-balance text-3xl font-semibold leading-tight text-gray-50 sm:text-4xl md:text-5xl">
+              When your thoughts feel crowded,
               <span className="block text-[#7AB3FF]">
-                Havenly helps you slow down.
+                Havenly helps you hear yourself clearly.
               </span>
             </h1>
 
-            <p className="mt-6 text-lg text-gray-300/90 leading-relaxed max-w-xl">
-              Havenly is a calm journaling space with gentle AI reflections that 
-              help you notice what’s happening inside without pressure. Start 
-              free and build a quiet habit at your own pace. Upgrade only if 
-              deeper psychological insight feels genuinely helpful.
+            <p className="text-sm leading-relaxed text-gray-300 sm:text-base">
+              Havenly is a quiet journaling space with gentle AI reflections.
+              It doesn’t judge, chase streaks, or push you to “optimize”.
+              It simply helps you notice what you feel, why it’s there, and
+              how it shifts over time. Start free. Upgrade only if deeper
+              guidance truly serves you.
             </p>
 
-            {/* CTA BUTTONS */}
-            <div className="flex flex-wrap gap-4 mt-10">
+            <div className="flex flex-wrap gap-3">
               <Link
                 href="/magic-login"
-                className="
-                  px-6 py-3 rounded-full 
-                  bg-[#4CC5A9] text-[#0B1220] font-medium 
-                  hover:bg-[#3db497] transition 
-                "
+                className="rounded-full bg-[#4CC5A9] px-6 py-3 text-sm font-semibold text-[#050816] transition hover:bg-[#3db497]"
               >
                 Start a free check-in
               </Link>
-
               <Link
                 href="/upgrade"
-                className="
-                  px-6 py-3 rounded-full 
-                  border border-gray-500/40 
-                  text-gray-200 
-                  hover:bg-gray-700/30 transition 
-                "
+                className="rounded-full border border-gray-500/50 px-6 py-3 text-sm font-medium text-gray-100 transition hover:bg-gray-800/50"
               >
-                Explore Premium
+                See Premium options
               </Link>
             </div>
 
-            <p className="mt-4 text-sm text-gray-400 max-w-md">
-              No credit card required for the free plan. Keep it forever, upgrade anytime.
+            <p className="text-xs text-gray-400">
+              Free plan requires no card. Keep it as your private space even if
+              you never upgrade.
             </p>
+
+            {/* Small trust line */}
+            <div className="mt-3 flex flex-wrap gap-2 text-xs text-gray-400">
+              <span className="rounded-full bg-black/30 px-3 py-1">
+                Designed for sensitive, thoughtful people
+              </span>
+              <span className="rounded-full bg-black/30 px-3 py-1">
+                Works on heavy days, not just good ones
+              </span>
+            </div>
           </div>
 
-          {/* RIGHT SIDE — JOURNAL PREVIEW CARD */}
-          <div>
-            <div
-              className="
-                rounded-2xl border border-gray-600/30 
-                p-6 backdrop-blur-sm 
-                bg-[#101826]/80 
-                shadow-[0_0_40px_-20px_rgba(0,0,0,0.6)]
-              "
-            >
-              <div className="text-sm text-gray-300/80 mb-3">
-                Evening check-in · 3–5 minutes
+          {/* RIGHT: Preview card */}
+          <div className="w-full max-w-md">
+            <div className="rounded-2xl border border-gray-700/50 bg-[#0B1020]/90 p-6 shadow-[0_0_40px_-20px_rgba(0,0,0,0.7)]">
+              <div className="mb-4 flex items-center justify-between text-xs text-gray-300/90">
+                <div>
+                  <p className="font-medium text-gray-100">Evening check-in</p>
+                  <p className="text-gray-400">3–5 minutes · just for you</p>
+                </div>
+                <span className="rounded-full bg-gray-800 px-3 py-1 text-[11px] text-teal-200">
+                  Calm mode
+                </span>
               </div>
 
               <div className="mb-5">
-                <p className="text-xs uppercase tracking-wide text-gray-400">
+                <p className="text-[11px] uppercase tracking-wide text-gray-400">
                   Tonight’s prompt
                 </p>
-                <p className="mt-1 text-base text-gray-200">
-                  “If your mind could speak freely right now, what would it say it’s carrying?”
+                <p className="mt-1 text-sm text-gray-100">
+                  “If your mind could say out loud what it’s carrying tonight,
+                  what would it share first?”
                 </p>
               </div>
 
-              <div className="border border-gray-600/40 rounded-xl p-4 mb-6">
-                <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">
-                  AI • Gentle Reflection
+              <div className="mb-6 rounded-xl border border-gray-700/60 p-4">
+                <p className="text-[11px] uppercase tracking-wide text-gray-400">
+                  AI · Gentle reflection
                 </p>
-                <p className="text-gray-300 text-sm leading-relaxed">
-                  You’re holding a lot. Slowing down enough to notice this is already an act 
-                  of strength. Maybe choose just one feeling to name tonight instead of 
-                  trying to solve everything at once.
+                <p className="mt-2 text-sm leading-relaxed text-gray-300">
+                  You’re holding a lot, and it makes sense that it feels heavy.
+                  Noticing this is already an important step. It might be
+                  kinder to choose just one thing to care about tonight, rather
+                  than asking yourself to carry everything perfectly.
                 </p>
               </div>
 
-              <div className="flex justify-between text-xs text-gray-400">
-                <div>
-                  <span className="block font-medium text-gray-200">Free</span>
-                  Gentle reflections · private journal
+              <div className="flex justify-between gap-4 text-[11px] text-gray-400">
+                <div className="flex-1">
+                  <p className="font-semibold text-gray-100">Free</p>
+                  <p>Private journal + gentle reflections.</p>
                 </div>
-                <div>
-                  <span className="block font-medium text-gray-200">Premium</span>
-                  Deeper themes · long-term insight
+                <div className="flex-1">
+                  <p className="font-semibold text-gray-100">Premium</p>
+                  <p>Deeper themes and long-term patterns.</p>
                 </div>
               </div>
             </div>
@@ -121,92 +115,202 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* HOW HAVENLY SUPPORTS YOU */}
-      <section className="px-6 md:px-12 lg:px-24 py-24">
-        <h2 className="text-2xl md:text-3xl font-semibold text-gray-100 mb-4">
-          How Havenly supports you
-        </h2>
-        <p className="text-gray-300 max-w-2xl mb-12">
-          You don’t need a perfect plan. Havenly is built for honest, 
-          pressure-free reflection—especially on days that feel heavy.
-        </p>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="border border-gray-700/40 rounded-xl p-6">
-            <h3 className="text-gray-100 font-medium mb-2">Step 1</h3>
-            <p className="text-gray-300 text-sm">
-              Drop in for a few minutes. One small prompt helps you ease into 
-              reflection without overwhelm.
+      {/* ============== WHO IT'S FOR / VALUE PILLARS ============== */}
+      <section className="px-6 py-16 md:px-12 lg:px-24">
+        <div className="mx-auto max-w-5xl space-y-10">
+          <div className="space-y-3">
+            <h2 className="text-2xl font-semibold text-gray-100 sm:text-3xl">
+              Built for minds that feel “too full” a lot of the time.
+            </h2>
+            <p className="text-sm text-gray-300 sm:text-base max-w-2xl">
+              Havenly is especially supportive if you tend to replay
+              conversations at night, feel emotionally overloaded, or struggle
+              to make space for your own needs while caring about everyone else.
             </p>
           </div>
 
-          <div className="border border-gray-700/40 rounded-xl p-6">
-            <h3 className="text-gray-100 font-medium mb-2">Step 2</h3>
-            <p className="text-gray-300 text-sm">
-              Capture what mattered. You write freely in your own words; Havenly 
-              stays supportive and grounded.
-            </p>
-          </div>
-
-          <div className="border border-gray-700/40 rounded-xl p-6">
-            <h3 className="text-gray-100 font-medium mb-2">Step 3</h3>
-            <p className="text-gray-300 text-sm">
-              Let AI gently reflect things back. Premium unlocks deeper themes 
-              and long-term emotional patterns.
-            </p>
+          <div className="grid gap-6 md:grid-cols-3">
+            {[
+              {
+                title: "You want a safe outlet",
+                text: "A place to put what you’re holding without worrying how it sounds, looks, or should be ‘fixed’.",
+              },
+              {
+                title: "You want to see patterns",
+                text: "You sense cycles in your mood or energy, but it’s hard to see them clearly on your own.",
+              },
+              {
+                title: "You want gentler self-talk",
+                text: "You’re tired of tools that feel like pressure or performance. You want something kinder.",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="rounded-xl border border-gray-700/50 bg-[#0B1020] p-5"
+              >
+                <h3 className="text-sm font-semibold text-gray-50">
+                  {item.title}
+                </h3>
+                <p className="mt-2 text-xs leading-relaxed text-gray-300">
+                  {item.text}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* PLANS SECTION */}
-      <section className="px-6 md:px-12 lg:px-24 pb-28">
-        <h2 className="text-2xl md:text-3xl font-semibold text-gray-100 mb-3">
-          One space, two ways to use it.
-        </h2>
-
-        <p className="text-gray-300 max-w-2xl mb-12">
-          Most users begin with the free plan. Premium is here when you want 
-          deeper guidance and more structured insight.
-        </p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Free */}
-          <div className="border border-gray-700/40 rounded-2xl p-8">
-            <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">
-              Free
+      {/* ============== HOW IT WORKS ============== */}
+      <section className="border-t border-gray-800/70 bg-[#050816] px-6 py-18 pb-20 pt-16 md:px-12 lg:px-24">
+        <div className="mx-auto max-w-5xl space-y-10">
+          <div className="space-y-3">
+            <h2 className="text-2xl font-semibold text-gray-100 sm:text-3xl">
+              How Havenly works (on real, messy days).
+            </h2>
+            <p className="text-sm text-gray-300 sm:text-base max-w-2xl">
+              No streaks, no gamification, no pressure to show up perfectly.
+              Just a simple rhythm that helps you feel a little less alone in
+              your own head.
             </p>
-            <h3 className="text-xl text-gray-100 mb-4">Havenly Free</h3>
-            <ul className="text-gray-300 text-sm space-y-2">
-              <li>Unlimited journaling entries</li>
-              <li>Gentle reflections on recent entries</li>
-              <li>Private personal timeline</li>
-            </ul>
-
-            <Link
-              href="/magic-login"
-              className="mt-6 inline-block text-teal-300 hover:text-teal-200 text-sm font-medium"
-            >
-              Start for free →
-            </Link>
           </div>
 
-          {/* Premium */}
-          <div className="border border-gray-700/40 rounded-2xl p-8">
-            <p className="text-xs uppercase tracking-wide text-gray-400 mb-2">
-              Premium
-            </p>
-            <h3 className="text-xl text-gray-100 mb-4">Havenly Premium</h3>
-            <ul className="text-gray-300 text-sm space-y-2">
-              <li>Deeper AI understanding across weeks & months</li>
-              <li>Structured themes & emotional pattern insight</li>
-              <li>Priority access to new reflection tools</li>
-            </ul>
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="rounded-xl border border-gray-800/70 bg-[#090F1C] p-5">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                Step 1
+              </p>
+              <h3 className="mt-2 text-sm font-semibold text-gray-50">
+                Drop in for a few minutes
+              </h3>
+              <p className="mt-2 text-xs leading-relaxed text-gray-300">
+                You land on one simple, gentle prompt. No feeds, no noise, no
+                pressure to come up with the “right” answer.
+              </p>
+            </div>
 
+            <div className="rounded-xl border border-gray-800/70 bg-[#090F1C] p-5">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                Step 2
+              </p>
+              <h3 className="mt-2 text-sm font-semibold text-gray-50">
+                Write what feels true today
+              </h3>
+              <p className="mt-2 text-xs leading-relaxed text-gray-300">
+                You share as much or as little as you like. Havenly holds it
+                quietly, without judgment or urgency to change.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-gray-800/70 bg-[#090F1C] p-5">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                Step 3
+              </p>
+              <h3 className="mt-2 text-sm font-semibold text-gray-50">
+                Let AI reflect things back
+              </h3>
+              <p className="mt-2 text-xs leading-relaxed text-gray-300">
+                You receive a gentle reflection. On Premium, Havenly also
+                highlights emotional themes and patterns across weeks and months.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============== FREE vs PREMIUM ============== */}
+      <section className="border-t border-gray-800/70 bg-[#050816] px-6 pb-24 pt-16 md:px-12 lg:px-24">
+        <div className="mx-auto max-w-5xl space-y-10">
+          <div className="space-y-3">
+            <h2 className="text-2xl font-semibold text-gray-100 sm:text-3xl">
+              One calm space. Two ways to use it.
+            </h2>
+            <p className="text-sm text-gray-300 sm:text-base max-w-2xl">
+              Start with the free space for as long as you need. Move to
+              Premium if you want Havenly to help you see the deeper story
+              behind your days.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Free plan */}
+            <div className="flex flex-col rounded-2xl border border-gray-800/80 bg-[#090F1C] p-7">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                Free
+              </p>
+              <h3 className="mt-2 text-lg font-semibold text-gray-50">
+                Havenly Free
+              </h3>
+              <p className="mt-2 text-sm text-gray-300">
+                A steady, private outlet for your thoughts and feelings—without
+                any pressure to pay or perform.
+              </p>
+              <ul className="mt-4 space-y-2 text-sm text-gray-300">
+                <li>Unlimited journaling entries</li>
+                <li>Gentle reflections focused on validation</li>
+                <li>Simple timeline of what you’ve been carrying lately</li>
+              </ul>
+              <Link
+                href="/magic-login"
+                className="mt-6 inline-flex w-fit text-sm font-medium text-teal-300 hover:text-teal-200"
+              >
+                Open your free space →
+              </Link>
+            </div>
+
+            {/* Premium plan */}
+            <div className="relative flex flex-col rounded-2xl border border-teal-400/70 bg-[#0B1421] p-7">
+              <div className="absolute right-6 top-6 rounded-full bg-teal-400 px-3 py-1 text-[11px] font-semibold text-[#050816]">
+                Most depth
+              </div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-teal-200/90">
+                Premium
+              </p>
+              <h3 className="mt-2 text-lg font-semibold text-gray-50">
+                Havenly Premium
+              </h3>
+              <p className="mt-2 text-sm text-gray-300">
+                For when you’re ready to understand not just how you feel today,
+                but how your inner world has been shifting over time.
+              </p>
+              <ul className="mt-4 space-y-2 text-sm text-gray-300">
+                <li>Emotional themes across weeks & months</li>
+                <li>Deeper reflections that gently challenge unhelpful stories</li>
+                <li>Early access to new supportive tools and journeys</li>
+              </ul>
+              <Link
+                href="/upgrade"
+                className="mt-6 inline-flex w-fit rounded-full bg-[#4CC5A9] px-5 py-3 text-sm font-semibold text-[#050816] hover:bg-[#3db497]"
+              >
+                Upgrade to Premium
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============== FINAL CTA ============== */}
+      <section className="border-t border-gray-800/70 bg-[#050816] px-6 pb-24 pt-14 md:px-12 lg:px-24">
+        <div className="mx-auto max-w-xl text-center space-y-5">
+          <h2 className="text-2xl font-semibold text-gray-100 sm:text-3xl">
+            You don’t have to hold everything alone.
+          </h2>
+          <p className="text-sm text-gray-300 sm:text-base">
+            Havenly offers a small, repeatable ritual: a few honest minutes
+            to notice what you’re carrying, and a gentle reflection to help
+            you make sense of it over time.
+          </p>
+          <div className="mt-4 flex flex-wrap justify-center gap-3">
+            <Link
+              href="/magic-login"
+              className="rounded-full bg-[#4CC5A9] px-6 py-3 text-sm font-semibold text-[#050816] hover:bg-[#3db497]"
+            >
+              Begin a free check-in
+            </Link>
             <Link
               href="/upgrade"
-              className="mt-6 inline-block bg-[#4CC5A9] text-[#0B1220] px-4 py-3 rounded-full font-medium hover:bg-[#3db497] transition"
+              className="rounded-full border border-gray-600 px-6 py-3 text-sm font-medium text-gray-100 hover:bg-gray-800/50"
             >
-              Upgrade to Premium
+              Learn about Premium
             </Link>
           </div>
         </div>
