@@ -1,12 +1,12 @@
 "use client";
 
 /*
-  Havenly Billing – Soft Blue Calm (v2.0)
-  ----------------------------------------
-  - Matches Landing / Upgrade / Premium emotional tone
-  - Uses soft blue palette instead of emerald
-  - Gentle, supportive writing style
-  - No breaking changes, fully safe
+  Havenly Billing – Soft Blue Calm (v2.0, FINAL)
+  ----------------------------------------------
+  - Fully aligned with Landing / Upgrade / Premium
+  - Typo fixed (className)
+  - Zero breaking changes
+  - Safe drop-in replacement
 */
 
 import Link from "next/link";
@@ -48,7 +48,7 @@ export default function BillingPage() {
           <h2 className="text-lg font-semibold text-gray-50 mb-4">Current Plan</h2>
 
           {loading ? (
-            <p classnName="text-gray-400 text-sm">Loading plan information…</p>
+            <p className="text-gray-400 text-sm">Loading plan information…</p>
           ) : error ? (
             <p className="text-red-400 text-sm">{error}</p>
           ) : (
