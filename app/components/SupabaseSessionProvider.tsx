@@ -1,29 +1,29 @@
 "use client";
 
-import { Session, SupabaseClient } from "@supabase/supabase-js";
 import {
   createContext,
   useContext,
-  useState,
   useEffect,
+  useState,
   type ReactNode,
 } from "react";
+import type { Session, SupabaseClient } from "@supabase/supabase-js";
 import { supabaseClient } from "@/lib/supabase/client";
 
-type SupabaseContextType = {
+type SupabaseContextValue = {
   supabase: SupabaseClient;
   session: Session | null;
 };
 
-const SupabaseContext = createContext<SupabaseContextType | undefined>(
+const SupabaseContext = createContext<SupabaseContextValue | undefined>(
   undefined
 );
 
 /**
- * Provides a live Supabase client + session to the whole app.
- * - Fetches the current session on mount.
- * - Subscribes to auth changes (login / logout / token refresh).
- * - Ensures Navbar and other consumers update without manual refresh.
+ * Provides a live Supabase client + session to all client components.
+ * - Loads initial session on mount.
+ * - Subscribes to auth changes (magic link, logout, refresh).
+ * - Ensures Navbar and other consumers update instantly without manual refresh.
  */
 export function SupabaseSessionProvider({
   children,
@@ -33,32 +33,34 @@ export function SupabaseSessionProvider({
   const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    let isMounted = true;
+    let cancelled = false;
 
-    async function loadInitialSession() {
+    async function loadSession() {
       try {
         const { data, error } = await supabaseClient.auth.getSession();
-        if (!isMounted) return;
+        if (cancelled) return;
         if (!error) {
           setSession(data.session ?? null);
         }
       } catch (err) {
-        console.error("SupabaseSessionProvider getSession error:", err);
+        if (!cancelled) {
+          console.error("SupabaseSessionProvider getSession error:", err);
+        }
       }
     }
 
-    loadInitialSession();
+    loadSession();
 
     const {
-      data: authListener,
+      data: { subscription },
     } = supabaseClient.auth.onAuthStateChange((_event, newSession) => {
-      // Called on magic-link login, logout, refresh, etc.
-      setSession(newSession);
+      if (cancelled) return;
+      setSession(newSession ?? null);
     });
 
     return () => {
-      isMounted = false;
-      authListener?.subscription.unsubscribe();
+      cancelled = true;
+      subscription.unsubscribe();
     };
   }, []);
 
@@ -72,7 +74,9 @@ export function SupabaseSessionProvider({
 export function useSupabase() {
   const ctx = useContext(SupabaseContext);
   if (!ctx) {
-    throw new Error("useSupabase must be used inside <SupabaseSessionProvider>");
+    throw new Error(
+      "useSupabase must be used within SupabaseSessionProvider"
+    );
   }
   return ctx;
 }
