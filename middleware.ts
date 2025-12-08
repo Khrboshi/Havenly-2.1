@@ -1,54 +1,23 @@
-import { NextResponse, type NextRequest } from "next/server";
+// middleware.ts
+import type { NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
+/**
+ * Middleware is now responsible ONLY for:
+ * - Letting Supabase sync auth cookies (via updateSession)
+ * - Not for deciding if a user is allowed to see a page
+ *
+ * Route protection is handled in the (protected) layout/pages.
+ */
 export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  // Always call updateSession so Supabase can:
+  // - Read magic-link codes from the URL
+  // - Refresh auth cookies
+  const { response } = updateSession(request);
 
-  // PUBLIC ROUTES
-  const PUBLIC_ROUTES = [
-    "/",
-    "/magic-login",
-    "/auth/callback",
-    "/api/auth",
-  ];
-
-  const isPublic = PUBLIC_ROUTES.some((route) =>
-    pathname === route || pathname.startsWith(`${route}/`)
-  );
-
-  // Always sync session
-  const { supabase, response } = await updateSession(request);
-
-  // If route is public → return immediately (DON’T CHECK USER)
-  if (isPublic) {
-    return response;
-  }
-
-  // PROTECTED ROUTES
-  const PROTECTED_ROUTES = [
-    "/dashboard",
-    "/journal",
-    "/settings",
-    "/tools",
-    "/insights",
-  ];
-
-  const isProtected = PROTECTED_ROUTES.some((route) =>
-    pathname === route || pathname.startsWith(`${route}/`)
-  );
-
-  if (isProtected) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      const redirectUrl = new URL("/magic-login", request.url);
-      redirectUrl.searchParams.set("redirectedFrom", pathname);
-      return NextResponse.redirect(redirectUrl);
-    }
-  }
-
+  // IMPORTANT: no auth redirects here anymore.
+  // If the user is not logged in, the (protected) layout
+  // will redirect them server-side.
   return response;
 }
 
