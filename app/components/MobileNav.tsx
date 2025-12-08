@@ -18,8 +18,6 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
     { href: "/", label: "Home", auth: false },
     { href: "/about", label: "About", auth: false },
     { href: "/blog", label: "Blog", auth: false },
-
-    // Auth-only
     { href: "/dashboard", label: "Dashboard", auth: true },
     { href: "/journal", label: "Journal", auth: true },
     { href: "/insights", label: "Insights", auth: true },
@@ -29,6 +27,13 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
   const visibleItems = navItems.filter(
     (item) => !item.auth || (item.auth && isLoggedIn)
   );
+
+  const linkClass = (path: string) =>
+    `px-3 py-2 rounded-md text-sm transition ${
+      pathname === path
+        ? "bg-emerald-400 text-slate-900 font-semibold"
+        : "text-slate-300 hover:text-white hover:bg-slate-800/50"
+    }`;
 
   return (
     <div
@@ -42,26 +47,18 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <nav className="flex flex-col gap-4 mt-4">
+
           {visibleItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={onClose}
-              className={`px-3 py-2 rounded-md text-sm font-medium
-                ${
-                  pathname === item.href ? "text-emerald-400" : "text-slate-300"
-                } hover:text-white`}
-            >
+            <Link key={item.href} href={item.href} onClick={onClose} className={linkClass(item.href)}>
               {item.label}
             </Link>
           ))}
 
-          {/* Auth section */}
           {!isLoggedIn ? (
             <Link
               href="/magic-login"
               onClick={onClose}
-              className="px-3 py-2 rounded-md text-sm text-slate-300 hover:text-white"
+              className="px-3 py-2 rounded-md text-sm text-slate-300 hover:text-white hover:bg-slate-800/50"
             >
               Sign in
             </Link>
@@ -69,7 +66,7 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
             <Link
               href="/logout"
               onClick={onClose}
-              className="px-3 py-2 rounded-md text-sm text-slate-300 hover:text-white"
+              className="px-3 py-2 rounded-md text-sm text-slate-300 hover:text-white hover:bg-slate-800/50"
             >
               Log out
             </Link>
