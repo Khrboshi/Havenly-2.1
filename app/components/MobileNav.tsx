@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSupabaseSession } from "./SupabaseSessionProvider";
+import { useSupabase } from "./SupabaseSessionProvider";
 
 type MobileNavProps = {
   open: boolean;
@@ -11,7 +11,7 @@ type MobileNavProps = {
 
 export default function MobileNav({ open, onClose }: MobileNavProps) {
   const pathname = usePathname();
-  const session = useSupabaseSession();
+  const { session } = useSupabase();
   const isLoggedIn = !!session?.user;
 
   const navItems = [
@@ -47,9 +47,13 @@ export default function MobileNav({ open, onClose }: MobileNavProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <nav className="flex flex-col gap-4 mt-4">
-
           {visibleItems.map((item) => (
-            <Link key={item.href} href={item.href} onClick={onClose} className={linkClass(item.href)}>
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={onClose}
+              className={linkClass(item.href)}
+            >
               {item.label}
             </Link>
           ))}
