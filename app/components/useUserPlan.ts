@@ -9,18 +9,21 @@ interface UserPlanState {
   loading: boolean;
   error: string | null;
 
-  // Legacy fields required by older pages
+  // Legacy field (some components read `plan`)
   plan: PlanType;
 
-  // New field used by updated layout/pages
+  // Preferred explicit field
   planType: PlanType;
 
+  // Extra info used by some pages (Billing, Premium hub, etc.)
   credits: number | null;
-
-  // Required by premium/page.tsx
   renewalDate: string | null;
 }
 
+/**
+ * Client hook to read the current user's plan from /api/user/plan.
+ * Keeps shape compatible with existing pages, but simplifies logic.
+ */
 export function useUserPlan(): UserPlanState {
   const [state, setState] = useState<UserPlanState>({
     loading: true,
@@ -28,7 +31,7 @@ export function useUserPlan(): UserPlanState {
     plan: null,
     planType: null,
     credits: null,
-    renewalDate: null, // added default
+    renewalDate: null,
   });
 
   useEffect(() => {
@@ -36,57 +39,66 @@ export function useUserPlan(): UserPlanState {
 
     async function fetchPlan() {
       try {
-        const res = await fetch("/api/user/credits", { method: "GET" });
-
-        // Not logged in → treat as FREE
-        if (res.status === 401) {
-          if (!cancelled) {
-            setState({
-              loading: false,
-              error: null,
-              plan: "FREE",
-              planType: "FREE",
-              credits: 0,
-              renewalDate: null,
-            });
-          }
-          return;
-        }
+        const res = await fetch("/api/user/plan", { cache: "no-store" });
 
         if (!res.ok) {
-          throw new Error("Failed to load plan info");
-        }
-
-        const data = await res.json();
-
-        const planValue: PlanType = data.planType ?? "FREE";
-        const renewal =
-          typeof data.renewalDate === "string" ? data.renewalDate : null;
-
-        if (!cancelled) {
-          setState({
+          if (cancelled) return;
+          setState((prev) => ({
+            ...prev,
             loading: false,
-            error: null,
-            plan: planValue,
-            planType: planValue,
-            credits:
-              typeof data.credits === "number" ? data.credits : 0,
-            renewalDate: renewal,
-          });
-        }
-      } catch (err) {
-        console.error("useUserPlan error:", err);
-
-        if (!cancelled) {
-          setState({
-            loading: false,
-            error: "Could not load plan info",
+            error: "Unable to load plan information.",
             plan: "FREE",
             planType: "FREE",
             credits: 0,
             renewalDate: null,
-          });
+          }));
+          return;
         }
+
+        const data = await res.json();
+
+        if (cancelled) return;
+
+        // Defensive parsing: accept different shapes but normalize to our state.
+        const serverPlanType =
+          (data.planType as PlanType | undefined) ??
+          (typeof data.plan === "string"
+            ? (data.plan.toUpperCase() as PlanType)
+            : null);
+
+        const normalizedPlan: PlanType =
+          serverPlanType === "PREMIUM" ||
+          serverPlanType === "TRIAL" ||
+          serverPlanType === "FREE"
+            ? serverPlanType
+            : "FREE";
+
+        const credits =
+          typeof data.credits === "number" ? data.credits : 0;
+
+        const renewalDate =
+          typeof data.renewalDate === "string" ? data.renewalDate : null;
+
+        setState({
+          loading: false,
+          error: null,
+          plan: normalizedPlan,
+          planType: normalizedPlan,
+          credits,
+          renewalDate,
+        });
+      } catch (err) {
+        console.error("useUserPlan error:", err);
+        if (cancelled) return;
+        setState((prev) => ({
+          ...prev,
+          loading: false,
+          error: "Unable to load plan information.",
+          plan: "FREE",
+          planType: "FREE",
+          credits: 0,
+          renewalDate: null,
+        }));
       }
     }
 
