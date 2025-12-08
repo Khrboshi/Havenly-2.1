@@ -27,42 +27,46 @@ type Props = {
 /**
  * SupabaseSessionProvider
  *
- * Responsibilities:
- * - Create a single browser Supabase client.
- * - Bootstrap its session from the server-provided initialSession.
- * - On mount, explicitly call getSession() to hydrate from existing
- *   auth cookies/local storage (in case initialSession was null).
- * - Listen to onAuthStateChange and:
- *    - Update local session state.
- *    - Call /api/auth/refresh to keep server + middleware cookies in sync.
+ * Creates the client-side Supabase client.
+ * Hydrates from any existing auth cookie or local session.
+ * Ensures session + cookies stay synced (middleware/server stay aligned).
  */
 export function SupabaseSessionProvider({
   initialSession = null,
   children,
 }: Props) {
-  // Create browser client once
+  // Create Supabase browser client once
   const supabase = useMemo(
     () =>
       createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          auth: {
+            persistSession: true,
+            detectSessionInUrl: true,
+            autoRefreshToken: true,
+            flowType: "pkce",
+            storage: undefined, // required for SSR consistency
+          },
+        }
       ),
     []
   );
 
   const [session, setSession] = useState<any>(initialSession);
 
-  // 1) On initial mount, ensure we hydrate from any existing session
+  // 1) On mount → hydrate session from cookies/local storage
   useEffect(() => {
-    let isMounted = true;
+    let active = true;
 
-    async function hydrateSession() {
+    async function hydrate() {
       try {
         const {
           data: { session: currentSession },
         } = await supabase.auth.getSession();
 
-        if (isMounted && currentSession) {
+        if (active && currentSession) {
           setSession(currentSession);
         }
       } catch (err) {
@@ -70,25 +74,21 @@ export function SupabaseSessionProvider({
       }
     }
 
-    // If we didn't get a session from the server, or just to be safe,
-    // hydrate from the browser.
-    hydrateSession();
-
+    hydrate();
     return () => {
-      isMounted = false;
+      active = false;
     };
   }, [supabase]);
 
-  // 2) Keep session + cookies in sync when auth state changes
+  // 2) Listen for Supabase auth changes → sync cookie using API route
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
-      setSession(currentSession);
+    } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
+      setSession(newSession);
 
       try {
-        // This hits /api/auth/refresh which uses the middleware helper
-        // to refresh auth cookies so server + middleware see the same user.
+        // Refresh server-side + middleware cookies
         await fetch("/api/auth/refresh", {
           method: "POST",
           credentials: "include",
@@ -110,9 +110,6 @@ export function SupabaseSessionProvider({
   );
 }
 
-/**
- * Hook for any client component that needs Supabase + session.
- */
 export function useSupabase() {
   const ctx = useContext(SupabaseContext);
   if (!ctx) {
