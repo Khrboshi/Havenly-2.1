@@ -1,7 +1,13 @@
 "use client";
 
 import { Session, SupabaseClient } from "@supabase/supabase-js";
-import { createContext, useContext, useState, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from "react";
 import { supabaseClient } from "@/lib/supabase/client";
 
 type SupabaseContextType = {
@@ -13,28 +19,47 @@ const SupabaseContext = createContext<SupabaseContextType | undefined>(
   undefined
 );
 
+/**
+ * Provides a live Supabase client + session to the whole app.
+ * - Fetches the current session on mount.
+ * - Subscribes to auth changes (login / logout / token refresh).
+ * - Ensures Navbar and other consumers update without manual refresh.
+ */
 export function SupabaseSessionProvider({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   const [session, setSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    const getSession = async () => {
-      const { data } = await supabaseClient.auth.getSession();
-      setSession(data.session);
-    };
+    let isMounted = true;
 
-    getSession();
+    async function loadInitialSession() {
+      try {
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (!isMounted) return;
+        if (!error) {
+          setSession(data.session ?? null);
+        }
+      } catch (err) {
+        console.error("SupabaseSessionProvider getSession error:", err);
+      }
+    }
+
+    loadInitialSession();
 
     const {
-      data: { subscription },
-    } = supabaseClient.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
+      data: authListener,
+    } = supabaseClient.auth.onAuthStateChange((_event, newSession) => {
+      // Called on magic-link login, logout, refresh, etc.
+      setSession(newSession);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      authListener?.subscription.unsubscribe();
+    };
   }, []);
 
   return (
@@ -46,9 +71,8 @@ export function SupabaseSessionProvider({
 
 export function useSupabase() {
   const ctx = useContext(SupabaseContext);
-  if (!ctx)
-    throw new Error(
-      "useSupabase must be used inside <SupabaseSessionProvider>"
-    );
+  if (!ctx) {
+    throw new Error("useSupabase must be used inside <SupabaseSessionProvider>");
+  }
   return ctx;
 }
