@@ -43,7 +43,7 @@ const whoItsFor = [
   "People who feel mentally overloaded and want calm, structured check-ins.",
   "Anyone who journals but wishes they could see patterns more clearly over time.",
   "Those who don’t want productivity hacks—just a gentle space to understand their days.",
-  "People who like Havenly’s tone and want the “full experience” without distractions.",
+  "People who like Havenly’s tone and want the deeper reflective experience.",
 ];
 
 export default function UpgradePage() {
@@ -83,7 +83,7 @@ export default function UpgradePage() {
         return;
       }
 
-      // Simple redirect to Premium hub on success
+      // Success → redirect user to Premium hub
       setLoading(false);
       if (typeof window !== "undefined") {
         window.location.href = "/premium";
@@ -100,7 +100,7 @@ export default function UpgradePage() {
   return (
     <div className="min-h-screen bg-slate-950 px-4 py-10 text-white">
       <div className="mx-auto flex max-w-5xl flex-col gap-8">
-        {/* Inline notice if login is required */}
+        {/* Login prompt */}
         {loginRequired && (
           <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
             Please sign in first using the{" "}
@@ -114,13 +114,14 @@ export default function UpgradePage() {
           </div>
         )}
 
+        {/* Error */}
         {upgradeError && (
           <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-100">
             {upgradeError}
           </div>
         )}
 
-        {/* HERO SECTION */}
+        {/* ======================== HERO SECTION ======================== */}
         <section className="mb-4">
           <span className="inline-flex items-center rounded-full border border-emerald-500/15 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
             Havenly Premium
@@ -134,9 +135,9 @@ export default function UpgradePage() {
 
               <p className="mt-4 text-sm text-white/75 sm:text-base max-w-xl">
                 The free version of Havenly gives you a quiet page to write a
-                few honest sentences. Premium goes a step further—helping you
-                see emotional patterns over time, understand what quietly
-                supports you, and feel less alone with what you are carrying.
+                few honest sentences. Premium adds deeper, more thoughtful
+                reflections that help you understand what’s been happening over
+                time—without pressure, judgment, or productivity noise.
               </p>
 
               <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -160,20 +161,14 @@ export default function UpgradePage() {
                 </Link>
               </div>
 
-              <p className="mt-3 text-xs text-white/55">
-                Premium is intentionally priced around{" "}
-                <span className="font-semibold text-emerald-300">
-                  $25/month
-                </span>
-                . If roughly 200 people find it helpful, that sustains about{" "}
-                <span className="font-semibold text-emerald-300">
-                  $5,000 MRR
-                </span>{" "}
-                and keeps Havenly focused on users, not ads.
+              <p className="mt-3 text-xs text-white/55 max-w-sm">
+                Premium helps support ongoing improvements to Havenly and keeps
+                your space calm, private, and completely free from ads or
+                distractions.
               </p>
             </div>
 
-            {/* Price summary / benefits snapshot */}
+            {/* Price summary */}
             <aside className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-lg shadow-slate-950/60">
               <p className="text-sm font-semibold text-emerald-300">
                 Premium at a glance
@@ -184,6 +179,7 @@ export default function UpgradePage() {
                   /month
                 </span>
               </p>
+
               <ul className="mt-4 space-y-2 text-sm text-white/80">
                 {premiumBenefits.slice(0, 3).map((b) => (
                   <li key={b} className="flex gap-2">
@@ -192,22 +188,21 @@ export default function UpgradePage() {
                   </li>
                 ))}
               </ul>
+
               <p className="mt-4 text-xs text-white/60">
                 Cancel anytime. Your entries stay in your account, even if you
-                move back to the Free plan.
+                return to the Free plan later.
               </p>
             </aside>
           </div>
         </section>
 
-        {/* COMPARE FREE VS PREMIUM */}
+        {/* ======================== FREE VS PREMIUM ======================== */}
         <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-          <h2 className="text-lg font-semibold">
-            What’s different about Premium?
-          </h2>
+          <h2 className="text-lg font-semibold">What’s different about Premium?</h2>
           <p className="mt-2 text-sm text-white/75">
             You keep everything you already have in Free. Premium simply adds
-            more depth and context—especially over weeks and months.
+            more depth, more clarity, and a more supportive reflective experience.
           </p>
 
           <div className="mt-5 overflow-x-auto">
@@ -237,17 +232,16 @@ export default function UpgradePage() {
           </div>
         </section>
 
-        {/* WHO IT'S FOR */}
+        {/* ======================== WHO IT'S FOR ======================== */}
         <section className="mb-6 grid gap-8 lg:grid-cols-[1.6fr,1.2fr]">
           <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-            <h2 className="text-lg font-semibold">
-              Who Havenly Premium is for
-            </h2>
+            <h2 className="text-lg font-semibold">Who Havenly Premium is for</h2>
             <p className="mt-3 text-sm text-white/75 max-w-xl">
-              Premium isn’t about squeezing more productivity out of you. It’s
-              for people who want a kinder way to track how they’re actually
-              doing—and what’s been quietly helping.
+              Premium isn’t about productivity—it’s about clarity. It’s for
+              people who want a supportive, reflective space to understand their
+              emotional world a little better.
             </p>
+
             <ul className="mt-4 space-y-3 text-sm text-white/80">
               {whoItsFor.map((b) => (
                 <li key={b} className="flex gap-2">
@@ -263,14 +257,14 @@ export default function UpgradePage() {
               Not ready to upgrade yet?
             </h3>
             <p className="mt-3 text-sm text-white/75">
-              That’s completely fine. Havenly’s free version is designed to be
-              genuinely useful on its own. You can stay on Free as long as you
-              like and only move to Premium if it feels clearly worth it to you.
+              That’s completely fine. The Free plan is designed to be genuinely
+              useful on its own. You can upgrade whenever it feels clearly
+              helpful for you.
             </p>
+
             <p className="mt-3 text-sm text-white/75">
-              Come back to this page any time from{" "}
-              <span className="font-medium">Settings → Billing</span> if you
-              decide you’d like deeper insights later.
+              You can return to this page any time from{" "}
+              <span className="font-medium">Settings → Billing</span>.
             </p>
 
             <div className="mt-5 flex flex-wrap gap-3">
@@ -285,6 +279,7 @@ export default function UpgradePage() {
                   ? "Processing…"
                   : "Upgrade now"}
               </button>
+
               <Link
                 href="/dashboard"
                 className="inline-flex items-center justify-center rounded-full border border-slate-700 px-5 py-2.5 text-sm text-slate-200 hover:bg-slate-800"
@@ -294,8 +289,8 @@ export default function UpgradePage() {
             </div>
 
             <p className="mt-4 text-xs text-white/55">
-              Your entries are never used for ads, and your space remains
-              private whether you are on Free or Premium.
+              Your entries remain private and are never used for advertising—
+              whether you’re on Free or Premium.
             </p>
           </div>
         </section>
