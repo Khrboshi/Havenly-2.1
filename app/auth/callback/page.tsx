@@ -1,3 +1,4 @@
+// app/auth/callback/page.tsx
 "use client";
 
 export const dynamic = "force-dynamic";
@@ -14,21 +15,52 @@ function CallbackInner() {
     async function finishSignIn() {
       const supabase = supabaseClient;
 
-      // Get session from Supabase
-      const { data, error } = await supabase.auth.getSession();
+      // Support both redirect_to and redirectTo, with a safe default
+      const redirectTo =
+        searchParams.get("redirect_to") ||
+        searchParams.get("redirectTo") ||
+        "/dashboard";
 
-      if (error) {
-        console.error("Callback error:", error.message);
-        router.replace("/magic-login");
-        return;
-      }
+      const code = searchParams.get("code");
 
-      // 100% correct return path
-      const redirectTo = searchParams.get("redirectTo") || "/dashboard";
+      try {
+        // If we have a code from the magic link, exchange it for a session
+        if (code) {
+          const { data, error } = await supabase.auth.exchangeCodeForSession(
+            code
+          );
 
-      if (data.session) {
-        router.replace(redirectTo);
-      } else {
+          if (error) {
+            console.error(
+              "Callback exchangeCodeForSession error:",
+              error.message
+            );
+            router.replace("/magic-login");
+            return;
+          }
+
+          if (data.session) {
+            router.replace(redirectTo);
+            return;
+          }
+        }
+
+        // Fallback: if no code or no session yet, just check the current session
+        const { data, error } = await supabase.auth.getSession();
+
+        if (error) {
+          console.error("Callback getSession error:", error.message);
+          router.replace("/magic-login");
+          return;
+        }
+
+        if (data.session) {
+          router.replace(redirectTo);
+        } else {
+          router.replace("/magic-login");
+        }
+      } catch (err) {
+        console.error("Callback unexpected error:", err);
         router.replace("/magic-login");
       }
     }
