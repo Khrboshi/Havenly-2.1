@@ -1,71 +1,52 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
-import type { Session, SupabaseClient } from "@supabase/supabase-js";
-import { supabaseClient } from "@/lib/supabase/client";
+import { createBrowserClient } from "@supabase/ssr";
+import { createContext, useContext, useEffect, useState } from "react";
 
-type SupabaseContextValue = {
-  supabase: SupabaseClient;
-  session: Session | null;
+type SupabaseContextType = {
+  supabase: ReturnType<typeof createBrowserClient>;
+  session: any;
 };
 
-const SupabaseContext = createContext<SupabaseContextValue | undefined>(
+const SupabaseContext = createContext<SupabaseContextType | undefined>(
   undefined
 );
 
-/**
- * Provides a live Supabase client + session to all client components.
- * - Loads initial session on mount.
- * - Subscribes to auth changes (magic link, logout, refresh).
- * - Ensures Navbar and other consumers update instantly without manual refresh.
- */
 export function SupabaseSessionProvider({
+  initialSession,
   children,
 }: {
-  children: ReactNode;
+  initialSession: any;
+  children: React.ReactNode;
 }) {
-  const [session, setSession] = useState<Session | null>(null);
+  const [supabase] = useState(() =>
+    createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+  );
 
+  const [session, setSession] = useState(initialSession);
+
+  // CRITICAL: Heartbeat for session persistence
   useEffect(() => {
-    let cancelled = false;
-
-    async function loadSession() {
-      try {
-        const { data, error } = await supabaseClient.auth.getSession();
-        if (cancelled) return;
-        if (!error) {
-          setSession(data.session ?? null);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          console.error("SupabaseSessionProvider getSession error:", err);
-        }
-      }
-    }
-
-    loadSession();
-
     const {
       data: { subscription },
-    } = supabaseClient.auth.onAuthStateChange((_event, newSession) => {
-      if (cancelled) return;
-      setSession(newSession ?? null);
+    } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      setSession(currentSession);
+
+      // IMPORTANT: Re-sync cookies with server
+      await fetch("/api/auth/refresh", {
+        method: "POST",
+        credentials: "include",
+      });
     });
 
-    return () => {
-      cancelled = true;
-      subscription.unsubscribe();
-    };
-  }, []);
+    return () => subscription.unsubscribe();
+  }, [supabase]);
 
   return (
-    <SupabaseContext.Provider value={{ supabase: supabaseClient, session }}>
+    <SupabaseContext.Provider value={{ supabase, session }}>
       {children}
     </SupabaseContext.Provider>
   );
@@ -73,10 +54,6 @@ export function SupabaseSessionProvider({
 
 export function useSupabase() {
   const ctx = useContext(SupabaseContext);
-  if (!ctx) {
-    throw new Error(
-      "useSupabase must be used within SupabaseSessionProvider"
-    );
-  }
+  if (!ctx) throw new Error("useSupabase must be inside a provider");
   return ctx;
 }
