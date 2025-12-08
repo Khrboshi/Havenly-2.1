@@ -17,17 +17,18 @@ export default function NewJournalEntryPage() {
 
     setIsSaving(true);
 
-    // FIX: Remove strict typing, explicitly tell TypeScript
-    // that we are inserting into an untyped table.
-    const { data, error: insertError } = await supabase
-      .from<any>("journal_entries")
-      .insert([
-        {
-          user_id: session.user.id,
-          content,
-          title,
-        },
-      ])
+    // ======================================================
+    // HARD OVERRIDE ALL STRICT TYPING FOR THIS OPERATION
+    // ======================================================
+    const client: any = supabase;
+
+    const { data, error: insertError } = await client
+      .from("journal_entries")
+      .insert({
+        user_id: session.user.id,
+        content,
+        title,
+      })
       .select()
       .single();
 
