@@ -4,7 +4,7 @@ import { updateSession } from "@/lib/supabase/middleware";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Public routes that NEVER require auth
+  // PUBLIC ROUTES
   const PUBLIC_ROUTES = [
     "/",
     "/magic-login",
@@ -16,10 +16,15 @@ export async function middleware(request: NextRequest) {
     pathname === route || pathname.startsWith(`${route}/`)
   );
 
-  // Sync session but DO NOT redirect yet
+  // Always sync session
   const { supabase, response } = await updateSession(request);
 
-  // Protected routes (must be logged in)
+  // If route is public → return immediately (DON’T CHECK USER)
+  if (isPublic) {
+    return response;
+  }
+
+  // PROTECTED ROUTES
   const PROTECTED_ROUTES = [
     "/dashboard",
     "/journal",
@@ -32,8 +37,7 @@ export async function middleware(request: NextRequest) {
     pathname === route || pathname.startsWith(`${route}/`)
   );
 
-  // If protected route → check user
-  if (isProtected && !isPublic) {
+  if (isProtected) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -45,14 +49,9 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Otherwise, continue
   return response;
 }
 
-/**
- * CRITICAL: Middleware matcher MUST NOT include static assets
- * AND MUST NOT catch magic-login unnecessarily.
- */
 export const config = {
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico|favicon.png|icon.svg|apple-touch-icon).*)",
