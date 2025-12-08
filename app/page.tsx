@@ -51,12 +51,10 @@ export default function LandingPage() {
               clearly valuable for you.
             </p>
 
-            <p className="mt-2 text-xs text-white/55">
-              Premium is designed to be sustainable with roughly{" "}
-              <span className="font-semibold text-emerald-300">
-                200 members at $25/month
-              </span>{" "}
-              (about $5,000 MRR) so the product can stay focused and independent.
+            <p className="mt-2 max-w-md text-xs text-white/55">
+              Premium helps support ongoing improvements to Havenly and keeps
+              your space private, calm, and completely free from ads or
+              distractions.
             </p>
           </div>
 
@@ -81,6 +79,7 @@ export default function LandingPage() {
                   </p>
                 </div>
               </li>
+
               <li className="flex gap-3">
                 <span className="mt-0.5 h-5 w-5 flex-none rounded-full border border-emerald-400/40 text-center text-xs leading-[18px] text-emerald-300">
                   2
@@ -95,6 +94,7 @@ export default function LandingPage() {
                   </p>
                 </div>
               </li>
+
               <li className="flex gap-3">
                 <span className="mt-0.5 h-5 w-5 flex-none rounded-full border border-emerald-400/40 text-center text-xs leading-[18px] text-emerald-300">
                   3
@@ -141,10 +141,7 @@ export default function LandingPage() {
               <span className="font-medium text-emerald-300">Free</span> plan
               for quiet journaling, and a{" "}
               <span className="font-medium text-emerald-300">Premium</span> plan
-              at around <span className="font-semibold">$25/month</span>. If
-              about 200 people find Premium valuable, that alone sustains
-              roughly $5,000 in monthly recurring revenue to keep the product
-              healthy.
+              with deeper insights, timelines, and enhanced reflection tools.
             </p>
           </div>
 
@@ -154,13 +151,12 @@ export default function LandingPage() {
               <h3 className="text-lg font-semibold">Free</h3>
               <p className="mt-1 text-2xl font-bold text-emerald-300">$0</p>
               <p className="mt-2 text-sm text-white/70">
-                For people who just want a quiet, private page to write and
-                occasionally get a light reflection.
+                For quiet, private journaling with light AI reflections.
               </p>
               <ul className="mt-4 space-y-2 text-sm text-white/80">
                 <li>• Private, encrypted journaling</li>
-                <li>• Light AI reflections on recent entries</li>
-                <li>• Basic daily check-in flow</li>
+                <li>• Light AI reflections</li>
+                <li>• Basic check-in flow</li>
                 <li>• No pressure to upgrade</li>
               </ul>
               <div className="mt-6">
@@ -185,14 +181,14 @@ export default function LandingPage() {
                 $25<span className="text-base font-normal text-white/70">/month</span>
               </p>
               <p className="mt-2 text-sm text-white/75">
-                For people who want deeper, calmer insight into their days:
-                pattern timelines, recurring themes, and richer reflections.
+                For deeper insights, pattern timelines, and a richer reflective
+                experience built to support your emotional clarity.
               </p>
               <ul className="mt-4 space-y-2 text-sm text-white/85">
-                <li>• Deeper, more nuanced AI reflections</li>
-                <li>• Emotional pattern timelines and themes</li>
-                <li>• Higher monthly credit balance for insights</li>
-                <li>• Priority access to new tools and experiments</li>
+                <li>• Deeper AI reflections</li>
+                <li>• Emotional timelines & themes</li>
+                <li>• Higher monthly credit balance</li>
+                <li>• Priority access to new tools</li>
               </ul>
               <div className="mt-6 flex flex-col gap-2">
                 <Link
@@ -202,8 +198,7 @@ export default function LandingPage() {
                   Upgrade to Premium
                 </Link>
                 <p className="text-xs text-white/60">
-                  Cancel anytime. Your journal entries always remain yours, even
-                  if you move back to Free.
+                  Cancel anytime. Your journal entries always remain yours.
                 </p>
               </div>
             </div>
