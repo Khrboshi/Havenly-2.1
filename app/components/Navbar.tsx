@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSupabaseSession } from "./SupabaseSessionProvider";
-import { useUserPlan } from "../hooks/useUserPlan";  // FIXED PATH
+import { useSupabase } from "./SupabaseSessionProvider";
+import { useUserPlan } from "../hooks/useUserPlan";
 import { useEffect, useState } from "react";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const session = useSupabaseSession();
+  const { session } = useSupabase();
   const { plan } = useUserPlan();
 
   const [hydrated, setHydrated] = useState(false);
@@ -25,14 +25,13 @@ export default function Navbar() {
       "px-3 py-1 rounded-full transition-colors duration-200",
       isActive
         ? "bg-emerald-400 text-slate-900 font-semibold"
-        : "text-slate-300 hover:text-white hover:bg-slate-800/60"
+        : "text-slate-300 hover:text-white hover:bg-slate-800/60",
     ].join(" ");
   };
 
   return (
     <header className="w-full border-b border-slate-800 bg-slate-950/50 backdrop-blur-md fixed top-0 left-0 z-50">
       <nav className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between text-slate-200">
-
         {/* Logo */}
         <Link href="/" className="font-semibold text-lg">
           Havenly
@@ -40,7 +39,6 @@ export default function Navbar() {
 
         {/* Desktop navigation */}
         <div className="hidden md:flex items-center gap-3 text-sm">
-
           <Link href="/" className={linkClass("/")}>
             Home
           </Link>
@@ -74,7 +72,10 @@ export default function Navbar() {
         {/* Right section */}
         {!isLoggedIn ? (
           <div className="flex items-center gap-4">
-            <Link href="/magic-login" className="text-sm px-3 py-1 rounded-md hover:bg-slate-800/60">
+            <Link
+              href="/magic-login"
+              className="text-sm px-3 py-1 rounded-md hover:bg-slate-800/60"
+            >
               Sign in
             </Link>
 
@@ -87,7 +88,6 @@ export default function Navbar() {
           </div>
         ) : (
           <div className="flex items-center gap-3">
-
             {/* Plan badge */}
             <span className="px-3 py-1 rounded-full bg-slate-800 text-xs">
               {plan === "premium" ? "Premium" : "Free plan"}
