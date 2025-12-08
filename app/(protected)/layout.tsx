@@ -1,41 +1,23 @@
-// app/(protected)/layout.tsx
-import type { ReactNode } from "react";
-import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
-import SessionHeartbeat from "@/app/components/auth/SessionHeartbeat";
+import { redirect } from "next/navigation";
+import ProtectedNavBar from "@/app/components/ProtectedNavBar";
 
-export const dynamic = "force-dynamic";
-
-/**
- * Protected layout
- * - Runs on the server
- * - Ensures there is an active Supabase session
- * - If not authenticated → redirects to /magic-login
- * - Keeps the session alive in the background via SessionHeartbeat
- *
- * This layout applies only to the (protected) group:
- *   /dashboard, /journal, /settings, /tools, /insights, etc.
- */
-export default async function ProtectedLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const supabase = createServerSupabase();
 
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session) {
-    redirect("/magic-login");
+  // If no session found → redirect server-side (no flicker)
+  if (!session?.user) {
+    redirect("/magic-login?redirectedFrom=/dashboard");
   }
 
   return (
-    <>
-      {/* Keep Supabase session alive while user is on protected pages */}
-      <SessionHeartbeat />
+    <div>
+      <ProtectedNavBar user={session.user} />
       {children}
-    </>
+    </div>
   );
 }
