@@ -19,30 +19,36 @@ export default function PremiumPage() {
     <RequirePremium>
       <div className="min-h-screen bg-slate-950 px-6 py-10 text-white">
         <div className="mx-auto max-w-4xl space-y-8">
+          {/* ========================= HEADER ========================= */}
           <header>
             <p className="text-xs font-medium uppercase tracking-wide text-emerald-300">
               Havenly Premium
             </p>
+
             <h1 className="mt-2 text-3xl font-bold">
-              Your Premium reflection space
+              Your deeper reflection space
             </h1>
+
             <p className="mt-3 max-w-xl text-sm text-white/70">
-              This hub gives you an overview of your plan, credits, and the
-              deeper tools you have access to with Havenly Premium.
+              This page gives you a calm overview of your Premium benefits,
+              available credits, and the reflective tools designed to help you
+              understand your emotional patterns with more clarity and softness.
             </p>
           </header>
 
+          {/* ========================= MAIN GRID ========================= */}
           <section className="grid gap-6 md:grid-cols-[1.4fr,1fr]">
-            {/* Plan overview */}
+            {/* PLAN OVERVIEW */}
             <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-              <h2 className="text-lg font-semibold">Plan overview</h2>
+              <h2 className="text-lg font-semibold">Your plan</h2>
+
               <p className="mt-2 text-sm text-slate-200">
-                <span className="font-medium">{readablePlan}</span> · billed at
-                approximately{" "}
-                <span className="font-semibold text-emerald-300">
-                  $25/month
+                You’re on the{" "}
+                <span className="font-medium text-emerald-300">
+                  {readablePlan}
                 </span>{" "}
-                as part of Havenly’s simple subscription model.
+                plan, which gives you full access to Havenly’s deeper insights,
+                supportive timelines, and expanded reflective tools.
               </p>
 
               <dl className="mt-4 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
@@ -54,12 +60,13 @@ export default function PremiumPage() {
                     {typeof credits === "number" ? credits : 0}
                   </dd>
                 </div>
+
                 <div>
                   <dt className="text-xs uppercase tracking-wide text-slate-400">
                     Next renewal
                   </dt>
                   <dd className="mt-1 text-slate-50">
-                    {renewalDate || "Not set yet"}
+                    {renewalDate || "Not set"}
                   </dd>
                 </div>
               </dl>
@@ -71,36 +78,41 @@ export default function PremiumPage() {
                 >
                   Write a new entry
                 </Link>
+
                 <Link
                   href="/insights"
                   className="inline-flex items-center justify-center rounded-full border border-slate-700 px-5 py-2.5 text-sm text-slate-200 hover:bg-slate-800"
                 >
-                  Open insights
+                  View insights
                 </Link>
               </div>
             </div>
 
-            {/* Premium benefits summary */}
+            {/* PREMIUM BENEFITS */}
             <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/70 p-6 text-sm text-slate-200">
               <h3 className="text-base font-semibold text-white">
-                What you get with Premium
+                What Premium gives you
               </h3>
+
               <ul className="mt-3 space-y-2">
                 <li>
-                  • Deeper, kinder reflections that look across multiple
-                  entries—not just one at a time.
+                  • Deeper, more thoughtful reflections that look across
+                  multiple entries—not just one at a time.
                 </li>
+
                 <li>
-                  • Emerging themes and emotional timelines that make patterns
-                  easier to notice.
+                  • Emotional timelines and themes that help you see how your
+                  days weave together over time.
                 </li>
+
                 <li>
                   • A higher monthly credit balance so you can explore insights
-                  without worrying about “wasting” them.
+                  comfortably.
                 </li>
+
                 <li>
-                  • Priority access to new Premium-only tools as they are
-                  released.
+                  • Early access to new Premium-only tools and experiments as
+                  Havenly grows.
                 </li>
               </ul>
 
@@ -112,10 +124,30 @@ export default function PremiumPage() {
               </Link>
 
               <p className="mt-3 text-xs text-slate-400">
-                You can downgrade back to the Free plan at any time from
-                Billing. Your journal entries always remain in your account.
+                You can downgrade at any time. Your journal entries always
+                remain yours, regardless of your plan.
               </p>
             </div>
+          </section>
+
+          {/* ========================= SUPPORTIVE NOTE ========================= */}
+          <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-sm text-white/80">
+            <h3 className="text-base font-semibold text-white">
+              A calmer, more supportive experience
+            </h3>
+
+            <p className="mt-3 leading-relaxed">
+              Premium is designed to give you a deeper sense of clarity—not more
+              pressure. Every feature here is built to help you feel grounded,
+              supported, and understood in your own rhythm. Use what feels
+              helpful, skip what doesn’t, and return whenever you want to take a
+              closer look at how your days have been unfolding.
+            </p>
+
+            <p className="mt-3 text-xs text-white/55">
+              Havenly never uses your writing for advertising or profiling. Your
+              space remains private, gentle, and yours alone.
+            </p>
           </section>
         </div>
       </div>
