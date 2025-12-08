@@ -19,10 +19,10 @@ export default function BillingPage() {
 
   const planDescription =
     planType === "PREMIUM"
-      ? "You have full access to Havenly Premium features and deeper AI insights."
+      ? "You have full access to Havenly Premium with deeper insights and supportive reflection tools."
       : planType === "TRIAL"
       ? "You’re in a trial period with access to most Premium features."
-      : "You are on the free plan with core journaling and light reflections.";
+      : "You’re currently using the Free plan with core journaling and light reflections.";
 
   return (
     <div className="min-h-screen w-full bg-slate-950 px-6 py-10 text-white">
@@ -37,42 +37,30 @@ export default function BillingPage() {
             <div className="h-20 animate-pulse rounded-xl bg-slate-800/60" />
           ) : error ? (
             <p className="text-sm text-red-400">
-              {error ||
-                "We couldn’t load your plan details. You’re currently treated as on the free plan."}
+              We couldn’t load your plan details. You’re currently treated as on the Free plan.
             </p>
           ) : (
             <>
               <p className="text-sm text-slate-300">
-                <span className="font-medium">{readablePlan}</span> ·{" "}
-                {planDescription}
+                <span className="font-medium">{readablePlan}</span> · {planDescription}
               </p>
 
               <dl className="mt-3 grid grid-cols-1 gap-3 text-sm text-slate-200 sm:grid-cols-3">
                 <div>
-                  <dt className="text-xs uppercase tracking-wide text-slate-400">
-                    Account
-                  </dt>
-                  <dd className="mt-1 break-all text-slate-100">
-                    {userEmail}
-                  </dd>
+                  <dt className="text-xs uppercase tracking-wide text-slate-400">Account</dt>
+                  <dd className="mt-1 break-all text-slate-100">{userEmail}</dd>
                 </div>
+
                 <div>
-                  <dt className="text-xs uppercase tracking-wide text-slate-400">
-                    Credits
-                  </dt>
-                  <dd className="mt-1">
-                    {typeof credits === "number" ? credits : 0}
-                  </dd>
+                  <dt className="text-xs uppercase tracking-wide text-slate-400">Credits</dt>
+                  <dd className="mt-1">{typeof credits === "number" ? credits : 0}</dd>
                 </div>
+
                 <div>
-                  <dt className="text-xs uppercase tracking-wide text-slate-400">
-                    Renewal
-                  </dt>
+                  <dt className="text-xs uppercase tracking-wide text-slate-400">Renewal</dt>
                   <dd className="mt-1">
                     {renewalDate ||
-                      (planType === "FREE"
-                        ? "No renewal for free plan"
-                        : "Not set")}
+                      (planType === "FREE" ? "No renewal for Free plan" : "Not set")}
                   </dd>
                 </div>
               </dl>
@@ -88,6 +76,7 @@ export default function BillingPage() {
                 >
                   Open Premium hub
                 </Link>
+
                 <Link
                   href="/dashboard"
                   className="inline-flex items-center justify-center rounded-full border border-slate-700 px-5 py-2.5 text-sm text-slate-200 hover:bg-slate-800"
@@ -103,37 +92,36 @@ export default function BillingPage() {
                 >
                   Upgrade to Premium
                 </Link>
+
                 <Link
                   href="/dashboard"
                   className="inline-flex items-center justify-center rounded-full border border-slate-700 px-5 py-2.5 text-sm text-slate-200 hover:bg-slate-800"
                 >
-                  Stay on Free plan
+                  Stay on Free for now
                 </Link>
               </>
             )}
           </div>
         </section>
 
-        {/* How billing works / monetization philosophy */}
+        {/* How billing works / philosophy */}
         <section className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/70 p-6 text-sm text-slate-200">
           <h2 className="text-lg font-semibold text-white">How billing works</h2>
+
           <p className="text-slate-300">
-            Havenly uses a simple subscription model: a Free plan for quiet
-            journaling, and a Premium plan at around{" "}
-            <span className="font-semibold">$25/month</span>. If roughly 200
-            people find Premium helpful, that sustains about{" "}
-            <span className="font-semibold">$5,000 MRR</span> to keep the
-            product focused and independent.
+            Havenly uses a simple subscription model designed to keep your reflective space
+            calm, private, and completely free of ads. Premium is optional and adds deeper
+            insights, emotional timelines, and a higher monthly credit balance.
           </p>
+
           <p className="text-slate-300">
-            As billing infrastructure evolves, this page will show your active
-            subscription, renewal dates, and invoices. For now, you can safely
-            upgrade or downgrade your in-app plan while payments stay in a
-            careful, early-access phase.
+            As Havenly continues to grow, this page will show additional subscription details
+            including renewal status, invoices, and receipts. For now, you can freely move
+            between Free and Premium depending on what feels most supportive to you.
           </p>
+
           <p className="text-slate-400">
-            You can cancel Premium at any time. Your journal entries always
-            remain yours, even if you return to the Free plan.
+            You can cancel Premium at any time, and your journal entries always remain yours.
           </p>
         </section>
       </div>
@@ -142,7 +130,7 @@ export default function BillingPage() {
       <div className="mt-10 rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
         <h2 className="text-lg font-semibold text-white">Usage & history</h2>
         <p className="mb-4 max-w-lg text-sm text-white/70">
-          Review how your credits have been used across tools and reflections.
+          Review how your credits have been used across reflections and tools.
         </p>
 
         <Link
