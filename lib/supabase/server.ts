@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 
@@ -15,16 +17,12 @@ export function createServerSupabase() {
         set(name: string, value: string, options: any) {
           try {
             cookieStore.set(name, value, options);
-          } catch {
-            /* ignore on server actions */
-          }
+          } catch {}
         },
         remove(name: string, options: any) {
           try {
             cookieStore.set(name, "", options);
-          } catch {
-            /* ignore */
-          }
+          } catch {}
         },
       },
     }
