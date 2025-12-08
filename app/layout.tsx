@@ -17,24 +17,18 @@ export const metadata: Metadata = {
     "Havenly is a calm, private journaling companion with gentle AI reflections.",
 };
 
-/**
- * Root layout:
- * - Wraps the whole app in SupabaseSessionProvider so client components
- *   (like Navbar) always see live auth + plan state.
- * - Renders a sticky Navbar at the top.
- * - Keeps footer, toasts, PWA helpers and other utilities intact.
- */
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="h-full bg-slate-950">
       <body className="min-h-screen bg-slate-950 text-slate-100 antialiased">
+        {/* Provider ensures all client components get correct session on first paint */}
         <SupabaseSessionProvider>
           {/* Sticky navbar */}
           <div className="sticky top-0 z-40 border-b border-slate-800 bg-slate-950/90 backdrop-blur">
             <Navbar />
           </div>
 
-          {/* Main content */}
+          {/* Page content */}
           <main className="min-h-[calc(100vh-80px)]">
             <div className="mx-auto w-full max-w-7xl px-4 pt-10 pb-12">
               {children}
