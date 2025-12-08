@@ -1,16 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSupabaseSession } from "../components/SupabaseSessionProvider";
+import { useSupabase } from "../components/SupabaseSessionProvider";
 
 /**
  * Minimal, safe fallback hook for displaying the user’s plan.
- * If your database has a `user_plans` table, this hook will read from it.
- * If not, it gracefully defaults to "free".
+ * If your backend exposes /api/user/plan, it will read from there.
+ * Otherwise, it gracefully defaults to "free".
  */
-
 export function useUserPlan() {
-  const session = useSupabaseSession();
+  const { session } = useSupabase();
   const [plan, setPlan] = useState<"free" | "premium">("free");
 
   useEffect(() => {
@@ -20,7 +19,6 @@ export function useUserPlan() {
         return;
       }
 
-      // Try reading from the database (optional enhancement)
       try {
         const res = await fetch("/api/user/plan", {
           method: "GET",
@@ -35,10 +33,9 @@ export function useUserPlan() {
           }
         }
       } catch {
-        // ignore — fallback
+        // Ignore errors, fallback to free
       }
 
-      // Fallback for now until premium is implemented:
       setPlan("free");
     }
 
