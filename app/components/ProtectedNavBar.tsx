@@ -1,84 +1,64 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { useSupabase } from "./SupabaseSessionProvider";
 import { useUserPlan } from "./useUserPlan";
 
-export default function ProtectedNavBar() {
+export default function ProtectedNavBar({ user }: { user: any }) {
   const { session } = useSupabase();
-  const { plan, credits } = useUserPlan();
+  const plan = useUserPlan(); // Free / Premium
 
-  const user = session?.user;
-  const email = user?.email ?? "User";
-  const firstLetter = email.charAt(0).toUpperCase();
-
-  const [open, setOpen] = useState(false);
+  const email = session?.user?.email || user?.email || "";
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 px-6 py-4">
-      <div className="max-w-6xl mx-auto flex items-center justify-between">
+    <header className="w-full border-b border-slate-800 bg-slate-950/50 backdrop-blur-md fixed top-0 left-0 z-50">
+      <nav className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between text-slate-200">
+
         {/* Logo */}
-        <Link href="/dashboard" className="text-white font-semibold text-lg">
+        <Link href="/dashboard" className="font-semibold text-lg">
           Havenly
         </Link>
+
+        {/* Links */}
+        <div className="flex items-center gap-6 text-sm">
+          <Link href="/dashboard">Dashboard</Link>
+          <Link href="/journal">Journal</Link>
+          <Link href="/insights">Insights</Link>
+          <Link href="/tools">Tools</Link>
+        </div>
 
         {/* Right side */}
         <div className="flex items-center gap-4">
 
-          {/* Plan badge */}
-          <span className="text-xs bg-slate-800 px-3 py-1 rounded-full text-slate-300 capitalize">
-            {plan ?? "free"}
+          {/* Free vs Premium badge */}
+          <span className="px-3 py-1 rounded-full bg-slate-800 text-xs">
+            {plan === "premium" ? "Premium" : "Free plan"}
           </span>
 
-          {/* Credits badge */}
-          <span className="text-xs bg-slate-800 px-3 py-1 rounded-full text-slate-300">
-            Credits: {credits ?? 0}
-          </span>
+          {/* User avatar */}
+          <div className="flex items-center gap-2">
+            <span className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
+              {email?.charAt(0)?.toUpperCase()}
+            </span>
 
-          {/* Avatar */}
-          <button
-            onClick={() => setOpen((o) => !o)}
-            className="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center text-white font-semibold hover:bg-slate-600 transition"
-          >
-            {firstLetter}
-          </button>
+            <Link
+              href="/settings"
+              className="text-xs text-slate-400 hover:text-slate-200"
+            >
+              Settings
+            </Link>
 
-          {/* Dropdown */}
-          {open && (
-            <div className="absolute right-6 mt-16 w-48 rounded-xl bg-slate-900 border border-slate-800 shadow-lg p-2">
-              <Link
-                href="/dashboard"
-                className="block px-4 py-2 text-sm text-slate-200 hover:bg-slate-800 rounded-lg"
-              >
-                Dashboard
-              </Link>
-
-              <Link
-                href="/insights"
-                className="block px-4 py-2 text-sm text-slate-200 hover:bg-slate-800 rounded-lg"
-              >
-                Insights
-              </Link>
-
-              <Link
-                href="/settings"
-                className="block px-4 py-2 text-sm text-slate-200 hover:bg-slate-800 rounded-lg"
-              >
-                Settings
-              </Link>
-
-              <Link
-                href="/logout"
-                className="block mt-1 px-4 py-2 text-sm text-slate-200 hover:bg-slate-800 rounded-lg"
+            <form action="/auth/logout" method="post">
+              <button
+                type="submit"
+                className="text-xs text-slate-400 hover:text-red-300"
               >
                 Log out
-              </Link>
-            </div>
-          )}
-
+              </button>
+            </form>
+          </div>
         </div>
-      </div>
+      </nav>
     </header>
   );
 }
