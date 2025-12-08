@@ -6,68 +6,148 @@ import { useUserPlan } from "@/app/components/useUserPlan";
 
 export default function BillingPage() {
   const { session } = useSupabase();
-  const { loading, error, planType, credits } = useUserPlan();
+  const { loading, error, planType, credits, renewalDate } = useUserPlan();
 
   const userEmail = session?.user?.email ?? "Unknown user";
 
+  const readablePlan =
+    planType === "PREMIUM"
+      ? "Premium"
+      : planType === "TRIAL"
+      ? "Trial"
+      : "Free";
+
+  const planDescription =
+    planType === "PREMIUM"
+      ? "You have full access to Havenly Premium features and deeper AI insights."
+      : planType === "TRIAL"
+      ? "You’re in a trial period with access to most Premium features."
+      : "You are on the free plan with core journaling and light reflections.";
+
   return (
-    <div className="min-h-screen w-full px-6 py-10 text-white">
-      <h1 className="text-3xl font-bold mb-6">Billing & Subscription</h1>
+    <div className="min-h-screen w-full bg-slate-950 px-6 py-10 text-white">
+      <h1 className="mb-6 text-3xl font-bold">Billing & Subscription</h1>
 
-      <p className="text-white/70 mb-4 max-w-xl">
-        Manage your Havenly subscription and track your available credits.
-      </p>
+      <div className="grid gap-6 lg:grid-cols-[1.4fr,1fr]">
+        {/* Current plan card */}
+        <section className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+          <h2 className="text-lg font-semibold">Your current plan</h2>
 
-      {/* User Email */}
-      <div className="mb-6 rounded-xl border border-white/10 bg-slate-900/50 p-4 backdrop-blur">
-        <p className="text-sm text-white/60">Signed in as</p>
-        <p className="text-lg font-semibold">{userEmail}</p>
-      </div>
-
-      {/* Plan status */}
-      <div className="mb-6 rounded-xl border border-white/10 bg-slate-900/50 p-6 backdrop-blur">
-        <h2 className="text-xl font-semibold mb-2">Current Plan</h2>
-
-        {loading ? (
-          <p className="text-white/50">Loading plan information...</p>
-        ) : error ? (
-          <p className="text-red-400 text-sm">{error}</p>
-        ) : (
-          <>
-            <p className="text-lg font-medium">
-              {planType === "PREMIUM"
-                ? "Premium"
-                : planType === "TRIAL"
-                ? "Trial"
-                : "Free"}
+          {loading ? (
+            <div className="h-20 animate-pulse rounded-xl bg-slate-800/60" />
+          ) : error ? (
+            <p className="text-sm text-red-400">
+              {error ||
+                "We couldn’t load your plan details. You’re currently treated as on the free plan."}
             </p>
+          ) : (
+            <>
+              <p className="text-sm text-slate-300">
+                <span className="font-medium">{readablePlan}</span> ·{" "}
+                {planDescription}
+              </p>
 
-            <p className="text-sm text-white/60 mt-1">
-              Credits: {credits ?? 0}
-            </p>
+              <dl className="mt-3 grid grid-cols-1 gap-3 text-sm text-slate-200 sm:grid-cols-3">
+                <div>
+                  <dt className="text-xs uppercase tracking-wide text-slate-400">
+                    Account
+                  </dt>
+                  <dd className="mt-1 break-all text-slate-100">
+                    {userEmail}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase tracking-wide text-slate-400">
+                    Credits
+                  </dt>
+                  <dd className="mt-1">
+                    {typeof credits === "number" ? credits : 0}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs uppercase tracking-wide text-slate-400">
+                    Renewal
+                  </dt>
+                  <dd className="mt-1">
+                    {renewalDate ||
+                      (planType === "FREE"
+                        ? "No renewal for free plan"
+                        : "Not set")}
+                  </dd>
+                </div>
+              </dl>
+            </>
+          )}
 
-            {planType !== "PREMIUM" && (
-              <Link
-                href="/upgrade"
-                className="inline-block mt-4 rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
-              >
-                Upgrade to Premium
-              </Link>
+          <div className="mt-5 flex flex-wrap gap-3">
+            {planType === "PREMIUM" || planType === "TRIAL" ? (
+              <>
+                <Link
+                  href="/premium"
+                  className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
+                >
+                  Open Premium hub
+                </Link>
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center justify-center rounded-full border border-slate-700 px-5 py-2.5 text-sm text-slate-200 hover:bg-slate-800"
+                >
+                  Back to dashboard
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/upgrade"
+                  className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
+                >
+                  Upgrade to Premium
+                </Link>
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center justify-center rounded-full border border-slate-700 px-5 py-2.5 text-sm text-slate-200 hover:bg-slate-800"
+                >
+                  Stay on Free plan
+                </Link>
+              </>
             )}
-          </>
-        )}
+          </div>
+        </section>
+
+        {/* How billing works / monetization philosophy */}
+        <section className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/70 p-6 text-sm text-slate-200">
+          <h2 className="text-lg font-semibold text-white">How billing works</h2>
+          <p className="text-slate-300">
+            Havenly uses a simple subscription model: a Free plan for quiet
+            journaling, and a Premium plan at around{" "}
+            <span className="font-semibold">$25/month</span>. If roughly 200
+            people find Premium helpful, that sustains about{" "}
+            <span className="font-semibold">$5,000 MRR</span> to keep the
+            product focused and independent.
+          </p>
+          <p className="text-slate-300">
+            As billing infrastructure evolves, this page will show your active
+            subscription, renewal dates, and invoices. For now, you can safely
+            upgrade or downgrade your in-app plan while payments stay in a
+            careful, early-access phase.
+          </p>
+          <p className="text-slate-400">
+            You can cancel Premium at any time. Your journal entries always
+            remain yours, even if you return to the Free plan.
+          </p>
+        </section>
       </div>
 
-      {/* Transaction history link */}
-      <div className="rounded-xl border border-white/10 bg-slate-900/50 p-6 backdrop-blur">
-        <h2 className="text-xl font-semibold mb-2">Credit Transactions</h2>
-        <p className="text-white/70 mb-4 max-w-lg text-sm">
+      {/* Usage / history */}
+      <div className="mt-10 rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
+        <h2 className="text-lg font-semibold text-white">Usage & history</h2>
+        <p className="mb-4 max-w-lg text-sm text-white/70">
           Review how your credits have been used across tools and reflections.
         </p>
 
         <Link
           href="/settings/transactions"
-          className="text-emerald-400 hover:text-emerald-300 text-sm font-medium"
+          className="text-sm font-medium text-emerald-400 hover:text-emerald-300"
         >
           View transaction history →
         </Link>
