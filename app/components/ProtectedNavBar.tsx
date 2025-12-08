@@ -6,9 +6,23 @@ import { useUserPlan } from "./useUserPlan";
 
 export default function ProtectedNavBar({ user }: { user: any }) {
   const { session } = useSupabase();
-  const plan = useUserPlan(); // Free / Premium
+  const planState = useUserPlan();
+
+  // Normalize plan to a safe string
+  const rawPlan =
+    typeof planState === "string"
+      ? planState
+      : planState?.plan || "FREE";
+
+  const normalizedPlan = rawPlan.toUpperCase();
 
   const email = session?.user?.email || user?.email || "";
+
+  function getPlanLabel() {
+    if (normalizedPlan === "PREMIUM") return "Premium";
+    if (normalizedPlan === "TRIAL") return "Trial";
+    return "Free plan";
+  }
 
   return (
     <header className="w-full border-b border-slate-800 bg-slate-950/50 backdrop-blur-md fixed top-0 left-0 z-50">
@@ -30,12 +44,12 @@ export default function ProtectedNavBar({ user }: { user: any }) {
         {/* Right side */}
         <div className="flex items-center gap-4">
 
-          {/* Free vs Premium badge */}
+          {/* Free / Premium badge */}
           <span className="px-3 py-1 rounded-full bg-slate-800 text-xs">
-            {plan === "premium" ? "Premium" : "Free plan"}
+            {getPlanLabel()}
           </span>
 
-          {/* User avatar */}
+          {/* User avatar + actions */}
           <div className="flex items-center gap-2">
             <span className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center">
               {email?.charAt(0)?.toUpperCase()}
