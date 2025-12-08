@@ -13,23 +13,27 @@ interface Props {
   loading?: boolean;
 }
 
+/**
+ * Generic pricing card used on upgrade/marketing pages.
+ * No business logic; just visual + button callback.
+ */
 export default function PricingCard({
   title,
   price,
   items,
   buttonLabel,
-  disabled = false,
-  highlight = false,
+  disabled,
+  highlight,
   onClick,
-  loading = false,
+  loading,
 }: Props) {
-  const effectiveDisabled = disabled || loading;
+  const effectiveDisabled = !!disabled || !!loading;
 
   return (
     <article
-      className={`flex h-full flex-col rounded-2xl border bg-slate-900/70 p-6 text-left shadow-sm shadow-black/40 ${
+      className={`flex h-full flex-col rounded-2xl border bg-slate-900/60 p-6 shadow-sm ring-1 ring-white/5 ${
         highlight
-          ? "border-emerald-400/80 ring-2 ring-emerald-500/50"
+          ? "border-emerald-400/80 shadow-lg shadow-emerald-500/20"
           : "border-slate-700/70"
       }`}
     >
