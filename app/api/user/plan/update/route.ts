@@ -6,9 +6,16 @@ import { createServerSupabase } from "@/lib/supabase/server";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const newPlan = body.plan || "free";
+    const newPlanRaw = (body.plan || "free") as string;
 
-    const supabase = await createServerSupabase(); // IMPORTANT: await
+    // Normalize & constrain the plan
+    const allowedPlans = ["FREE", "PREMIUM", "TRIAL"];
+    let newPlan = newPlanRaw.toUpperCase();
+    if (!allowedPlans.includes(newPlan)) {
+      newPlan = "FREE";
+    }
+
+    const supabase = createServerSupabase();
 
     // Get current user
     const {
@@ -23,18 +30,22 @@ export async function POST(req: Request) {
       );
     }
 
-    // Update user plan
-    const { error: updateError } = await supabase
+    // Upsert user plan so new users are handled as well
+    const { error: upsertError } = await supabase
       .from("user_plans")
-      .update({
-        plan_type: newPlan.toUpperCase(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("user_id", user.id);
+      .upsert(
+        {
+          user_id: user.id,
+          plan_type: newPlan,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" }
+      );
 
-    if (updateError) {
+    if (upsertError) {
+      console.error("Plan upsert error:", upsertError.message);
       return NextResponse.json(
-        { error: updateError.message },
+        { error: upsertError.message },
         { status: 500 }
       );
     }
