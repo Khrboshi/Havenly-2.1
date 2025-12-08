@@ -14,25 +14,25 @@ export const metadata: Metadata = {
   description:
     "A calm, private journaling companion with gentle AI reflections.",
   manifest: "/manifest.json",
-  themeColor: "#4CA7A3",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className="h-full">
-      <body className="min-h-screen flex flex-col bg-slate-950 text-white antialiased">
+    <html lang="en" className="h-full bg-slate-950">
+      <body className="min-h-screen bg-slate-950 text-slate-100 antialiased">
         <SupabaseSessionProvider>
+          {/* Global navigation with live auth + plan state */}
           <Navbar />
 
-          {/* Page content wrapper */}
-          <main className="flex-1 w-full">
-            <div className="mx-auto w-full max-w-7xl px-4 pt-10">
+          {/* Main content wrapper */}
+          <main className="min-h-[calc(100vh-80px)]">
+            <div className="mx-auto w-full max-w-7xl px-4 pt-10 pb-10">
               {children}
             </div>
           </main>
 
+          {/* Global footer and utilities */}
           <Footer />
-
           <ToastClient />
           <PwaInstaller />
         </SupabaseSessionProvider>
