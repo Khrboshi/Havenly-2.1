@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSupabaseSession } from "./SupabaseSessionProvider";
-import { useUserPlan } from "@/hooks/useUserPlan";
+import { useUserPlan } from "../hooks/useUserPlan";  // FIXED PATH
 import { useEffect, useState } from "react";
 
 export default function Navbar() {
