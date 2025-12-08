@@ -13,10 +13,10 @@ const SupabaseContext = createContext<SupabaseContextType | undefined>(
 );
 
 export function SupabaseSessionProvider({
-  initialSession,
+  initialSession = null,
   children,
 }: {
-  initialSession: any;
+  initialSession?: any;
   children: React.ReactNode;
 }) {
   const [supabase] = useState(() =>
@@ -28,14 +28,14 @@ export function SupabaseSessionProvider({
 
   const [session, setSession] = useState(initialSession);
 
-  // CRITICAL: Heartbeat for session persistence
+  // HEARTBEAT + COOKIE REFRESH
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+    } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
       setSession(currentSession);
 
-      // IMPORTANT: Re-sync cookies with server
+      // Refresh cookies → keep server + middleware in sync
       await fetch("/api/auth/refresh", {
         method: "POST",
         credentials: "include",
