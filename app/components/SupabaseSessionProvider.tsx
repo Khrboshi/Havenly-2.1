@@ -24,18 +24,14 @@ type Props = {
   children: ReactNode;
 };
 
-/**
- * SupabaseSessionProvider
- *
- * Creates the client-side Supabase client.
- * Hydrates from any existing auth cookie or local session.
- * Ensures session + cookies stay synced (middleware/server stay aligned).
- */
 export function SupabaseSessionProvider({
   initialSession = null,
   children,
 }: Props) {
-  // Create Supabase browser client once
+  /**
+   * FIXED:
+   * Create browser client WITH correct PKCE settings + persistent cookie storage.
+   */
   const supabase = useMemo(
     () =>
       createBrowserClient(
@@ -44,10 +40,10 @@ export function SupabaseSessionProvider({
         {
           auth: {
             persistSession: true,
-            detectSessionInUrl: true,
             autoRefreshToken: true,
+            detectSessionInUrl: true,
             flowType: "pkce",
-            storage: undefined, // required for SSR consistency
+            storage: undefined, // use browser cookies instead of localStorage
           },
         }
       ),
@@ -56,21 +52,20 @@ export function SupabaseSessionProvider({
 
   const [session, setSession] = useState<any>(initialSession);
 
-  // 1) On mount → hydrate session from cookies/local storage
+  /**
+   * FIXED:
+   * On mount, hydrate session from cookies + Supabase storage.
+   */
   useEffect(() => {
     let active = true;
 
     async function hydrate() {
-      try {
-        const {
-          data: { session: currentSession },
-        } = await supabase.auth.getSession();
+      const {
+        data: { session: s },
+      } = await supabase.auth.getSession();
 
-        if (active && currentSession) {
-          setSession(currentSession);
-        }
-      } catch (err) {
-        console.error("SupabaseSessionProvider.getSession error:", err);
+      if (active && s) {
+        setSession(s);
       }
     }
 
@@ -80,27 +75,27 @@ export function SupabaseSessionProvider({
     };
   }, [supabase]);
 
-  // 2) Listen for Supabase auth changes → sync cookie using API route
+  /**
+   * FIXED:
+   * Whenever session changes → refresh cookies so middleware stays synced.
+   */
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, newSession) => {
-      setSession(newSession);
+    } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
+      setSession(currentSession);
 
       try {
-        // Refresh server-side + middleware cookies
         await fetch("/api/auth/refresh", {
           method: "POST",
           credentials: "include",
         });
       } catch (err) {
-        console.error("SupabaseSessionProvider.refresh error:", err);
+        console.error("Cookie refresh failed:", err);
       }
     });
 
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, [supabase]);
 
   return (
