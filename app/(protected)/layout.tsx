@@ -1,8 +1,14 @@
+export const dynamic = "force-dynamic";
+
 import { createServerSupabase } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import ProtectedNavBar from "@/app/components/ProtectedNavBar";
 
-export default async function ProtectedLayout({ children }: { children: React.ReactNode }) {
+export default async function ProtectedLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const supabase = createServerSupabase();
 
   const {
@@ -11,7 +17,8 @@ export default async function ProtectedLayout({ children }: { children: React.Re
 
   // If no session found → redirect server-side (no flicker)
   if (!session?.user) {
-    redirect("/magic-login?redirectedFrom=/dashboard");
+    // Single entry point for login; after login we send users to /dashboard
+    redirect("/magic-login");
   }
 
   return (
