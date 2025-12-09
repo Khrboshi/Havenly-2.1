@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSupabase } from "./SupabaseSessionProvider";
-import { useUserPlan } from "./useUserPlan";
+import { useUserPlan } from "@/app/components/useUserPlan";
 import { useEffect, useState } from "react";
 
 export default function Navbar() {
@@ -44,7 +44,6 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-800/60 bg-slate-950/80 backdrop-blur">
       <nav className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-        {/* Left: Brand */}
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/10">
@@ -57,7 +56,6 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Main nav */}
           <div className="hidden items-center gap-3 text-xs font-medium text-slate-400 md:flex">
             <Link
               href="/dashboard"
@@ -117,7 +115,6 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Right: Auth / plan area */}
         {!isLoggedIn ? (
           <div className="flex items-center gap-4">
             <Link
@@ -136,12 +133,10 @@ export default function Navbar() {
           </div>
         ) : (
           <div className="flex items-center gap-3">
-            {/* Plan badge */}
             <span className="px-3 py-1 rounded-full bg-slate-800 text-xs">
               {planLabel}
             </span>
 
-            {/* Avatar */}
             <Link
               href="/settings"
               className="h-8 w-8 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center text-xs font-medium"
@@ -149,7 +144,6 @@ export default function Navbar() {
               {session.user.email?.[0]?.toUpperCase() ?? "U"}
             </Link>
 
-            {/* Logout */}
             <Link
               href="/logout"
               className="text-sm px-3 py-1 rounded-md hover:bg-slate-800/60"
