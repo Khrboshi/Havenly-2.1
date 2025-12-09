@@ -15,13 +15,20 @@ export default function JournalEntryPage({ params }) {
   const [loading, setLoading] = useState(false);
   const [noCredits, setNoCredits] = useState(false);
 
+  // FIX: Add local type for Supabase row
+  type JournalEntry = {
+    id: string;
+    content: string | null;
+    reflection: string | null;
+  };
+
   useEffect(() => {
     async function loadJournal() {
       const { data } = await supabase
         .from("journal_entries")
         .select("*")
         .eq("id", journalId)
-        .single();
+        .single<JournalEntry>(); // FIX: Add generic type
 
       if (data) {
         setEntryText(data.content || "");
@@ -36,6 +43,7 @@ export default function JournalEntryPage({ params }) {
     setLoading(true);
     setNoCredits(false);
 
+    // Deduct credit
     const creditRes = await fetch("/api/user/credits/use", {
       method: "POST",
     }).then((r) => r.json());
@@ -48,6 +56,7 @@ export default function JournalEntryPage({ params }) {
       return;
     }
 
+    // Generate reflection
     const reflectRes = await fetch("/api/reflect", {
       method: "POST",
       body: JSON.stringify({ journalEntry: entryText }),
@@ -90,6 +99,7 @@ export default function JournalEntryPage({ params }) {
           <p className="text-yellow-800 font-medium">
             You’ve used all available AI reflections.
           </p>
+
           <button
             onClick={() => router.push("/upgrade")}
             className="mt-3 bg-brand-primary text-white px-4 py-2 rounded-lg hover:bg-brand-primary-dark"
