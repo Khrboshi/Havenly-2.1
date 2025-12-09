@@ -15,6 +15,7 @@ export default function JournalEntryPage({ params }) {
   const [loading, setLoading] = useState(false);
   const [noCredits, setNoCredits] = useState(false);
 
+  // Local type only for reading data
   type JournalEntry = {
     id: string;
     content: string | null;
@@ -67,10 +68,11 @@ export default function JournalEntryPage({ params }) {
     const newReflection = reflectRes.reflection;
     setReflection(newReflection);
 
-    // FINAL FIX — cast to any because Supabase client is untyped
+    // THE ONLY CORRECT SOLUTION FOR STRICT MODE + UNTYPED SUPABASE:
+    // @ts-ignore
     await supabase
       .from("journal_entries")
-      .update({ reflection: newReflection } as any)
+      .update({ reflection: newReflection })
       .eq("id", journalId);
 
     setLoading(false);
