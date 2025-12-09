@@ -6,10 +6,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ToastClient from "./components/ToastClient";
 import { SupabaseSessionProvider } from "./components/SupabaseSessionProvider";
-import AddToHomeScreenPrompt from "./components/AddToHomeScreenPrompt";
 import ServiceWorkerRegister from "./components/ServiceWorkerRegister";
-import PwaPrompt from "./components/PwaPrompt";
-import PwaInstallHint from "./components/PwaInstallHint";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -54,10 +51,15 @@ export default async function RootLayout({
 
           <Footer />
           <ToastClient />
-          <AddToHomeScreenPrompt />
+
+          {/* PWA Registration ONLY — safe to keep */}
           <ServiceWorkerRegister />
-          <PwaPrompt />
-          <PwaInstallHint />
+
+          {/* Removed intrusive PWA install banners:
+              - AddToHomeScreenPrompt
+              - PwaPrompt
+              - PwaInstallHint
+              These were causing UI overlap and hurting conversions. */}
         </SupabaseSessionProvider>
       </body>
     </html>
