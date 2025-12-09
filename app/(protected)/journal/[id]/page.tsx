@@ -1,136 +1,125 @@
 "use client";
 
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { useSupabase } from "@/app/components/SupabaseSessionProvider";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSupabase } from "@/components/providers/SupabaseSessionProvider";
 
-type JournalEntry = {
-  id: string;
-  created_at: string;
-  title: string | null;
-  content: string | null;
-  ai_response: string | null;
-};
-
-export default function JournalEntryPage() {
-  const params = useParams<{ id: string }>();
+export default function JournalEntryPage({ params }) {
   const router = useRouter();
-  const { supabase, session } = useSupabase();
+  const { supabase } = useSupabase();
 
-  const [entry, setEntry] = useState<JournalEntry | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const journalId = params.id;
 
+  const [entryText, setEntryText] = useState("");
+  const [reflection, setReflection] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [noCredits, setNoCredits] = useState(false);
+
+  // Load journal entry from Supabase
   useEffect(() => {
-    if (!params?.id || !session?.user) return;
+    async function loadJournal() {
+      const { data, error } = await supabase
+        .from("journal_entries")
+        .select("*")
+        .eq("id", journalId)
+        .single();
 
-    async function loadEntry() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const { data, error: fetchError } = await supabase
-          .from("journal_entries")
-          .select("id, created_at, title, content, ai_response")
-          .eq("id", params.id)
-          .eq("user_id", session.user.id)
-          .single();
-
-        if (fetchError || !data) {
-          console.error(fetchError);
-          throw new Error("Could not find this reflection.");
-        }
-
-        setEntry(data);
-      } catch (err: any) {
-        setError(err.message ?? "Error loading reflection.");
-      } finally {
-        setLoading(false);
+      if (data) {
+        setEntryText(data.content || "");
+        if (data.reflection) setReflection(data.reflection);
       }
     }
 
-    loadEntry();
-  }, [params?.id, supabase, session]);
+    loadJournal();
+  }, [journalId, supabase]);
 
-  if (loading) {
-    return (
-      <div className="mx-auto max-w-3xl px-6 pt-24 pb-24 text-slate-200">
-        <p className="text-sm text-slate-400">Loading reflection…</p>
-      </div>
-    );
-  }
+  async function generateReflection() {
+    setLoading(true);
+    setNoCredits(false);
 
-  if (error || !entry) {
-    return (
-      <div className="mx-auto max-w-3xl px-6 pt-24 pb-24 text-slate-200 space-y-4">
-        <p className="text-sm text-rose-400">{error ?? "Reflection not found."}</p>
-        <button
-          onClick={() => router.push("/journal")}
-          className="inline-flex rounded-full bg-slate-800 px-5 py-2 text-sm hover:bg-slate-700"
-        >
-          Back to journal
-        </button>
-      </div>
-    );
+    // 1. Try to deduct a credit BEFORE generating
+    const creditRes = await fetch("/api/user/credits/use", {
+      method: "POST",
+    }).then((r) => r.json());
+
+    if (!creditRes.success) {
+      setLoading(false);
+
+      if (creditRes.error === "INSUFFICIENT_CREDITS") {
+        setNoCredits(true);
+      } else {
+        alert("Error using credits.");
+      }
+      return;
+    }
+
+    // 2. Call the reflection API
+    const reflectRes = await fetch("/api/reflect", {
+      method: "POST",
+      body: JSON.stringify({ journalEntry: entryText }),
+    }).then((r) => r.json());
+
+    if (!reflectRes.success) {
+      alert("Reflection failed.");
+      setLoading(false);
+      return;
+    }
+
+    const newReflection = reflectRes.reflection;
+    setReflection(newReflection);
+
+    // 3. Save reflection in DB
+    await supabase
+      .from("journal_entries")
+      .update({ reflection: newReflection })
+      .eq("id", journalId);
+
+    setLoading(false);
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-6 pt-24 pb-24 text-slate-200">
-      <p className="text-xs uppercase tracking-[0.2em] text-emerald-400 mb-2">
-        Reflection from
-      </p>
-      <h1 className="text-2xl font-semibold text-slate-50 mb-2">
-        {new Date(entry.created_at).toLocaleString()}
-      </h1>
+    <div className="max-w-3xl mx-auto p-6 space-y-6">
+      <h1 className="text-3xl font-bold text-brand-text">Your Journal Entry</h1>
 
-      {entry.title && (
-        <p className="text-lg font-medium text-slate-100 mb-4">
-          {entry.title}
-        </p>
-      )}
-
-      <div className="rounded-xl bg-slate-900/60 border border-slate-800 p-6 mb-8">
-        <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-100">
-          {entry.content}
-        </p>
+      <div className="p-4 bg-white rounded-xl shadow-sm border">
+        <p className="whitespace-pre-wrap text-gray-800">{entryText}</p>
       </div>
 
-      {entry.ai_response && (
-        <div className="rounded-xl bg-emerald-950/40 border border-emerald-700/40 p-6 mb-8">
-          <p className="text-xs uppercase tracking-[0.2em] text-emerald-300 mb-2">
-            Gentle AI reflection
+      <button
+        onClick={generateReflection}
+        disabled={loading}
+        className="bg-brand-primary text-white px-5 py-3 rounded-lg hover:bg-brand-primary-dark transition"
+      >
+        {loading ? "Generating..." : "Generate AI Reflection"}
+      </button>
+
+      {noCredits && (
+        <div className="border border-yellow-400 bg-yellow-50 p-4 rounded-lg">
+          <p className="text-yellow-800 font-medium">
+            You’ve used all available AI reflections for your current plan.
           </p>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-emerald-50">
-            {entry.ai_response}
+          <p className="text-yellow-700 mt-1">
+            Upgrade to Premium to enjoy deeper insights, more reflections, and
+            unlimited access to all tools.
           </p>
+
+          <button
+            onClick={() => router.push("/upgrade")}
+            className="mt-3 bg-brand-primary text-white px-4 py-2 rounded-lg hover:bg-brand-primary-dark"
+          >
+            Explore Premium
+          </button>
         </div>
       )}
 
-      <div className="flex flex-wrap gap-3">
-        <Link
-          href="/journal"
-          className="rounded-full bg-slate-800 px-5 py-2 text-sm hover:bg-slate-700"
-        >
-          Back to journal history
-        </Link>
-        <Link
-          href="/journal/new"
-          className="rounded-full bg-emerald-400 px-5 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-300"
-        >
-          Write a new reflection
-        </Link>
-        <Link
-          href="/dashboard"
-          className="rounded-full bg-slate-800 px-5 py-2 text-sm hover:bg-slate-700"
-        >
-          Return to dashboard
-        </Link>
-      </div>
-
-      <p className="mt-6 text-xs text-slate-500">
-        Your reflections are stored privately in your Havenly account.
-      </p>
+      {reflection && (
+        <div className="p-4 bg-white rounded-xl shadow-sm border">
+          <h2 className="font-semibold text-xl mb-2 text-brand-text">
+            AI Reflection
+          </h2>
+          <p className="whitespace-pre-wrap text-gray-800">{reflection}</p>
+        </div>
+      )}
     </div>
   );
 }
