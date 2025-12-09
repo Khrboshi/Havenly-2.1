@@ -29,8 +29,8 @@ export function SupabaseSessionProvider({
   children,
 }: Props) {
   /**
-   * FIXED:
-   * Create browser client WITH correct PKCE settings + persistent cookie storage.
+   * IMPORTANT:
+   * Browser Supabase client with PKCE, cookie-based auth, and no localStorage.
    */
   const supabase = useMemo(
     () =>
@@ -43,7 +43,7 @@ export function SupabaseSessionProvider({
             autoRefreshToken: true,
             detectSessionInUrl: true,
             flowType: "pkce",
-            storage: undefined, // use browser cookies instead of localStorage
+            storage: undefined, // ensures cookie-based session handling
           },
         }
       ),
@@ -53,8 +53,8 @@ export function SupabaseSessionProvider({
   const [session, setSession] = useState<any>(initialSession);
 
   /**
-   * FIXED:
-   * On mount, hydrate session from cookies + Supabase storage.
+   * HYDRATE on first mount.
+   * This ensures the browser session is recovered after refresh or navigation.
    */
   useEffect(() => {
     let active = true;
@@ -64,8 +64,8 @@ export function SupabaseSessionProvider({
         data: { session: s },
       } = await supabase.auth.getSession();
 
-      if (active && s) {
-        setSession(s);
+      if (active) {
+        setSession(s ?? null);
       }
     }
 
@@ -77,14 +77,27 @@ export function SupabaseSessionProvider({
 
   /**
    * FIXED:
-   * Whenever session changes → refresh cookies so middleware stays synced.
+   * onAuthStateChange now handles logout correctly.
+   * Previously, logout triggered a refresh call → recreated a session → infinite loop.
+   *
+   * Now:
+   * - SIGNED_OUT clears the session AND skips refresh.
+   * - Other auth events refresh `/api/auth/refresh` to sync cookies.
    */
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
+    } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      if (event === "SIGNED_OUT") {
+        // Fully reset state — this is what fixes logout
+        setSession(null);
+        return; // critical: do NOT refresh cookies on logout
+      }
+
+      // Update session for SIGNED_IN / TOKEN_REFRESHED / PASSWORD_RECOVERY
       setSession(currentSession);
 
+      // Sync session cookies for middleware, server, RLS, etc.
       try {
         await fetch("/api/auth/refresh", {
           method: "POST",
