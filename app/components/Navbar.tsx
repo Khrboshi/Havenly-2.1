@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useSupabase } from "@/components/providers/SupabaseSessionProvider";
+import { useSupabase } from "@/components/SupabaseSessionProvider";
 
 export default function Navbar() {
   const { supabase } = useSupabase();
@@ -35,7 +35,6 @@ export default function Navbar() {
 
       {!loading && (
         <div className="flex items-center gap-6">
-          {/* Plan + Credits Display */}
           <div className="text-sm text-gray-700">
             <span className="font-semibold">{planType}</span>
 
@@ -48,7 +47,6 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Upgrade CTA for Free Users */}
           {planType === "FREE" && (
             <Link
               href="/upgrade"
@@ -58,14 +56,12 @@ export default function Navbar() {
             </Link>
           )}
 
-          {/* Navigation Links */}
           <div className="flex items-center gap-4 text-gray-700">
             <Link href="/journal">Journal</Link>
             <Link href="/tools">Tools</Link>
             <Link href="/insights">Insights</Link>
           </div>
 
-          {/* Logout */}
           <Link
             href="/logout"
             className="text-sm text-red-600 hover:text-red-700 font-medium"
