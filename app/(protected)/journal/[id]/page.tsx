@@ -15,7 +15,7 @@ export default function JournalEntryPage({ params }) {
   const [loading, setLoading] = useState(false);
   const [noCredits, setNoCredits] = useState(false);
 
-  // FIX: typed model for row
+  // Correct row type for this table
   type JournalEntry = {
     id: string;
     content: string | null;
@@ -43,7 +43,7 @@ export default function JournalEntryPage({ params }) {
     setLoading(true);
     setNoCredits(false);
 
-    // Deduct credit
+    // Step 1: Deduct a credit
     const creditRes = await fetch("/api/user/credits/use", {
       method: "POST",
     }).then((r) => r.json());
@@ -56,7 +56,7 @@ export default function JournalEntryPage({ params }) {
       return;
     }
 
-    // Generate reflection
+    // Step 2: Generate reflection
     const reflectRes = await fetch("/api/reflect", {
       method: "POST",
       body: JSON.stringify({ journalEntry: entryText }),
@@ -70,10 +70,10 @@ export default function JournalEntryPage({ params }) {
     const newReflection = reflectRes.reflection;
     setReflection(newReflection);
 
-    // FIX: apply type on update
+    // Step 3: Save reflection in DB
     await supabase
       .from("journal_entries")
-      .update<Partial<JournalEntry>>({ reflection: newReflection }) 
+      .update<JournalEntry>({ reflection: newReflection }) // FIXED: must match full row type
       .eq("id", journalId);
 
     setLoading(false);
