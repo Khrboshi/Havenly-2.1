@@ -1,27 +1,32 @@
-import "../globals.css";
-import Navbar from "@/components/Navbar";
-import { SupabaseSessionProvider } from "@/components/SupabaseSessionProvider";
+import { ReactNode } from "react";
+import { redirect } from "next/navigation";
+import { createServerSupabase } from "@/lib/supabase/server";
+import Navbar from "@/app/components/Navbar";
 
-export const metadata = {
-  title: "Havenly – Dashboard",
-};
-
-export default function ProtectedLayout({
+export default async function ProtectedLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
-  return (
-    <div className="min-h-screen flex flex-col bg-[#020617]">
-      {/* Global Auth Provider */}
-      <SupabaseSessionProvider>
-        
-        {/* Correct Navbar (only once) */}
-        <Navbar />
+  const supabase = createServerSupabase();
 
-        {/* Page content */}
-        <main className="flex-1 pt-4">{children}</main>
-      </SupabaseSessionProvider>
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    redirect("/magic-login");
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      {/* Persistent navbar */}
+      <Navbar />
+
+      {/* Main content wrapper */}
+      <main className="mx-auto w-full max-w-7xl px-4 py-10">
+        {children}
+      </main>
     </div>
   );
 }
