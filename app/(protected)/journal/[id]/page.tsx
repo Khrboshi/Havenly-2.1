@@ -4,36 +4,38 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSupabase } from "@/components/SupabaseSessionProvider";
 
+type JournalEntry = {
+  id: string;
+  title: string | null;
+  content: string | null;
+  reflection: string | null;
+  created_at: string;
+  user_id: string;
+};
+
 export default function JournalEntryPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { supabase, session } = useSupabase();
 
   const [loading, setLoading] = useState(true);
-  const [entry, setEntry] = useState<{
-    id: string;
-    title: string | null;
-    content: string | null;
-    reflection: string | null;
-    created_at: string;
-  } | null>(null);
-
+  const [entry, setEntry] = useState<JournalEntry | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // SAFETY REDIRECT
+  // Redirect if session missing
   useEffect(() => {
     if (session === null) {
       router.replace("/magic-login");
     }
   }, [session, router]);
 
-  // LOAD ENTRY
+  // Load the journal entry
   useEffect(() => {
     let active = true;
 
     async function load() {
       try {
         const { data, error } = await supabase
-          .from("journal_entries")
+          .from<JournalEntry>("journal_entries")
           .select("*")
           .eq("id", params.id)
           .eq("user_id", session?.user?.id ?? "")
@@ -54,13 +56,14 @@ export default function JournalEntryPage({ params }: { params: { id: string } })
           return;
         }
 
-        // At this point data is guaranteed to exist
+        // Safe assignment; data is fully typed
         setEntry({
           id: data.id,
           title: data.title ?? null,
           content: data.content ?? null,
           reflection: data.reflection ?? null,
           created_at: data.created_at,
+          user_id: data.user_id,
         });
 
         setLoading(false);
@@ -81,6 +84,7 @@ export default function JournalEntryPage({ params }: { params: { id: string } })
     };
   }, [params.id, session, supabase]);
 
+  // Loading UI
   if (loading) {
     return (
       <div className="px-4 py-10 text-slate-300">
@@ -89,6 +93,7 @@ export default function JournalEntryPage({ params }: { params: { id: string } })
     );
   }
 
+  // Error UI
   if (error) {
     return (
       <div className="px-4 py-10 text-red-300">
@@ -105,7 +110,6 @@ export default function JournalEntryPage({ params }: { params: { id: string } })
     );
   }
 
-  // FORMAT DATE
   const formatted = new Date(entry.created_at).toLocaleString("en-US", {
     dateStyle: "medium",
     timeStyle: "short",
