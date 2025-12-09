@@ -5,7 +5,7 @@ export default function Head() {
       <title>Havenly 2.1</title>
       <meta
         name="description"
-        content="Havenly 2.1 is a calm, private journaling space where you can write a few honest sentences and receive gentle AI reflections."
+        content="Havenly 2.1 is a calm, private journaling space...write a few honest sentences and receive gentle AI reflections."
       />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -15,7 +15,7 @@ export default function Head() {
       <link rel="icon" href="/icon.svg" />
 
       {/* iOS PWA support */}
-      <link rel="apple-touch-icon" href="/pwa/icon-192.png" />
+      <link rel="apple-touch-icon" href="/icon.svg" />
       <meta name="apple-mobile-web-app-capable" content="yes" />
       <meta
         name="apple-mobile-web-app-status-bar-style"
