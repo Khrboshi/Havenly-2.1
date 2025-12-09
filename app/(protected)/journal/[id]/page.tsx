@@ -4,24 +4,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSupabase } from "@/components/SupabaseSessionProvider";
 
-type JournalEntry = {
-  id: string;
-  user_id: string;
-  title: string | null;
-  content: string | null;
-  reflection: string | null;
-  created_at: string;
-};
-
 export default function JournalEntryPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { supabase, session } = useSupabase();
 
-  const [entry, setEntry] = useState<JournalEntry | null>(null);
+  const [entry, setEntry] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Redirect to login when session is missing
+  // If no session on client → redirect
   useEffect(() => {
     if (session === null) {
       router.replace("/magic-login");
@@ -34,7 +25,7 @@ export default function JournalEntryPage({ params }: { params: { id: string } })
     async function load() {
       try {
         const { data, error } = await supabase
-          .from<JournalEntry, JournalEntry>("journal_entries")
+          .from("journal_entries")                 // NO generics → no TS errors
           .select("*")
           .eq("id", params.id)
           .eq("user_id", session?.user?.id ?? "")
@@ -43,8 +34,8 @@ export default function JournalEntryPage({ params }: { params: { id: string } })
         if (!active) return;
 
         if (error) {
-          console.error("Supabase error:", error);
-          setError("Could not load this entry.");
+          console.error(error);
+          setError("Unable to load this entry.");
           setLoading(false);
           return;
         }
@@ -55,20 +46,12 @@ export default function JournalEntryPage({ params }: { params: { id: string } })
           return;
         }
 
-        setEntry({
-          id: data.id,
-          user_id: data.user_id,
-          title: data.title ?? null,
-          content: data.content ?? null,
-          reflection: data.reflection ?? null,
-          created_at: data.created_at,
-        });
-
+        setEntry(data);
         setLoading(false);
       } catch (err) {
-        console.error("Unexpected error:", err);
+        console.error(err);
         if (active) {
-          setError("Something went wrong.");
+          setError("Unexpected error loading the entry.");
           setLoading(false);
         }
       }
@@ -78,21 +61,13 @@ export default function JournalEntryPage({ params }: { params: { id: string } })
       load();
     }
 
-    return () => {
-      active = false;
-    };
-  }, [supabase, session, params.id]);
+    return () => { active = false; };
+  }, [supabase, params.id, session]);
 
-  // Loading State
   if (loading) {
-    return (
-      <div className="px-4 py-10 text-slate-300">
-        Loading your entry…
-      </div>
-    );
+    return <div className="px-4 py-10 text-slate-300">Loading your entry…</div>;
   }
 
-  // Error UI
   if (error) {
     return <div className="px-4 py-10 text-red-400">{error}</div>;
   }
