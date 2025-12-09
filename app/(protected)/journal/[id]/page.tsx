@@ -15,7 +15,6 @@ export default function JournalEntryPage({ params }) {
   const [loading, setLoading] = useState(false);
   const [noCredits, setNoCredits] = useState(false);
 
-  // Local type only for reading data
   type JournalEntry = {
     id: string;
     content: string | null;
@@ -68,12 +67,11 @@ export default function JournalEntryPage({ params }) {
     const newReflection = reflectRes.reflection;
     setReflection(newReflection);
 
-    // THE ONLY CORRECT SOLUTION FOR STRICT MODE + UNTYPED SUPABASE:
-    // @ts-ignore
-    await supabase
-      .from("journal_entries")
-      .update({ reflection: newReflection })
-      .eq("id", journalId);
+    // FIX — offload update to server API route
+    await fetch("/api/journal/update-reflection", {
+      method: "POST",
+      body: JSON.stringify({ journalId, reflection: newReflection }),
+    });
 
     setLoading(false);
   }
