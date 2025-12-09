@@ -1,119 +1,79 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useSupabase } from "@/components/SupabaseSessionProvider";
+import { useEffect, useState } from "react";
+import { useSupabase } from "@/app/components/SupabaseSessionProvider";
+import { useRouter, useParams } from "next/navigation";
 
-export default function JournalEntryPage({ params }) {
+export default function JournalEntryPage() {
+  const { supabase, session } = useSupabase();
   const router = useRouter();
-  const { supabase } = useSupabase();
+  const params = useParams();
 
-  const journalId = params.id;
+  const journalId = params.id as string;
 
-  const [entryText, setEntryText] = useState("");
-  const [reflection, setReflection] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [noCredits, setNoCredits] = useState(false);
-
-  type JournalEntry = {
-    id: string;
-    content: string | null;
-    reflection: string | null;
-  };
+  const [content, setContent] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    async function loadJournal() {
+    async function load() {
       const { data } = await supabase
         .from("journal_entries")
-        .select("*")
+        .select("content")
         .eq("id", journalId)
-        .single<JournalEntry>();
+        .maybeSingle();
 
-      if (data) {
-        setEntryText(data.content || "");
-        if (data.reflection) setReflection(data.reflection);
-      }
-    }
-
-    loadJournal();
-  }, [journalId, supabase]);
-
-  async function generateReflection() {
-    setLoading(true);
-    setNoCredits(false);
-
-    const creditRes = await fetch("/api/user/credits/use", {
-      method: "POST",
-    }).then((r) => r.json());
-
-    if (!creditRes.success) {
+      if (data?.content) setContent(data.content);
       setLoading(false);
-      if (creditRes.error === "INSUFFICIENT_CREDITS") {
-        setNoCredits(true);
-      }
-      return;
     }
 
-    const reflectRes = await fetch("/api/reflect", {
-      method: "POST",
-      body: JSON.stringify({ journalEntry: entryText }),
-    }).then((r) => r.json());
+    load();
+  }, [supabase, journalId]);
 
-    if (!reflectRes.success) {
-      setLoading(false);
-      return;
-    }
-
-    const newReflection = reflectRes.reflection;
-    setReflection(newReflection);
-
-    // FIX — offload update to server API route
+  async function save() {
+    setSaving(true);
     await fetch("/api/journal/update-reflection", {
       method: "POST",
-      body: JSON.stringify({ journalId, reflection: newReflection }),
+      body: JSON.stringify({
+        id: journalId,
+        content,
+      }),
     });
+    setSaving(false);
+  }
 
-    setLoading(false);
+  if (loading) {
+    return (
+      <div className="text-slate-400 text-sm border border-slate-800 rounded-xl bg-slate-900/60 p-6">
+        Loading…
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold text-brand-text">Your Journal Entry</h1>
-
-      <div className="p-4 bg-white rounded-xl shadow-sm border">
-        <p className="whitespace-pre-wrap text-gray-800">{entryText}</p>
-      </div>
-
+    <div className="space-y-6">
       <button
-        onClick={generateReflection}
-        disabled={loading}
-        className="bg-brand-primary text-white px-5 py-3 rounded-lg hover:bg-brand-primary-dark transition"
+        onClick={() => router.back()}
+        className="text-sm text-slate-400 hover:text-slate-200"
       >
-        {loading ? "Generating..." : "Generate AI Reflection"}
+        ← Back
       </button>
 
-      {noCredits && (
-        <div className="border border-yellow-400 bg-yellow-50 p-4 rounded-lg">
-          <p className="text-yellow-800 font-medium">
-            You’ve used all available AI reflections.
-          </p>
-          <button
-            onClick={() => router.push("/upgrade")}
-            className="mt-3 bg-brand-primary text-white px-4 py-2 rounded-lg hover:bg-brand-primary-dark"
-          >
-            Upgrade to Premium
-          </button>
-        </div>
-      )}
+      <h1 className="text-2xl font-semibold text-slate-100">Reflection</h1>
 
-      {reflection && (
-        <div className="p-4 bg-white rounded-xl shadow-sm border">
-          <h2 className="font-semibold text-xl mb-2 text-brand-text">
-            AI Reflection
-          </h2>
-          <p className="whitespace-pre-wrap text-gray-800">{reflection}</p>
-        </div>
-      )}
+      <textarea
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        className="w-full min-h-[300px] rounded-xl border border-slate-800 bg-slate-950/60 p-4 text-sm text-slate-200 focus:ring-1 focus:ring-emerald-400 outline-none"
+      />
+
+      <button
+        onClick={save}
+        disabled={saving}
+        className="rounded-full bg-emerald-500 px-5 py-2 text-sm font-medium text-slate-900 hover:bg-emerald-400 disabled:opacity-50"
+      >
+        {saving ? "Saving…" : "Save Changes"}
+      </button>
     </div>
   );
 }
