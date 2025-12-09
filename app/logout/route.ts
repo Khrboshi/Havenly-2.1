@@ -1,18 +1,25 @@
-// app/logout/route.ts
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 
-export const dynamic = "force-dynamic";
-
 export async function GET(request: Request) {
-  const supabase = createServerSupabase();
-
   try {
+    const supabase = await createServerSupabase();
+
+    // Fully clear Supabase auth session
     await supabase.auth.signOut();
+
+    const redirectUrl = new URL("/", request.url);
+
+    return NextResponse.redirect(redirectUrl, {
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    });
   } catch (err) {
     console.error("Logout error:", err);
+    const fallback = new URL("/", request.url);
+    return NextResponse.redirect(fallback);
   }
-
-  // After logout → redirect to landing page
-  return NextResponse.redirect(new URL("/", request.url));
 }
