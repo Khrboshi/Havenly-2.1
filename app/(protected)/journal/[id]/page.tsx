@@ -12,7 +12,6 @@ export default function JournalEntryPage({ params }: { params: { id: string } })
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // If no session on client → redirect
   useEffect(() => {
     if (session === null) {
       router.replace("/magic-login");
@@ -25,7 +24,7 @@ export default function JournalEntryPage({ params }: { params: { id: string } })
     async function load() {
       try {
         const { data, error } = await supabase
-          .from("journal_entries")                 // NO generics → no TS errors
+          .from("journal_entries")
           .select("*")
           .eq("id", params.id)
           .eq("user_id", session?.user?.id ?? "")
@@ -57,11 +56,11 @@ export default function JournalEntryPage({ params }: { params: { id: string } })
       }
     }
 
-    if (session?.user) {
-      load();
-    }
+    if (session?.user) load();
 
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [supabase, params.id, session]);
 
   if (loading) {
@@ -80,14 +79,10 @@ export default function JournalEntryPage({ params }: { params: { id: string } })
     );
   }
 
-  const formatted = new Date(entry.created_at).toLocaleString("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+  const formatted = new Date(entry.created_at).toLocaleString();
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8 flex flex-col gap-8">
-      {/* HEADER */}
       <header className="border-b border-slate-800 pb-4">
         <h1 className="text-2xl font-semibold text-slate-100">
           {entry.title || "Untitled Entry"}
@@ -95,14 +90,12 @@ export default function JournalEntryPage({ params }: { params: { id: string } })
         <p className="mt-1 text-sm text-slate-500">{formatted}</p>
       </header>
 
-      {/* CONTENT */}
       <section className="rounded-2xl border border-slate-800 bg-slate-950/80 p-5">
         <p className="whitespace-pre-wrap text-slate-200 text-[15px] leading-relaxed">
           {entry.content}
         </p>
       </section>
 
-      {/* REFLECTION */}
       {entry.reflection && (
         <section className="rounded-2xl border border-emerald-400/30 bg-slate-900/60 p-5">
           <h2 className="mb-2 text-sm font-semibold text-emerald-300">
