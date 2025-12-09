@@ -104,24 +104,22 @@ export default function BillingPage() {
           </div>
         </section>
 
-        {/* How billing works / philosophy */}
+        {/* How billing works */}
         <section className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/70 p-6 text-sm text-slate-200">
           <h2 className="text-lg font-semibold text-white">How billing works</h2>
 
           <p className="text-slate-300">
             Havenly uses a simple subscription model designed to keep your reflective space
-            calm, private, and completely free of ads. Premium is optional and adds deeper
-            insights, emotional timelines, and a higher monthly credit balance.
+            calm, private, and completely free of ads.
           </p>
 
           <p className="text-slate-300">
-            As Havenly continues to grow, this page will show additional subscription details
-            including renewal status, invoices, and receipts. For now, you can freely move
-            between Free and Premium depending on what feels most supportive to you.
+            As Havenly grows, this page will show invoices, receipts, and detailed subscription
+            management. For now, you can freely move between Free and Premium.
           </p>
 
           <p className="text-slate-400">
-            You can cancel Premium at any time, and your journal entries always remain yours.
+            You can cancel Premium at any time. Your journal entries always remain yours.
           </p>
         </section>
       </div>
