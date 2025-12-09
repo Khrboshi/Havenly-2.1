@@ -1,49 +1,50 @@
+// app/upgrade/page.tsx
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { useUserPlan } from "@/app/components/useUserPlan";
 
-const premiumBenefits = [
+const PREMIUM_FEATURES = [
   "Deeper AI reflections that gently highlight what mattered most in your week.",
   "Timelines of emotional patterns, themes, and recurring worries.",
-  "Richer context around your entries—without judgment or productivity pressure.",
-  "Priority access to new tools and Premium experiments as they roll out.",
+  "Richer context across multiple entries, not just single moments.",
+  "Higher monthly credit balance so you can reflect without counting uses.",
 ];
 
-const freeVsPremiumRows = [
+const COMPARISON_ROWS = [
   {
-    label: "Daily private journaling",
+    label: "Private journaling",
     free: "Included",
     premium: "Included",
   },
   {
     label: "AI reflections",
-    free: "Light snapshot",
+    free: "Light snapshots",
     premium: "Deeper, more nuanced insights",
   },
   {
-    label: "Pattern timelines & themes",
+    label: "Patterns & timelines",
     free: "Not included",
     premium: "Included",
   },
   {
-    label: "Monthly recap / check-ins",
+    label: "Monthly emotional recap",
     free: "Not included",
     premium: "Included",
   },
   {
-    label: "Credits balance",
+    label: "Credit balance",
     free: "Limited",
-    premium: "Higher monthly balance",
+    premium: "Higher balance",
   },
 ];
 
-const whoItsFor = [
-  "People who feel mentally overloaded and want calm, structured check-ins.",
-  "Anyone who journals but wishes they could see patterns more clearly over time.",
-  "Those who don’t want productivity hacks—just a gentle space to understand their days.",
-  "People who like Havenly’s tone and want the deeper reflective experience.",
+const WHO_IT_IS_FOR = [
+  "People who feel mentally overloaded and want a calm place to put what they’re carrying.",
+  "Journalers who wish they could actually see patterns in how their days are going.",
+  "Those who prefer gentle reflection instead of productivity hacks and performance tips.",
+  "Anyone who wants deeper emotional clarity without sharing their writing with other people.",
 ];
 
 export default function UpgradePage() {
@@ -66,14 +67,9 @@ export default function UpgradePage() {
         body: JSON.stringify({ plan: "premium" }),
       });
 
-      // Not authenticated → redirect to magic link with redirect back to /upgrade
       if (res.status === 401) {
         setLoginRequired(true);
         setLoading(false);
-
-        if (typeof window !== "undefined") {
-          window.location.href = "/magic-login?redirect=/upgrade";
-        }
         return;
       }
 
@@ -88,7 +84,6 @@ export default function UpgradePage() {
         return;
       }
 
-      // Success → redirect user to Premium hub
       setLoading(false);
       if (typeof window !== "undefined") {
         window.location.href = "/premium";
@@ -103,14 +98,14 @@ export default function UpgradePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 py-10 text-white">
+    <div className="min-h-screen bg-slate-950 px-4 py-10 text-slate-50">
       <div className="mx-auto flex max-w-5xl flex-col gap-8">
-        {/* Login prompt (rarely seen now, but kept for clarity) */}
+        {/* Alerts */}
         {loginRequired && (
           <div className="rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
             Please sign in first using the{" "}
             <Link
-              href="/magic-login?redirect=/upgrade"
+              href="/magic-login"
               className="font-semibold underline underline-offset-2"
             >
               magic link
@@ -119,37 +114,46 @@ export default function UpgradePage() {
           </div>
         )}
 
-        {/* Error */}
         {upgradeError && (
           <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-100">
             {upgradeError}
           </div>
         )}
 
-        {/* ======================== HERO SECTION ======================== */}
-        <section className="mb-4">
-          <span className="inline-flex items-center rounded-full border border-emerald-500/15 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
+        {/* =============== HERO & PRICE =============== */}
+        <section>
+          <p className="inline-flex items-center rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-200">
             Havenly Premium
-          </span>
+          </p>
 
-          <div className="mt-4 grid items-start gap-8 lg:grid-cols-[2fr,1.3fr]">
+          <div className="mt-5 grid items-start gap-10 lg:grid-cols-[1.7fr,1.1fr]">
+            {/* Left: Story */}
             <div>
-              <h1 className="text-3xl font-bold sm:text-4xl">
+              <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
                 Upgrade to deeper, calmer insights.
               </h1>
 
-              <p className="mt-4 max-w-xl text-sm text-white/75 sm:text-base">
-                The free version of Havenly gives you a quiet page to write a
-                few honest sentences. Premium adds deeper, more thoughtful
-                reflections that help you understand what’s been happening over
-                time—without pressure, judgment, or productivity noise.
+              <p className="mt-4 max-w-xl text-sm text-slate-200">
+                The free version of Havenly gives you a quiet place to be
+                honest. Premium adds deeper, AI-powered reflections that look
+                across your entries, gently revealing patterns in your energy,
+                emotions, and needs over time.
               </p>
 
-              <div className="mt-6 flex flex-wrap items-center gap-3">
+              <ul className="mt-6 space-y-2 text-sm text-slate-100">
+                {PREMIUM_FEATURES.map((feature) => (
+                  <li key={feature} className="flex gap-2">
+                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-7 flex flex-wrap items-center gap-3">
                 <button
                   onClick={alreadyUpgraded ? undefined : handleUpgrade}
                   disabled={loading || alreadyUpgraded}
-                  className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center justify-center rounded-full bg-emerald-400 px-6 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {alreadyUpgraded
                     ? "You’re already on Premium"
@@ -160,78 +164,97 @@ export default function UpgradePage() {
 
                 <Link
                   href="/dashboard"
-                  className="inline-flex items-center justify-center rounded-full border border-slate-700 px-5 py-2.5 text-sm text-slate-200 transition hover:bg-slate-800 hover:text-slate-50"
+                  className="inline-flex items-center justify-center rounded-full border border-slate-700 px-5 py-2.5 text-sm text-slate-200 hover:bg-slate-900"
                 >
-                  Keep exploring for now
+                  Keep exploring first
                 </Link>
               </div>
 
-              <p className="mt-3 max-w-sm text-xs text-white/55">
+              <p className="mt-3 text-xs text-slate-400 max-w-sm">
                 Premium helps support ongoing improvements to Havenly and keeps
-                your space calm, private, and completely free from ads or
-                distractions.
+                your reflection space private, calm, and completely free from
+                ads or social feeds.
               </p>
             </div>
 
-            {/* Price summary */}
-            <aside className="rounded-2xl border border-slate-800 bg-slate-900/80 p-5 shadow-lg shadow-slate-950/60">
-              <p className="text-sm font-semibold text-emerald-300">
+            {/* Right: Price card */}
+            <aside className="rounded-3xl border border-emerald-500/40 bg-gradient-to-b from-emerald-500/15 via-slate-900/90 to-slate-950/90 p-6 shadow-[0_22px_70px_rgba(16,185,129,0.35)]">
+              <p className="text-sm font-semibold text-emerald-200">
                 Premium at a glance
               </p>
-              <p className="mt-2 text-3xl font-bold text-emerald-300">
+
+              <p className="mt-4 text-4xl font-semibold text-emerald-300">
                 $25
-                <span className="text-base font-normal text-white/70">
+                <span className="text-base font-normal text-slate-100">
                   /month
                 </span>
               </p>
 
-              <ul className="mt-4 space-y-2 text-sm text-white/80">
-                {premiumBenefits.slice(0, 3).map((b) => (
-                  <li key={b} className="flex gap-2">
-                    <span className="mt-1 h-2 w-2 rounded-full bg-emerald-400" />
-                    <span>{b}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <p className="mt-4 text-xs text-white/60">
-                Cancel anytime. Your entries stay in your account, even if you
-                return to the Free plan later.
+              <p className="mt-2 text-xs text-slate-200">
+                For deeper emotional clarity, timelines, and richer AI
+                reflections across your entries.
               </p>
+
+              <div className="mt-5 space-y-2 text-xs text-slate-100">
+                <p>• Cancel anytime. Your entries always remain in your account.</p>
+                <p>• No ads, no selling your data, no public feed.</p>
+                <p>
+                  • Ideal if you&apos;re using Havenly as an ongoing emotional
+                  check-in, not just a one-time experiment.
+                </p>
+              </div>
+
+              <button
+                onClick={alreadyUpgraded ? undefined : handleUpgrade}
+                disabled={loading || alreadyUpgraded}
+                className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-950 hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {alreadyUpgraded
+                  ? "Manage your Premium space"
+                  : loading
+                  ? "Processing…"
+                  : "Upgrade now"}
+              </button>
+
+              <Link
+                href="/settings/billing"
+                className="mt-3 block text-center text-xs font-medium text-emerald-200 hover:text-emerald-100"
+              >
+                View billing & usage →
+              </Link>
             </aside>
           </div>
         </section>
 
-        {/* ======================== FREE VS PREMIUM ======================== */}
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-          <h2 className="text-lg font-semibold">What’s different about Premium?</h2>
-          <p className="mt-2 text-sm text-white/75">
-            You keep everything you already have in Free. Premium simply adds
-            more depth, more clarity, and a more supportive reflective experience.
+        {/* =============== FREE VS PREMIUM =============== */}
+        <section className="mt-16 rounded-3xl border border-slate-800 bg-slate-950/80 p-6">
+          <h2 className="text-lg font-semibold text-slate-50">
+            What actually changes with Premium?
+          </h2>
+          <p className="mt-2 text-sm text-slate-300 max-w-xl">
+            You keep everything you already have in the Free plan. Premium
+            doesn&apos;t add pressure &mdash; it adds depth, context, and a
+            clearer view of your emotional patterns.
           </p>
 
-          <div className="mt-5 overflow-x-auto">
+          <div className="mt-6 overflow-x-auto">
             <table className="min-w-full border-separate border-spacing-y-2 text-sm">
               <thead>
-                <tr className="text-left text-xs uppercase tracking-wide text-white/60">
+                <tr className="text-left text-[11px] uppercase tracking-wide text-slate-400">
                   <th className="px-4 py-2">Feature</th>
                   <th className="px-4 py-2">Free</th>
                   <th className="px-4 py-2 text-emerald-300">Premium</th>
                 </tr>
               </thead>
               <tbody>
-                {freeVsPremiumRows.map((row) => (
+                {COMPARISON_ROWS.map((row) => (
                   <tr
                     key={row.label}
-                    className="rounded-xl bg-slate-950/80 text-white/80"
+                    className="rounded-2xl bg-slate-900/80 text-slate-100"
                   >
-                    <td className="px-4 py-3 text-slate-200 align-middle">
-                      {row.label}
-                    </td>
-                    <td className="px-4 py-3 text-white/60 align-middle">
-                      {row.free}
-                    </td>
-                    <td className="px-4 py-3 text-emerald-300 align-middle font-medium">
+                    <td className="px-4 py-3 text-slate-200">{row.label}</td>
+                    <td className="px-4 py-3 text-slate-400">{row.free}</td>
+                    <td className="px-4 py-3 text-emerald-300 font-medium">
                       {row.premium}
                     </td>
                   </tr>
@@ -241,65 +264,61 @@ export default function UpgradePage() {
           </div>
         </section>
 
-        {/* ======================== WHO IT'S FOR ======================== */}
-        <section className="mb-6 grid gap-8 lg:grid-cols-[1.6fr,1.2fr]">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-            <h2 className="text-lg font-semibold">Who Havenly Premium is for</h2>
-            <p className="mt-3 max-w-xl text-sm text-white/75">
-              Premium isn’t about productivity—it’s about clarity. It’s for
-              people who want a supportive, reflective space to understand their
-              emotional world a little better.
+        {/* =============== WHO IT'S FOR / NOT READY =============== */}
+        <section className="mb-4 mt-16 grid gap-8 lg:grid-cols-[1.6fr,1.2fr]">
+          <div className="rounded-3xl border border-slate-800 bg-slate-950/80 p-6">
+            <h2 className="text-lg font-semibold text-slate-50">
+              Who Havenly Premium is for
+            </h2>
+            <p className="mt-3 text-sm text-slate-300 max-w-xl">
+              Premium is for people who know their emotional world is busy and
+              want a quieter way to understand it.
             </p>
 
-            <ul className="mt-4 space-y-3 text-sm text-white/80">
-              {whoItsFor.map((b) => (
-                <li key={b} className="flex gap-2">
-                  <span className="mt-1 h-2 w-2 rounded-full bg-emerald-400" />
-                  <span>{b}</span>
+            <ul className="mt-4 space-y-3 text-sm text-slate-100">
+              {WHO_IT_IS_FOR.map((item) => (
+                <li key={item} className="flex gap-2">
+                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  <span>{item}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
-            <h3 className="text-base font-semibold text-white">
-              Not ready to upgrade yet?
+          <div className="rounded-3xl border border-slate-800 bg-slate-950/80 p-6">
+            <h3 className="text-base font-semibold text-slate-50">
+              Not sure yet? Stay on Free as long as you like.
             </h3>
-            <p className="mt-3 text-sm text-white/75">
-              That’s completely fine. The Free plan is designed to be genuinely
-              useful on its own. You can upgrade whenever it feels clearly
-              helpful for you.
-            </p>
-
-            <p className="mt-3 text-sm text-white/75">
-              You can return to this page any time from{" "}
-              <span className="font-medium">Settings → Billing</span>.
+            <p className="mt-3 text-sm text-slate-300">
+              The Free plan is intentionally usable on its own. You can journal
+              privately, receive light reflections, and decide later whether
+              deeper insights would actually help.
             </p>
 
             <div className="mt-5 flex flex-wrap gap-3">
               <button
                 onClick={alreadyUpgraded ? undefined : handleUpgrade}
                 disabled={loading || alreadyUpgraded}
-                className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex items-center justify-center rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-950 hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {alreadyUpgraded
                   ? "You’re already on Premium"
                   : loading
                   ? "Processing…"
-                  : "Upgrade now"}
+                  : "Upgrade when you’re ready"}
               </button>
 
               <Link
-                href="/dashboard"
-                className="inline-flex items-center justify-center rounded-full border border-slate-700 px-5 py-2.5 text-sm text-slate-200 transition hover:bg-slate-800 hover:text-slate-50"
+                href="/magic-login"
+                className="inline-flex items-center justify-center rounded-full border border-slate-700 px-5 py-2.5 text-sm text-slate-200 hover:bg-slate-900"
               >
-                Stay on Free for now
+                Keep using Free for now
               </Link>
             </div>
 
-            <p className="mt-4 text-xs text-white/55">
-              Your entries remain private and are never used for advertising—
-              whether you’re on Free or Premium.
+            <p className="mt-4 text-xs text-slate-400">
+              Your entries remain private and are never used for advertising,
+              whether you&apos;re on Free or Premium.
             </p>
           </div>
         </section>
