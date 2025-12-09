@@ -2,33 +2,24 @@
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-import { createServerSupabase } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { createServerSupabase } from "@/lib/supabase/server";
 
-type PlanType = "FREE" | "ESSENTIAL" | "PREMIUM";
+type PlanType = "FREE" | "TRIAL" | "PREMIUM";
 
-function toClientPlan(planType: PlanType) {
-  const premium = planType === "PREMIUM";
-  const essential = planType === "ESSENTIAL";
-  return {
-    plan: planType.toLowerCase() as "free" | "essential" | "premium",
-    premium,
-    essential,
-  };
+/**
+ * Normalizes planType into the format expected by useUserPlan.
+ */
+function normalizePlan(plan: any): PlanType {
+  const up = typeof plan === "string" ? plan.toUpperCase() : "FREE";
+  if (up === "PREMIUM") return "PREMIUM";
+  if (up === "TRIAL") return "TRIAL";
+  return "FREE";
 }
 
 /**
  * GET /api/user/plan
- * Returns a normalized shape for useUserPlan:
- * {
- *   authenticated,
- *   planType,
- *   plan,
- *   premium,
- *   essential,
- *   credits,
- *   renewalDate
- * }
+ * → Source of truth for all Free / Trial / Premium logic.
  */
 export async function GET() {
   const supabase = createServerSupabase();
@@ -38,14 +29,12 @@ export async function GET() {
     error: userError,
   } = await supabase.auth.getUser();
 
+  // Not authenticated → treat as Free user
   if (userError || !user) {
-    // Not authenticated → treat as free, no credits
     return NextResponse.json({
       authenticated: false,
       planType: "FREE",
-      plan: "free",
-      premium: false,
-      essential: false,
+      plan: "FREE",
       credits: 0,
       renewalDate: null,
     });
@@ -58,35 +47,32 @@ export async function GET() {
       .eq("user_id", user.id)
       .maybeSingle();
 
-    // Default values if no row yet
+    // Defaults for new users
     let planType: PlanType = "FREE";
     let credits = 0;
     let renewalDate: string | null = null;
 
     if (!planError && planRow) {
-      planType = (planRow.plan_type as PlanType) || "FREE";
-      credits = planRow.credits_balance ?? 0;
+      planType = normalizePlan(planRow.plan_type);
+      credits = typeof planRow.credits_balance === "number" ? planRow.credits_balance : 0;
       renewalDate = planRow.renewal_date ?? null;
     }
-
-    const clientPlan = toClientPlan(planType);
 
     return NextResponse.json({
       authenticated: true,
       planType,
-      ...clientPlan,
+      plan: planType, // backward compatibility for UI
       credits,
       renewalDate,
     });
   } catch (err) {
-    console.error("Error in GET /api/user/plan:", err);
+    console.error("GET /api/user/plan error:", err);
+
     return NextResponse.json(
       {
         authenticated: true,
         planType: "FREE",
-        plan: "free",
-        premium: false,
-        essential: false,
+        plan: "FREE",
         credits: 0,
         renewalDate: null,
         error: "Unable to load plan information.",
