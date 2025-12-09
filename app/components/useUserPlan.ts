@@ -1,4 +1,3 @@
-// app/components/useUserPlan.ts
 "use client";
 
 import { useEffect, useState } from "react";
@@ -9,20 +8,22 @@ interface UserPlanState {
   loading: boolean;
   error: string | null;
 
-  // Legacy field (some components read `plan`)
+  // Legacy field (backwards compatibility)
   plan: PlanType;
 
   // Preferred explicit field
   planType: PlanType;
 
-  // Extra info used by some pages (Billing, Premium hub, etc.)
+  // Additional fields used by Billing, Premium hub, etc.
   credits: number | null;
   renewalDate: string | null;
 }
 
 /**
- * Client hook to read the current user's plan from /api/user/plan.
- * Keeps shape compatible with existing pages, but simplifies logic.
+ * Unified user plan hook.
+ * Fetches the current user's plan from /api/user/plan.
+ * Normalizes all values into a consistent state object.
+ * Fully compatible with existing components and Premium gating.
  */
 export function useUserPlan(): UserPlanState {
   const [state, setState] = useState<UserPlanState>({
@@ -37,36 +38,39 @@ export function useUserPlan(): UserPlanState {
   useEffect(() => {
     let cancelled = false;
 
-    async function fetchPlan() {
+    async function loadPlan() {
       try {
-        const res = await fetch("/api/user/plan", { cache: "no-store" });
+        const res = await fetch("/api/user/plan", {
+          cache: "no-store",
+        });
 
         if (!res.ok) {
-          if (cancelled) return;
-          setState((prev) => ({
-            ...prev,
-            loading: false,
-            error: "Unable to load plan information.",
-            plan: "FREE",
-            planType: "FREE",
-            credits: 0,
-            renewalDate: null,
-          }));
+          if (!cancelled) {
+            setState({
+              loading: false,
+              error: "Unable to load plan information.",
+              plan: "FREE",
+              planType: "FREE",
+              credits: 0,
+              renewalDate: null,
+            });
+          }
           return;
         }
 
         const data = await res.json();
-
         if (cancelled) return;
 
-        // Defensive parsing: accept different shapes but normalize to our state.
-        const serverPlanType =
-          (data.planType as PlanType | undefined) ??
+        const serverPlanType: PlanType =
+          (typeof data.planType === "string"
+            ? (data.planType.toUpperCase() as PlanType)
+            : null) ??
           (typeof data.plan === "string"
             ? (data.plan.toUpperCase() as PlanType)
-            : null);
+            : null) ??
+          "FREE";
 
-        const normalizedPlan: PlanType =
+        const normalized: PlanType =
           serverPlanType === "PREMIUM" ||
           serverPlanType === "TRIAL" ||
           serverPlanType === "FREE"
@@ -82,28 +86,27 @@ export function useUserPlan(): UserPlanState {
         setState({
           loading: false,
           error: null,
-          plan: normalizedPlan,
-          planType: normalizedPlan,
+          plan: normalized,
+          planType: normalized,
           credits,
           renewalDate,
         });
       } catch (err) {
         console.error("useUserPlan error:", err);
-        if (cancelled) return;
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          error: "Unable to load plan information.",
-          plan: "FREE",
-          planType: "FREE",
-          credits: 0,
-          renewalDate: null,
-        }));
+        if (!cancelled) {
+          setState({
+            loading: false,
+            error: "Unable to load plan information.",
+            plan: "FREE",
+            planType: "FREE",
+            credits: 0,
+            renewalDate: null,
+          });
+        }
       }
     }
 
-    fetchPlan();
-
+    loadPlan();
     return () => {
       cancelled = true;
     };
