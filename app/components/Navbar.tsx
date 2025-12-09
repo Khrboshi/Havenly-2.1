@@ -1,157 +1,79 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useSupabase } from "./SupabaseSessionProvider";
-import { useUserPlan } from "@/app/components/useUserPlan";
 import { useEffect, useState } from "react";
+import { useSupabase } from "@/components/providers/SupabaseSessionProvider";
 
 export default function Navbar() {
-  const pathname = usePathname();
-  const { session } = useSupabase();
-  const { planType, loading } = useUserPlan();
+  const { supabase } = useSupabase();
 
-  const planLabel = loading
-    ? "Loading..."
-    : planType === "PREMIUM"
-    ? "Premium"
-    : planType === "TRIAL"
-    ? "Trial"
-    : "Free plan";
+  const [planType, setPlanType] = useState<string>("FREE");
+  const [credits, setCredits] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
 
-  const [hydrated, setHydrated] = useState(false);
-  useEffect(() => setHydrated(true), []);
+  useEffect(() => {
+    async function loadPlan() {
+      const res = await fetch("/api/user/plan");
+      const data = await res.json();
 
-  const isLoggedIn = !!session?.user;
+      if (data?.plan) {
+        setPlanType(data.plan.planType);
+        setCredits(data.plan.credits);
+      }
 
-  if (!hydrated) {
-    return (
-      <header className="sticky top-0 z-40 border-b border-slate-800/60 bg-slate-950/80 backdrop-blur">
-        <nav className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-          <div className="h-4 w-20 rounded-full bg-slate-800" />
-          <div className="h-8 w-32 rounded-full bg-slate-800" />
-        </nav>
-      </header>
-    );
-  }
+      setLoading(false);
+    }
+
+    loadPlan();
+  }, []);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-800/60 bg-slate-950/80 backdrop-blur">
-      <nav className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+    <nav className="w-full bg-white border-b shadow-sm px-6 py-4 flex items-center justify-between">
+      <Link href="/dashboard" className="text-xl font-bold text-brand-primary">
+        Havenly
+      </Link>
 
-        {/* Left: Brand */}
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/10">
-            <span className="text-sm font-semibold text-emerald-300">H</span>
+      {!loading && (
+        <div className="flex items-center gap-6">
+          {/* Plan + Credits Display */}
+          <div className="text-sm text-gray-700">
+            <span className="font-semibold">{planType}</span>
+
+            {planType === "FREE" && (
+              <span className="ml-1">· {credits}/20 reflections left</span>
+            )}
+
+            {planType !== "FREE" && (
+              <span className="ml-1 text-green-700">· Premium Access</span>
+            )}
           </div>
-          <span className="text-sm font-semibold tracking-tight text-slate-100">
-            Havenly
-          </span>
-        </Link>
 
-        {/* Center Navigation */}
-        <div className="hidden items-center gap-3 text-xs font-medium text-slate-400 md:flex">
-          {/* LOGGED OUT — Only Home + Blog */}
-          {!isLoggedIn && (
-            <>
-              <Link
-                href="/"
-                className="rounded-full px-3 py-1 transition hover:bg-slate-900"
-              >
-                Home
-              </Link>
-
-              <Link
-                href="/blog"
-                className="rounded-full px-3 py-1 transition hover:bg-slate-900"
-              >
-                Blog
-              </Link>
-            </>
-          )}
-
-          {/* LOGGED IN — Full app navigation */}
-          {isLoggedIn && (
-            <>
-              <Link
-                href="/dashboard"
-                className="rounded-full px-3 py-1 transition hover:bg-slate-900"
-              >
-                Dashboard
-              </Link>
-
-              <Link
-                href="/journal"
-                className="rounded-full px-3 py-1 transition hover:bg-slate-900"
-              >
-                Journal
-              </Link>
-
-              <Link
-                href="/insights"
-                className="rounded-full px-3 py-1 transition hover:bg-slate-900"
-              >
-                Insights
-              </Link>
-
-              <Link
-                href="/tools"
-                className="rounded-full px-3 py-1 transition hover:bg-slate-900"
-              >
-                Tools
-              </Link>
-
-              <Link
-                href="/blog"
-                className="rounded-full px-3 py-1 transition hover:bg-slate-900"
-              >
-                Blog
-              </Link>
-            </>
-          )}
-        </div>
-
-        {/* Right Side */}
-        {!isLoggedIn ? (
-          // LOGGED OUT ACTIONS
-          <div className="flex items-center gap-4">
-            <Link
-              href="/magic-login"
-              className="text-sm px-3 py-1 rounded-md hover:bg-slate-800/60"
-            >
-              Sign in
-            </Link>
-
+          {/* Upgrade CTA for Free Users */}
+          {planType === "FREE" && (
             <Link
               href="/upgrade"
-              className="px-4 py-2 rounded-full bg-emerald-400 text-slate-900 text-sm font-semibold hover:bg-emerald-300 transition"
+              className="px-4 py-2 rounded-lg bg-brand-primary text-white hover:bg-brand-primary-dark text-sm transition"
             >
-              Try Premium
+              Upgrade
             </Link>
-          </div>
-        ) : (
-          // LOGGED IN ACTIONS
-          <div className="flex items-center gap-3">
-            <span className="px-3 py-1 rounded-full bg-slate-800 text-xs">
-              {planLabel}
-            </span>
+          )}
 
-            <Link
-              href="/settings"
-              className="h-8 w-8 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center text-xs font-medium"
-            >
-              {session.user.email?.[0]?.toUpperCase() ?? "U"}
-            </Link>
-
-            <Link
-              href="/logout"
-              className="text-sm px-3 py-1 rounded-md hover:bg-slate-800/60"
-            >
-              Log out
-            </Link>
+          {/* Navigation Links */}
+          <div className="flex items-center gap-4 text-gray-700">
+            <Link href="/journal">Journal</Link>
+            <Link href="/tools">Tools</Link>
+            <Link href="/insights">Insights</Link>
           </div>
-        )}
-      </nav>
-    </header>
+
+          {/* Logout */}
+          <Link
+            href="/logout"
+            className="text-sm text-red-600 hover:text-red-700 font-medium"
+          >
+            Logout
+          </Link>
+        </div>
+      )}
+    </nav>
   );
 }
