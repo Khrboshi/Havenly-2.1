@@ -1,30 +1,26 @@
-export const dynamic = "force-dynamic";
-
+import Navbar from "@/components/Navbar";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
-import ProtectedNavBar from "@/app/components/ProtectedNavBar";
+import { getUserPlan, ensurePlanRow } from "@/lib/userPlan";
 
-export default async function ProtectedLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const supabase = createServerSupabase();
+export default async function ProtectedLayout({ children }) {
+  const supabase = await createServerSupabase();
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  // If no session found → redirect server-side (no flicker)
-  if (!session?.user) {
-    // Single entry point for login; after login we send users to /dashboard
-    redirect("/magic-login");
+  if (user) {
+    // Ensures plan row always exists server-side
+    await ensurePlanRow(user.id);
+
+    // Preload plan to reduce navbar flicker
+    await getUserPlan(user.id);
   }
 
   return (
-    <div>
-      <ProtectedNavBar user={session.user} />
-      {children}
+    <div className="min-h-screen bg-brand-bg">
+      <Navbar />
+      <main className="pt-6">{children}</main>
     </div>
   );
 }
