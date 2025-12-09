@@ -1,20 +1,13 @@
-// app/components/RequirePremium.tsx
 "use client";
 
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { useUserPlan } from "./useUserPlan";
+import { useUserPlan } from "@/app/components/useUserPlan";
 
 interface RequirePremiumProps {
   children: ReactNode;
 }
 
-/**
- * Gate component: wraps any Premium-only screen.
- * - If loading → small inline loading state.
- * - If FREE → explain value of Premium and offer a gentle upgrade path.
- * - If PREMIUM/TRIAL → render children.
- */
 export default function RequirePremium({ children }: RequirePremiumProps) {
   const { loading, planType } = useUserPlan();
 
@@ -44,27 +37,22 @@ export default function RequirePremium({ children }: RequirePremiumProps) {
           </h1>
 
           <p className="mt-3 text-sm text-slate-200">
-            You are currently using the free version of Havenly, which is
-            perfect for quiet, private journaling. Premium goes a step further
-            with deeper reflections and gentle timelines that help you see what
-            has really been happening over time.
+            Premium gives you deeper reflections, timelines, and a higher credit balance.
+            No pressure to upgrade — move at your own pace.
           </p>
 
           <ul className="mt-4 space-y-2 text-sm text-slate-100">
             <li className="flex gap-2">
               <span className="mt-1 h-2 w-2 rounded-full bg-emerald-400" />
-              <span>Deeper, more nuanced AI reflections on your entries.</span>
+              <span>Deeper AI reflections.</span>
             </li>
             <li className="flex gap-2">
               <span className="mt-1 h-2 w-2 rounded-full bg-emerald-400" />
-              <span>Timelines and recurring themes across weeks and months.</span>
+              <span>Timelines and recurring themes.</span>
             </li>
             <li className="flex gap-2">
               <span className="mt-1 h-2 w-2 rounded-full bg-emerald-400" />
-              <span>
-                A higher monthly credit balance so you can explore insights
-                without worrying about “using up” the tool.
-              </span>
+              <span>Higher monthly credit balance.</span>
             </li>
           </ul>
 
@@ -84,8 +72,7 @@ export default function RequirePremium({ children }: RequirePremiumProps) {
           </div>
 
           <p className="mt-4 text-xs text-slate-400">
-            No pressure to upgrade. You can keep using the free version as long
-            as you like, and only move to Premium if it feels clearly helpful.
+            Your writing remains private and never used for advertising.
           </p>
         </div>
       </div>
