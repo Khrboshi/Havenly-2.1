@@ -1,40 +1,86 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
-import { blogArticles } from "../posts";
+import { ARTICLES, getArticle } from "../articles";
 
-export default function ArticlePage({ params }) {
-  const article = blogArticles.find((a) => a.slug === params.slug);
+type BlogArticlePageProps = {
+  params: { slug: string };
+};
 
-  if (!article) return notFound();
+export function generateStaticParams() {
+  return ARTICLES.map((article) => ({ slug: article.slug }));
+}
+
+export default function BlogArticlePage({ params }: BlogArticlePageProps) {
+  const article = getArticle(params.slug);
+
+  if (!article) {
+    return (
+      <main className="min-h-screen bg-slate-950 text-slate-100">
+        <section className="mx-auto flex min-h-[60vh] max-w-3xl flex-col items-center justify-center px-6 pt-24 text-center">
+          <p className="text-sm text-slate-400">Article not found.</p>
+          <Link
+            href="/blog"
+            className="mt-4 text-sm text-emerald-300 hover:text-emerald-200"
+          >
+            ← Back to all articles
+          </Link>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
-      <section className="max-w-3xl mx-auto px-4 pt-28 pb-20">
-        <Link
-          href="/blog"
-          className="text-xs text-emerald-300 hover:underline mb-6 inline-block"
-        >
-          ← Back to Blog
-        </Link>
+      <section className="mx-auto max-w-3xl px-6 pb-16 pt-24">
+        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-emerald-300">
+          {article.category}
+        </p>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight">
+          {article.title}
+        </h1>
+        <p className="mt-2 text-xs text-slate-400">
+          {article.minutes} min read
+        </p>
 
-        <div className="text-xs text-emerald-300 font-semibold mb-3">
-          {article.category.toUpperCase()}
+        <div className="mt-6 space-y-4 text-sm leading-relaxed text-slate-200">
+          {article.body.map((paragraph, idx) => (
+            <p key={idx}>{paragraph}</p>
+          ))}
         </div>
 
-        <h1 className="text-4xl font-bold mb-4">{article.title}</h1>
-        <p className="text-sm text-slate-500 mb-10">{article.readTime} min read</p>
+        <div className="mt-10 rounded-2xl border border-slate-800 bg-slate-900/40 p-5 text-sm">
+          <p className="font-semibold text-slate-100">
+            Want deeper emotional reflections?
+          </p>
+          <p className="mt-2 text-xs text-slate-300">
+            Premium unlocks AI-powered insights, richer analysis, and unlimited
+            journaling—so your reflections don&apos;t just stay as ideas, they
+            become patterns you can act on gently.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3 text-xs">
+            <Link
+              href="/upgrade"
+              className="rounded-full bg-emerald-400 px-4 py-2 font-semibold text-slate-950 hover:bg-emerald-300"
+            >
+              See Premium benefits →
+            </Link>
+            <Link
+              href="/magic-login"
+              className="rounded-full border border-slate-700 px-4 py-2 font-semibold text-slate-100 hover:border-slate-500 hover:bg-slate-900"
+            >
+              Start free journaling
+            </Link>
+          </div>
+        </div>
 
-        <article className="prose prose-invert prose-slate max-w-none">
-          <div dangerouslySetInnerHTML={{ __html: article.content }} />
-        </article>
+        <div className="mt-6 border-t border-slate-800 pt-6 text-center text-xs text-slate-400">
+          <Link
+            href="/blog"
+            className="text-emerald-300 hover:text-emerald-200"
+          >
+            ← Back to all articles
+          </Link>
+        </div>
       </section>
-
-      <footer className="border-t border-slate-800 py-10 text-center text-xs text-slate-500">
-        © {new Date().getFullYear()} Havenly 2.1. All rights reserved.  
-        <Link href="/privacy" className="ml-4 hover:underline">
-          Privacy Policy
-        </Link>
-      </footer>
     </main>
   );
 }
