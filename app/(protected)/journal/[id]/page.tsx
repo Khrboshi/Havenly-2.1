@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSupabase } from "@/components/providers/SupabaseSessionProvider";
+import { useSupabase } from "@/components/SupabaseSessionProvider";
 
 export default function JournalEntryPage({ params }) {
   const router = useRouter();
@@ -15,10 +15,9 @@ export default function JournalEntryPage({ params }) {
   const [loading, setLoading] = useState(false);
   const [noCredits, setNoCredits] = useState(false);
 
-  // Load journal entry from Supabase
   useEffect(() => {
     async function loadJournal() {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("journal_entries")
         .select("*")
         .eq("id", journalId)
@@ -37,30 +36,24 @@ export default function JournalEntryPage({ params }) {
     setLoading(true);
     setNoCredits(false);
 
-    // 1. Try to deduct a credit BEFORE generating
     const creditRes = await fetch("/api/user/credits/use", {
       method: "POST",
     }).then((r) => r.json());
 
     if (!creditRes.success) {
       setLoading(false);
-
       if (creditRes.error === "INSUFFICIENT_CREDITS") {
         setNoCredits(true);
-      } else {
-        alert("Error using credits.");
       }
       return;
     }
 
-    // 2. Call the reflection API
     const reflectRes = await fetch("/api/reflect", {
       method: "POST",
       body: JSON.stringify({ journalEntry: entryText }),
     }).then((r) => r.json());
 
     if (!reflectRes.success) {
-      alert("Reflection failed.");
       setLoading(false);
       return;
     }
@@ -68,7 +61,6 @@ export default function JournalEntryPage({ params }) {
     const newReflection = reflectRes.reflection;
     setReflection(newReflection);
 
-    // 3. Save reflection in DB
     await supabase
       .from("journal_entries")
       .update({ reflection: newReflection })
@@ -96,18 +88,13 @@ export default function JournalEntryPage({ params }) {
       {noCredits && (
         <div className="border border-yellow-400 bg-yellow-50 p-4 rounded-lg">
           <p className="text-yellow-800 font-medium">
-            You’ve used all available AI reflections for your current plan.
+            You’ve used all available AI reflections.
           </p>
-          <p className="text-yellow-700 mt-1">
-            Upgrade to Premium to enjoy deeper insights, more reflections, and
-            unlimited access to all tools.
-          </p>
-
           <button
             onClick={() => router.push("/upgrade")}
             className="mt-3 bg-brand-primary text-white px-4 py-2 rounded-lg hover:bg-brand-primary-dark"
           >
-            Explore Premium
+            Upgrade to Premium
           </button>
         </div>
       )}
