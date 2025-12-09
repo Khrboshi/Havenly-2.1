@@ -1,28 +1,24 @@
-// app/(protected)/insights/page.tsx
-"use client";
-
-import RequirePremium from "@/app/components/RequirePremium";
-
 export default function InsightsPage() {
   return (
-    <RequirePremium>
-      <div className="min-h-screen w-full px-6 py-10 text-white">
-        <h1 className="text-3xl font-bold mb-6">Insights</h1>
+    <div className="space-y-8">
+      <h1 className="text-3xl font-semibold text-slate-100">Insights</h1>
 
-        <p className="text-white/70 mb-8 max-w-xl">
-          Here are your personalized journaling insights, emotional patterns,
-          and AI-generated reflections. These insights help you understand
-          growth, recurring themes, and opportunities for emotional clarity.
-        </p>
+      <p className="text-slate-400 text-sm max-w-xl">
+        As you continue journaling and checking in, Havenly will surface gentle
+        timelines, trends, and repeating emotional themes. Think of this as a
+        quiet companion that helps you understand what has been building beneath
+        your week.
+      </p>
 
-        <div className="rounded-xl border border-white/10 p-6 bg-slate-900/50 backdrop-blur">
-          <p className="text-white/80">
-            Premium insights content will appear here once your journaling
-            entries are processed. Keep writing consistently to unlock deeper
-            analysis.
-          </p>
-        </div>
+      <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-6 text-slate-500 text-sm">
+        Insight visualizations will appear here soon — including:
+        <ul className="mt-3 space-y-1 list-disc list-inside">
+          <li>Mood patterns over time</li>
+          <li>Reflection themes and repeated keywords</li>
+          <li>Emotion frequency breakdown</li>
+          <li>Week-over-week clarity score</li>
+        </ul>
       </div>
-    </RequirePremium>
+    </div>
   );
 }
