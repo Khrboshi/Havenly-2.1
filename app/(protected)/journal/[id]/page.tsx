@@ -15,7 +15,7 @@ export default function JournalEntryPage({ params }) {
   const [loading, setLoading] = useState(false);
   const [noCredits, setNoCredits] = useState(false);
 
-  // FIX: Add local type for Supabase row
+  // FIX: typed model for row
   type JournalEntry = {
     id: string;
     content: string | null;
@@ -28,7 +28,7 @@ export default function JournalEntryPage({ params }) {
         .from("journal_entries")
         .select("*")
         .eq("id", journalId)
-        .single<JournalEntry>(); // FIX: Add generic type
+        .single<JournalEntry>(); // GOOD
 
       if (data) {
         setEntryText(data.content || "");
@@ -70,9 +70,10 @@ export default function JournalEntryPage({ params }) {
     const newReflection = reflectRes.reflection;
     setReflection(newReflection);
 
+    // FIX: apply type on update
     await supabase
       .from("journal_entries")
-      .update({ reflection: newReflection })
+      .update<Partial<JournalEntry>>({ reflection: newReflection }) 
       .eq("id", journalId);
 
     setLoading(false);
@@ -99,7 +100,6 @@ export default function JournalEntryPage({ params }) {
           <p className="text-yellow-800 font-medium">
             You’ve used all available AI reflections.
           </p>
-
           <button
             onClick={() => router.push("/upgrade")}
             className="mt-3 bg-brand-primary text-white px-4 py-2 rounded-lg hover:bg-brand-primary-dark"
