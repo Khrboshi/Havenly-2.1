@@ -1,4 +1,3 @@
-// app/premium/page.tsx
 "use client";
 
 import RequirePremium from "@/app/components/RequirePremium";
@@ -19,7 +18,6 @@ export default function PremiumPage() {
     <RequirePremium>
       <div className="min-h-screen bg-slate-950 px-6 py-10 text-white">
         <div className="mx-auto max-w-4xl space-y-8">
-          {/* ========================= HEADER ========================= */}
           <header>
             <p className="text-xs font-medium uppercase tracking-wide text-emerald-300">
               Havenly Premium
@@ -30,25 +28,18 @@ export default function PremiumPage() {
             </h1>
 
             <p className="mt-3 max-w-xl text-sm text-white/70">
-              This page gives you a calm overview of your Premium benefits,
-              available credits, and the reflective tools designed to help you
-              understand your emotional patterns with more clarity and softness.
+              A supportive, gentle space to explore how your days have been unfolding.
             </p>
           </header>
 
-          {/* ========================= MAIN GRID ========================= */}
           <section className="grid gap-6 md:grid-cols-[1.4fr,1fr]">
-            {/* PLAN OVERVIEW */}
             <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
               <h2 className="text-lg font-semibold">Your plan</h2>
 
               <p className="mt-2 text-sm text-slate-200">
                 You’re on the{" "}
-                <span className="font-medium text-emerald-300">
-                  {readablePlan}
-                </span>{" "}
-                plan, which gives you full access to Havenly’s deeper insights,
-                supportive timelines, and expanded reflective tools.
+                <span className="font-medium text-emerald-300">{readablePlan}</span>{" "}
+                plan.
               </p>
 
               <dl className="mt-4 grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
@@ -65,9 +56,7 @@ export default function PremiumPage() {
                   <dt className="text-xs uppercase tracking-wide text-slate-400">
                     Next renewal
                   </dt>
-                  <dd className="mt-1 text-slate-50">
-                    {renewalDate || "Not set"}
-                  </dd>
+                  <dd className="mt-1 text-slate-50">{renewalDate || "Not set"}</dd>
                 </div>
               </dl>
 
@@ -88,32 +77,16 @@ export default function PremiumPage() {
               </div>
             </div>
 
-            {/* PREMIUM BENEFITS */}
             <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-900/70 p-6 text-sm text-slate-200">
               <h3 className="text-base font-semibold text-white">
                 What Premium gives you
               </h3>
 
               <ul className="mt-3 space-y-2">
-                <li>
-                  • Deeper, more thoughtful reflections that look across
-                  multiple entries—not just one at a time.
-                </li>
-
-                <li>
-                  • Emotional timelines and themes that help you see how your
-                  days weave together over time.
-                </li>
-
-                <li>
-                  • A higher monthly credit balance so you can explore insights
-                  comfortably.
-                </li>
-
-                <li>
-                  • Early access to new Premium-only tools and experiments as
-                  Havenly grows.
-                </li>
+                <li>• Deeper reflections on your entries.</li>
+                <li>• Emotional timelines and themes.</li>
+                <li>• Higher monthly credit balance.</li>
+                <li>• Early access to new tools.</li>
               </ul>
 
               <Link
@@ -122,31 +95,20 @@ export default function PremiumPage() {
               >
                 Manage subscription
               </Link>
-
-              <p className="mt-3 text-xs text-slate-400">
-                You can downgrade at any time. Your journal entries always
-                remain yours, regardless of your plan.
-              </p>
             </div>
           </section>
 
-          {/* ========================= SUPPORTIVE NOTE ========================= */}
           <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-sm text-white/80">
             <h3 className="text-base font-semibold text-white">
               A calmer, more supportive experience
             </h3>
 
             <p className="mt-3 leading-relaxed">
-              Premium is designed to give you a deeper sense of clarity—not more
-              pressure. Every feature here is built to help you feel grounded,
-              supported, and understood in your own rhythm. Use what feels
-              helpful, skip what doesn’t, and return whenever you want to take a
-              closer look at how your days have been unfolding.
+              Premium gives you deeper clarity, not pressure. Use what feels helpful.
             </p>
 
             <p className="mt-3 text-xs text-white/55">
-              Havenly never uses your writing for advertising or profiling. Your
-              space remains private, gentle, and yours alone.
+              Havenly never uses your writing for advertising or profiling.
             </p>
           </section>
         </div>
