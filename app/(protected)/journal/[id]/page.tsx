@@ -15,7 +15,6 @@ export default function JournalEntryPage({ params }) {
   const [loading, setLoading] = useState(false);
   const [noCredits, setNoCredits] = useState(false);
 
-  // Local type for select only
   type JournalEntry = {
     id: string;
     content: string | null;
@@ -28,7 +27,7 @@ export default function JournalEntryPage({ params }) {
         .from("journal_entries")
         .select("*")
         .eq("id", journalId)
-        .single<JournalEntry>(); // ALLOWED — select can use generic
+        .single<JournalEntry>();
 
       if (data) {
         setEntryText(data.content || "");
@@ -43,7 +42,6 @@ export default function JournalEntryPage({ params }) {
     setLoading(true);
     setNoCredits(false);
 
-    // Deduct credit
     const creditRes = await fetch("/api/user/credits/use", {
       method: "POST",
     }).then((r) => r.json());
@@ -56,7 +54,6 @@ export default function JournalEntryPage({ params }) {
       return;
     }
 
-    // Generate reflection
     const reflectRes = await fetch("/api/reflect", {
       method: "POST",
       body: JSON.stringify({ journalEntry: entryText }),
@@ -70,10 +67,10 @@ export default function JournalEntryPage({ params }) {
     const newReflection = reflectRes.reflection;
     setReflection(newReflection);
 
-    // FINAL FIX: remove generics → allow Supabase to infer correctly
+    // FINAL FIX — cast to any because Supabase client is untyped
     await supabase
       .from("journal_entries")
-      .update({ reflection: newReflection })
+      .update({ reflection: newReflection } as any)
       .eq("id", journalId);
 
     setLoading(false);
