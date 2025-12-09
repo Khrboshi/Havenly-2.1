@@ -1,103 +1,69 @@
-"use client";
-
+import { createServerSupabase } from "@/lib/supabase/server";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { useSupabase } from "@/app/components/SupabaseSessionProvider";
 
-type JournalEntry = {
-  id: string;
-  created_at: string;
-  title: string | null;
-  content: string | null;
-};
+export const dynamic = "force-dynamic";
 
-export default function JournalListPage() {
-  const { supabase, session } = useSupabase();
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+function formatDate(date: string) {
+  return new Date(date).toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
-  useEffect(() => {
-    if (!session?.user) return;
+export default async function JournalPage() {
+  const supabase = createServerSupabase();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-    async function loadEntries() {
-      try {
-        setLoading(true);
-        setError(null);
+  if (!session) {
+    return null;
+  }
 
-        const { data, error: fetchError } = await supabase
-          .from("journal_entries")
-          .select("id, created_at, title, content")
-          .eq("user_id", session.user.id)
-          .order("created_at", { ascending: false });
-
-        if (fetchError) {
-          console.error(fetchError);
-          throw new Error("Could not load your journal entries.");
-        }
-
-        setEntries(data || []);
-      } catch (err: any) {
-        setError(err.message ?? "Unexpected error loading entries.");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadEntries();
-  }, [supabase, session]);
+  const { data: entries } = await supabase
+    .from("journal_entries")
+    .select("id, created_at, title, content")
+    .eq("user_id", session.user.id)
+    .order("created_at", { ascending: false });
 
   return (
-    <div className="mx-auto max-w-4xl px-6 pt-24 pb-24 text-slate-200">
-      <h1 className="text-3xl font-semibold tracking-tight mb-2">
-        Your journal
-      </h1>
-      <p className="text-slate-400 mb-8">
-        Browse past reflections and notice how your thoughts and emotions
-        evolve over time.
-      </p>
-
-      <div className="mb-8">
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-semibold text-slate-100">Your Journal</h1>
         <Link
           href="/journal/new"
-          className="inline-flex rounded-full bg-emerald-400 px-5 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-300 transition"
+          className="rounded-full bg-emerald-500 px-4 py-2 font-medium text-slate-900 hover:bg-emerald-400"
         >
-          Start a new reflection
+          New Entry
         </Link>
       </div>
 
-      {loading && (
-        <p className="text-sm text-slate-400">Loading your reflections…</p>
+      {entries?.length === 0 && (
+        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-slate-400 text-sm">
+          You haven’t written any reflections yet. Start with your first one.
+        </div>
       )}
 
-      {error && (
-        <p className="text-sm text-rose-400 bg-rose-900/20 border border-rose-700/40 rounded-lg px-3 py-2">
-          {error}
-        </p>
-      )}
-
-      {!loading && !error && entries.length === 0 && (
-        <p className="text-sm text-slate-400">
-          You haven&apos;t written anything yet — your first entry will appear
-          here once you check in.
-        </p>
-      )}
-
-      <div className="space-y-4 mt-4">
-        {entries.map((entry) => (
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {entries?.map((entry) => (
           <Link
             key={entry.id}
             href={`/journal/${entry.id}`}
-            className="block rounded-xl bg-slate-900/60 border border-slate-800 px-5 py-4 hover:border-emerald-400/60 transition"
+            className="rounded-xl border border-slate-800 bg-slate-950/60 p-5 hover:border-slate-700 hover:bg-slate-900 transition"
           >
-            <p className="text-xs text-slate-500 mb-1">
-              {new Date(entry.created_at).toLocaleString()}
+            <p className="text-xs text-slate-500 mb-2">
+              {formatDate(entry.created_at)}
             </p>
-            <p className="text-sm font-medium text-slate-100 mb-1">
-              {entry.title?.trim() || "Untitled reflection"}
+
+            <p className="text-sm leading-relaxed text-slate-200 line-clamp-4">
+              {entry.content}
             </p>
-            <p className="text-sm text-slate-300 line-clamp-2">
-              {entry.content || ""}
+
+            <p className="mt-3 text-emerald-400 text-sm hover:underline">
+              Read more →
             </p>
           </Link>
         ))}
