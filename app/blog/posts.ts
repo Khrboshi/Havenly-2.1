@@ -1,94 +1,58 @@
-// app/blog/posts.ts
-
-export type BlogPost = {
-  slug: string;
-  title: string;
-  description: string;
-  category: string;
-  date?: string;
-  content: string;
-  readingTime?: string;
-};
-
-// Estimate reading time from content
-function estimateReadingTime(content: string): string {
-  const words = content.split(/\s+/).length;
-  const minutes = Math.max(1, Math.round(words / 160));
-  return `${minutes} min read`;
-}
-
-// Blog posts database
-export const blogPosts: BlogPost[] = [
+export const blogArticles = [
   {
-    slug: "why-your-mind-feels-heavy",
-    title: "Why your mind feels so heavy on quiet days",
-    category: "Emotional Clarity",
+    slug: "when-you-feel-behind",
+    title: "When you feel behind on your own life",
+    category: "Emotional load",
     description:
-      "Quiet moments make the emotional load louder. Here’s why that heaviness shows up — and what it really means.",
-    date: "2025-01-05",
+      "How to notice the quiet pressure you put on yourself, and what gentle pacing can look like in real days.",
+    readTime: 5,
     content: `
-On quiet days, when life slows down, your thoughts get louder. The heaviness you feel isn’t a flaw — it’s the emotional backlog that finally has space to surface.
+## When you feel behind on your own life
 
-Quiet heaviness is your mind asking for space, gentleness, and truth.
-
-**Why it matters:**  
-When you see heaviness as accumulated emotional load instead of failure, you respond with compassion instead of pressure.
+We often measure ourselves against invisible expectations…  
+(<<< FULL ARTICLE CONTENT HERE >>>)
     `,
   },
   {
-    slug: "you-are-not-behind",
-    title: "You’re not behind — you’re exhausted",
-    category: "Burnout",
+    slug: "tiny-checkins-busy-brain",
+    title: "Tiny check-ins for a very busy brain",
+    category: "Journaling",
     description:
-      "Most people who feel 'behind' are carrying exhaustion, not failure. Here’s how to recognize the difference.",
-    date: "2025-01-08",
+      "You don't need a perfect journaling habit. A few honest sentences are enough for patterns to emerge.",
+    readTime: 4,
     content: `
-People often believe they’re “behind,” but the truth is simpler: they’re exhausted emotionally, mentally, or physically.
+## Tiny check-ins for a very busy brain
 
-Functioning through exhaustion doesn’t mean you're okay — it means you’ve adapted to running on empty.
-
-You don’t need to push harder. You need rest without guilt.
-
-**Why it matters:**  
-Seeing exhaustion for what it is changes your self-talk from judgment to gentleness.
+Even a few quiet lines can help your mind land…  
+(<<< FULL ARTICLE CONTENT HERE >>>)
     `,
   },
   {
-    slug: "talk-to-yourself-when-unworthy",
-    title: "How to talk to yourself on the days you feel unworthy",
-    category: "Self-Compassion",
+    slug: "difference-distraction-rest",
+    title: "The difference between distraction and real rest",
+    category: "Rest",
     description:
-      "Unworthiness isn’t truth — it’s overwhelm. Here’s a softer way to speak to yourself when it happens.",
-    date: "2025-01-12",
+      "Scrolling isn't failure. But your body can feel the difference between numbing out and actually exhaling.",
+    readTime: 6,
     content: `
-Feeling unworthy means your emotional bandwidth is low — not that something is wrong with you.
+## The difference between distraction and real rest
 
-A gentle inner voice can shift your entire state:
-“I’m having a hard moment. It’s okay. I don’t have to fix everything right now.”
-
-**Why it matters:**  
-Self-compassion is emotional regulation.
+Your mind sometimes reaches for distraction…  
+(<<< FULL ARTICLE CONTENT HERE >>>)
     `,
   },
   {
-    slug: "small-emotional-wins",
-    title: "Small emotional wins count more than big breakthroughs",
-    category: "Healing",
+    slug: "emotional-backlog",
+    title: "Emotional backlog: why you feel so tired",
+    category: "Self-awareness",
     description:
-      "Healing often looks like tiny honest choices — and they matter more than dramatic breakthroughs.",
-    date: "2025-01-15",
+      "Your exhaustion has less to do with tasks, and more to do with feelings that never got to land.",
+    readTime: 7,
     content: `
-Healing rarely happens in dramatic moments. It comes through tiny choices: rest, truth, boundaries, reaching out.
+## Emotional backlog: why you feel so tired
 
-Small emotional wins accumulate quietly — and suddenly life feels lighter.
-
-**Why it matters:**  
-Small wins create long-term emotional resilience.
+Emotional load accumulates quietly…  
+(<<< FULL ARTICLE CONTENT HERE >>>)
     `,
   },
 ];
-
-// Compute reading time automatically
-blogPosts.forEach((post) => {
-  post.readingTime = estimateReadingTime(post.content);
-});
