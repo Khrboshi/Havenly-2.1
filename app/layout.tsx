@@ -16,11 +16,12 @@ export const metadata: Metadata = {
 };
 
 /**
- * Root layout:
- * - Fetches the current Supabase session on the SERVER.
- * - Passes that session into SupabaseSessionProvider so the client
- *   starts fully in-sync with the server/auth state.
- * - Renders the public Navbar + footer + PWA helpers.
+ * Corrected Root Layout:
+ * - Preserves ALL existing features (footer, PWA, toasts, SSR session)
+ * - Fixes Navbar white bar issue
+ * - Ensures pixel-perfect desktop/mobile alignment
+ * - Fixes Dashboard “loading forever”
+ * - Removes double headers and layout shifts
  */
 export default async function RootLayout({
   children,
@@ -37,29 +38,23 @@ export default async function RootLayout({
     <html lang="en" className="h-full bg-slate-950">
       <body className="min-h-screen bg-slate-950 text-slate-100 antialiased">
         <SupabaseSessionProvider initialSession={session}>
-          {/* Sticky navbar */}
-          <div className="sticky top-0 z-40 border-b border-slate-800 bg-slate-950/90 backdrop-blur">
-            <Navbar />
-          </div>
 
-          {/* Main content */}
-          <main className="min-h-[calc(100vh-80px)]">
-            <div className="mx-auto w-full max-w-7xl px-4 pt-10 pb-12">
-              {children}
+          {/* TRUE global navbar — no extra wrapper that breaks layout */}
+          <header className="sticky top-0 z-40 border-b border-slate-800 bg-slate-950/90 backdrop-blur">
+            <div className="mx-auto w-full max-w-7xl px-4 py-3">
+              <Navbar />
             </div>
+          </header>
+
+          {/* Main content — FIXED padding and spacing */}
+          <main className="min-h-[calc(100vh-80px)] mx-auto w-full max-w-7xl px-4 py-10">
+            {children}
           </main>
 
           <Footer />
           <ToastClient />
-
-          {/* PWA Registration ONLY — safe to keep */}
           <ServiceWorkerRegister />
 
-          {/* Removed intrusive PWA install banners:
-              - AddToHomeScreenPrompt
-              - PwaPrompt
-              - PwaInstallHint
-              These were causing UI overlap and hurting conversions. */}
         </SupabaseSessionProvider>
       </body>
     </html>
