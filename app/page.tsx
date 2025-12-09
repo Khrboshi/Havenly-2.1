@@ -3,12 +3,14 @@
 import Link from "next/link";
 
 export default function HomePage() {
+  const currentYear = new Date().getFullYear();
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50">
       {/* MAIN CONTENT */}
       <main className="mx-auto max-w-6xl px-6 pt-28 pb-24">
         {/* ================= HERO ================= */}
-        <section className="grid gap-12 md:grid-cols-[1.25fr,1fr] items-center">
+        <section className="grid items-center gap-12 md:grid-cols-[1.25fr,1fr]">
           {/* Left: message + CTAs */}
           <div>
             <p className="inline-flex items-center rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-medium tracking-wide text-emerald-200">
@@ -44,7 +46,7 @@ export default function HomePage() {
               </Link>
             </div>
 
-            <p className="mt-3 text-xs text-slate-400">
+            <p className="mt-3 max-w-sm text-xs text-slate-400">
               No credit card required to start. Upgrade only if Premium feels
               clearly valuable for you.
             </p>
@@ -74,16 +76,27 @@ export default function HomePage() {
                 </p>
               </div>
 
+              <div className="mt-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-3 text-[11px] leading-relaxed text-slate-300">
+                <p className="font-semibold text-slate-100">
+                  A week in Premium might show:
+                </p>
+                <p className="mt-1">
+                  • Evenings where you feel most drained. <br />
+                  • People and tasks that consistently leave you calmer. <br />
+                  • How your emotional load actually shifts across the week.
+                </p>
+              </div>
+
               <div className="mt-2 flex items-center justify-between text-[11px] text-slate-400">
                 <span>Private, encrypted journaling</span>
-                <span>Light AI reflections on the Free plan</span>
+                <span>Light AI reflections on Free</span>
               </div>
             </div>
           </aside>
         </section>
 
         {/* ============== HOW IT WORKS ============== */}
-        <section className="mt-20 grid gap-10 md:grid-cols-[1.4fr,1fr] items-start">
+        <section className="mt-20 grid items-start gap-10 md:grid-cols-[1.4fr,1fr]">
           <div>
             <h2 className="text-lg font-semibold text-slate-50">
               How Havenly fits into a tired week
@@ -134,8 +147,8 @@ export default function HomePage() {
                     Over time, patterns start to feel clearer.
                   </p>
                   <p className="mt-1 text-slate-400">
-                    Premium layers in timelines, recurring themes, and
-                    gentle insights so you can see what&apos;s actually been
+                    Premium layers in timelines, recurring themes, and gentle
+                    insights so you can see what&apos;s actually been
                     supporting you &mdash; and what&apos;s been draining you.
                   </p>
                 </div>
@@ -200,7 +213,7 @@ export default function HomePage() {
 
         {/* ============== SIMPLE PRICING SUMMARY ============== */}
         <section className="mt-20 rounded-3xl border border-slate-800 bg-slate-950/80 p-6">
-          <div className="grid gap-8 md:grid-cols-[1.4fr,1fr] items-center">
+          <div className="grid items-center gap-8 md:grid-cols-[1.4fr,1fr]">
             <div>
               <h2 className="text-lg font-semibold text-slate-50">
                 Start free. Upgrade only if it clearly helps.
@@ -258,7 +271,7 @@ export default function HomePage() {
       {/* FOOTER */}
       <footer className="border-t border-slate-900 bg-slate-950/95">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 py-6 text-xs text-slate-500 sm:flex-row">
-          <p>© {new Date().getFullYear()} Havenly 2.1. All rights reserved.</p>
+          <p>© {currentYear} Havenly 2.1. All rights reserved.</p>
           <Link
             href="/privacy"
             className="text-xs text-slate-400 hover:text-slate-200"
