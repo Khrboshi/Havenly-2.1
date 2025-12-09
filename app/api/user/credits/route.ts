@@ -27,13 +27,15 @@ export async function GET() {
       );
     }
 
-    const monthlyLimit = PLAN_CREDIT_ALLOWANCES[planRow.plan_tier];
+    // FIX: plan tier is planRow.planType
+    const monthlyLimit = PLAN_CREDIT_ALLOWANCES[planRow.planType];
 
     return NextResponse.json({
       success: true,
-      plan: planRow.plan_tier,
+      plan: planRow.planType,
       monthly_limit: monthlyLimit,
-      used: planRow.used_reflections,
+      used: planRow.credits,          // FIXED
+      renewal_date: planRow.renewalDate,  // FIXED
     });
   } catch (err) {
     console.error("Credits GET error:", err);
@@ -68,19 +70,21 @@ export async function POST() {
       );
     }
 
-    const monthlyLimit = PLAN_CREDIT_ALLOWANCES[planRow.plan_tier];
+    const monthlyLimit = PLAN_CREDIT_ALLOWANCES[planRow.planType];
 
-    if (planRow.used_reflections >= monthlyLimit) {
+    // planRow.credits = used_reflections
+    if (planRow.credits >= monthlyLimit) {
       return NextResponse.json(
         { success: false, error: "INSUFFICIENT_CREDITS" },
         { status: 403 }
       );
     }
 
+    // increment used reflections
     const { error } = await supabase
       .from("user_plans")
       .update({
-        used_reflections: planRow.used_reflections + 1,
+        credits: planRow.credits + 1,
       })
       .eq("user_id", user.id);
 
