@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useSupabase } from "@/components/providers/SupabaseSessionProvider";
+import { useSupabase } from "@/components/SupabaseSessionProvider";
 
 export default function DashboardPage() {
   const { supabase } = useSupabase();
