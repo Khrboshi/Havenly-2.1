@@ -16,12 +16,11 @@ export const metadata: Metadata = {
 };
 
 /**
- * Corrected Root Layout:
- * - Preserves ALL existing features (footer, PWA, toasts, SSR session)
- * - Fixes Navbar white bar issue
- * - Ensures pixel-perfect desktop/mobile alignment
- * - Fixes Dashboard “loading forever”
- * - Removes double headers and layout shifts
+ * Root layout:
+ * - Fetches current Supabase session SERVER-SIDE.
+ * - Hydrates SupabaseSessionProvider with initialSession for instant sync.
+ * - Ensures pixel-perfect dark theme across mobile + desktop.
+ * - Prevents duplicate navbar spacing (previous issue).
  */
 export default async function RootLayout({
   children,
@@ -29,7 +28,6 @@ export default async function RootLayout({
   children: ReactNode;
 }) {
   const supabase = createServerSupabase();
-
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -38,23 +36,23 @@ export default async function RootLayout({
     <html lang="en" className="h-full bg-slate-950">
       <body className="min-h-screen bg-slate-950 text-slate-100 antialiased">
         <SupabaseSessionProvider initialSession={session}>
+          {/* NAVBAR — sticky with no extra container (fixes white bar issue) */}
+          <div className="sticky top-0 z-40">
+            <Navbar />
+          </div>
 
-          {/* TRUE global navbar — no extra wrapper that breaks layout */}
-          <header className="sticky top-0 z-40 border-b border-slate-800 bg-slate-950/90 backdrop-blur">
-            <div className="mx-auto w-full max-w-7xl px-4 py-3">
-              <Navbar />
+          {/* MAIN CONTENT — correct padding & container alignment */}
+          <main className="min-h-[calc(100vh-80px)] px-4">
+            <div className="mx-auto w-full max-w-7xl pt-10 pb-12">
+              {children}
             </div>
-          </header>
-
-          {/* Main content — FIXED padding and spacing */}
-          <main className="min-h-[calc(100vh-80px)] mx-auto w-full max-w-7xl px-4 py-10">
-            {children}
           </main>
 
           <Footer />
           <ToastClient />
-          <ServiceWorkerRegister />
 
+          {/* PWA Registration */}
+          <ServiceWorkerRegister />
         </SupabaseSessionProvider>
       </body>
     </html>
