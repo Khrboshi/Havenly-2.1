@@ -5,12 +5,13 @@ import DashboardClient from "./DashboardClient";
 
 export default async function DashboardPage() {
   const supabase = createServerSupabase();
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    // Middleware should catch this, but this is a final guarantee
+    // Middleware should normally redirect, but this is a final safety net.
     return null;
   }
 
