@@ -1,141 +1,119 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useSupabase } from "@/components/SupabaseSessionProvider";
-
-type PlanInfo = {
-  planType: "FREE" | "PREMIUM" | "TRIAL";
-  credits: number;
-};
+import Link from "next/link";
+import { useSupabase } from "@/app/components/SupabaseSessionProvider";
+import { PLAN_CREDIT_ALLOWANCES } from "@/lib/creditRules";
 
 export default function Navbar() {
-  const { supabase } = useSupabase();
+  const { supabase, session } = useSupabase();
 
-  const [loading, setLoading] = useState(true);
-  const [plan, setPlan] = useState<PlanInfo>({
-    planType: "FREE",
-    credits: 0,
-  });
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [planType, setPlanType] = useState("FREE");
+  const [credits, setCredits] = useState<number | null>(null);
+
+  const isLoggedIn = !!session;
 
   useEffect(() => {
-    let active = true;
-
     async function loadPlan() {
+      if (!isLoggedIn) return;
+
       try {
-        const res = await fetch("/api/user/plan", { cache: "no-store" });
+        const res = await fetch("/api/user/plan");
         const data = await res.json();
 
-        if (active && data?.plan) {
-          setPlan({
-            planType: data.plan.planType,
-            credits: data.plan.credits,
-          });
+        if (data?.plan) {
+          setPlanType(data.plan.planType);
+          setCredits(data.plan.credits);
         }
       } catch (err) {
-        console.error("Navbar plan error:", err);
-      } finally {
-        if (active) setLoading(false);
+        console.error("Navbar plan load failed:", err);
       }
     }
 
     loadPlan();
-    return () => {
-      active = false;
-    };
-  }, []);
+  }, [isLoggedIn]);
 
-  const isFree = plan.planType === "FREE";
-  const isPremium = plan.planType === "PREMIUM" || plan.planType === "TRIAL";
+  function handleLogout() {
+    supabase.auth.signOut();
+  }
+
+  // ----- Mobile Button (hamburger) ------
+  const MobileButton = (
+    <button
+      onClick={() => setMobileOpen(!mobileOpen)}
+      className="md:hidden p-2 rounded-lg border border-slate-700 text-slate-200 hover:bg-slate-800"
+    >
+      ☰
+    </button>
+  );
+
+  // ---- Plan Display -----
+  const PlanDisplay =
+    planType === "FREE" ? (
+      <span className="text-xs text-slate-400">
+        Free · {credits ?? 0}/{PLAN_CREDIT_ALLOWANCES.FREE}
+      </span>
+    ) : (
+      <span className="text-xs text-emerald-300">Premium Access</span>
+    );
+
+  // ---- Navigation Links ----
+  const NavLinks = (
+    <div className="flex flex-col md:flex-row md:items-center gap-6">
+      <Link href="/journal" className="hover:text-brand-primary">
+        Journal
+      </Link>
+      <Link href="/tools" className="hover:text-brand-primary">
+        Tools
+      </Link>
+      <Link href="/insights" className="hover:text-brand-primary">
+        Insights
+      </Link>
+      <Link href="/upgrade" className="hover:text-brand-primary">
+        Upgrade
+      </Link>
+
+      <button
+        className="text-red-400 hover:text-red-300 md:ml-4"
+        onClick={handleLogout}
+      >
+        Logout
+      </button>
+
+      <div className="md:hidden border-t border-slate-700 pt-4 mt-4">
+        {PlanDisplay}
+      </div>
+    </div>
+  );
 
   return (
-    <nav className="w-full bg-slate-950/90 backdrop-blur border-b border-slate-800">
-      {/* INNER CONTAINER */}
-      <div className="mx-auto max-w-7xl px-4 h-16 flex items-center justify-between">
-        {/* LEFT — Logo */}
+    <nav className="w-full bg-slate-900/80 backdrop-blur border-b border-slate-800 px-4 py-3 sticky top-0 z-50">
+      <div className="flex items-center justify-between max-w-7xl mx-auto">
+        {/* Brand */}
         <Link
-          href="/"
-          className="text-xl font-semibold tracking-tight text-brand-primary"
+          href="/dashboard"
+          className="text-xl font-semibold text-brand-primary tracking-tight"
         >
           Havenly
         </Link>
 
-        {/* RIGHT SECTION — Desktop only */}
-        <div className="hidden md:flex items-center gap-8 text-sm">
-          {/* PLAN STATUS */}
-          {!loading && (
-            <div className="text-slate-300">
-              <span className="font-medium">{plan.planType}</span>
+        {/* Desktop: Plan */}
+        <div className="hidden md:block">{PlanDisplay}</div>
 
-              {isFree ? (
-                <span className="ml-1 text-slate-400">
-                  · {plan.credits}/20 reflections left
-                </span>
-              ) : (
-                <span className="ml-1 text-emerald-400">· Premium Access</span>
-              )}
-            </div>
-          )}
+        {/* Desktop Nav */}
+        <div className="hidden md:flex items-center gap-6">{NavLinks}</div>
 
-          {/* NAVIGATION LINKS */}
-          <Link
-            href="/journal"
-            className="hover:text-brand-primary transition-colors"
-          >
-            Journal
-          </Link>
-
-          <Link
-            href="/tools"
-            className="hover:text-brand-primary transition-colors"
-          >
-            Tools
-          </Link>
-
-          <Link
-            href="/insights"
-            className="hover:text-brand-primary transition-colors"
-          >
-            Insights
-          </Link>
-
-          {/* UPGRADE BUTTON FOR FREE USERS */}
-          {!loading && isFree && (
-            <Link
-              href="/upgrade"
-              className="px-3 py-1.5 rounded-lg bg-brand-primary text-white hover:bg-brand-primary-dark transition"
-            >
-              Upgrade
-            </Link>
-          )}
-
-          {/* LOGOUT */}
-          <Link
-            href="/logout"
-            className="text-red-500 hover:text-red-400 font-medium transition"
-          >
-            Logout
-          </Link>
-        </div>
-
-        {/* MOBILE MENU (compact) */}
-        <div className="md:hidden flex items-center gap-4 text-sm">
-          {!loading && (
-            <span className="text-slate-400 text-xs">
-              {isFree
-                ? `${plan.credits}/20 left`
-                : "Premium"}
-            </span>
-          )}
-
-          <Link
-            href="/logout"
-            className="text-red-500 hover:text-red-400 font-medium transition text-xs"
-          >
-            Logout
-          </Link>
-        </div>
+        {/* Mobile Hamburger */}
+        {MobileButton}
       </div>
+
+      {/* Mobile Menu Panel */}
+      {mobileOpen && (
+        <div className="md:hidden mt-4 p-4 bg-slate-900/95 border border-slate-800 rounded-xl animate-fadeIn">
+          {NavLinks}
+        </div>
+      )}
     </nav>
   );
 }
