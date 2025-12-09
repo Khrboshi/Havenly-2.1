@@ -15,7 +15,7 @@ export default function JournalEntryPage({ params }) {
   const [loading, setLoading] = useState(false);
   const [noCredits, setNoCredits] = useState(false);
 
-  // Correct row type for this table
+  // Local type for select only
   type JournalEntry = {
     id: string;
     content: string | null;
@@ -28,7 +28,7 @@ export default function JournalEntryPage({ params }) {
         .from("journal_entries")
         .select("*")
         .eq("id", journalId)
-        .single<JournalEntry>(); // GOOD
+        .single<JournalEntry>(); // ALLOWED — select can use generic
 
       if (data) {
         setEntryText(data.content || "");
@@ -43,7 +43,7 @@ export default function JournalEntryPage({ params }) {
     setLoading(true);
     setNoCredits(false);
 
-    // Step 1: Deduct a credit
+    // Deduct credit
     const creditRes = await fetch("/api/user/credits/use", {
       method: "POST",
     }).then((r) => r.json());
@@ -56,7 +56,7 @@ export default function JournalEntryPage({ params }) {
       return;
     }
 
-    // Step 2: Generate reflection
+    // Generate reflection
     const reflectRes = await fetch("/api/reflect", {
       method: "POST",
       body: JSON.stringify({ journalEntry: entryText }),
@@ -70,10 +70,10 @@ export default function JournalEntryPage({ params }) {
     const newReflection = reflectRes.reflection;
     setReflection(newReflection);
 
-    // Step 3: Save reflection in DB
+    // FINAL FIX: remove generics → allow Supabase to infer correctly
     await supabase
       .from("journal_entries")
-      .update<JournalEntry>({ reflection: newReflection }) // FIXED: must match full row type
+      .update({ reflection: newReflection })
       .eq("id", journalId);
 
     setLoading(false);
