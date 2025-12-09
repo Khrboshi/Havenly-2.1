@@ -1,47 +1,101 @@
-// app/api/user/credits/route.ts
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { getUserPlan } from "@/lib/userPlan";
+import { getMonthlyLimit } from "@/lib/creditRules";
 
 export async function GET() {
   try {
-    const supabase = createServerSupabase();
+    const supabase = await createServerSupabase();
 
     const {
       data: { user },
-      error: userError,
     } = await supabase.auth.getUser();
 
-    if (userError || !user) {
+    if (!user) {
       return NextResponse.json(
-        { error: "Not authenticated" },
+        { success: false, error: "NOT_AUTHENTICATED" },
         { status: 401 }
       );
     }
 
-    const planRow = await getUserPlan(supabase, user.id);
+    // FIX: getUserPlan only accepts userId
+    const planRow = await getUserPlan(user.id);
 
     if (!planRow) {
       return NextResponse.json(
-        {
-          planType: "FREE",
-          credits: 0,
-        },
-        { status: 200 }
+        { success: false, error: "NO_PLAN_FOUND" },
+        { status: 404 }
       );
     }
 
-    return NextResponse.json(
-      {
-        planType: planRow.plan_type ?? "FREE",
-        credits: planRow.credits_balance ?? 0,
-      },
-      { status: 200 }
-    );
+    const limit = getMonthlyLimit(planRow.plan_tier);
+
+    return NextResponse.json({
+      success: true,
+      plan: planRow.plan_tier,
+      monthly_limit: limit,
+      used: planRow.used_reflections,
+    });
   } catch (err) {
-    console.error("GET /api/user/credits error:", err);
+    console.error("Credits GET error:", err);
     return NextResponse.json(
-      { error: "Failed to load credits." },
+      { success: false, error: "SERVER_ERROR" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST() {
+  try {
+    const supabase = await createServerSupabase();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "NOT_AUTHENTICATED" },
+        { status: 401 }
+      );
+    }
+
+    const planRow = await getUserPlan(user.id);
+
+    if (!planRow) {
+      return NextResponse.json(
+        { success: false, error: "NO_PLAN_FOUND" },
+        { status: 404 }
+      );
+    }
+
+    const limit = getMonthlyLimit(planRow.plan_tier);
+
+    if (planRow.used_reflections >= limit) {
+      return NextResponse.json(
+        { success: false, error: "INSUFFICIENT_CREDITS" },
+        { status: 403 }
+      );
+    }
+
+    const { error } = await supabase
+      .from("user_plans")
+      .update({ used_reflections: planRow.used_reflections + 1 })
+      .eq("user_id", user.id);
+
+    if (error) {
+      console.error("Credit deduction error:", error);
+      return NextResponse.json(
+        { success: false, error: "UPDATE_FAILED" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("Credits POST error:", err);
+    return NextResponse.json(
+      { success: false, error: "SERVER_ERROR" },
       { status: 500 }
     );
   }
