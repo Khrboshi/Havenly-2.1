@@ -27,6 +27,7 @@ export default function Navbar() {
   const isInsights = pathname.startsWith("/insights");
   const isTools = pathname.startsWith("/tools");
   const isBlog = pathname.startsWith("/blog");
+  const isUpgrade = pathname.startsWith("/upgrade") || pathname.startsWith("/premium");
 
   const isLoggedIn = !!session?.user;
 
@@ -44,8 +45,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-800/60 bg-slate-950/80 backdrop-blur">
       <nav className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-
-        {/* Brand */}
+        {/* Left: Brand + nav */}
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/10">
@@ -56,117 +56,103 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Navigation */}
-          {isLoggedIn ? (
-            // Authenticated navigation
-            <div className="hidden items-center gap-3 text-xs font-medium text-slate-400 md:flex">
-              <Link
-                href="/dashboard"
-                className={
-                  "rounded-full px-3 py-1 transition " +
-                  (isDashboard
-                    ? "bg-slate-800 text-slate-50"
-                    : "hover:bg-slate-900")
-                }
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/journal"
-                className={
-                  "rounded-full px-3 py-1 transition " +
-                  (isJournal
-                    ? "bg-slate-800 text-slate-50"
-                    : "hover:bg-slate-900")
-                }
-              >
-                Journal
-              </Link>
-              <Link
-                href="/insights"
-                className={
-                  "rounded-full px-3 py-1 transition " +
-                  (isInsights
-                    ? "bg-slate-800 text-slate-50"
-                    : "hover:bg-slate-900")
-                }
-              >
-                Insights
-              </Link>
-              <Link
-                href="/tools"
-                className={
-                  "rounded-full px-3 py-1 transition " +
-                  (isTools
-                    ? "bg-slate-800 text-slate-50"
-                    : "hover:bg-slate-900")
-                }
-              >
-                Tools
-              </Link>
-              <Link
-                href="/blog"
-                className={
-                  "rounded-full px-3 py-1 transition " +
-                  (isBlog
-                    ? "bg-slate-800 text-slate-50"
-                    : "hover:bg-slate-900")
-                }
-              >
-                Blog
-              </Link>
-            </div>
-          ) : (
-            // Public navigation — ONLY public items should appear
-            <div className="hidden items-center gap-3 text-xs font-medium text-slate-400 md:flex">
-              <Link
-                href="/blog"
-                className={
-                  "rounded-full px-3 py-1 transition " +
-                  (isBlog ? "bg-slate-800 text-slate-50" : "hover:bg-slate-900")
-                }
-              >
-                Blog
-              </Link>
-            </div>
-          )}
+          <div className="hidden items-center gap-3 text-xs font-medium text-slate-400 md:flex">
+            <Link
+              href="/dashboard"
+              className={
+                "rounded-full px-3 py-1 transition " +
+                (isDashboard
+                  ? "bg-slate-800 text-slate-50"
+                  : "hover:bg-slate-900")
+              }
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/journal"
+              className={
+                "rounded-full px-3 py-1 transition " +
+                (isJournal
+                  ? "bg-slate-800 text-slate-50"
+                  : "hover:bg-slate-900")
+              }
+            >
+              Journal
+            </Link>
+            <Link
+              href="/insights"
+              className={
+                "rounded-full px-3 py-1 transition " +
+                (isInsights
+                  ? "bg-slate-800 text-slate-50"
+                  : "hover:bg-slate-900")
+              }
+            >
+              Insights
+            </Link>
+            <Link
+              href="/tools"
+              className={
+                "rounded-full px-3 py-1 transition " +
+                (isTools
+                  ? "bg-slate-800 text-slate-50"
+                  : "hover:bg-slate-900")
+              }
+            >
+              Tools
+            </Link>
+            <Link
+              href="/blog"
+              className={
+                "rounded-full px-3 py-1 transition " +
+                (isBlog
+                  ? "bg-slate-800 text-slate-50"
+                  : "hover:bg-slate-900")
+              }
+            >
+              Blog
+            </Link>
+          </div>
         </div>
 
-        {/* Right side */}
+        {/* Right: Auth / plan area */}
         {!isLoggedIn ? (
-          // Public right side: Sign in + Try Premium
           <div className="flex items-center gap-4">
             <Link
               href="/magic-login"
-              className="text-sm px-3 py-1 rounded-md hover:bg-slate-800/60"
+              className="rounded-md px-3 py-1 text-sm hover:bg-slate-800/60"
             >
               Sign in
             </Link>
 
             <Link
               href="/upgrade"
-              className="px-4 py-2 rounded-full bg-emerald-400 text-slate-900 text-sm font-semibold hover:bg-emerald-300 transition"
+              className={
+                "rounded-full px-4 py-2 text-sm font-semibold transition " +
+                (isUpgrade
+                  ? "bg-emerald-500 text-slate-900 shadow-[0_0_0_1px_rgba(16,185,129,0.5)]"
+                  : "bg-emerald-400 text-slate-900 hover:bg-emerald-300")
+              }
             >
-              Try Premium
+              {isUpgrade ? "Premium details" : "Try Premium"}
             </Link>
           </div>
         ) : (
-          // Authenticated right side
           <div className="flex items-center gap-3">
-            <span className="px-3 py-1 rounded-full bg-slate-800 text-xs">
+            <span className="rounded-full bg-slate-800 px-3 py-1 text-xs">
               {planLabel}
             </span>
 
             <Link
               href="/settings"
-              className="h-8 w-8 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center text-xs font-medium"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-700 text-xs font-medium hover:bg-slate-600"
             >
               {session.user.email?.[0]?.toUpperCase() ?? "U"}
             </Link>
 
             <Link
               href="/logout"
-              className="text-sm px-3 py-1 rounded-md hover:bg-slate-800/60"
+              className="rounded-md px-3 py-1 text-sm hover:bg-slate-800/60"
             >
               Log out
             </Link>
