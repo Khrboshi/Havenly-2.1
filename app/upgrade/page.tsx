@@ -149,6 +149,21 @@ export default function UpgradePage() {
                 ))}
               </ul>
 
+              {/* Example snippet */}
+              <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-950/80 p-4 text-xs text-slate-200">
+                <p className="font-semibold text-emerald-300">
+                  Example Premium reflection
+                </p>
+                <p className="mt-2 leading-relaxed">
+                  &ldquo;Across your last 9 entries, evenings after long
+                  meetings show the sharpest drop in energy. Weekends are
+                  quieter, but you still describe feeling &apos;on guard&apos;.
+                  One small experiment: choosing one evening this week where
+                  you explicitly plan to do nothing productive and see how your
+                  body responds the next day.&rdquo;
+                </p>
+              </div>
+
               <div className="mt-7 flex flex-wrap items-center gap-3">
                 <button
                   onClick={alreadyUpgraded ? undefined : handleUpgrade}
@@ -170,7 +185,7 @@ export default function UpgradePage() {
                 </Link>
               </div>
 
-              <p className="mt-3 text-xs text-slate-400 max-w-sm">
+              <p className="mt-3 max-w-sm text-xs text-slate-400">
                 Premium helps support ongoing improvements to Havenly and keeps
                 your reflection space private, calm, and completely free from
                 ads or social feeds.
@@ -231,7 +246,7 @@ export default function UpgradePage() {
           <h2 className="text-lg font-semibold text-slate-50">
             What actually changes with Premium?
           </h2>
-          <p className="mt-2 text-sm text-slate-300 max-w-xl">
+          <p className="mt-2 max-w-xl text-sm text-slate-300">
             You keep everything you already have in the Free plan. Premium
             doesn&apos;t add pressure &mdash; it adds depth, context, and a
             clearer view of your emotional patterns.
@@ -270,7 +285,7 @@ export default function UpgradePage() {
             <h2 className="text-lg font-semibold text-slate-50">
               Who Havenly Premium is for
             </h2>
-            <p className="mt-3 text-sm text-slate-300 max-w-xl">
+            <p className="mt-3 max-w-xl text-sm text-slate-300">
               Premium is for people who know their emotional world is busy and
               want a quieter way to understand it.
             </p>
