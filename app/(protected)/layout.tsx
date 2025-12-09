@@ -1,26 +1,27 @@
+import "../globals.css";
 import Navbar from "@/components/Navbar";
-import { createServerSupabase } from "@/lib/supabase/server";
-import { getUserPlan, ensurePlanRow } from "@/lib/userPlan";
+import { SupabaseSessionProvider } from "@/components/SupabaseSessionProvider";
 
-export default async function ProtectedLayout({ children }) {
-  const supabase = await createServerSupabase();
+export const metadata = {
+  title: "Havenly – Dashboard",
+};
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (user) {
-    // Ensures plan row always exists server-side
-    await ensurePlanRow(user.id);
-
-    // Preload plan to reduce navbar flicker
-    await getUserPlan(user.id);
-  }
-
+export default function ProtectedLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <div className="min-h-screen bg-brand-bg">
-      <Navbar />
-      <main className="pt-6">{children}</main>
+    <div className="min-h-screen flex flex-col bg-[#020617]">
+      {/* Global Auth Provider */}
+      <SupabaseSessionProvider>
+        
+        {/* Correct Navbar (only once) */}
+        <Navbar />
+
+        {/* Page content */}
+        <main className="flex-1 pt-4">{children}</main>
+      </SupabaseSessionProvider>
     </div>
   );
 }
