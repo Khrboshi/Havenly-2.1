@@ -5,20 +5,29 @@ import { useEffect, useState } from "react";
 import { useSupabase } from "@/components/SupabaseSessionProvider";
 
 export default function Navbar() {
-  const { supabase } = useSupabase();
+  const { supabase, session } = useSupabase();
 
   const [planType, setPlanType] = useState<string>("FREE");
   const [credits, setCredits] = useState<number>(0);
   const [loading, setLoading] = useState(true);
+  const user = session?.user;
 
+  // Load plan information
   useEffect(() => {
     async function loadPlan() {
-      const res = await fetch("/api/user/plan");
-      const data = await res.json();
+      try {
+        const res = await fetch("/api/user/plan", {
+          credentials: "include",
+        });
 
-      if (data?.plan) {
-        setPlanType(data.plan.planType);
-        setCredits(data.plan.credits);
+        const data = await res.json();
+
+        if (data?.plan) {
+          setPlanType(data.plan.planType);
+          setCredits(data.plan.credits);
+        }
+      } catch (err) {
+        console.error("Navbar plan load error:", err);
       }
 
       setLoading(false);
@@ -27,13 +36,29 @@ export default function Navbar() {
     loadPlan();
   }, []);
 
+  // FIX: logout must explicitly call the server route and then refresh UI
+  async function handleLogout() {
+    try {
+      await fetch("/logout", {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (typeof window !== "undefined") {
+        window.location.href = "/"; // Hard navigation ensures full session reset
+      }
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+  }
+
   return (
     <nav className="w-full bg-white border-b shadow-sm px-6 py-4 flex items-center justify-between">
       <Link href="/dashboard" className="text-xl font-bold text-brand-primary">
         Havenly
       </Link>
 
-      {!loading && (
+      {!loading && user && (
         <div className="flex items-center gap-6">
           <div className="text-sm text-gray-700">
             <span className="font-semibold">{planType}</span>
@@ -62,12 +87,13 @@ export default function Navbar() {
             <Link href="/insights">Insights</Link>
           </div>
 
-          <Link
-            href="/logout"
+          {/* FIXED LOGOUT: now always works */}
+          <button
+            onClick={handleLogout}
             className="text-sm text-red-600 hover:text-red-700 font-medium"
           >
             Logout
-          </Link>
+          </button>
         </div>
       )}
     </nav>
