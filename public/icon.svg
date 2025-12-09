@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 64 64"
+  role="img"
+  aria-labelledby="title desc"
+>
+  <title id="title">Havenly icon</title>
+  <desc id="desc">A soft rounded square with a calm circle representing a safe, reflective space.</desc>
+  <rect x="4" y="4" width="56" height="56" rx="16" fill="#0F172A" />
+  <circle cx="32" cy="26" r="14" fill="#4CA7A3" />
+  <path
+    d="M18 40c3.5 5.5 8.8 9 14 9s10.5-3.5 14-9"
+    fill="none"
+    stroke="#F9F9F9"
+    stroke-width="2.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>
