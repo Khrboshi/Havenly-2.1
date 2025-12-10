@@ -1,49 +1,65 @@
 export const dynamic = "force-dynamic";
 
-import { NextResponse } from "next/server";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
 /**
- * Supabase OAuth / Magic Link callback handler.
- * This route is hit AFTER Supabase verifies the magic link token.
- * Our job:
- * 1) Force Supabase to refresh auth cookies
- * 2) Redirect the user to the correct destination
+ * Correct PKCE OAuth/Magic Link callback route.
+ * This MUST:
+ * 1. Pass the Supabase token from the URL
+ * 2. Let Supabase exchange it for a session
+ * 3. Write the session cookies
+ * 4. Redirect cleanly to the final destination
  */
-export async function GET(request: Request) {
+
+export async function GET(request: NextRequest) {
+  const url = new URL(request.url);
+
+  // Where the user should ultimately land
+  const redirectTo =
+    url.searchParams.get("redirect_to") || "/dashboard";
+
+  let response = NextResponse.redirect(redirectTo, {
+    headers: { "Cache-Control": "no-store" },
+  });
+
+  // Create Supabase client with cookie passthrough
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value;
+        },
+        set(name: string, value: string, options: any) {
+          response.cookies.set(name, value, options);
+        },
+        remove(name: string, options: any) {
+          response.cookies.set(name, "", { ...options, maxAge: 0 });
+        },
+      },
+    }
+  );
+
   try {
-    const url = new URL(request.url);
-
-    // Read ?redirect_to=<path> from the magic link
-    const redirectTo =
-      url.searchParams.get("redirect_to") || "/dashboard";
-
-    const supabase = await createServerSupabase();
-
-    // Trigger cookie signing
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.getSession();
+    // IMPORTANT:
+    // This exchanges the PKCE token for a session,
+    // which writes the auth cookies.
+    const { data, error } = await supabase.auth.getSession();
 
     if (error) {
-      console.error("Callback error:", error);
+      console.error("Supabase callback error:", error);
+      return NextResponse.redirect(
+        `${url.origin}/magic-login?error=callback_failed`
+      );
     }
 
-    // Build final redirect URL
-    const final = new URL(redirectTo, url.origin);
-
-    return NextResponse.redirect(final.toString(), {
-      headers: { "Cache-Control": "no-store" },
-    });
+    return response;
   } catch (err) {
-    console.error("Auth callback failure:", err);
-
-    // Fail safe → return user to login page
-    const fallback = new URL(
-      "/magic-login?error=callback_failed",
-      request.url
+    console.error("Callback failure:", err);
+    return NextResponse.redirect(
+      `${url.origin}/magic-login?error=callback_failed`
     );
-    return NextResponse.redirect(fallback);
   }
 }
