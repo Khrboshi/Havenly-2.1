@@ -2,6 +2,9 @@
 
 import { createServerSupabase } from "@/lib/supabase/server";
 
+/**
+ * Magic link sender — PKCE-safe, production-correct
+ */
 export async function sendMagicLink(formData: FormData) {
   const raw = formData.get("email");
   const email = typeof raw === "string" ? raw.trim() : "";
@@ -13,20 +16,20 @@ export async function sendMagicLink(formData: FormData) {
     };
   }
 
-  // Where we ultimately want the user to land *after* auth is complete
-  const redirectTo = "/dashboard";
+  /**
+   * IMPORTANT:
+   * Your confirmed production domain must be used here.
+   */
+  const siteUrl = "https://havenly-2-1.vercel.app";
 
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  // Final page after user logs in
+  const redirectTo = "/dashboard";
 
   const supabase = await createServerSupabase();
 
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      // IMPORTANT:
-      // 1) Hit the auth callback route so Supabase can exchange the code for a session
-      // 2) Pass the final destination so the callback can redirect on
       emailRedirectTo: `${siteUrl}/auth/callback?redirect_to=${encodeURIComponent(
         redirectTo
       )}`,
