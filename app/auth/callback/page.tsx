@@ -3,7 +3,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { Suspense, useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabaseClient } from "@/lib/supabase/client";
 
@@ -12,10 +12,10 @@ function CallbackInner() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    async function finishSignIn() {
+    async function completeLogin() {
       const supabase = supabaseClient;
 
-      // Support both redirect_to and redirectTo, with a safe default
+      // The final destination — ALWAYS dashboard for Havenly SaaS
       const redirectTo =
         searchParams.get("redirect_to") ||
         searchParams.get("redirectTo") ||
@@ -24,55 +24,55 @@ function CallbackInner() {
       const code = searchParams.get("code");
 
       try {
-        // If we have a code from the magic link, exchange it for a session
+        // Case 1: We have the magic link code → exchange for session
         if (code) {
-          const { data, error } = await supabase.auth.exchangeCodeForSession(
-            code
-          );
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
           if (error) {
-            console.error(
-              "Callback exchangeCodeForSession error:",
-              error.message
-            );
+            console.error("exchangeCodeForSession error:", error.message);
             router.replace("/magic-login");
             return;
           }
 
+          // SUCCESS → redirect immediately
           if (data.session) {
             router.replace(redirectTo);
             return;
           }
         }
 
-        // Fallback: if no code or no session yet, just check the current session
-        const { data, error } = await supabase.auth.getSession();
+        // Case 2: No code (user revisiting callback page) → check session
+        const { data: sessionData, error: sessionError } =
+          await supabase.auth.getSession();
 
-        if (error) {
-          console.error("Callback getSession error:", error.message);
+        if (sessionError) {
+          console.error("getSession error:", sessionError.message);
           router.replace("/magic-login");
           return;
         }
 
-        if (data.session) {
+        // If session exists → redirect
+        if (sessionData.session) {
           router.replace(redirectTo);
-        } else {
-          router.replace("/magic-login");
+          return;
         }
+
+        // No session found at all → return user to login
+        router.replace("/magic-login");
       } catch (err) {
-        console.error("Callback unexpected error:", err);
+        console.error("Unexpected callback error:", err);
         router.replace("/magic-login");
       }
     }
 
-    finishSignIn();
+    completeLogin();
   }, [router, searchParams]);
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-950">
-      <div className="text-center text-slate-100">
+    <main className="min-h-screen flex items-center justify-center bg-hvn-bg text-hvn-text-primary">
+      <div className="text-center">
         <p className="text-lg font-medium mb-2">Signing you in…</p>
-        <p className="text-sm text-slate-300">
+        <p className="text-sm text-hvn-text-muted">
           Please wait a moment while we complete your login.
         </p>
       </div>
