@@ -206,7 +206,7 @@ export default function HomePage() {
                   Free plan
                 </p>
                 <p className="mt-1 text-2xl font-semibold text-slate-100">
-                  €0 / month
+                  $0 / month
                 </p>
                 <p className="mt-2 text-xs text-slate-400">
                   For people who want a calmer, more honest place to check in
