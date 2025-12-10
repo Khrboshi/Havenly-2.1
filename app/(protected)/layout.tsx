@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
-import Navbar from "@/app/components/Navbar";
 
 export default async function ProtectedLayout({
   children,
@@ -14,16 +13,16 @@ export default async function ProtectedLayout({
     data: { session },
   } = await supabase.auth.getSession();
 
+  // User must be authenticated
   if (!session) {
     redirect("/magic-login");
   }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
-      {/* Persistent navbar */}
-      <Navbar />
+      {/* Navbar is NOT duplicated anymore.
+          It will be rendered globally or once at the page level. */}
 
-      {/* Main content wrapper */}
       <main className="mx-auto w-full max-w-7xl px-4 py-10">
         {children}
       </main>
