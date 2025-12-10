@@ -1,180 +1,172 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { useSupabase } from "@/app/components/SupabaseSessionProvider";
-import { Menu, X } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useSupabase } from "@/components/SupabaseSessionProvider";
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
   const { session } = useSupabase();
-  const user = session?.user || null;
+  const [open, setOpen] = useState(false);
 
-  const loggedIn = Boolean(user);
+  const isLoggedIn = !!session;
+
+  /** Desktop + mobile link sets */
+  const linksLoggedOut = [
+    { href: "/", label: "Home" },
+    { href: "/about", label: "About" },
+    { href: "/blog", label: "Blog" },
+  ];
+
+  const linksLoggedIn = [
+    { href: "/dashboard", label: "Dashboard" },
+    { href: "/journal", label: "Journal" },
+    { href: "/tools", label: "Tools" },
+    { href: "/insights", label: "Insights" },
+  ];
+
+  const isActive = (href: string) => pathname === href;
+
+  /** Prevent background scroll when drawer open */
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+  }, [open]);
 
   return (
-    <nav className="w-full border-b border-slate-800 bg-slate-950/80 backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 md:px-6">
-        {/* LEFT — BRAND */}
+    <header className="w-full border-b border-hvn-subtle bg-hvn-bg/80 backdrop-blur supports-[backdrop-filter]:backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+
+        {/* ---------------- LEFT: BRAND ---------------- */}
         <Link
           href="/"
-          className="rounded-full bg-slate-900 px-4 py-1.5 text-sm font-semibold text-slate-100"
+          className="text-lg font-semibold text-hvn-text-primary"
         >
-          HAVENLY
+          Havenly
         </Link>
 
-        {/* DESKTOP NAV */}
-        <div className="hidden items-center gap-6 md:flex">
-          {!loggedIn && (
-            <>
-              <Link
-                href="/"
-                className="text-sm text-slate-300 hover:text-white transition"
-              >
-                Home
-              </Link>
+        {/* ---------------- DESKTOP NAV ---------------- */}
+        <nav className="hidden md:flex items-center gap-6">
 
-              <Link
-                href="/about"
-                className="text-sm text-slate-300 hover:text-white transition"
-              >
-                About
-              </Link>
+          {/* Left-side navigation */}
+          {(isLoggedIn ? linksLoggedIn : linksLoggedOut).map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`
+                nav-link px-3 py-1.5 text-sm font-medium rounded-md
+                ${isActive(item.href) ? "nav-link-active" : "text-hvn-text-secondary"}
+              `}
+            >
+              {item.label}
+            </Link>
+          ))}
 
-              <Link
-                href="/blog"
-                className="text-sm text-slate-300 hover:text-white transition"
-              >
-                Blog
-              </Link>
-
+          {/* Right-side actions */}
+          {!isLoggedIn && (
+            <div className="flex items-center gap-3 ml-4">
               <Link
                 href="/magic-login"
-                className="text-sm text-slate-300 hover:text-white transition"
+                className="nav-link rounded-md px-4 py-1.5 text-sm font-semibold text-hvn-text-primary hover:text-hvn-accent-mint"
               >
                 Log in
               </Link>
-
               <Link
                 href="/magic-login"
-                className="rounded-full bg-emerald-500 px-5 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 transition"
+                className="rounded-md bg-hvn-accent-mint px-4 py-1.5 text-sm font-semibold text-hvn-bg hover:bg-hvn-accent-mint/90"
               >
-                Start free journal
+                Start Free Journal
               </Link>
-            </>
+            </div>
           )}
 
-          {loggedIn && (
-            <>
-              <Link href="/dashboard" className="text-sm text-slate-300 hover:text-white">
-                Dashboard
-              </Link>
-
-              <Link href="/journal" className="text-sm text-slate-300 hover:text-white">
-                Journal
-              </Link>
-
-              <Link href="/tools" className="text-sm text-slate-300 hover:text-white">
-                Tools
-              </Link>
-
-              <Link href="/insights" className="text-sm text-slate-300 hover:text-white">
-                Insights
-              </Link>
-
-              <Link
-                href="/upgrade"
-                className="rounded-full border border-emerald-400 px-4 py-1.5 text-sm font-semibold text-emerald-300 hover:bg-emerald-400/10 transition"
-              >
-                Upgrade
-              </Link>
-
-              <Link
-                href="/logout"
-                className="text-sm text-slate-400 hover:text-red-400 transition"
-              >
-                Logout
-              </Link>
-            </>
+          {/* Logged-in user controls */}
+          {isLoggedIn && (
+            <Link
+              href="/logout"
+              className="nav-link text-sm font-medium text-red-400 px-3 py-1.5 hover:bg-red-400/10 rounded-md"
+            >
+              Logout
+            </Link>
           )}
-        </div>
+        </nav>
 
-        {/* MOBILE — BURGER */}
+        {/* ---------------- MOBILE HAMBURGER ---------------- */}
         <button
-          onClick={() => setOpen(!open)}
-          className="rounded-md p-2 text-slate-300 hover:bg-slate-800 md:hidden"
+          onClick={() => setOpen(true)}
+          className="md:hidden text-hvn-text-secondary hover:text-hvn-accent-mint transition"
         >
-          {open ? <X size={22} /> : <Menu size={22} />}
+          <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 6h20M3 13h20M3 20h20" />
+          </svg>
         </button>
       </div>
 
-      {/* MOBILE DRAWER */}
+      {/* ---------------- MOBILE DRAWER ---------------- */}
       {open && (
-        <div className="border-t border-slate-800 bg-slate-950/95 px-4 py-4 md:hidden animate-slideDown">
-          <div className="flex flex-col gap-4">
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm md:hidden">
+          <div
+            className="absolute top-0 right-0 h-full w-72 bg-hvn-bg-elevated border-l border-hvn-subtle shadow-2xl animate-slideDown"
+          >
+            <div className="flex items-center justify-between px-5 h-16 border-b border-hvn-subtle">
+              <span className="text-lg font-semibold text-hvn-text-primary">Menu</span>
+              <button
+                onClick={() => setOpen(false)}
+                className="text-hvn-text-secondary hover:text-hvn-accent-mint transition"
+              >
+                ✕
+              </button>
+            </div>
 
-            {!loggedIn && (
-              <>
-                <Link href="/" onClick={() => setOpen(false)} className="text-slate-200">
-                  Home
-                </Link>
-
-                <Link href="/about" onClick={() => setOpen(false)} className="text-slate-200">
-                  About
-                </Link>
-
-                <Link href="/blog" onClick={() => setOpen(false)} className="text-slate-200">
-                  Blog
-                </Link>
-
-                <Link href="/magic-login" onClick={() => setOpen(false)} className="text-slate-200">
-                  Log in
-                </Link>
-
+            {/* LINKS */}
+            <nav className="flex flex-col px-4 py-4 space-y-2">
+              {(isLoggedIn ? linksLoggedIn : linksLoggedOut).map((item) => (
                 <Link
-                  href="/magic-login"
+                  key={item.href}
+                  href={item.href}
                   onClick={() => setOpen(false)}
-                  className="mt-2 w-full rounded-full bg-emerald-500 px-4 py-2 text-center font-semibold text-slate-950"
+                  className={`
+                    block w-full rounded-md px-3 py-3 text-sm font-medium nav-link
+                    ${isActive(item.href) ? "nav-link-active" : "text-hvn-text-secondary"}
+                  `}
                 >
-                  Start free journal
+                  {item.label}
                 </Link>
-              </>
-            )}
+              ))}
 
-            {loggedIn && (
-              <>
-                <Link href="/dashboard" onClick={() => setOpen(false)} className="text-slate-200">
-                  Dashboard
-                </Link>
+              {!isLoggedIn && (
+                <>
+                  <Link
+                    href="/magic-login"
+                    onClick={() => setOpen(false)}
+                    className="block rounded-md bg-hvn-accent-mint px-4 py-2.5 mt-3 text-center text-sm font-semibold text-hvn-bg"
+                  >
+                    Start Free Journal
+                  </Link>
 
-                <Link href="/journal" onClick={() => setOpen(false)} className="text-slate-200">
-                  Journal
-                </Link>
+                  <Link
+                    href="/magic-login"
+                    onClick={() => setOpen(false)}
+                    className="block rounded-md nav-link px-4 py-2.5 text-center text-sm font-medium text-hvn-text-secondary"
+                  >
+                    Log in
+                  </Link>
+                </>
+              )}
 
-                <Link href="/tools" onClick={() => setOpen(false)} className="text-slate-200">
-                  Tools
-                </Link>
-
-                <Link href="/insights" onClick={() => setOpen(false)} className="text-slate-200">
-                  Insights
-                </Link>
-
-                <Link href="/upgrade" onClick={() => setOpen(false)} className="text-emerald-300">
-                  Upgrade
-                </Link>
-
+              {isLoggedIn && (
                 <Link
                   href="/logout"
                   onClick={() => setOpen(false)}
-                  className="mt-3 text-red-400"
+                  className="block rounded-md px-4 py-2.5 text-sm font-medium text-red-400 hover:bg-red-400/10"
                 >
                   Logout
                 </Link>
-              </>
-            )}
+              )}
+            </nav>
           </div>
         </div>
       )}
-    </nav>
+    </header>
   );
 }
