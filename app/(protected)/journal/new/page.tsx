@@ -28,19 +28,21 @@ export default function NewJournalEntryPage() {
     setErrorMsg(null);
 
     try {
-      // SAFEST FIX: avoid generics entirely and force TS to accept runtime shape.
+      // Safe payload because DB types are not generated
       const payload: any = {
         user_id: session.user.id,
         title: title.trim() || null,
         content: content.trim(),
       };
 
-      const { data, error: insertError } = await supabase
+      const response = await supabase
         .from("journal_entries")
-        // We cast to "any" to prevent TS from treating rows as `never`
         .insert([payload] as any)
         .select()
         .maybeSingle();
+
+      const data: any = response?.data ?? null;
+      const insertError = response?.error ?? null;
 
       if (insertError) {
         console.error("Insert error:", insertError);
@@ -49,13 +51,14 @@ export default function NewJournalEntryPage() {
         return;
       }
 
-      if (!data?.id) {
-        setErrorMsg("Unexpected error: no entry ID returned.");
+      // Runtime-only check — TypeScript safe & consistent
+      if (!data || !data.id) {
+        setErrorMsg("Unexpected error: missing entry ID.");
         setSaving(false);
         return;
       }
 
-      // Redirect to the new entry page
+      // Redirect to the created entry
       router.push(`/journal/${data.id}`);
     } catch (err) {
       console.error("Unexpected insert error:", err);
