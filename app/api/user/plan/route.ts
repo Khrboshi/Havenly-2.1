@@ -9,24 +9,23 @@ export async function GET() {
   try {
     const supabase = await createServerSupabase();
 
-    // Always refresh session cookie boundary
-    const { data: sessionData } = await supabase.auth.getSession();
-    const session = sessionData?.session;
+    // Always attempt to read the session cookie
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-    // If session not ready yet → return temporary default instead of 401
+    // If no session → treat user as FREE (but do not error)
     if (!session?.user) {
       return NextResponse.json({
-        plan: {
-          planType: "FREE",
-          credits: PLAN_CREDIT_ALLOWANCES["FREE"],
-        },
-        sessionPending: true,
+        planType: "FREE",
+        credits: PLAN_CREDIT_ALLOWANCES["FREE"],
+        renewalDate: null,
       });
     }
 
     const userId = session.user.id;
 
-    // Fetch user plan row
+    // Fetch user's plan
     const { data: row, error } = await supabase
       .from("user_plans")
       .select("plan_tier, credits, renewal_date")
@@ -35,11 +34,10 @@ export async function GET() {
 
     if (error) {
       console.error("user_plans fetch error:", error);
-      return NextResponse.json({ 
-        plan: {
-          planType: "FREE",
-          credits: PLAN_CREDIT_ALLOWANCES["FREE"]
-        }
+      return NextResponse.json({
+        planType: "FREE",
+        credits: PLAN_CREDIT_ALLOWANCES["FREE"],
+        renewalDate: null,
       });
     }
 
@@ -47,16 +45,19 @@ export async function GET() {
     const credits = row?.credits ?? PLAN_CREDIT_ALLOWANCES["FREE"];
 
     return NextResponse.json({
-      plan: {
-        planType,
-        credits,
-      },
+      planType,
+      credits,
+      renewalDate: row?.renewal_date ?? null,
     });
   } catch (err) {
     console.error("GET /api/user/plan failed:", err);
     return NextResponse.json(
-      { plan: null, error: "Internal error" },
-      { status: 500 }
+      {
+        planType: "FREE",
+        credits: PLAN_CREDIT_ALLOWANCES["FREE"],
+        renewalDate: null,
+      },
+      { status: 200 }
     );
   }
 }
