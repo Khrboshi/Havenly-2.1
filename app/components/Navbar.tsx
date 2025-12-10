@@ -12,13 +12,14 @@ export default function Navbar() {
 
   const isLoggedIn = !!session;
 
-  /** Desktop + mobile link sets */
+  /** Logged-out navigation (public pages) */
   const linksLoggedOut = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
     { href: "/blog", label: "Blog" },
   ];
 
+  /** Logged-in navigation (app section) */
   const linksLoggedIn = [
     { href: "/dashboard", label: "Dashboard" },
     { href: "/journal", label: "Journal" },
@@ -28,86 +29,90 @@ export default function Navbar() {
 
   const isActive = (href: string) => pathname === href;
 
-  /** Prevent background scroll when drawer open */
+  /** Prevent background scroll when mobile drawer open */
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
   }, [open]);
 
   return (
-    <header className="w-full border-b border-hvn-subtle bg-hvn-bg/80 backdrop-blur supports-[backdrop-filter]:backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <>
+      {/* ==============================
+           TOP NAVBAR (DESKTOP + MOBILE)
+         ============================== */}
+      <header className="w-full border-b border-hvn-subtle bg-hvn-bg/80 backdrop-blur supports-[backdrop-filter]:backdrop-blur-md relative z-50">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
 
-        {/* ---------------- LEFT: BRAND ---------------- */}
-        <Link
-          href="/"
-          className="text-lg font-semibold text-hvn-text-primary"
-        >
-          Havenly
-        </Link>
+          {/* Brand */}
+          <Link href="/" className="text-lg font-semibold tracking-tight text-hvn-text-primary">
+            Havenly
+          </Link>
 
-        {/* ---------------- DESKTOP NAV ---------------- */}
-        <nav className="hidden md:flex items-center gap-6">
+          {/* ---------------- DESKTOP NAV ---------------- */}
+          <nav className="hidden md:flex items-center gap-6">
 
-          {/* Left-side navigation */}
-          {(isLoggedIn ? linksLoggedIn : linksLoggedOut).map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`
-                nav-link px-3 py-1.5 text-sm font-medium rounded-md
-                ${isActive(item.href) ? "nav-link-active" : "text-hvn-text-secondary"}
-              `}
-            >
-              {item.label}
-            </Link>
-          ))}
-
-          {/* Right-side actions */}
-          {!isLoggedIn && (
-            <div className="flex items-center gap-3 ml-4">
+            {(isLoggedIn ? linksLoggedIn : linksLoggedOut).map((item) => (
               <Link
-                href="/magic-login"
-                className="nav-link rounded-md px-4 py-1.5 text-sm font-semibold text-hvn-text-primary hover:text-hvn-accent-mint"
+                key={item.href}
+                href={item.href}
+                className={`
+                  nav-link px-3 py-1.5 text-sm font-medium rounded-md
+                  ${isActive(item.href) ? "nav-link-active" : "text-hvn-text-secondary"}
+                `}
               >
-                Log in
+                {item.label}
               </Link>
+            ))}
+
+            {/* Right side actions (logged out) */}
+            {!isLoggedIn && (
+              <div className="flex items-center gap-3 ml-3">
+                <Link
+                  href="/magic-login"
+                  className="nav-link text-sm px-3 py-1.5 font-medium rounded-md text-hvn-text-secondary"
+                >
+                  Log in
+                </Link>
+
+                <Link
+                  href="/magic-login"
+                  className="rounded-md bg-hvn-accent-mint px-4 py-1.5 text-sm font-semibold text-hvn-bg hover:bg-hvn-accent-mint/90 transition"
+                >
+                  Start free journal
+                </Link>
+              </div>
+            )}
+
+            {isLoggedIn && (
               <Link
-                href="/magic-login"
-                className="rounded-md bg-hvn-accent-mint px-4 py-1.5 text-sm font-semibold text-hvn-bg hover:bg-hvn-accent-mint/90"
+                href="/logout"
+                className="nav-link text-sm px-3 py-1.5 text-red-400 hover:bg-red-400/10 rounded-md"
               >
-                Start Free Journal
+                Logout
               </Link>
-            </div>
-          )}
+            )}
+          </nav>
 
-          {/* Logged-in user controls */}
-          {isLoggedIn && (
-            <Link
-              href="/logout"
-              className="nav-link text-sm font-medium text-red-400 px-3 py-1.5 hover:bg-red-400/10 rounded-md"
-            >
-              Logout
-            </Link>
-          )}
-        </nav>
-
-        {/* ---------------- MOBILE HAMBURGER ---------------- */}
-        <button
-          onClick={() => setOpen(true)}
-          className="md:hidden text-hvn-text-secondary hover:text-hvn-accent-mint transition"
-        >
-          <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 6h20M3 13h20M3 20h20" />
-          </svg>
-        </button>
-      </div>
-
-      {/* ---------------- MOBILE DRAWER ---------------- */}
-      {open && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm md:hidden">
-          <div
-            className="absolute top-0 right-0 h-full w-72 bg-hvn-bg-elevated border-l border-hvn-subtle shadow-2xl animate-slideDown"
+          {/* ---------------- MOBILE HAMBURGER ---------------- */}
+          <button
+            onClick={() => setOpen(true)}
+            className="md:hidden text-hvn-text-secondary hover:text-hvn-accent-mint transition"
           >
+            <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 6h20M3 13h20M3 20h20" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      {/* ===========================================
+           MOBILE MENU DRAWER — FULL HEIGHT FIXED
+         =========================================== */}
+      {open && (
+        <div className="fixed inset-0 z-[999] bg-black/50 backdrop-blur-sm md:hidden animate-fadeIn">
+          {/* Drawer panel */}
+          <div className="absolute left-0 top-0 h-full w-72 bg-hvn-bg-elevated border-r border-hvn-subtle shadow-2xl animate-slideDown flex flex-col">
+
+            {/* Drawer Header */}
             <div className="flex items-center justify-between px-5 h-16 border-b border-hvn-subtle">
               <span className="text-lg font-semibold text-hvn-text-primary">Menu</span>
               <button
@@ -118,8 +123,9 @@ export default function Navbar() {
               </button>
             </div>
 
-            {/* LINKS */}
-            <nav className="flex flex-col px-4 py-4 space-y-2">
+            {/* Scrollable navigation area */}
+            <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
+
               {(isLoggedIn ? linksLoggedIn : linksLoggedOut).map((item) => (
                 <Link
                   key={item.href}
@@ -134,12 +140,13 @@ export default function Navbar() {
                 </Link>
               ))}
 
+              {/* CTA Buttons */}
               {!isLoggedIn && (
                 <>
                   <Link
                     href="/magic-login"
                     onClick={() => setOpen(false)}
-                    className="block rounded-md bg-hvn-accent-mint px-4 py-2.5 mt-3 text-center text-sm font-semibold text-hvn-bg"
+                    className="block rounded-md bg-hvn-accent-mint px-4 py-3 mt-2 text-center text-sm font-semibold text-hvn-bg"
                   >
                     Start Free Journal
                   </Link>
@@ -147,7 +154,7 @@ export default function Navbar() {
                   <Link
                     href="/magic-login"
                     onClick={() => setOpen(false)}
-                    className="block rounded-md nav-link px-4 py-2.5 text-center text-sm font-medium text-hvn-text-secondary"
+                    className="block rounded-md nav-link px-4 py-3 text-center text-sm font-medium text-hvn-text-secondary"
                   >
                     Log in
                   </Link>
@@ -158,7 +165,7 @@ export default function Navbar() {
                 <Link
                   href="/logout"
                   onClick={() => setOpen(false)}
-                  className="block rounded-md px-4 py-2.5 text-sm font-medium text-red-400 hover:bg-red-400/10"
+                  className="block rounded-md px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-400/10"
                 >
                   Logout
                 </Link>
@@ -167,6 +174,6 @@ export default function Navbar() {
           </div>
         </div>
       )}
-    </header>
+    </>
   );
 }
