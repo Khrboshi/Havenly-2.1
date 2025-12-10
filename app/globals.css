@@ -164,3 +164,24 @@ body::-webkit-scrollbar-thumb {
 .animate-slideDown {
   animation: slideDown 0.2s ease-out;
 }
+/* =====================================
+   HAVENLY NAVBAR — Hover & Active Glow
+   ===================================== */
+
+/* Desktop link glow */
+.nav-link {
+  transition: color 0.18s ease, background-color 0.18s ease;
+}
+
+/* Hover: mint + soft-glow */
+.nav-link:hover {
+  color: var(--hvn-accent-mint);
+  background-color: rgba(62, 231, 176, 0.10);
+}
+
+/* Active page indicator */
+.nav-link-active {
+  color: var(--hvn-accent-mint) !important;
+  background-color: rgba(62, 231, 176, 0.15);
+  border-radius: 10px;
+}
