@@ -1,15 +1,28 @@
+// middleware.ts
 import { type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
+/**
+ * Middleware ONLY keeps Supabase auth cookies in sync.
+ * It MUST NOT intercept /auth/callback or public pages,
+ * or Supabase PKCE cookies will fail to be set.
+ */
 export async function middleware(request: NextRequest) {
-  // Keep Supabase auth cookies in sync for every request.
-  // Do NOT do any auth redirects here; the (protected) layout handles protection.
   const { response } = await updateSession(request);
   return response;
 }
 
+/**
+ * IMPORTANT:
+ * We only apply middleware to PRIVATE routes.
+ * This prevents interference with Supabase PKCE OAuth flow.
+ */
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|favicon.png|icon.svg|apple-touch-icon).*)",
+    "/dashboard/:path*",
+    "/journal/:path*",
+    "/tools/:path*",
+    "/insights/:path*",
+    "/settings/:path*",
   ],
 };
