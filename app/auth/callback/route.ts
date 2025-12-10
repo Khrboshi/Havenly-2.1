@@ -9,17 +9,21 @@ import { createServerClient } from "@supabase/ssr";
  */
 export async function GET(request: NextRequest) {
   try {
-    const url = new URL(request.url);
+    const requestUrl = new URL(request.url);
 
-    // Final destination (defaults to /dashboard)
-    const redirectTo = url.searchParams.get("redirect_to") || "/dashboard";
+    // Determine final landing page
+    const redirectTo =
+      requestUrl.searchParams.get("redirect_to") || "/dashboard";
 
-    // Prepare response early, we will mutate cookies inside Supabase adapter
-    let response = NextResponse.redirect(redirectTo, {
+    // Build an ABSOLUTE redirect URL (required by Next.js 14 route handlers)
+    const absoluteRedirectUrl = new URL(redirectTo, requestUrl.origin).toString();
+
+    // Prepare early response (cookies will be mutated via Supabase client)
+    let response = NextResponse.redirect(absoluteRedirectUrl, {
       headers: { "Cache-Control": "no-store" },
     });
 
-    // Create Supabase server client WITH COOKIE PASSTHROUGH (required!)
+    // Create Supabase server client with COOKIE PASSTHROUGH
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -38,11 +42,8 @@ export async function GET(request: NextRequest) {
       }
     );
 
-    // Force Supabase to exchange the token in the URL for a session
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.getSession();
+    // Trigger session exchange (causes Supabase to read the ?code= param)
+    const { error } = await supabase.auth.getSession();
 
     if (error) {
       console.error("Callback session exchange error:", error);
@@ -51,6 +52,15 @@ export async function GET(request: NextRequest) {
     return response;
   } catch (err) {
     console.error("Callback fatal error:", err);
-    return NextResponse.redirect("/magic-login?error=callback_failed");
+
+    // ABSOLUTE fallback URL – avoids "URL is malformed" crash
+    const origin =
+      typeof window === "undefined"
+        ? process.env.NEXT_PUBLIC_SITE_URL || "https://havenly-2-1.vercel.app"
+        : window.location.origin;
+
+    const failUrl = new URL("/magic-login?error=callback_failed", origin).toString();
+
+    return NextResponse.redirect(failUrl);
   }
 }
