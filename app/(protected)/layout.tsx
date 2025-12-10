@@ -1,25 +1,25 @@
 // app/(protected)/layout.tsx
+import { createServerSupabase } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+import { SupabaseSessionProvider } from "@/app/components/SupabaseSessionProvider";
 
-import type { ReactNode } from "react";
+export const dynamic = "force-dynamic";
 
-/**
- * Protected layout shell
- *
- * - Visual shell only (background + content width).
- * - Auth is handled by SupabaseSessionProvider + page-level guards.
- * - Avoids server-side redirects that can misfire on hard refresh.
- */
-export default function ProtectedLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default async function ProtectedLayout({ children }) {
+  const supabase = createServerSupabase();
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  // If no session → redirect to login
+  if (!session?.user) {
+    redirect("/magic-login");
+  }
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      {/* Main content wrapper (navbar comes from the root layout) */}
-      <main className="mx-auto w-full max-w-7xl px-4 py-10">
-        {children}
-      </main>
-    </div>
+    <SupabaseSessionProvider initialSession={session}>
+      {children}
+    </SupabaseSessionProvider>
   );
 }
