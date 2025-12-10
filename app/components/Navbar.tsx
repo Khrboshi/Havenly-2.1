@@ -12,14 +12,14 @@ export default function Navbar() {
 
   const isLoggedIn = !!session;
 
-  /** Logged-out navigation (public pages) */
+  /** Logged-out navigation (public pages only) */
   const linksLoggedOut = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
     { href: "/blog", label: "Blog" },
   ];
 
-  /** Logged-in navigation (app section) */
+  /** Logged-in navigation (app section only) */
   const linksLoggedIn = [
     { href: "/dashboard", label: "Dashboard" },
     { href: "/journal", label: "Journal" },
@@ -29,75 +29,99 @@ export default function Navbar() {
 
   const isActive = (href: string) => pathname === href;
 
-  /** Prevent background scroll when mobile drawer open */
+  /** Prevent background scroll when mobile drawer is open */
   useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "";
+    if (open) {
+      const previous = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = previous;
+      };
+    }
   }, [open]);
+
+  const navLinks = isLoggedIn ? linksLoggedIn : linksLoggedOut;
 
   return (
     <>
       {/* ==============================
-           TOP NAVBAR (DESKTOP + MOBILE)
+          TOP NAVBAR (DESKTOP & MOBILE)
          ============================== */}
-      <header className="w-full border-b border-hvn-subtle bg-hvn-bg/80 backdrop-blur supports-[backdrop-filter]:backdrop-blur-md relative z-50">
+      <header className="relative z-50 w-full border-b border-hvn-subtle bg-hvn-bg/80 backdrop-blur supports-[backdrop-filter]:backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-
           {/* Brand */}
-          <Link href="/" className="text-lg font-semibold tracking-tight text-hvn-text-primary">
+          <Link
+            href="/"
+            className="text-lg font-semibold tracking-tight text-hvn-text-primary"
+          >
             Havenly
           </Link>
 
-          {/* ---------------- DESKTOP NAV ---------------- */}
-          <nav className="hidden md:flex items-center gap-6">
-
-            {(isLoggedIn ? linksLoggedIn : linksLoggedOut).map((item) => (
+          {/* -------- DESKTOP NAV -------- */}
+          <nav className="hidden items-center gap-6 md:flex">
+            {/* Main links (public OR app, depending on auth state) */}
+            {navLinks.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 className={`
-                  nav-link px-3 py-1.5 text-sm font-medium rounded-md
-                  ${isActive(item.href) ? "nav-link-active" : "text-hvn-text-secondary"}
+                  nav-link rounded-md px-3 py-1.5 text-sm font-medium
+                  ${
+                    isActive(item.href)
+                      ? "nav-link-active"
+                      : "text-hvn-text-secondary"
+                  }
                 `}
               >
                 {item.label}
               </Link>
             ))}
 
-            {/* Right side actions (logged out) */}
+            {/* Right-side actions when LOGGED OUT */}
             {!isLoggedIn && (
-              <div className="flex items-center gap-3 ml-3">
+              <div className="ml-3 flex items-center gap-3">
                 <Link
                   href="/magic-login"
-                  className="nav-link text-sm px-3 py-1.5 font-medium rounded-md text-hvn-text-secondary"
+                  className="nav-link rounded-md px-3 py-1.5 text-sm font-medium text-hvn-text-secondary"
                 >
                   Log in
                 </Link>
 
                 <Link
                   href="/magic-login"
-                  className="rounded-md bg-hvn-accent-mint px-4 py-1.5 text-sm font-semibold text-hvn-bg hover:bg-hvn-accent-mint/90 transition"
+                  className="rounded-md bg-hvn-accent-mint px-4 py-1.5 text-sm font-semibold text-hvn-bg transition hover:bg-hvn-accent-mint/90"
                 >
                   Start free journal
                 </Link>
               </div>
             )}
 
+            {/* Right-side action when LOGGED IN */}
             {isLoggedIn && (
               <Link
                 href="/logout"
-                className="nav-link text-sm px-3 py-1.5 text-red-400 hover:bg-red-400/10 rounded-md"
+                className="nav-link rounded-md px-3 py-1.5 text-sm font-medium text-red-400 hover:bg-red-400/10"
               >
                 Logout
               </Link>
             )}
           </nav>
 
-          {/* ---------------- MOBILE HAMBURGER ---------------- */}
+          {/* -------- MOBILE HAMBURGER -------- */}
           <button
+            type="button"
             onClick={() => setOpen(true)}
-            className="md:hidden text-hvn-text-secondary hover:text-hvn-accent-mint transition"
+            className="md:hidden text-hvn-text-secondary transition hover:text-hvn-accent-mint"
+            aria-label="Open navigation menu"
+            aria-expanded={open}
           >
-            <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="26"
+              height="26"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M3 6h20M3 13h20M3 20h20" />
             </svg>
           </button>
@@ -105,67 +129,74 @@ export default function Navbar() {
       </header>
 
       {/* ===========================================
-           MOBILE MENU DRAWER — FULL HEIGHT FIXED
+          MOBILE MENU DRAWER (LOGGED OUT / LOGGED IN)
          =========================================== */}
       {open && (
-        <div className="fixed inset-0 z-[999] bg-black/50 backdrop-blur-sm md:hidden animate-fadeIn">
+        <div className="animate-fadeIn fixed inset-0 z-[999] bg-black/50 backdrop-blur-sm md:hidden">
           {/* Drawer panel */}
-          <div className="absolute left-0 top-0 h-full w-72 bg-hvn-bg-elevated border-r border-hvn-subtle shadow-2xl animate-slideDown flex flex-col">
-
-            {/* Drawer Header */}
-            <div className="flex items-center justify-between px-5 h-16 border-b border-hvn-subtle">
-              <span className="text-lg font-semibold text-hvn-text-primary">Menu</span>
+          <div className="animate-slideDown absolute left-0 top-0 flex h-full w-72 flex-col border-r border-hvn-subtle bg-hvn-bg-elevated shadow-2xl">
+            {/* Drawer header */}
+            <div className="flex h-16 items-center justify-between border-b border-hvn-subtle px-5">
+              <span className="text-lg font-semibold text-hvn-text-primary">
+                Menu
+              </span>
               <button
+                type="button"
                 onClick={() => setOpen(false)}
-                className="text-hvn-text-secondary hover:text-hvn-accent-mint transition"
+                className="text-hvn-text-secondary transition hover:text-hvn-accent-mint"
+                aria-label="Close navigation menu"
               >
                 ✕
               </button>
             </div>
 
-            {/* Scrollable navigation area */}
-            <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
-
-              {(isLoggedIn ? linksLoggedIn : linksLoggedOut).map((item) => (
+            {/* Scrollable nav area */}
+            <nav className="flex-1 space-y-2 overflow-y-auto px-4 py-4">
+              {navLinks.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => setOpen(false)}
                   className={`
-                    block w-full rounded-md px-3 py-3 text-sm font-medium nav-link
-                    ${isActive(item.href) ? "nav-link-active" : "text-hvn-text-secondary"}
+                    nav-link block w-full rounded-md px-3 py-3 text-sm font-medium
+                    ${
+                      isActive(item.href)
+                        ? "nav-link-active"
+                        : "text-hvn-text-secondary"
+                    }
                   `}
                 >
                   {item.label}
                 </Link>
               ))}
 
-              {/* CTA Buttons */}
+              {/* CTA buttons for LOGGED OUT */}
               {!isLoggedIn && (
                 <>
                   <Link
                     href="/magic-login"
                     onClick={() => setOpen(false)}
-                    className="block rounded-md bg-hvn-accent-mint px-4 py-3 mt-2 text-center text-sm font-semibold text-hvn-bg"
+                    className="mt-3 block rounded-md bg-hvn-accent-mint px-4 py-3 text-center text-sm font-semibold text-hvn-bg hover:bg-hvn-accent-mint/90"
                   >
-                    Start Free Journal
+                    Start free journal
                   </Link>
 
                   <Link
                     href="/magic-login"
                     onClick={() => setOpen(false)}
-                    className="block rounded-md nav-link px-4 py-3 text-center text-sm font-medium text-hvn-text-secondary"
+                    className="mt-2 block rounded-md px-4 py-3 text-center text-sm font-medium text-hvn-text-secondary nav-link"
                   >
                     Log in
                   </Link>
                 </>
               )}
 
+              {/* CTA for LOGGED IN */}
               {isLoggedIn && (
                 <Link
                   href="/logout"
                   onClick={() => setOpen(false)}
-                  className="block rounded-md px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-400/10"
+                  className="mt-3 block rounded-md px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-400/10"
                 >
                   Logout
                 </Link>
