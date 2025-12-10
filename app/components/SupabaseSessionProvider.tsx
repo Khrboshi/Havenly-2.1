@@ -29,8 +29,10 @@ export function SupabaseSessionProvider({
   children,
 }: Props) {
   /**
-   * IMPORTANT:
-   * Browser Supabase client with PKCE, cookie-based auth, and no localStorage.
+   * Create browser Supabase client.
+   * - PKCE enabled
+   * - Cookie-based auth (storage: undefined)
+   * - Persist session + auto refresh
    */
   const supabase = useMemo(
     () =>
@@ -43,7 +45,7 @@ export function SupabaseSessionProvider({
             autoRefreshToken: true,
             detectSessionInUrl: true,
             flowType: "pkce",
-            storage: undefined, // ensures cookie-based session handling
+            storage: undefined,
           },
         }
       ),
@@ -53,19 +55,30 @@ export function SupabaseSessionProvider({
   const [session, setSession] = useState<any>(initialSession);
 
   /**
-   * HYDRATE on first mount.
-   * This ensures the browser session is recovered after refresh or navigation.
+   * Hydrate session on mount.
+   * If hydration fails (common after hard reload), trigger cookie refresh
+   * and retry once.
    */
   useEffect(() => {
     let active = true;
 
     async function hydrate() {
-      const {
-        data: { session: s },
-      } = await supabase.auth.getSession();
+      // First attempt
+      const { data: initial } = await supabase.auth.getSession();
+      if (active && initial?.session) {
+        setSession(initial.session);
+        return;
+      }
 
+      // Retry after refreshing cookies
+      await fetch("/api/auth/refresh", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      const { data: retry } = await supabase.auth.getSession();
       if (active) {
-        setSession(s ?? null);
+        setSession(retry?.session ?? null);
       }
     }
 
@@ -76,28 +89,23 @@ export function SupabaseSessionProvider({
   }, [supabase]);
 
   /**
-   * FIXED:
-   * onAuthStateChange now handles logout correctly.
-   * Previously, logout triggered a refresh call → recreated a session → infinite loop.
-   *
-   * Now:
-   * - SIGNED_OUT clears the session AND skips refresh.
-   * - Other auth events refresh `/api/auth/refresh` to sync cookies.
+   * Live auth state updates:
+   * - SIGNED_OUT clears session immediately (NO cookie refresh)
+   * - SIGNED_IN / TOKEN_REFRESHED sync cookies via /api/auth/refresh
    */
   useEffect(() => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       if (event === "SIGNED_OUT") {
-        // Fully reset state — this is what fixes logout
         setSession(null);
-        return; // critical: do NOT refresh cookies on logout
+        return; // do not refresh cookies on logout
       }
 
-      // Update session for SIGNED_IN / TOKEN_REFRESHED / PASSWORD_RECOVERY
+      // Update local session
       setSession(currentSession);
 
-      // Sync session cookies for middleware, server, RLS, etc.
+      // Sync cookies for server-side access
       try {
         await fetch("/api/auth/refresh", {
           method: "POST",
