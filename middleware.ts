@@ -1,37 +1,23 @@
 // middleware.ts
-import { type NextRequest } from "next/server";
-import { updateSession } from "@/lib/supabase/middleware";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 /**
- * Middleware keeps Supabase auth cookies refreshed.
- * It must run on ALL protected routes AND their subpaths,
- * and also on "/" with trailing slash variations.
+ * Temporary no-op middleware.
+ *
+ * Why:
+ * - Your Supabase PKCE callback at /auth/callback is correctly creating
+ *   the session cookies.
+ * - Your (protected) layout is correctly protecting /dashboard, /journal,
+ *   /tools, /insights, /settings.
+ *
+ * This middleware used to call Supabase and could interfere with the
+ * auth cookies on a hard reload (Ctrl+F5). For now, we simply let the
+ * request pass through untouched.
  */
-export async function middleware(request: NextRequest) {
-  const { response } = await updateSession(request);
-  return response;
+export function middleware(_request: NextRequest) {
+  return NextResponse.next();
 }
 
-/**
- * CRITICAL:
- * This matcher ensures cookies refresh on:
- * - /dashboard and all subroutes
- * - /journal and all subroutes
- * - /tools and all subroutes
- * - /insights and all subroutes
- * - /settings and all subroutes
- *
- * AND also enforces unified origin handling (important for Vercel).
- */
-export const config = {
-  matcher: [
-    "/dashboard/:path*",
-    "/journal/:path*",
-    "/tools/:path*",
-    "/insights/:path*",
-    "/settings/:path*",
-    
-    // These ensure Vercel’s "/" and "/index" variations don’t break cookies
-    "/((?:[^/]+/)*[^.]*$)",
-  ],
-};
+// No config matcher => default behavior, but since we are NOT changing
+// cookies or running Supabase here, this is safe and lightweight.
