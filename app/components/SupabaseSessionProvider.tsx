@@ -1,26 +1,31 @@
 "use client";
 
+import { useState, useEffect, createContext, useContext } from "react";
 import { createBrowserClient } from "@supabase/ssr";
-import { createContext, useContext, useEffect, useState, useMemo } from "react";
 
-const SupabaseContext = createContext(null);
+export const SupabaseContext = createContext(null);
 
 export function SupabaseSessionProvider({ initialSession, children }) {
-  const supabase = useMemo(
-    () =>
-      createBrowserClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      ),
-    []
+  const [supabase] = useState(() =>
+    createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
   );
 
-  const [session, setSession] = useState(initialSession ?? null);
+  const [session, setSession] = useState(initialSession);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (data?.session) setSession(data.session);
-    });
+    async function loadSession() {
+      // THIS CALL IS CRITICAL — it triggers /api/auth/refresh.
+      const {
+        data: { session: activeSession },
+      } = await supabase.auth.getSession();
+
+      setSession(activeSession);
+    }
+
+    loadSession();
 
     const {
       data: { subscription },
