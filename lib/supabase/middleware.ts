@@ -1,31 +1,20 @@
-import { createServerClient } from "@supabase/ssr";
-import { NextRequest, NextResponse } from "next/server";
+// lib/supabase/middleware.ts
+import { NextResponse, type NextRequest } from "next/server";
+import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 
 /**
- * Refresh Supabase session cookies on every request.
- * Works without auth-helpers-nextjs.
+ * Updates Supabase session and ensures cookies persist correctly.
  */
-export async function updateSession(req: NextRequest, res: NextResponse) {
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return req.cookies.get(name)?.value;
-        },
-        set(name: string, value: string, options: any) {
-          res.cookies.set(name, value, options);
-        },
-        remove(name: string, options: any) {
-          res.cookies.set(name, "", { ...options, maxAge: 0 });
-        },
-      },
-    }
-  );
+export async function updateSession(request: NextRequest) {
+  const response = NextResponse.next({ request });
 
-  // Forces Supabase to refresh cookies if needed
+  const supabase = createMiddlewareClient({
+    req: request,
+    res: response,
+  });
+
+  // This automatically refreshes session + cookies
   await supabase.auth.getSession();
 
-  return res;
+  return { response };
 }
