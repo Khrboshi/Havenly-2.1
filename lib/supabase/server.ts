@@ -1,7 +1,6 @@
-export const dynamic = "force-dynamic";
-
+// lib/supabase/server.ts
 import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient } from "@supabase/auth-helpers-nextjs";
 
 export function createServerSupabase() {
   const cookieStore = cookies();
@@ -13,16 +12,6 @@ export function createServerSupabase() {
       cookies: {
         get(name: string) {
           return cookieStore.get(name)?.value;
-        },
-        set(name: string, value: string, options: any) {
-          try {
-            cookieStore.set(name, value, options);
-          } catch {}
-        },
-        remove(name: string, options: any) {
-          try {
-            cookieStore.set(name, "", options);
-          } catch {}
         },
       },
     }
