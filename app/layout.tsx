@@ -15,13 +15,6 @@ export const metadata: Metadata = {
     "Havenly is a calm, private journaling companion with gentle AI reflections.",
 };
 
-/**
- * Root layout:
- * - Fetches current Supabase session SERVER-SIDE.
- * - Hydrates SupabaseSessionProvider with initialSession for instant sync.
- * - Ensures pixel-perfect dark theme across mobile + desktop.
- * - Prevents duplicate navbar spacing (previous issue).
- */
 export default async function RootLayout({
   children,
 }: {
@@ -36,12 +29,10 @@ export default async function RootLayout({
     <html lang="en" className="h-full bg-slate-950">
       <body className="min-h-screen bg-slate-950 text-slate-100 antialiased">
         <SupabaseSessionProvider initialSession={session}>
-          {/* NAVBAR — sticky with no extra container (fixes white bar issue) */}
           <div className="sticky top-0 z-40">
             <Navbar />
           </div>
 
-          {/* MAIN CONTENT — correct padding & container alignment */}
           <main className="min-h-[calc(100vh-80px)] px-4">
             <div className="mx-auto w-full max-w-7xl pt-10 pb-12">
               {children}
@@ -50,8 +41,6 @@ export default async function RootLayout({
 
           <Footer />
           <ToastClient />
-
-          {/* PWA Registration */}
           <ServiceWorkerRegister />
         </SupabaseSessionProvider>
       </body>
