@@ -1,11 +1,18 @@
-import { type NextRequest } from "next/server";
-import { updateSession } from "@/lib/supabase/middleware";
+import type { NextRequest } from "next/server";
+import { authMiddleware } from "@/lib/supabase/middleware";
 
 /**
- * Middleware must run on protected routes only.
+ * Enforces authentication AND keeps cookies fresh.
  */
 export async function middleware(request: NextRequest) {
-  const { response } = await updateSession(request);
+  const { response, session } = await authMiddleware(request);
+
+  // If user is NOT logged in → redirect before hitting ProtectedLayout
+  if (!session) {
+    const redirectUrl = new URL("/magic-login", request.url);
+    return NextResponse.redirect(redirectUrl);
+  }
+
   return response;
 }
 
