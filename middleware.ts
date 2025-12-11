@@ -1,23 +1,36 @@
 // middleware.ts
-import type { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { updateSession } from "@/lib/supabase/middleware";
 
 /**
- * Temporary no-op middleware.
- *
- * Why:
- * - Your Supabase PKCE callback at /auth/callback is correctly creating
- *   the session cookies.
- * - Your (protected) layout is correctly protecting /dashboard, /journal,
- *   /tools, /insights, /settings.
- *
- * This middleware used to call Supabase and could interfere with the
- * auth cookies on a hard reload (Ctrl+F5). For now, we simply let the
- * request pass through untouched.
+ * This middleware ensures Supabase auth cookies are refreshed
+ * on every request to protected pages.
  */
-export function middleware(_request: NextRequest) {
-  return NextResponse.next();
+export async function middleware(req: NextRequest) {
+  // Create a fresh response that updateSession can attach cookies to
+  const res = NextResponse.next({
+    request: {
+      headers: req.headers,
+    },
+  });
+
+  return await updateSession(req, res);
 }
 
-// No config matcher => default behavior, but since we are NOT changing
-// cookies or running Supabase here, this is safe and lightweight.
+/**
+ * Protected routes that require the session cookie to be refreshed.
+ */
+export const config = {
+  matcher: [
+    "/dashboard",
+    "/dashboard/:path*",
+    "/journal",
+    "/journal/:path*",
+    "/tools",
+    "/tools/:path*",
+    "/insights",
+    "/insights/:path*",
+    "/settings",
+    "/settings/:path*",
+  ],
+};
