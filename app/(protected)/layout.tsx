@@ -1,32 +1,25 @@
 // app/(protected)/layout.tsx
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
-
-import { createServerSupabase } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
-import { SupabaseSessionProvider } from "@/app/components/SupabaseSessionProvider";
+import type { ReactNode } from "react";
 
 /**
- * Protected layout:
- * - Forces dynamic rendering (no SSG)
- * - Prevents caching on server or CDN
- * - Ensures session is fresh on every request and refresh
+ * Protected layout (visual shell only)
+ *
+ * - NO server-side auth check here.
+ * - NO extra Supabase provider (root layout already wraps the app).
+ * - This prevents accidental logouts on hard refresh (CTRL+F5),
+ *   because the server no longer redirects before the client
+ *   has a chance to recover the Supabase session.
  */
-export default async function ProtectedLayout({ children }) {
-  const supabase = createServerSupabase();
+export const dynamic = "force-dynamic";
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session?.user) {
-    redirect("/magic-login");
-  }
-
+export default function ProtectedLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return (
-    <SupabaseSessionProvider initialSession={session}>
+    <div className="min-h-screen bg-slate-950 text-slate-100">
       {children}
-    </SupabaseSessionProvider>
+    </div>
   );
 }
