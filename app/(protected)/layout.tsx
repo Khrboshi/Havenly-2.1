@@ -1,18 +1,31 @@
 // app/(protected)/layout.tsx
+
 import { createServerSupabase } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { SupabaseSessionProvider } from "@/app/components/SupabaseSessionProvider";
 
-export const dynamic = "force-dynamic";
+/**
+ * IMPORTANT:
+ * We REMOVE "force-dynamic" because it caused
+ * Supabase cookies to refresh incorrectly on hard reload,
+ * which logged the user out.
+ *
+ * Protected routes can safely use default caching,
+ * since middleware keeps auth cookies synced.
+ */
 
-export default async function ProtectedLayout({ children }) {
+export const revalidate = 0; // no static caching; safe + stable
+
+export default async function ProtectedLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const supabase = createServerSupabase();
-
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // If no session → redirect to login
   if (!session?.user) {
     redirect("/magic-login");
   }
