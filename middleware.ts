@@ -3,10 +3,9 @@ import { type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
 /**
- * This middleware ONLY refreshes Supabase auth cookies
- * on API/data/navigation requests — NOT on full-page reloads.
- *
- * This prevents hard-refresh logout and keeps PKCE working.
+ * Middleware keeps Supabase auth cookies refreshed.
+ * It must run on ALL protected routes AND their subpaths,
+ * and also on "/" with trailing slash variations.
  */
 export async function middleware(request: NextRequest) {
   const { response } = await updateSession(request);
@@ -14,25 +13,25 @@ export async function middleware(request: NextRequest) {
 }
 
 /**
- * IMPORTANT:
- * We apply middleware ONLY to internal data routes.
+ * CRITICAL:
+ * This matcher ensures cookies refresh on:
+ * - /dashboard and all subroutes
+ * - /journal and all subroutes
+ * - /tools and all subroutes
+ * - /insights and all subroutes
+ * - /settings and all subroutes
  *
- * These are the exact patterns Next.js uses for:
- * - RSC data fetching
- * - metadata / layout data loading
- * - parallel routes
- *
- * We DO NOT apply middleware to:
- * - /dashboard
- * - /journal
- * - /tools
- * - /insights
- * - /settings
- *
- * This prevents Supabase cookies from being overwritten during full reload.
+ * AND also enforces unified origin handling (important for Vercel).
  */
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|auth/callback|magic-login|login).*)",
+    "/dashboard/:path*",
+    "/journal/:path*",
+    "/tools/:path*",
+    "/insights/:path*",
+    "/settings/:path*",
+    
+    // These ensure Vercel’s "/" and "/index" variations don’t break cookies
+    "/((?:[^/]+/)*[^.]*$)",
   ],
 };
