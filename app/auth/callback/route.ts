@@ -1,29 +1,31 @@
+// app/auth/callback/route.ts
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 /**
- * Correct PKCE OAuth/Magic Link callback route.
- * Handles cookie passthrough + session exchange + redirect.
+ * PKCE OAuth / Magic Link callback.
+ *
+ * Responsibilities:
+ * 1. Read the `code` from the URL that Supabase sent us.
+ * 2. Let Supabase exchange that code for a session (cookies).
+ * 3. Redirect the user to the final destination (default: /dashboard).
  */
 export async function GET(request: NextRequest) {
+  const requestUrl = new URL(request.url);
+  const origin = requestUrl.origin;
+
+  // Final landing page after login
+  const redirectTo = requestUrl.searchParams.get("redirect_to") || "/dashboard";
+  const absoluteRedirectUrl = new URL(redirectTo, origin);
+
+  // Prepare redirect response; cookies will be mutated on this object
+  let response = NextResponse.redirect(absoluteRedirectUrl, {
+    headers: { "Cache-Control": "no-store" },
+  });
+
   try {
-    const requestUrl = new URL(request.url);
-
-    // Determine final landing page
-    const redirectTo =
-      requestUrl.searchParams.get("redirect_to") || "/dashboard";
-
-    // Build an ABSOLUTE redirect URL (required by Next.js 14 route handlers)
-    const absoluteRedirectUrl = new URL(redirectTo, requestUrl.origin).toString();
-
-    // Prepare early response (cookies will be mutated via Supabase client)
-    let response = NextResponse.redirect(absoluteRedirectUrl, {
-      headers: { "Cache-Control": "no-store" },
-    });
-
-    // Create Supabase server client with COOKIE PASSTHROUGH
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -42,25 +44,38 @@ export async function GET(request: NextRequest) {
       }
     );
 
-    // Trigger session exchange (causes Supabase to read the ?code= param)
-    const { error } = await supabase.auth.getSession();
+    // Supabase has attached ?code=... to this URL
+    const code = requestUrl.searchParams.get("code");
 
-    if (error) {
-      console.error("Callback session exchange error:", error);
+    if (!code) {
+      console.error("Auth callback: missing `code` parameter");
+      const failUrl = new URL(
+        "/magic-login?error=missing_code",
+        origin
+      ).toString();
+      return NextResponse.redirect(failUrl);
     }
 
+    // Convert the code into a session (sets auth cookies on `response`)
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (error) {
+      console.error("Callback exchangeCodeForSession error:", error);
+      const failUrl = new URL(
+        "/magic-login?error=callback_failed",
+        origin
+      ).toString();
+      return NextResponse.redirect(failUrl);
+    }
+
+    // Success: cookies are now set on `response`, user goes to dashboard (or redirect_to)
     return response;
   } catch (err) {
     console.error("Callback fatal error:", err);
-
-    // ABSOLUTE fallback URL – avoids "URL is malformed" crash
-    const origin =
-      typeof window === "undefined"
-        ? process.env.NEXT_PUBLIC_SITE_URL || "https://havenly-2-1.vercel.app"
-        : window.location.origin;
-
-    const failUrl = new URL("/magic-login?error=callback_failed", origin).toString();
-
+    const failUrl = new URL(
+      "/magic-login?error=callback_failed",
+      origin
+    ).toString();
     return NextResponse.redirect(failUrl);
   }
 }
