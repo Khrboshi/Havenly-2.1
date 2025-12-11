@@ -18,8 +18,9 @@ export function updateSession(request: NextRequest) {
         set(name: string, value: string, options: any) {
           response.cookies.set(name, value, options);
         },
-        remove(name: string, options: any) {
-          response.cookies.delete(name, options);
+        remove(name: string) {
+          // FIXED FOR NEXT.JS 14 — must remove options parameter
+          response.cookies.delete(name);
         },
       },
     }
