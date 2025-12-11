@@ -5,9 +5,7 @@ import { updateSession } from "@/lib/supabase/middleware";
 export async function middleware(request: NextRequest) {
   const { supabase, response } = updateSession(request);
 
-  // IMPORTANT:
-  // This line forces Supabase to refresh auth cookies on every request.
-  // Without it, your session expires and you get logged out.
+  // This is REQUIRED for refresh tokens to refresh properly.
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
