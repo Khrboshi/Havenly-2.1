@@ -1,37 +1,39 @@
 // lib/supabase/middleware.ts
+import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { type NextRequest, NextResponse } from "next/server";
 
 /**
- * This middleware keeps Supabase auth cookies in sync on protected routes.
- * It NEVER touches public routes or OAuth callbacks.
+ * Fully refreshes Supabase cookies AND validates session.
  */
-export function updateSession(request: NextRequest) {
-  // Base response
+export async function authMiddleware(request: NextRequest) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   });
 
-  // Supabase server client with COOKIE PASSTHROUGH
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
+        get(name) {
           return request.cookies.get(name)?.value;
         },
-        set(name: string, value: string, options: any) {
+        set(name, value, options) {
           response.cookies.set(name, value, options);
         },
-        remove(name: string) {
+        remove(name) {
           response.cookies.delete(name);
         },
       },
     }
   );
 
-  return { supabase, response };
+  // IMPORTANT: fetch session here so middleware enforces auth
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  return { supabase, response, session };
 }
