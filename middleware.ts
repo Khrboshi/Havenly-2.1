@@ -1,14 +1,16 @@
+// middleware.ts
 import { NextResponse, type NextRequest } from "next/server";
-import { authMiddleware } from "@/lib/supabase/middleware";
+import { updateSession } from "@/lib/supabase/middleware";
 
-/**
- * Enforces authentication AND keeps cookies fresh.
- */
 export async function middleware(request: NextRequest) {
-  const { response, session } = await authMiddleware(request);
+  const { supabase, response } = updateSession(request);
 
-  // If user is NOT logged in → redirect before hitting ProtectedLayout
-  if (!session) {
+  // IMPORTANT:
+  // This line forces Supabase to refresh auth cookies on every request.
+  // Without it, your session expires and you get logged out.
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
     const redirectUrl = new URL("/magic-login", request.url);
     return NextResponse.redirect(redirectUrl);
   }
