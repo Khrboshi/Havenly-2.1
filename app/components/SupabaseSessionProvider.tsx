@@ -1,11 +1,11 @@
 "use client";
 
-import { createBrowserClient } from "@supabase/auth-helpers-nextjs";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createBrowserClient } from "@supabase/ssr";
+import { createContext, useContext, useEffect, useState, useMemo } from "react";
 
 const SupabaseContext = createContext(null);
 
-export function SupabaseSessionProvider({ children, initialSession }) {
+export function SupabaseSessionProvider({ initialSession, children }) {
   const supabase = useMemo(
     () =>
       createBrowserClient(
@@ -15,11 +15,12 @@ export function SupabaseSessionProvider({ children, initialSession }) {
     []
   );
 
-  const [session, setSession] = useState(initialSession);
+  const [session, setSession] = useState(initialSession ?? null);
 
   useEffect(() => {
-    // Keep client session synced
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    supabase.auth.getSession().then(({ data }) => {
+      if (data?.session) setSession(data.session);
+    });
 
     const {
       data: { subscription },
