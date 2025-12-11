@@ -1,6 +1,7 @@
-// lib/supabase/server.ts
+export const dynamic = "force-dynamic";
+
 import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/auth-helpers-nextjs";
+import { createServerClient } from "@supabase/ssr";
 
 export function createServerSupabase() {
   const cookieStore = cookies();
@@ -10,8 +11,18 @@ export function createServerSupabase() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
+        get(name) {
           return cookieStore.get(name)?.value;
+        },
+        set(name, value, options) {
+          try {
+            cookieStore.set(name, value, options);
+          } catch {}
+        },
+        remove(name, options) {
+          try {
+            cookieStore.set(name, "", options);
+          } catch {}
         },
       },
     }
