@@ -3,9 +3,8 @@ import { type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
 /**
- * Middleware ONLY keeps Supabase auth cookies in sync.
- * It MUST NOT intercept /auth/callback or public pages,
- * or Supabase PKCE cookies will fail to be set.
+ * This middleware keeps Supabase auth cookies refreshed.
+ * It MUST run on all protected top-level routes.
  */
 export async function middleware(request: NextRequest) {
   const { response } = await updateSession(request);
@@ -14,15 +13,20 @@ export async function middleware(request: NextRequest) {
 
 /**
  * IMPORTANT:
- * We only apply middleware to PRIVATE routes.
- * This prevents interference with Supabase PKCE OAuth flow.
+ * We include both the route and route/* patterns.
+ * This ensures refresh works on hard reloads, not only on subpages.
  */
 export const config = {
   matcher: [
+    "/dashboard",
     "/dashboard/:path*",
+    "/journal",
     "/journal/:path*",
+    "/tools",
     "/tools/:path*",
+    "/insights",
     "/insights/:path*",
+    "/settings",
     "/settings/:path*",
   ],
 };
