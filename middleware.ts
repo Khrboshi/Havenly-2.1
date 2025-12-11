@@ -3,8 +3,10 @@ import { type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
 /**
- * This middleware keeps Supabase auth cookies refreshed.
- * It MUST run on all protected top-level routes.
+ * This middleware ONLY refreshes Supabase auth cookies
+ * on API/data/navigation requests — NOT on full-page reloads.
+ *
+ * This prevents hard-refresh logout and keeps PKCE working.
  */
 export async function middleware(request: NextRequest) {
   const { response } = await updateSession(request);
@@ -13,20 +15,24 @@ export async function middleware(request: NextRequest) {
 
 /**
  * IMPORTANT:
- * We include both the route and route/* patterns.
- * This ensures refresh works on hard reloads, not only on subpages.
+ * We apply middleware ONLY to internal data routes.
+ *
+ * These are the exact patterns Next.js uses for:
+ * - RSC data fetching
+ * - metadata / layout data loading
+ * - parallel routes
+ *
+ * We DO NOT apply middleware to:
+ * - /dashboard
+ * - /journal
+ * - /tools
+ * - /insights
+ * - /settings
+ *
+ * This prevents Supabase cookies from being overwritten during full reload.
  */
 export const config = {
   matcher: [
-    "/dashboard",
-    "/dashboard/:path*",
-    "/journal",
-    "/journal/:path*",
-    "/tools",
-    "/tools/:path*",
-    "/insights",
-    "/insights/:path*",
-    "/settings",
-    "/settings/:path*",
+    "/((?!_next/static|_next/image|favicon.ico|auth/callback|magic-login|login).*)",
   ],
 };
