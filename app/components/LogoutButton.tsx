@@ -1,10 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-
 export default function LogoutButton() {
-  const router = useRouter();
-
   async function handleLogout() {
     try {
       await fetch("/logout", {
@@ -12,9 +8,8 @@ export default function LogoutButton() {
         credentials: "include",
         cache: "no-store",
       });
-
-      router.replace("/magic-login");
-      router.refresh();
+      // Do NOT router.push or refresh
+      // Server redirect will take over
     } catch (e) {
       console.error("Logout failed", e);
     }
