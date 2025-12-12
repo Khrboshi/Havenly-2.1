@@ -1,10 +1,11 @@
-// lib/supabase/middleware.ts
+import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
-import { type NextRequest, NextResponse } from "next/server";
 
-export function updateSession(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
-    request: { headers: request.headers },
+    request: {
+      headers: request.headers,
+    },
   });
 
   const supabase = createServerClient(
@@ -12,19 +13,30 @@ export function updateSession(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value ?? "";
+        getAll() {
+          return request.cookies.getAll();
         },
-        set(name: string, value: string, options: any) {
-          response.cookies.set(name, value, options);
-        },
-        remove(name: string) {
-          // FIXED FOR NEXT.JS 14 — must remove options parameter
-          response.cookies.delete(name);
+        setAll(cookies) {
+          cookies.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options);
+          });
         },
       },
     }
   );
 
-  return { supabase, response };
+  // IMPORTANT: this call keeps the session alive on reloads
+  await supabase.auth.getUser();
+
+  return response;
 }
+
+export const config = {
+  matcher: [
+    "/dashboard/:path*",
+    "/journal/:path*",
+    "/tools/:path*",
+    "/insights/:path*",
+    "/settings/:path*",
+  ],
+};
