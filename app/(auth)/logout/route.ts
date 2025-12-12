@@ -1,19 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+// app/(auth)/logout/route.ts
+import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-export async function GET(request: NextRequest) {
-  const origin = request.nextUrl.origin;
-
+export async function GET(request: Request) {
   const response = NextResponse.redirect(
-    `${origin}/magic-login?logged_out=1`,
-    {
-      headers: {
-        // CRITICAL: kill all caching and RSC memory
-        "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-        Pragma: "no-cache",
-        Expires: "0",
-      },
-    }
+    new URL("/magic-login?logged_out=1", request.url),
+    { headers: { "Cache-Control": "no-store" } }
   );
 
   const supabase = createServerClient(
