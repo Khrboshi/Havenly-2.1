@@ -1,11 +1,13 @@
 // app/(auth)/logout/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const response = NextResponse.redirect(
     new URL("/magic-login?logged_out=1", request.url),
-    { headers: { "Cache-Control": "no-store" } }
+    {
+      headers: { "Cache-Control": "no-store" },
+    }
   );
 
   const supabase = createServerClient(
