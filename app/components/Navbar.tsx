@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useSupabase } from "@/components/SupabaseSessionProvider";
+import LogoutButton from "./LogoutButton";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -59,25 +60,22 @@ export default function Navbar() {
 
           {/* -------- DESKTOP NAV -------- */}
           <nav className="hidden items-center gap-6 md:flex">
-            {/* Main links (public OR app, depending on auth state) */}
+            {/* Main links */}
             {navLinks.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`
-                  nav-link rounded-md px-3 py-1.5 text-sm font-medium
-                  ${
-                    isActive(item.href)
-                      ? "nav-link-active"
-                      : "text-hvn-text-secondary"
-                  }
-                `}
+                className={`nav-link rounded-md px-3 py-1.5 text-sm font-medium ${
+                  isActive(item.href)
+                    ? "nav-link-active"
+                    : "text-hvn-text-secondary"
+                }`}
               >
                 {item.label}
               </Link>
             ))}
 
-            {/* Right-side actions when LOGGED OUT */}
+            {/* Logged-out actions */}
             {!isLoggedIn && (
               <div className="ml-3 flex items-center gap-3">
                 <Link
@@ -96,15 +94,8 @@ export default function Navbar() {
               </div>
             )}
 
-            {/* Right-side action when LOGGED IN */}
-            {isLoggedIn && (
-              <Link
-                href="/logout"
-                className="nav-link rounded-md px-3 py-1.5 text-sm font-medium text-red-400 hover:bg-red-400/10"
-              >
-                Logout
-              </Link>
-            )}
+            {/* Logged-in action */}
+            {isLoggedIn && <LogoutButton />}
           </nav>
 
           {/* -------- MOBILE HAMBURGER -------- */}
@@ -115,13 +106,7 @@ export default function Navbar() {
             aria-label="Open navigation menu"
             aria-expanded={open}
           >
-            <svg
-              width="26"
-              height="26"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
+            <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M3 6h20M3 13h20M3 20h20" />
             </svg>
           </button>
@@ -133,7 +118,6 @@ export default function Navbar() {
          =========================================== */}
       {open && (
         <div className="animate-fadeIn fixed inset-0 z-[999] bg-black/50 backdrop-blur-sm md:hidden">
-          {/* Drawer panel */}
           <div className="animate-slideDown absolute left-0 top-0 flex h-full w-72 flex-col border-r border-hvn-subtle bg-hvn-bg-elevated shadow-2xl">
             {/* Drawer header */}
             <div className="flex h-16 items-center justify-between border-b border-hvn-subtle px-5">
@@ -150,27 +134,24 @@ export default function Navbar() {
               </button>
             </div>
 
-            {/* Scrollable nav area */}
+            {/* Drawer nav */}
             <nav className="flex-1 space-y-2 overflow-y-auto px-4 py-4">
               {navLinks.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => setOpen(false)}
-                  className={`
-                    nav-link block w-full rounded-md px-3 py-3 text-sm font-medium
-                    ${
-                      isActive(item.href)
-                        ? "nav-link-active"
-                        : "text-hvn-text-secondary"
-                    }
-                  `}
+                  className={`nav-link block w-full rounded-md px-3 py-3 text-sm font-medium ${
+                    isActive(item.href)
+                      ? "nav-link-active"
+                      : "text-hvn-text-secondary"
+                  }`}
                 >
                   {item.label}
                 </Link>
               ))}
 
-              {/* CTA buttons for LOGGED OUT */}
+              {/* Logged-out CTAs */}
               {!isLoggedIn && (
                 <>
                   <Link
@@ -191,15 +172,11 @@ export default function Navbar() {
                 </>
               )}
 
-              {/* CTA for LOGGED IN */}
+              {/* Logged-in CTA */}
               {isLoggedIn && (
-                <Link
-                  href="/logout"
-                  onClick={() => setOpen(false)}
-                  className="mt-3 block rounded-md px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-400/10"
-                >
-                  Logout
-                </Link>
+                <div className="mt-3 px-3">
+                  <LogoutButton />
+                </div>
               )}
             </nav>
           </div>
