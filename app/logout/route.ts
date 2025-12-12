@@ -1,36 +1,37 @@
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
-
+// app/(auth)/logout/route.ts
 import { NextResponse } from "next/server";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { createServerClient } from "@supabase/ssr";
+import type { NextRequest } from "next/server";
 
-export async function GET(request: Request) {
-  try {
-    const supabase = await createServerSupabase();
+export async function GET(request: NextRequest) {
+  const response = NextResponse.redirect(
+    new URL("/magic-login?logged_out=1", request.url),
+    {
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    }
+  );
 
-    // FULL logout: clears access + refresh tokens
-    await supabase.auth.signOut();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name) {
+          return request.cookies.get(name)?.value;
+        },
+        set(name, value, options) {
+          response.cookies.set({ name, value, ...options });
+        },
+        remove(name, options) {
+          response.cookies.set({ name, value: "", ...options });
+        },
+      },
+    }
+  );
 
-    // Also manually clear cookies for safety
-    const response = NextResponse.redirect(
-      new URL("/magic-login?logged_out=1", request.url)
-    );
+  await supabase.auth.signOut();
 
-    response.cookies.set("sb-access-token", "", {
-      path: "/",
-      expires: new Date(0),
-    });
-
-    response.cookies.set("sb-refresh-token", "", {
-      path: "/",
-      expires: new Date(0),
-    });
-
-    return response;
-  } catch (err) {
-    console.error("Logout error:", err);
-    return NextResponse.redirect(
-      new URL("/magic-login?error=logout_failed", request.url)
-    );
-  }
+  return response;
 }
