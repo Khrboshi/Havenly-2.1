@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 
-export async function POST() {
+export async function POST(request: Request) {
   const cookieStore = cookies();
 
   const supabase = createServerClient(
@@ -22,8 +22,11 @@ export async function POST() {
 
   await supabase.auth.signOut();
 
-  return NextResponse.json(
-    { success: true },
-    { headers: { "Cache-Control": "no-store" } }
-  );
+  const redirectUrl = new URL("/magic-login?logged_out=1", request.url);
+
+  return NextResponse.redirect(redirectUrl, {
+    headers: {
+      "Cache-Control": "no-store, max-age=0",
+    },
+  });
 }
