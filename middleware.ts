@@ -1,12 +1,62 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+/**
+ * Middleware responsibilities (CLEANED):
+ * - Allow public & auth routes without interference
+ * - Protect authenticated areas only
+ * - Avoid session refresh loops
+ * - Never block magic-link or callback flow
+ */
+
+const PUBLIC_PATHS = [
+  "/",
+  "/about",
+  "/blog",
+  "/privacy",
+  "/premium",
+  "/upgrade",
+];
+
+const AUTH_PATHS = [
+  "/magic-login",
+  "/auth/callback",
+  "/logout",
+];
+
+const PROTECTED_PREFIXES = [
+  "/dashboard",
+  "/journal",
+  "/tools",
+  "/insights",
+  "/settings",
+];
+
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next({
-    request: {
-      headers: req.headers,
-    },
-  });
+  const { pathname } = req.nextUrl;
+
+  // 1️⃣ Skip public paths
+  if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+    return NextResponse.next();
+  }
+
+  // 2️⃣ Skip auth-related paths (CRITICAL)
+  if (AUTH_PATHS.some((p) => pathname.startsWith(p))) {
+    return NextResponse.next();
+  }
+
+  // 3️⃣ Only protect known protected areas
+  const isProtected = PROTECTED_PREFIXES.some((p) =>
+    pathname.startsWith(p)
+  );
+
+  if (!isProtected) {
+    return NextResponse.next();
+  }
+
+  // 4️⃣ Check session ONLY for protected routes
+  const res = NextResponse.next();
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,26 +65,34 @@ export async function middleware(req: NextRequest) {
       cookies: {
         getAll: () => req.cookies.getAll(),
         setAll: (cookies) => {
-          cookies.forEach(({ name, value, options }) => {
-            res.cookies.set(name, value, options);
-          });
+          cookies.forEach(({ name, value, options }) =>
+            res.cookies.set(name, value, options)
+          );
         },
       },
     }
   );
 
-  // 🔑 REQUIRED: silently refresh session if needed
-  await supabase.auth.getUser();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    const redirectUrl = req.nextUrl.clone();
+    redirectUrl.pathname = "/magic-login";
+    redirectUrl.searchParams.set("redirected", "1");
+    return NextResponse.redirect(redirectUrl);
+  }
 
   return res;
 }
 
 export const config = {
   matcher: [
-    "/dashboard/:path*",
-    "/journal/:path*",
-    "/tools/:path*",
-    "/insights/:path*",
-    "/settings/:path*",
+    /*
+     * Run middleware on all app routes
+     * except static assets
+     */
+    "/((?!_next/static|_next/image|favicon.ico|icon.svg).*)",
   ],
 };
