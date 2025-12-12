@@ -1,24 +1,45 @@
 "use server";
 
-import { createServerSupabase } from "@/lib/supabase/server";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 export async function sendMagicLink(formData: FormData) {
   const email = String(formData.get("email") || "").trim();
 
-  if (!email) return { success: false, message: "Email is required." };
+  if (!email) {
+    return { success: false, message: "Email is required." };
+  }
 
-  const supabase = createServerSupabase();
+  const cookieStore = cookies();
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name, value, options) {
+          cookieStore.set({ name, value, ...options, path: "/" });
+        },
+        remove(name, options) {
+          cookieStore.set({ name, value: "", ...options, path: "/" });
+        },
+      },
+    }
+  );
 
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?redirect_to=/dashboard`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
     },
   });
 
   if (error) {
-    console.error("Magic link error:", error);
-    return { success: false, message: "Failed to send magic link." };
+    console.error("Magic link error:", error.message);
+    return { success: false, message: error.message };
   }
 
   return { success: true };
