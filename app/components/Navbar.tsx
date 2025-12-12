@@ -3,15 +3,14 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useSupabase } from "@/components/SupabaseSessionProvider";
+import { supabaseClient } from "@/lib/supabase/client";
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { session } = useSupabase();
   const [open, setOpen] = useState(false);
-
-  const isLoggedIn = !!session;
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const linksLoggedOut = [
     { href: "/", label: "Home" },
@@ -28,6 +27,29 @@ export default function Navbar() {
 
   const isActive = (href: string) => pathname === href;
 
+  // 🔐 Session awareness (KEY FIX)
+  useEffect(() => {
+    let mounted = true;
+
+    supabaseClient.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
+      setIsLoggedIn(!!data.session);
+      setLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabaseClient.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // Prevent background scroll on mobile menu
   useEffect(() => {
     if (open) {
       const prev = document.body.style.overflow;
@@ -47,10 +69,14 @@ export default function Navbar() {
       });
 
       router.replace("/magic-login?logged_out=1");
-      router.refresh();
+      // ❌ NO refresh — auth listener handles UI
     } catch (err) {
       console.error("Logout failed:", err);
     }
+  }
+
+  if (loading) {
+    return <header className="h-16 border-b border-hvn-subtle" />;
   }
 
   const navLinks = isLoggedIn ? linksLoggedIn : linksLoggedOut;
@@ -97,13 +123,14 @@ export default function Navbar() {
             )}
           </nav>
 
-          {/* Mobile */}
+          {/* Mobile toggle */}
           <button onClick={() => setOpen(true)} className="md:hidden">
             ☰
           </button>
         </div>
       </header>
 
+      {/* Mobile menu */}
       {open && (
         <div className="fixed inset-0 z-[999] bg-black/50 md:hidden">
           <div className="absolute left-0 top-0 h-full w-72 bg-hvn-bg-elevated">
