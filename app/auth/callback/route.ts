@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
           response.cookies.set({ name, value, ...options });
         },
         remove(name, options) {
-          response.cookies.set({ name, value: "", ...options });
+          response.cookies.delete(name);
         },
       },
     }
@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
+    console.error("Auth exchange failed:", error.message);
     return NextResponse.redirect(`${origin}/magic-login?error=1`);
   }
 
