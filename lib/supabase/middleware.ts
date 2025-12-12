@@ -1,7 +1,8 @@
-import { NextResponse, type NextRequest } from "next/server";
+// lib/supabase/middleware.ts
 import { createServerClient } from "@supabase/ssr";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -17,26 +18,19 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookies) {
-          cookies.forEach(({ name, value, options }) => {
-            response.cookies.set(name, value, options);
+          cookies.forEach((cookie) => {
+            response.cookies.set(cookie);
           });
         },
       },
     }
   );
 
-  // IMPORTANT: this call keeps the session alive on reloads
+  /**
+   * 🚨 CRITICAL LINE 🚨
+   * This MUST be called to refresh the session on hard reload
+   */
   await supabase.auth.getUser();
 
   return response;
 }
-
-export const config = {
-  matcher: [
-    "/dashboard/:path*",
-    "/journal/:path*",
-    "/tools/:path*",
-    "/insights/:path*",
-    "/settings/:path*",
-  ],
-};
