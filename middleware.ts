@@ -1,6 +1,16 @@
 // middleware.ts
-import { NextResponse, type NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+
+const PROTECTED_PATHS = [
+  "/dashboard",
+  "/journal",
+  "/tools",
+  "/insights",
+  "/settings",
+  "/premium",
+  "/upgrade",
+];
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
@@ -29,23 +39,20 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  const protectedRoutes = [
-    "/dashboard",
-    "/journal",
-    "/tools",
-    "/insights",
-  ];
-
-  const isProtected = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
+  const isProtected = PROTECTED_PATHS.some((p) =>
+    pathname === p || pathname.startsWith(p + "/")
   );
 
-  if (!session && isProtected) {
-    const redirectUrl = new URL("/magic-login", request.url);
+  // 🚫 Block ALL protected routes when logged out
+  if (isProtected && !session) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/magic-login";
     redirectUrl.searchParams.set("redirectedFrom", pathname);
+
     return NextResponse.redirect(redirectUrl);
   }
 
+  // 🚫 Block auth pages when logged in
   if (session && pathname === "/magic-login") {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
@@ -59,6 +66,9 @@ export const config = {
     "/journal/:path*",
     "/tools/:path*",
     "/insights/:path*",
+    "/settings/:path*",
+    "/premium",
+    "/upgrade",
     "/magic-login",
   ],
 };
