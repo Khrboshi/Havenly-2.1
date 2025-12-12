@@ -2,43 +2,15 @@
 
 export const dynamic = "force-dynamic";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
 import { sendMagicLink } from "./sendMagicLink";
-import { supabaseClient } from "@/lib/supabase/client";
 
 type Status = "idle" | "loading" | "success" | "error";
 
 function MagicLoginInner() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState<string | null>(null);
-
-  // Default redirect after login
-  const defaultRedirect = "/dashboard";
-
-  // If user tried to access a protected route, we stored ?redirectedFrom=/xxx
-  const redirectedFrom = searchParams.get("redirectedFrom") || defaultRedirect;
-
-  // Handle login redirection when Supabase session becomes valid
-  useEffect(() => {
-    const supabase = supabaseClient;
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        router.replace(redirectedFrom); // instant redirect
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [router, redirectedFrom]);
 
   async function handleSubmit(formData: FormData) {
     setStatus("loading");
@@ -59,7 +31,9 @@ function MagicLoginInner() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
       <div className="max-w-md w-full bg-[#0f172a] p-8 rounded-xl shadow-lg border border-white/10">
-        <h1 className="text-2xl font-semibold text-center mb-6">Sign in to Havenly</h1>
+        <h1 className="text-2xl font-semibold text-center mb-6">
+          Sign in to Havenly
+        </h1>
 
         {message && (
           <div
@@ -99,7 +73,7 @@ function MagicLoginInner() {
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-3">
-          You will be redirected to /dashboard after signing in.
+          You will be redirected to your dashboard after signing in.
         </p>
       </div>
     </div>
