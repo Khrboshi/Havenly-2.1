@@ -29,7 +29,7 @@ export default function Navbar() {
   const navLinks = isLoggedIn ? linksLoggedIn : linksLoggedOut;
   const isActive = (href: string) => pathname === href;
 
-  /** Lock background scroll when drawer open */
+  /* Lock background scroll */
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
@@ -40,17 +40,13 @@ export default function Navbar() {
   }, [open]);
 
   async function handleLogout() {
-    try {
-      await fetch("/logout", {
-        method: "POST",
-        credentials: "include",
-        cache: "no-store",
-      });
-      router.replace("/magic-login?logged_out=1");
-      router.refresh();
-    } catch (err) {
-      console.error("Logout failed:", err);
-    }
+    await fetch("/logout", {
+      method: "POST",
+      credentials: "include",
+      cache: "no-store",
+    });
+    router.replace("/magic-login?logged_out=1");
+    router.refresh();
   }
 
   return (
@@ -58,12 +54,11 @@ export default function Navbar() {
       {/* ================= HEADER ================= */}
       <header className="sticky top-0 z-50 w-full border-b border-hvn-subtle bg-hvn-bg/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-          {/* Brand */}
           <Link href="/" className="text-lg font-semibold tracking-tight">
             Havenly
           </Link>
 
-          {/* -------- DESKTOP NAV -------- */}
+          {/* Desktop */}
           <nav className="hidden items-center gap-6 md:flex">
             {navLinks.map((item) => (
               <Link
@@ -103,10 +98,10 @@ export default function Navbar() {
             )}
           </nav>
 
-          {/* -------- MOBILE TOGGLE -------- */}
+          {/* Mobile toggle */}
           <button
             onClick={() => setOpen(true)}
-            className="md:hidden text-hvn-text-secondary"
+            className="md:hidden text-xl text-hvn-text-secondary"
             aria-label="Open menu"
           >
             ☰
@@ -114,71 +109,79 @@ export default function Navbar() {
         </div>
       </header>
 
+      {/* ================= MOBILE OVERLAY ================= */}
+      <div
+        className={`fixed inset-0 z-[999] bg-black/40 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
+          open ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+        onClick={() => setOpen(false)}
+      />
+
       {/* ================= MOBILE DRAWER ================= */}
-      {open && (
-        <div className="fixed inset-0 z-[999] bg-black/50 md:hidden">
-          <div className="absolute left-0 top-0 h-full w-[80%] max-w-xs bg-hvn-bg-elevated shadow-xl">
-            <div className="flex items-center justify-between border-b border-hvn-subtle px-4 py-4">
-              <span className="text-lg font-semibold">Menu</span>
-              <button
-                onClick={() => setOpen(false)}
-                className="text-hvn-text-secondary"
-                aria-label="Close menu"
-              >
-                ✕
-              </button>
-            </div>
-
-            <nav className="flex flex-col gap-2 px-4 py-4">
-              {navLinks.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className={`rounded-md px-3 py-2 text-sm font-medium ${
-                    isActive(item.href)
-                      ? "nav-link-active"
-                      : "text-hvn-text-secondary"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
-
-              {!isLoggedIn && (
-                <>
-                  <Link
-                    href="/magic-login"
-                    onClick={() => setOpen(false)}
-                    className="mt-2 rounded-md px-3 py-2 text-sm"
-                  >
-                    Log in
-                  </Link>
-                  <Link
-                    href="/magic-login"
-                    onClick={() => setOpen(false)}
-                    className="rounded-md bg-hvn-accent-mint px-3 py-2 text-sm font-semibold text-hvn-bg"
-                  >
-                    Start free journal
-                  </Link>
-                </>
-              )}
-
-              {isLoggedIn && (
-                <button
-                  onClick={async () => {
-                    setOpen(false);
-                    await handleLogout();
-                  }}
-                  className="mt-2 text-left text-sm font-medium text-red-400"
-                >
-                  Logout
-                </button>
-              )}
-            </nav>
-          </div>
+      <aside
+        className={`fixed left-0 top-0 z-[1000] h-full w-[80%] max-w-xs bg-hvn-bg-elevated shadow-xl transition-transform duration-300 md:hidden ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between border-b border-hvn-subtle px-4 py-4">
+          <span className="text-lg font-semibold">Menu</span>
+          <button
+            onClick={() => setOpen(false)}
+            className="text-xl text-hvn-text-secondary"
+          >
+            ✕
+          </button>
         </div>
-      )}
+
+        <nav className="flex flex-col gap-1 px-4 py-4">
+          {navLinks.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setOpen(false)}
+              className={`rounded-md px-3 py-2.5 text-sm font-medium ${
+                isActive(item.href)
+                  ? "nav-link-active"
+                  : "text-hvn-text-secondary"
+              }`}
+            >
+              {item.label}
+            </Link>
+          ))}
+
+          {!isLoggedIn && (
+            <>
+              <Link
+                href="/magic-login"
+                onClick={() => setOpen(false)}
+                className="mt-4 rounded-md px-3 py-2.5 text-sm text-center"
+              >
+                Log in
+              </Link>
+
+              <Link
+                href="/magic-login"
+                onClick={() => setOpen(false)}
+                className="rounded-md bg-hvn-accent-mint px-3 py-2.5 text-center text-sm font-semibold text-hvn-bg"
+              >
+                Start free journal
+              </Link>
+            </>
+          )}
+
+          {isLoggedIn && (
+            <button
+              onClick={async () => {
+                setOpen(false);
+                await handleLogout();
+              }}
+              className="mt-6 text-left text-sm font-medium text-red-400"
+            >
+              Logout
+            </button>
+          )}
+        </nav>
+      </aside>
     </>
   );
 }
