@@ -5,6 +5,7 @@ export default function BlogPage() {
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <section className="mx-auto max-w-6xl px-6 pb-16 pt-24">
+        {/* Header */}
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">
           Havenly Journal
         </p>
@@ -13,10 +14,18 @@ export default function BlogPage() {
         </h1>
         <p className="mt-3 max-w-2xl text-sm text-slate-300">
           These pieces are for people who are doing their best with a lot on
-          their plate. No productivity hacks, no optimization—just softer ways
-          to understand what you&apos;re feeling and why it makes sense.
+          their plate. No productivity hacks, no optimization — just softer
+          ways to understand what you&apos;re feeling and why it makes sense.
         </p>
 
+        {/* Trust strip */}
+        <p className="mt-4 max-w-2xl text-xs text-slate-400">
+          Havenly articles are written to be read quietly. Nothing here is
+          clinical, diagnostic, or designed to push you into action.
+          Reflection is allowed to stay slow.
+        </p>
+
+        {/* Tags */}
         <div className="mt-6 flex flex-wrap gap-2 text-xs">
           <span className="rounded-full border border-slate-700 px-3 py-1 text-slate-300">
             Emotional load
@@ -29,21 +38,23 @@ export default function BlogPage() {
           </span>
         </div>
 
+        {/* Primary CTAs */}
         <div className="mt-6 flex flex-wrap gap-3 text-sm">
           <Link
             href="/magic-login"
             className="rounded-full bg-emerald-400 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-300"
           >
-            Start free journaling
+            Start a free private journal
           </Link>
           <Link
             href="/upgrade"
             className="rounded-full border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-100 hover:border-slate-500 hover:bg-slate-900"
           >
-            See Premium reflections
+            See what Premium adds
           </Link>
         </div>
 
+        {/* Articles */}
         <div className="mt-10 grid gap-5 md:grid-cols-2">
           {ARTICLES.map((article) => (
             <article
@@ -74,27 +85,28 @@ export default function BlogPage() {
           ))}
         </div>
 
-        <div className="mt-10 rounded-2xl border border-slate-800 bg-slate-900/40 p-5 text-sm">
+        {/* Conversion block */}
+        <div className="mt-12 rounded-2xl border border-slate-800 bg-slate-900/40 p-6 text-sm">
           <p className="font-semibold text-slate-100">
-            Turn what you&apos;re reading into a space that remembers you.
+            Reading can clarify things. Writing often clarifies them more.
           </p>
-          <p className="mt-2 text-xs text-slate-300 max-w-xl">
-            Havenly isn&apos;t just a set of ideas—it&apos;s a private place to
-            put what you&apos;re carrying, and gentle AI that helps you notice
-            what&apos;s been happening underneath your weeks.
+          <p className="mt-2 max-w-xl text-xs text-slate-300">
+            Havenly gives you a private place to put what you&apos;re carrying.
+            The AI does not judge, diagnose, or rush you — it reflects patterns
+            back gently, only when you ask.
           </p>
           <div className="mt-4 flex flex-wrap gap-3 text-xs">
             <Link
               href="/magic-login"
               className="rounded-full bg-emerald-400 px-4 py-2 font-semibold text-slate-950 hover:bg-emerald-300"
             >
-              Start a free reflection
+              Start free reflection
             </Link>
             <Link
-              href="/upgrade"
+              href="/privacy"
               className="rounded-full border border-slate-700 px-4 py-2 font-semibold text-slate-100 hover:border-slate-500 hover:bg-slate-900"
             >
-              Explore Premium insights
+              How your data is protected →
             </Link>
           </div>
         </div>
