@@ -3,185 +3,148 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Menu, X } from "lucide-react";
 import { useSupabase } from "@/components/SupabaseSessionProvider";
 
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { session } = useSupabase();
-  const [open, setOpen] = useState(false);
+
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const isLoggedIn = !!session;
 
-  const linksLoggedOut = [
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  const linkBase =
+    "text-sm font-medium transition-colors hover:text-emerald-400";
+
+  const activeLink = "text-emerald-400";
+  const inactiveLink = "text-slate-300";
+
+  const publicLinks = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
     { href: "/blog", label: "Blog" },
+    { href: "/magic-login", label: "Log in" },
   ];
 
-  const linksLoggedIn = [
+  const authLinks = [
     { href: "/dashboard", label: "Dashboard" },
     { href: "/journal", label: "Journal" },
     { href: "/tools", label: "Tools" },
     { href: "/insights", label: "Insights" },
   ];
 
-  const navLinks = isLoggedIn ? linksLoggedIn : linksLoggedOut;
-  const isActive = (href: string) => pathname === href;
-
-  /* Lock background scroll */
-  useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [open]);
-
   async function handleLogout() {
-    await fetch("/logout", {
-      method: "POST",
-      credentials: "include",
-      cache: "no-store",
-    });
-    router.replace("/magic-login?logged_out=1");
+    await fetch("/logout");
+    router.push("/magic-login?logged_out=1");
     router.refresh();
   }
 
   return (
-    <>
-      {/* ================= HEADER ================= */}
-      <header className="sticky top-0 z-50 w-full border-b border-hvn-subtle bg-hvn-bg/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
-          <Link href="/" className="text-lg font-semibold tracking-tight">
-            Havenly
-          </Link>
+    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#020617]/80 backdrop-blur">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+        {/* Brand */}
+        <Link href="/" className="text-lg font-semibold text-white">
+          Havenly
+        </Link>
 
-          {/* Desktop */}
-          <nav className="hidden items-center gap-6 md:flex">
-            {navLinks.map((item) => (
+        {/* Desktop navigation */}
+        <div className="hidden items-center gap-6 md:flex">
+          {(isLoggedIn ? authLinks : publicLinks).map((link) => {
+            const isActive =
+              pathname === link.href ||
+              (link.href !== "/" && pathname.startsWith(link.href));
+
+            return (
               <Link
-                key={item.href}
-                href={item.href}
-                className={`text-sm font-medium ${
-                  isActive(item.href)
-                    ? "nav-link-active"
-                    : "text-hvn-text-secondary"
+                key={link.href}
+                href={link.href}
+                className={`${linkBase} ${
+                  isActive ? activeLink : inactiveLink
                 }`}
               >
-                {item.label}
+                {link.label}
               </Link>
-            ))}
+            );
+          })}
 
-            {!isLoggedIn && (
-              <>
-                <Link href="/magic-login" className="text-sm">
-                  Log in
-                </Link>
-                <Link
-                  href="/magic-login"
-                  className="rounded-md bg-hvn-accent-mint px-4 py-1.5 text-sm font-semibold text-hvn-bg"
-                >
-                  Start free journal
-                </Link>
-              </>
-            )}
-
-            {isLoggedIn && (
-              <button
-                onClick={handleLogout}
-                className="text-sm font-medium text-red-400 hover:text-red-300"
-              >
-                Logout
-              </button>
-            )}
-          </nav>
-
-          {/* Mobile toggle */}
-          <button
-            onClick={() => setOpen(true)}
-            className="md:hidden text-xl text-hvn-text-secondary"
-            aria-label="Open menu"
-          >
-            ☰
-          </button>
-        </div>
-      </header>
-
-      {/* ================= MOBILE OVERLAY ================= */}
-      <div
-        className={`fixed inset-0 z-[999] bg-black/40 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
-          open ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
-        onClick={() => setOpen(false)}
-      />
-
-      {/* ================= MOBILE DRAWER ================= */}
-      <aside
-        className={`fixed left-0 top-0 z-[1000] h-full w-[80%] max-w-xs bg-hvn-bg-elevated shadow-xl transition-transform duration-300 md:hidden ${
-          open ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="flex items-center justify-between border-b border-hvn-subtle px-4 py-4">
-          <span className="text-lg font-semibold">Menu</span>
-          <button
-            onClick={() => setOpen(false)}
-            className="text-xl text-hvn-text-secondary"
-          >
-            ✕
-          </button>
-        </div>
-
-        <nav className="flex flex-col gap-1 px-4 py-4">
-          {navLinks.map((item) => (
+          {!isLoggedIn ? (
             <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setOpen(false)}
-              className={`rounded-md px-3 py-2.5 text-sm font-medium ${
-                isActive(item.href)
-                  ? "nav-link-active"
-                  : "text-hvn-text-secondary"
-              }`}
+              href="/magic-login"
+              className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
             >
-              {item.label}
+              Start free journal
             </Link>
-          ))}
-
-          {!isLoggedIn && (
-            <>
-              <Link
-                href="/magic-login"
-                onClick={() => setOpen(false)}
-                className="mt-4 rounded-md px-3 py-2.5 text-sm text-center"
-              >
-                Log in
-              </Link>
-
-              <Link
-                href="/magic-login"
-                onClick={() => setOpen(false)}
-                className="rounded-md bg-hvn-accent-mint px-3 py-2.5 text-center text-sm font-semibold text-hvn-bg"
-              >
-                Start free journal
-              </Link>
-            </>
-          )}
-
-          {isLoggedIn && (
+          ) : (
             <button
-              onClick={async () => {
-                setOpen(false);
-                await handleLogout();
-              }}
-              className="mt-6 text-left text-sm font-medium text-red-400"
+              onClick={handleLogout}
+              className="text-sm font-medium text-red-400 hover:text-red-300"
             >
               Logout
             </button>
           )}
-        </nav>
-      </aside>
-    </>
+        </div>
+
+        {/* Mobile menu button */}
+        <button
+          className="flex items-center text-slate-200 md:hidden"
+          onClick={() => setMobileOpen((v) => !v)}
+          aria-label="Toggle menu"
+        >
+          {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
+      </nav>
+
+      {/* Mobile menu panel */}
+      {mobileOpen && (
+        <div className="md:hidden">
+          <div className="border-t border-white/10 bg-[#020617] px-4 pb-4 pt-2">
+            <div className="flex flex-col gap-4">
+              {(isLoggedIn ? authLinks : publicLinks).map((link) => {
+                const isActive =
+                  pathname === link.href ||
+                  (link.href !== "/" && pathname.startsWith(link.href));
+
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`rounded-md px-2 py-2 text-base ${
+                      isActive
+                        ? "bg-white/5 text-emerald-400"
+                        : "text-slate-300"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+
+              {!isLoggedIn ? (
+                <Link
+                  href="/magic-login"
+                  className="mt-2 rounded-md bg-emerald-500 px-4 py-3 text-center text-sm font-medium text-black"
+                >
+                  Start free journal
+                </Link>
+              ) : (
+                <button
+                  onClick={handleLogout}
+                  className="mt-2 rounded-md bg-red-500/10 px-4 py-3 text-sm font-medium text-red-400"
+                >
+                  Logout
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </header>
   );
 }
