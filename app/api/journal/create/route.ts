@@ -1,4 +1,4 @@
-export see = "force-dynamic";
+export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 import { createServerSupabase } from "@/lib/supabase/server";
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     }
 
     const { data, error } = await supabase
-      .from("journal") // ← CONFIRM TABLE NAME
+      .from("journal") // confirm table name = journal
       .insert({
         user_id: user.id,
         title: body.title?.trim() || null,
@@ -46,7 +46,10 @@ export async function POST(req: Request) {
       );
     }
 
-    return NextResponse.json({ success: true, entry: data });
+    return NextResponse.json({
+      success: true,
+      entry: data,
+    });
   } catch (err) {
     console.error("Unexpected journal error:", err);
     return NextResponse.json(
