@@ -1,29 +1,36 @@
 import Link from "next/link";
 
-/**
- * UpgradeNudge
- *
- * Purpose:
- * - Calm, value-based Premium reminder
- * - No blocking, no pressure, no popups
- * - Designed to appear inside Dashboard or tools
- *
- * Usage:
- * <UpgradeNudge />
- */
+type Props = {
+  credits?: number | null;
+  variant?: "default" | "credits";
+};
 
-export default function UpgradeNudge() {
+export default function UpgradeNudge({ credits = null, variant = "default" }: Props) {
+  const showCredits = variant === "credits" && typeof credits === "number";
+
   return (
     <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6">
       <h3 className="mb-2 text-sm font-semibold text-emerald-300">
-        Seeing patterns takes time
+        {showCredits ? "You’re close to the edge of your free credits" : "Seeing patterns takes time"}
       </h3>
 
       <p className="mb-4 text-sm text-slate-300">
-        As you keep writing, Havenly begins to surface recurring themes and
-        emotional patterns. Premium adds gentle timelines and deeper summaries
-        that help those patterns become clearer — without asking you to do
-        more.
+        {showCredits ? (
+          <>
+            You have{" "}
+            <span className="font-semibold text-slate-100">
+              {credits}
+            </span>{" "}
+            credits left. Premium adds deeper multi-entry reflections and calmer summaries so your
+            patterns become clearer—without asking you to do more.
+          </>
+        ) : (
+          <>
+            As you keep writing, Havenly begins to surface recurring themes and emotional patterns.
+            Premium adds gentle timelines and deeper summaries that help those patterns become clearer
+            — without extra effort.
+          </>
+        )}
       </p>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -35,7 +42,7 @@ export default function UpgradeNudge() {
         </Link>
 
         <span className="text-xs text-slate-400">
-          No pressure. Free works fully on its own.
+          No pressure. Free remains fully usable.
         </span>
       </div>
     </div>
