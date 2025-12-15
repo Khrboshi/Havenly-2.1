@@ -18,8 +18,7 @@ export default function JournalEntryPage() {
   const params = useParams();
   const router = useRouter();
 
-  const entryId =
-    typeof params?.id === "string" ? params.id : undefined;
+  const entryId = typeof params?.id === "string" ? params.id : null;
 
   const [entry, setEntry] = useState<JournalEntry | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,7 +37,8 @@ export default function JournalEntryPage() {
       setLoading(true);
       setError(null);
 
-      const { data, error } = await supabase
+      // ⛔️ DO NOT LET TS INFER SUPABASE TYPES
+      const result = await supabase
         .from("journal_entries")
         .select("id,title,content,reflection,created_at,user_id")
         .eq("id", entryId)
@@ -47,7 +47,9 @@ export default function JournalEntryPage() {
 
       if (cancelled) return;
 
-      if (error || !data) {
+      const data = result.data as any;
+
+      if (!data) {
         setEntry(null);
         setError("This entry could not be found.");
         setLoading(false);
@@ -55,11 +57,11 @@ export default function JournalEntryPage() {
       }
 
       const normalized: JournalEntry = {
-        id: data.id,
+        id: String(data.id),
         title: data.title ?? null,
-        content: data.content,
+        content: String(data.content),
         reflection: data.reflection ?? null,
-        created_at: data.created_at,
+        created_at: String(data.created_at),
       };
 
       setEntry(normalized);
