@@ -28,12 +28,8 @@ export async function POST(req: Request) {
       );
     }
 
-    /**
-     * IMPORTANT:
-     * Update the table name below if your actual table is NOT `journal`
-     */
     const { data, error } = await supabase
-      .from("journal") // ← VERIFY THIS NAME IN SUPABASE
+      .from("journal_entries") // ✅ CORRECT TABLE
       .insert({
         user_id: user.id,
         title: body.title?.trim() || null,
@@ -50,10 +46,7 @@ export async function POST(req: Request) {
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      entry: data,
-    });
+    return NextResponse.json({ success: true, entry: data });
   } catch (err) {
     console.error("Unexpected journal error:", err);
     return NextResponse.json(
