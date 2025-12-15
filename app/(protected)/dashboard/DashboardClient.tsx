@@ -49,17 +49,18 @@ export default function DashboardClient({ userId }: { userId: string }) {
       : "Free";
 
   const isPremium = planType === "PREMIUM" || planType === "TRIAL";
-
   const planLabel = planLoading ? "Checking plan…" : `${readablePlan} plan`;
 
-  // Soft, contextual nudge: show only for non-premium users
   const numericCredits = typeof credits === "number" ? credits : null;
   const showCreditNudge =
-    !planLoading && !isPremium && typeof numericCredits === "number" && numericCredits <= 3;
+    !planLoading &&
+    !isPremium &&
+    typeof numericCredits === "number" &&
+    numericCredits <= 3;
 
   return (
     <div className="mx-auto max-w-5xl px-6 pt-24 pb-24 text-slate-200">
-      {/* HEADER / HERO */}
+      {/* HEADER */}
       <section className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">
@@ -77,15 +78,15 @@ export default function DashboardClient({ userId }: { userId: string }) {
           <span className="text-[11px] text-slate-500">
             Credits available:{" "}
             <span className="font-medium text-slate-200">
-              {typeof credits === "number" ? credits : 0}
+              {numericCredits ?? 0}
             </span>
           </span>
         </div>
       </section>
 
-      {/* PRIMARY ACTIONS + SUMMARY CARDS */}
+      {/* PRIMARY CARDS */}
       <section className="mb-10 grid gap-4 md:grid-cols-[1.5fr,1.1fr]">
-        {/* Left: Today’s check-in */}
+        {/* Today’s check-in */}
         <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5">
           <h2 className="text-sm font-semibold text-slate-100">
             Today’s check-in
@@ -98,21 +99,21 @@ export default function DashboardClient({ userId }: { userId: string }) {
           <div className="mt-4 flex flex-wrap gap-3">
             <Link
               href="/journal/new"
-              className="inline-flex items-center justify-center rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-300"
+              className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-300"
             >
               Start a new reflection
             </Link>
 
             <Link
               href="/journal"
-              className="inline-flex items-center justify-center rounded-full bg-slate-800 px-5 py-2.5 text-sm text-slate-100 hover:bg-slate-700"
+              className="rounded-full bg-slate-800 px-5 py-2.5 text-sm text-slate-100 hover:bg-slate-700"
             >
               View journal history
             </Link>
           </div>
         </div>
 
-        {/* Right: Plan-focused card */}
+        {/* Plan & tools */}
         <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5">
           <h2 className="text-sm font-semibold text-slate-100">
             Your plan & tools
@@ -134,19 +135,19 @@ export default function DashboardClient({ userId }: { userId: string }) {
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Link
                     href="/premium"
-                    className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-400"
+                    className="rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-400"
                   >
                     Open Premium hub
                   </Link>
                   <Link
                     href="/tools"
-                    className="inline-flex items-center justify-center rounded-full border border-slate-700 px-4 py-2 text-xs text-slate-200 hover:bg-slate-800"
+                    className="rounded-full border border-slate-700 px-4 py-2 text-xs text-slate-200 hover:bg-slate-800"
                   >
                     Explore tools
                   </Link>
                   <Link
                     href="/insights"
-                    className="inline-flex items-center justify-center rounded-full border border-slate-700 px-4 py-2 text-xs text-slate-200 hover:bg-slate-800"
+                    className="rounded-full border border-slate-700 px-4 py-2 text-xs text-slate-200 hover:bg-slate-800"
                   >
                     View insights
                   </Link>
@@ -163,15 +164,15 @@ export default function DashboardClient({ userId }: { userId: string }) {
                 <div className="mt-3 flex flex-wrap gap-2">
                   <Link
                     href="/upgrade"
-                    className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-400"
+                    className="rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-400"
                   >
                     Explore Premium
                   </Link>
                   <Link
-                    href="/insights"
-                    className="inline-flex items-center justify-center rounded-full border border-slate-700 px-4 py-2 text-xs text-slate-200 hover:bg-slate-800"
+                    href="/insights/preview"
+                    className="rounded-full border border-slate-700 px-4 py-2 text-xs text-slate-200 hover:bg-slate-800"
                   >
-                    See current insights
+                    Preview insights
                   </Link>
                 </div>
                 <p className="mt-2 text-[11px] text-slate-500">
@@ -183,7 +184,7 @@ export default function DashboardClient({ userId }: { userId: string }) {
         </div>
       </section>
 
-      {/* SOFT UPGRADE NUDGE (Free users only, calm + contextual) */}
+      {/* UPGRADE NUDGE */}
       {!isPremium && (
         <section className="mb-10">
           <UpgradeNudge
@@ -193,7 +194,7 @@ export default function DashboardClient({ userId }: { userId: string }) {
         </section>
       )}
 
-      {/* LATEST ENTRY SECTION */}
+      {/* LATEST ENTRY */}
       <section className="mb-10">
         {loadingLatest && (
           <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-6 text-sm text-slate-400">
@@ -203,8 +204,7 @@ export default function DashboardClient({ userId }: { userId: string }) {
 
         {!loadingLatest && !latest && (
           <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-6 text-sm text-slate-400">
-            You haven’t saved any reflections yet. Your first entry will appear
-            here once you write it.
+            You haven’t saved any reflections yet.
           </div>
         )}
 
@@ -226,7 +226,7 @@ export default function DashboardClient({ userId }: { userId: string }) {
 
             <Link
               href={`/journal/${latest.id}`}
-              className="inline-block mt-2 text-sm text-emerald-400 hover:underline"
+              className="inline-block text-sm text-emerald-400 hover:underline"
             >
               Read full entry →
             </Link>
@@ -234,16 +234,15 @@ export default function DashboardClient({ userId }: { userId: string }) {
         )}
       </section>
 
-      {/* COMING SOON / VALUE TEASER */}
+      {/* VALUE TEASERS */}
       <section className="grid gap-4 md:grid-cols-2">
         <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-6">
           <h2 className="text-sm font-semibold text-slate-100">
             Your patterns over time
           </h2>
           <p className="mt-2 text-sm text-slate-400">
-            As you keep writing, Havenly will surface gentle timelines and
-            themes to help you see what has been quietly repeating — without
-            turning your life into a performance or a productivity project.
+            Havenly will surface gentle timelines and themes — without turning
+            your life into a productivity project.
           </p>
         </div>
 
@@ -252,13 +251,13 @@ export default function DashboardClient({ userId }: { userId: string }) {
             What’s coming next
           </h2>
           <p className="mt-2 text-sm text-slate-400">
-            Upcoming Premium tools will include richer weekly reviews, mood
-            trends, and small, realistic suggestions when you feel stuck.
+            Upcoming Premium tools include richer weekly reviews and calmer
+            summaries.
           </p>
           {!isPremium && (
             <Link
               href="/upgrade"
-              className="mt-3 inline-flex items-center justify-center rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-400"
+              className="mt-3 inline-flex rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-400"
             >
               See Premium roadmap
             </Link>
