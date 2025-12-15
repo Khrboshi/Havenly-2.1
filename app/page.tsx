@@ -50,6 +50,25 @@ export default function HomePage() {
                 Designed for busy, thoughtful people with very full lives.
               </p>
             </div>
+
+            {/* TRUST-PATH (added, non-intrusive) */}
+            <div className="mt-2 space-y-1 text-xs text-hvn-text-muted">
+              <p>
+                Your journal is meant to stay yours.{" "}
+                <span className="text-hvn-text-secondary">
+                  Private by default.
+                </span>
+              </p>
+              <p>
+                Want the details?{" "}
+                <Link
+                  href="/privacy"
+                  className="font-medium text-emerald-400 hover:text-emerald-300 hover:underline"
+                >
+                  Read the Privacy Policy →
+                </Link>
+              </p>
+            </div>
           </div>
 
           {/* Right: card mock / mobile-first emphasis */}
@@ -99,6 +118,11 @@ export default function HomePage() {
                 >
                   Unlock Premium →
                 </Link>
+              </div>
+
+              {/* Added: small “safety” reassurance right where user hesitates */}
+              <div className="mt-3 rounded-2xl border border-slate-800 bg-slate-950/60 p-3 text-[11px] text-hvn-text-muted">
+                No pressure. Free stays useful on its own. Premium adds depth when you want it.
               </div>
             </div>
           </div>
@@ -196,6 +220,11 @@ export default function HomePage() {
               own. Premium simply gives you more space, more context, and more
               gentle support.
             </p>
+
+            {/* Added: trust line right before pricing comparison */}
+            <p className="mt-3 text-xs text-hvn-text-muted">
+              You can explore without pressure. If Premium isn’t right for you, Free still works well.
+            </p>
           </div>
 
           <div className="grid gap-5 md:grid-cols-[minmax(0,1.1fr),minmax(0,1.2fr)]">
@@ -262,7 +291,7 @@ export default function HomePage() {
                   href="/upgrade"
                   className="inline-flex w-full items-center justify-center rounded-full bg-hvn-accent-mint px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
                 >
-                  See Premium roadmap
+                  See what Premium adds
                 </Link>
               </div>
 
@@ -314,6 +343,38 @@ export default function HomePage() {
                 public models. The point of Havenly is to give you a private
                 corner online, not to turn your inner life into content.
               </p>
+              <p className="mt-2 text-xs text-hvn-text-muted sm:text-sm">
+                <Link
+                  href="/privacy"
+                  className="font-medium text-emerald-400 hover:text-emerald-300 hover:underline"
+                >
+                  Read the Privacy Policy →
+                </Link>
+              </p>
+            </div>
+          </div>
+
+          {/* Added: About/Blog trust bridge (helps users explore) */}
+          <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-950/60 p-5 text-xs text-hvn-text-muted">
+            <p className="font-medium text-hvn-text-primary">
+              Want to understand Havenly before you start?
+            </p>
+            <p className="mt-2">
+              Learn the intent and values behind the product, or read gentle notes that show how reflection works in real life.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Link
+                href="/about"
+                className="inline-flex items-center justify-center rounded-full border border-slate-600 bg-slate-900/70 px-4 py-2 text-xs font-medium text-slate-100 hover:bg-slate-800"
+              >
+                Read About →
+              </Link>
+              <Link
+                href="/blog"
+                className="inline-flex items-center justify-center rounded-full border border-slate-600 bg-slate-900/70 px-4 py-2 text-xs font-medium text-slate-100 hover:bg-slate-800"
+              >
+                Explore Blog →
+              </Link>
             </div>
           </div>
 
