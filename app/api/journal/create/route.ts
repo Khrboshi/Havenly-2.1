@@ -1,72 +1,86 @@
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-import { createServerSupabase } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { createServerSupabase } from "@/lib/supabase/server";
+
+type CreateJournalBody = {
+  title?: string | null;
+  content?: string | null;
+};
 
 export async function POST(req: Request) {
   try {
-    const supabase = createServerSupabase();
+    // IMPORTANT: In many setups createServerSupabase() is async.
+    // Awaiting it avoids “missing session / cookies” edge cases.
+    const supabase = await createServerSupabase();
 
-    // 1. Authenticate user
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.json(
-        { error: "Not authenticated" },
-        { status: 401 }
-      );
-    }
-
-    // 2. Parse and validate body
-    let body: any;
+    let body: CreateJournalBody | null = null;
     try {
-      body = await req.json();
+      body = (await req.json()) as CreateJournalBody;
     } catch {
       return NextResponse.json(
-        { error: "Invalid JSON body" },
-        { status: 400 }
+        { error: "Invalid JSON body." },
+        { status: 400, headers: { "Cache-Control": "no-store" } }
       );
     }
 
-    const content = String(body?.content || "").trim();
-    const title = String(body?.title || "").trim();
+    const titleRaw = typeof body?.title === "string" ? body.title : "";
+    const contentRaw = typeof body?.content === "string" ? body.content : "";
+
+    const title = titleRaw.trim().slice(0, 120) || null;
+    const content = contentRaw.trim();
 
     if (!content) {
       return NextResponse.json(
-        { error: "Journal content is required" },
-        { status: 400 }
+        { error: "Content is required." },
+        { status: 400, headers: { "Cache-Control": "no-store" } }
       );
     }
 
-    // 3. Insert journal entry
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return NextResponse.json(
+        { error: "Not authenticated." },
+        { status: 401, headers: { "Cache-Control": "no-store" } }
+      );
+    }
+
     const { data, error } = await supabase
       .from("journal")
       .insert({
         user_id: user.id,
+        title,
         content,
-        title: title || null,
       })
-      .select()
+      // return only what the UI needs
+      .select("id, title, content, created_at")
       .single();
 
     if (error) {
-      console.error("Journal insert error:", error);
+      // Common causes: RLS policy missing, column mismatch, table name mismatch
       return NextResponse.json(
-        { error: "Failed to save journal entry" },
-        { status: 400 }
+        {
+          error: error.message,
+          hint:
+            "If this persists, verify Supabase RLS insert policy on `journal` for authenticated users and that columns are: user_id, title, content.",
+        },
+        { status: 400, headers: { "Cache-Control": "no-store" } }
       );
     }
 
-    // 4. Success
-    return NextResponse.json({ success: true, journal: data });
-  } catch (err) {
-    console.error("Journal create fatal error:", err);
+    return NextResponse.json(data, {
+      status: 201,
+      headers: { "Cache-Control": "no-store" },
+    });
+  } catch (e: any) {
     return NextResponse.json(
-      { error: "Unexpected server error" },
-      { status: 500 }
+      { error: "Server error.", detail: String(e?.message || e) },
+      { status: 500, headers: { "Cache-Control": "no-store" } }
     );
   }
 }
