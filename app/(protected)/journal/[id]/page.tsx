@@ -21,41 +21,44 @@ export default function JournalEntryPage() {
   const entryId = params?.id;
 
   const [entry, setEntry] = useState<JournalEntry | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
   const [reflectionDraft, setReflectionDraft] = useState("");
-  const [savingReflection, setSavingReflection] = useState(false);
-  const [generatingReflection, setGeneratingReflection] = useState(false);
-
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [upgradeMessage, setUpgradeMessage] = useState<string | null>(null);
 
-  /* -------------------------------------------------------
-     Load journal entry (TYPE SAFE)
-  ------------------------------------------------------- */
+  /* -----------------------------------------
+     Load journal entry
+  ------------------------------------------ */
   useEffect(() => {
     if (!entryId || !supabase || !session?.user) return;
 
     async function loadEntry() {
       setLoading(true);
-      setErrorMsg(null);
+      setError(null);
 
-      const {
-        data,
-        error,
-      }: { data: JournalEntry | null; error: any } = await supabase
+      const { data, error } = await supabase
         .from("journal_entries")
-        .select("*")
+        .select("id,title,content,reflection,created_at")
         .eq("id", entryId)
         .eq("user_id", session.user.id)
         .maybeSingle();
 
       if (error || !data) {
-        setErrorMsg("This journal entry could not be found.");
+        setError("This entry could not be loaded.");
         setEntry(null);
       } else {
-        setEntry(data);
-        setReflectionDraft(data.reflection ?? "");
+        const normalized: JournalEntry = {
+          id: data.id,
+          title: data.title,
+          content: data.content,
+          reflection: data.reflection,
+          created_at: data.created_at,
+        };
+
+        setEntry(normalized);
+        setReflectionDraft(normalized.reflection ?? "");
       }
 
       setLoading(false);
@@ -64,146 +67,135 @@ export default function JournalEntryPage() {
     loadEntry();
   }, [entryId, supabase, session]);
 
-  /* -------------------------------------------------------
-     Save reflection (monetized)
-  ------------------------------------------------------- */
+  /* -----------------------------------------
+     Save reflection
+  ------------------------------------------ */
   async function handleSaveReflection() {
     if (!entryId) return;
 
-    setSavingReflection(true);
-    setErrorMsg(null);
+    setSaving(true);
+    setError(null);
     setUpgradeMessage(null);
 
-    try {
-      const res = await fetch("/api/journal/update-reflection", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          entryId,
-          reflection: reflectionDraft,
-        }),
-      });
+    const res = await fetch("/api/journal/update-reflection", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        entryId,
+        reflection: reflectionDraft,
+      }),
+    });
 
-      if (res.status === 402) {
-        const data = await res.json();
-        setUpgradeMessage(data.message);
-        return;
-      }
-
-      if (!res.ok) {
-        throw new Error("Save failed");
-      }
-
-      setEntry((prev) =>
-        prev ? { ...prev, reflection: reflectionDraft } : prev
-      );
-    } catch {
-      setErrorMsg("We couldn’t save your reflection. Please try again.");
-    } finally {
-      setSavingReflection(false);
-    }
-  }
-
-  /* -------------------------------------------------------
-     Generate AI reflection (monetized)
-  ------------------------------------------------------- */
-  async function handleGenerateReflection() {
-    if (!entry?.content) {
-      setErrorMsg("Write something first so we can reflect on it.");
+    if (res.status === 402) {
+      const data = await res.json();
+      setUpgradeMessage(data.message);
+      setSaving(false);
       return;
     }
 
-    setGeneratingReflection(true);
-    setErrorMsg(null);
-    setUpgradeMessage(null);
-
-    try {
-      const res = await fetch("/api/reflect", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content: entry.content,
-          entryId: entry.id,
-        }),
-      });
-
-      if (res.status === 402) {
-        const data = await res.json();
-        setUpgradeMessage(data.message);
-        return;
-      }
-
-      if (!res.ok) {
-        throw new Error("AI reflection failed");
-      }
-
-      const data = await res.json();
-      setReflectionDraft(data.reflection);
-    } catch {
-      setErrorMsg("AI reflection is unavailable right now.");
-    } finally {
-      setGeneratingReflection(false);
+    if (!res.ok) {
+      setError("Could not save reflection.");
+      setSaving(false);
+      return;
     }
+
+    setEntry((prev) =>
+      prev ? { ...prev, reflection: reflectionDraft } : prev
+    );
+    setSaving(false);
   }
 
-  /* -------------------------------------------------------
+  /* -----------------------------------------
+     Generate AI reflection
+  ------------------------------------------ */
+  async function handleGenerateReflection() {
+    if (!entry) return;
+
+    setGenerating(true);
+    setError(null);
+    setUpgradeMessage(null);
+
+    const res = await fetch("/api/reflect", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        entryId: entry.id,
+        content: entry.content,
+      }),
+    });
+
+    if (res.status === 402) {
+      const data = await res.json();
+      setUpgradeMessage(data.message);
+      setGenerating(false);
+      return;
+    }
+
+    if (!res.ok) {
+      setError("AI reflection failed.");
+      setGenerating(false);
+      return;
+    }
+
+    const data = await res.json();
+    setReflectionDraft(data.reflection ?? "");
+    setGenerating(false);
+  }
+
+  /* -----------------------------------------
      Render
-  ------------------------------------------------------- */
-  return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <button
-          onClick={() => router.push("/journal")}
-          className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-xs text-slate-200 hover:bg-slate-800"
-        >
-          ← Back to journal
-        </button>
-
-        {entry && (
-          <span className="text-xs text-slate-500">
-            Saved on {new Date(entry.created_at).toLocaleString()}
-          </span>
-        )}
+  ------------------------------------------ */
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-10 text-sm text-slate-400">
+        Loading entry…
       </div>
+    );
+  }
 
-      <div className="grid gap-6 md:grid-cols-[1.4fr,1fr]">
+  if (!entry) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-10 text-sm text-rose-300">
+        {error ?? "Entry not found."}
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-8">
+      <button
+        onClick={() => router.push("/journal")}
+        className="w-fit rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-xs text-slate-200 hover:bg-slate-800"
+      >
+        ← Back to journal
+      </button>
+
+      <div className="grid gap-6 md:grid-cols-[1.4fr,1.1fr]">
         {/* LEFT */}
         <section className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
           <h1 className="text-sm font-semibold text-slate-100">
             Your reflection
           </h1>
 
-          {loading && (
-            <p className="mt-4 text-sm text-slate-400">Loading entry…</p>
+          {entry.title && (
+            <p className="mt-3 text-base font-semibold text-slate-50">
+              {entry.title}
+            </p>
           )}
 
-          {!loading && errorMsg && (
-            <p className="mt-4 text-sm text-rose-300">{errorMsg}</p>
-          )}
+          <p className="mt-3 whitespace-pre-wrap text-sm text-slate-200">
+            {entry.content}
+          </p>
 
-          {!loading && entry && (
-            <>
-              {entry.title && (
-                <p className="mt-3 text-base font-semibold text-slate-50">
-                  {entry.title}
-                </p>
-              )}
-
-              <p className="mt-3 whitespace-pre-wrap text-sm text-slate-200">
-                {entry.content}
-              </p>
-
-              <p className="mt-4 text-xs text-slate-500">
-                This text stays private. AI reflections are used only to help you
-                see patterns — never for advertising.
-              </p>
-            </>
-          )}
+          <p className="mt-4 text-xs text-slate-500">
+            This text stays private. AI reflections are only used to help you see
+            patterns — never for advertising.
+          </p>
         </section>
 
         {/* RIGHT */}
         <section className="flex flex-col rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
-          <div className="mb-2 flex items-center justify-between">
+          <div className="mb-3 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-slate-100">
               AI reflection
             </h2>
@@ -213,38 +205,40 @@ export default function JournalEntryPage() {
           </div>
 
           <textarea
-            className="mt-3 min-h-[180px] flex-1 resize-none rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-100"
+            className="flex-1 resize-none rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm text-slate-100"
             value={reflectionDraft}
             onChange={(e) => setReflectionDraft(e.target.value)}
+            placeholder="Ask Havenly to reflect, or write your own notes…"
           />
 
+          {error && (
+            <p className="mt-2 text-xs text-rose-300">{error}</p>
+          )}
+
           {upgradeMessage && (
-            <div className="mt-3 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4">
-              <p className="text-xs text-emerald-300">{upgradeMessage}</p>
-              <Link
-                href="/premium"
-                className="mt-2 inline-block rounded-full bg-emerald-400 px-4 py-2 text-xs font-semibold text-slate-900"
-              >
-                Upgrade to Premium
+            <p className="mt-2 text-xs text-amber-300">
+              {upgradeMessage}{" "}
+              <Link href="/premium" className="underline">
+                Upgrade →
               </Link>
-            </div>
+            </p>
           )}
 
           <div className="mt-4 flex gap-3">
             <button
               onClick={handleGenerateReflection}
-              disabled={generatingReflection}
-              className="rounded-full bg-emerald-400 px-4 py-2 text-xs font-semibold text-slate-900"
+              disabled={generating}
+              className="rounded-full bg-emerald-400 px-4 py-2 text-xs font-semibold text-slate-900 disabled:opacity-60"
             >
-              {generatingReflection ? "Thinking…" : "Generate AI reflection"}
+              {generating ? "Thinking…" : "Generate AI reflection"}
             </button>
 
             <button
               onClick={handleSaveReflection}
-              disabled={savingReflection}
-              className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-xs text-slate-100"
+              disabled={saving}
+              className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-xs text-slate-100 disabled:opacity-60"
             >
-              {savingReflection ? "Saving…" : "Save reflection"}
+              {saving ? "Saving…" : "Save reflection"}
             </button>
           </div>
         </section>
