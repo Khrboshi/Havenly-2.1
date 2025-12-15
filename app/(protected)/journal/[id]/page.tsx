@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import { useSupabase } from "@/app/components/SupabaseSessionProvider";
+import { supabaseClient } from "@/lib/supabase/client";
 
 type JournalEntry = {
   id: string;
@@ -15,197 +14,119 @@ type JournalEntry = {
 };
 
 export default function JournalEntryPage() {
-  const { supabase, session } = useSupabase();
-  const params = useParams<{ id: string }>();
+  const params = useParams();
   const router = useRouter();
-
-  const entryId = params?.id;
+  const entryId = params?.id as string;
 
   const [entry, setEntry] = useState<JournalEntry | null>(null);
   const [reflectionDraft, setReflectionDraft] = useState("");
   const [loading, setLoading] = useState(true);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [generating, setGenerating] = useState(false);
-  const [upgradeMsg, setUpgradeMsg] = useState<string | null>(null);
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    if (!entryId || !session?.user) return;
+    if (!entryId) return;
 
     async function loadEntry() {
       setLoading(true);
-      setErrorMsg(null);
+      setNotFound(false);
 
-      try {
-        // ✅ THE ONLY TS-SAFE SUPABASE PATTERN
-        const response = await supabase
-          .from("journal_entries")
-          .select("id,user_id,title,content,reflection,created_at")
-          .eq("id", entryId)
-          .eq("user_id", session.user.id)
-          .maybeSingle();
+      const supabase = supabaseClient;
 
-        const data = response.data as JournalEntry | null;
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
 
-        if (!data) {
-          setErrorMsg("This entry could not be found.");
-          setEntry(null);
-          return;
-        }
-
-        setEntry(data);
-        setReflectionDraft(data.reflection ?? "");
-      } catch {
-        setErrorMsg("Unexpected error loading entry.");
-        setEntry(null);
-      } finally {
+      if (sessionError || !session?.user) {
+        setNotFound(true);
         setLoading(false);
+        return;
       }
+
+      const result = await supabase
+        .from("journal_entries")
+        .select("id,user_id,title,content,reflection,created_at")
+        .eq("id", entryId)
+        .eq("user_id", session.user.id)
+        .limit(1)
+        .single();
+
+      if (result.error || !result.data) {
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+
+      const row = result.data as JournalEntry;
+
+      setEntry(row);
+      setReflectionDraft(row.reflection ?? "");
+      setLoading(false);
     }
 
     loadEntry();
-  }, [supabase, session, entryId]);
-
-  async function saveReflection() {
-    if (!entry) return;
-    setSaving(true);
-    setUpgradeMsg(null);
-
-    try {
-      const res = await fetch("/api/journal/update-reflection", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          entryId: entry.id,
-          reflection: reflectionDraft,
-        }),
-      });
-
-      if (res.status === 402) {
-        const data = await res.json();
-        setUpgradeMsg(data.message || "Upgrade required.");
-        return;
-      }
-
-      if (!res.ok) throw new Error();
-
-      setEntry({ ...entry, reflection: reflectionDraft });
-    } catch {
-      setErrorMsg("Could not save reflection.");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function generateReflection() {
-    if (!entry?.content) return;
-
-    setGenerating(true);
-    setUpgradeMsg(null);
-
-    try {
-      const res = await fetch("/api/reflect", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content: entry.content,
-          entryId: entry.id,
-        }),
-      });
-
-      if (res.status === 402) {
-        const data = await res.json();
-        setUpgradeMsg(data.message || "Upgrade required.");
-        return;
-      }
-
-      if (!res.ok) throw new Error();
-
-      const data = await res.json();
-      setReflectionDraft(data.reflection || "");
-    } catch {
-      setErrorMsg("AI reflection failed.");
-    } finally {
-      setGenerating(false);
-    }
-  }
+  }, [entryId]);
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-12 text-sm text-slate-400">
+      <div className="p-6 text-gray-400">
         Loading entry…
       </div>
     );
   }
 
-  if (!entry) {
+  if (notFound || !entry) {
     return (
-      <div className="mx-auto max-w-3xl px-4 py-12 text-sm text-rose-300">
-        {errorMsg || "Entry not found."}
+      <div className="p-6 text-red-400">
+        This entry could not be found.
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
+    <div className="max-w-5xl mx-auto p-6 space-y-8">
       <button
         onClick={() => router.push("/journal")}
-        className="mb-4 text-xs text-slate-400 hover:text-emerald-300"
+        className="text-sm text-gray-400 hover:text-white transition"
       >
         ← Back to journal
       </button>
 
-      <div className="grid gap-6 md:grid-cols-[1.4fr,1fr]">
-        <section className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
-          {entry.title && (
-            <h1 className="mb-3 text-lg font-semibold text-slate-100">
-              {entry.title}
-            </h1>
-          )}
-          <p className="whitespace-pre-wrap text-sm text-slate-200">
+      <div className="grid md:grid-cols-2 gap-8">
+        {/* User Reflection */}
+        <div className="rounded-xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-lg font-semibold mb-2">Your reflection</h2>
+          <p className="text-gray-300 whitespace-pre-wrap">
             {entry.content}
           </p>
-        </section>
+        </div>
 
-        <section className="flex flex-col rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
-          <h2 className="mb-2 text-sm font-semibold text-slate-100">
-            AI Reflection
-          </h2>
+        {/* AI Reflection */}
+        <div className="rounded-xl border border-white/10 bg-white/5 p-6">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-lg font-semibold">AI reflection</h2>
+            <span className="text-xs px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400">
+              Gentle, non-judgmental
+            </span>
+          </div>
 
           <textarea
-            className="flex-1 resize-none rounded-xl border border-slate-700 bg-slate-900 p-3 text-sm text-slate-100"
             value={reflectionDraft}
             onChange={(e) => setReflectionDraft(e.target.value)}
-            placeholder="Generate or write your own reflection…"
+            placeholder="AI reflection will appear here…"
+            className="w-full min-h-[140px] rounded-lg bg-black/30 border border-white/10 p-3 text-sm text-gray-200"
           />
 
-          {upgradeMsg && (
-            <div className="mt-2 rounded-xl border border-amber-400/30 bg-amber-400/10 p-2 text-xs text-amber-200">
-              {upgradeMsg}{" "}
-              <Link href="/premium" className="underline">
-                Upgrade →
-              </Link>
-            </div>
-          )}
-
-          <div className="mt-4 flex flex-wrap gap-2">
-            <button
-              onClick={generateReflection}
-              disabled={generating}
-              className="rounded-full bg-emerald-400 px-4 py-2 text-xs font-semibold text-slate-900"
-            >
-              {generating ? "Thinking…" : "Generate AI reflection"}
+          <div className="mt-4 flex gap-3">
+            <button className="px-4 py-2 rounded-lg bg-emerald-500 text-black font-medium hover:bg-emerald-400 transition">
+              Generate AI reflection
             </button>
 
-            <button
-              onClick={saveReflection}
-              disabled={saving}
-              className="rounded-full border border-slate-700 px-4 py-2 text-xs text-slate-100"
-            >
-              {saving ? "Saving…" : "Save reflection"}
+            <button className="px-4 py-2 rounded-lg border border-white/10 text-gray-300 hover:bg-white/10 transition">
+              Save reflection
             </button>
           </div>
-        </section>
+        </div>
       </div>
     </div>
   );
