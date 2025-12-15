@@ -7,7 +7,7 @@ import { useSupabase } from "@/app/components/SupabaseSessionProvider";
 
 /* ---------------- TYPES ---------------- */
 
-type JournalRow = {
+type JournalEntry = {
   id: string;
   user_id: string;
   title: string | null;
@@ -25,7 +25,7 @@ export default function JournalEntryPage() {
 
   const entryId = params?.id;
 
-  const [entry, setEntry] = useState<JournalRow | null>(null);
+  const [entry, setEntry] = useState<JournalEntry | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -43,27 +43,36 @@ export default function JournalEntryPage() {
       setErrorMsg(null);
 
       try {
-        const result = await supabase
-          .from<JournalRow, JournalRow>("journal_entries")
+        const { data, error } = await supabase
+          .from("journal_entries")
           .select("id,user_id,title,content,reflection,created_at")
           .eq("id", entryId)
           .eq("user_id", session.user.id)
           .maybeSingle();
 
-        if (result.error) {
-          console.error(result.error);
+        if (error) {
+          console.error(error);
           setErrorMsg("We couldn’t load this entry.");
           setEntry(null);
-        } else if (!result.data) {
+        } else if (!data) {
           setErrorMsg("This entry could not be found.");
           setEntry(null);
         } else {
-          setEntry(result.data);
-          setReflectionDraft(result.data.reflection ?? "");
+          const normalized: JournalEntry = {
+            id: data.id,
+            user_id: data.user_id,
+            title: data.title ?? null,
+            content: data.content,
+            reflection: data.reflection ?? null,
+            created_at: data.created_at,
+          };
+
+          setEntry(normalized);
+          setReflectionDraft(normalized.reflection ?? "");
         }
       } catch (err) {
         console.error(err);
-        setErrorMsg("Something went wrong while loading this entry.");
+        setErrorMsg("Unexpected error loading this entry.");
         setEntry(null);
       } finally {
         setLoading(false);
@@ -91,16 +100,14 @@ export default function JournalEntryPage() {
         }),
       });
 
-      if (!res.ok) {
-        throw new Error("Save failed");
-      }
+      if (!res.ok) throw new Error("Save failed");
 
       setEntry((prev) =>
         prev ? { ...prev, reflection: reflectionDraft } : prev
       );
     } catch (err) {
       console.error(err);
-      setErrorMsg("We couldn’t save your reflection. Please try again.");
+      setErrorMsg("We couldn’t save your reflection.");
     } finally {
       setSavingReflection(false);
     }
@@ -131,17 +138,13 @@ export default function JournalEntryPage() {
         return;
       }
 
-      if (!res.ok) {
-        throw new Error("Generation failed");
-      }
+      if (!res.ok) throw new Error("Reflection failed");
 
       const data = await res.json();
       setReflectionDraft(data.reflection ?? "");
     } catch (err) {
       console.error(err);
-      setErrorMsg(
-        "We couldn’t generate an AI reflection right now. Please try again."
-      );
+      setErrorMsg("AI reflection unavailable right now.");
     } finally {
       setGeneratingReflection(false);
     }
@@ -150,101 +153,70 @@ export default function JournalEntryPage() {
   /* ---------------- RENDER ---------------- */
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-8">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="mx-auto max-w-4xl px-4 py-8">
+      <div className="mb-6 flex justify-between">
         <button
           onClick={() => router.push("/journal")}
-          className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-xs text-slate-200 hover:bg-slate-800"
+          className="rounded-full border border-slate-700 bg-slate-900 px-3 py-1 text-xs text-slate-200"
         >
           ← Back to journal
         </button>
 
         {entry && (
           <span className="text-xs text-slate-500">
-            Saved on{" "}
-            <span className="text-slate-300">
-              {new Date(entry.created_at).toLocaleString()}
-            </span>
+            Saved on {new Date(entry.created_at).toLocaleString()}
           </span>
         )}
       </div>
 
-      {loading && (
-        <p className="text-sm text-slate-400">Loading your entry…</p>
-      )}
-
-      {!loading && errorMsg && !entry && (
-        <p className="text-sm text-rose-300">{errorMsg}</p>
-      )}
+      {loading && <p className="text-sm text-slate-400">Loading…</p>}
+      {!loading && errorMsg && <p className="text-sm text-rose-300">{errorMsg}</p>}
 
       {!loading && entry && (
         <div className="grid gap-6 md:grid-cols-[1.4fr,1.1fr]">
-          {/* LEFT */}
-          <section className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
-            <h2 className="text-sm font-semibold text-slate-100">
-              Your reflection
-            </h2>
-
+          <section className="rounded-2xl border border-slate-800 bg-slate-950 p-5">
+            <h2 className="text-sm font-semibold text-slate-100">Your entry</h2>
             {entry.title && (
-              <p className="mt-3 font-semibold text-slate-50">
-                {entry.title}
-              </p>
+              <p className="mt-3 font-semibold text-slate-50">{entry.title}</p>
             )}
-
             <p className="mt-3 whitespace-pre-wrap text-sm text-slate-200">
               {entry.content}
             </p>
-
-            <p className="mt-4 text-xs text-slate-500">
-              This text stays private. AI reflections are used only to help you
-              see patterns — never for advertising.
-            </p>
           </section>
 
-          {/* RIGHT */}
-          <section className="flex flex-col rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
-            <div className="mb-2 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-100">
-                AI reflection
-              </h2>
-              <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] text-emerald-300">
-                Gentle, non-judgmental
-              </span>
-            </div>
+          <section className="flex flex-col rounded-2xl border border-slate-800 bg-slate-950 p-5">
+            <h2 className="text-sm font-semibold text-slate-100">
+              AI reflection
+            </h2>
 
             <textarea
-              className="mt-3 min-h-[180px] resize-none rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 focus:border-emerald-400 focus:outline-none"
-              placeholder="Ask Havenly to reflect, or write your own notes…"
+              className="mt-3 min-h-[180px] rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100"
               value={reflectionDraft}
               onChange={(e) => setReflectionDraft(e.target.value)}
             />
 
-            {errorMsg && (
-              <p className="mt-2 text-xs text-rose-300">{errorMsg}</p>
-            )}
-
-            <div className="mt-4 flex items-center gap-3">
+            <div className="mt-4 flex gap-3">
               <button
                 onClick={handleGenerateReflection}
                 disabled={generatingReflection}
-                className="rounded-full bg-emerald-400 px-4 py-2 text-xs font-semibold text-slate-900 hover:bg-emerald-300 disabled:opacity-60"
+                className="rounded-full bg-emerald-400 px-4 py-2 text-xs font-semibold text-slate-900"
               >
-                {generatingReflection ? "Thinking…" : "Generate AI reflection"}
+                Generate AI reflection
               </button>
 
               <button
                 onClick={handleSaveReflection}
                 disabled={savingReflection}
-                className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-xs text-slate-100 hover:bg-slate-800 disabled:opacity-60"
+                className="rounded-full border border-slate-700 px-4 py-2 text-xs text-slate-100"
               >
-                {savingReflection ? "Saving…" : "Save reflection"}
+                Save reflection
               </button>
 
               <Link
                 href="/premium"
-                className="ml-auto hidden text-[11px] text-slate-500 hover:text-emerald-300 md:inline"
+                className="ml-auto text-[11px] text-slate-500 hover:text-emerald-300"
               >
-                See how Premium deepens your reflections →
+                Premium reflections →
               </Link>
             </div>
           </section>
