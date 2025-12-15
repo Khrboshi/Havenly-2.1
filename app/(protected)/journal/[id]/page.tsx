@@ -2,172 +2,120 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabaseClient } from "@/lib/supabase/client";
 
-type JournalEntryRow = {
+type JournalEntry = {
   id: string;
-  user_id?: string;
   title: string | null;
   content: string;
-  created_at?: string;
-  updated_at?: string;
+  created_at: string;
 };
 
-type LoadState =
-  | { status: "idle" | "loading" }
-  | { status: "loaded"; entry: JournalEntryRow }
+type State =
+  | { status: "loading" }
   | { status: "not_found" }
-  | { status: "error"; message: string };
-
-function toSingleParam(value: string | string[] | undefined): string | null {
-  if (!value) return null;
-  return Array.isArray(value) ? value[0] ?? null : value;
-}
-
-function isUuidLike(value: string): boolean {
-  // Good enough for client-side validation; DB remains source of truth.
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
-    value
-  );
-}
+  | { status: "error"; message: string }
+  | { status: "loaded"; entry: JournalEntry };
 
 export default function JournalEntryPage() {
   const params = useParams();
+  const id =
+    typeof params?.id === "string"
+      ? params.id
+      : Array.isArray(params?.id)
+      ? params.id[0]
+      : null;
 
-  const id = useMemo(() => {
-    // In App Router, params values can be string | string[]
-    // depending on how Next resolves segments.
-    const raw = toSingleParam((params as any)?.id);
-    return raw?.trim() || null;
-  }, [params]);
+  const [state, setState] = useState<State>({ status: "loading" });
 
-  const [state, setState] = useState<LoadState>({ status: "idle" });
-
-  const load = useCallback(async () => {
-    if (!id || !isUuidLike(id)) {
+  useEffect(() => {
+    if (!id) {
       setState({ status: "not_found" });
       return;
     }
 
-    setState({ status: "loading" });
+    async function load() {
+      try {
+        const { data, error } = await supabaseClient
+          .from("journal_entries")
+          // ⚠️ ONLY columns that EXIST
+          .select("id, title, content, created_at")
+          .eq("id", id)
+          .maybeSingle();
 
-    try {
-      const supabase = supabaseClient;
+        if (error) {
+          setState({ status: "error", message: error.message });
+          return;
+        }
 
-      // IMPORTANT: Do NOT select columns that may not exist in your table.
-      // The console screenshot shows `reflection` does not exist and causes 400.
-      const { data, error } = await supabase
-        .from("journal_entries")
-        .select("id, user_id, title, content, created_at, updated_at")
-        .eq("id", id)
-        .maybeSingle();
+        if (!data) {
+          setState({ status: "not_found" });
+          return;
+        }
 
-      if (error) {
-        // Give a useful message but keep it safe for users.
-        const msg =
-          error.message ||
-          "We couldn't load this entry right now. Please try again.";
-        setState({ status: "error", message: msg });
-        return;
+        setState({
+          status: "loaded",
+          entry: {
+            id: data.id,
+            title: data.title ?? null,
+            content: data.content,
+            created_at: data.created_at,
+          },
+        });
+      } catch (err: any) {
+        setState({
+          status: "error",
+          message: err?.message ?? "Unexpected error",
+        });
       }
-
-      if (!data) {
-        setState({ status: "not_found" });
-        return;
-      }
-
-      // Force a stable shape for TypeScript + UI rendering
-      const entry: JournalEntryRow = {
-        id: String((data as any).id),
-        user_id: (data as any).user_id ?? undefined,
-        title: (data as any).title ?? null,
-        content: String((data as any).content ?? ""),
-        created_at: (data as any).created_at ?? undefined,
-        updated_at: (data as any).updated_at ?? undefined,
-      };
-
-      setState({ status: "loaded", entry });
-    } catch (e: any) {
-      setState({
-        status: "error",
-        message:
-          e?.message || "We couldn't load this entry right now. Please try again.",
-      });
     }
+
+    load();
   }, [id]);
 
-  useEffect(() => {
-    // Load on first mount and when id changes
-    load();
-  }, [load]);
-
   return (
-    <div className="mx-auto w-full max-w-5xl px-6 py-10">
-      <div className="mb-6 flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">Journal Entry</h1>
+    <div className="mx-auto max-w-4xl px-6 py-10">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Journal Entry</h1>
         <Link
           href="/journal"
-          className="rounded-lg border border-slate-800 bg-slate-950/40 px-4 py-2 text-sm text-slate-200 hover:bg-slate-900"
+          className="rounded-lg border border-slate-800 px-4 py-2 text-sm hover:bg-slate-900"
         >
           ← Back to journal
         </Link>
       </div>
 
-      {(state.status === "idle" || state.status === "loading") && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-950/30 p-6">
-          <div className="h-5 w-40 animate-pulse rounded bg-slate-800/60" />
-          <div className="mt-4 h-4 w-64 animate-pulse rounded bg-slate-800/40" />
-          <div className="mt-6 space-y-3">
-            <div className="h-4 w-full animate-pulse rounded bg-slate-800/40" />
-            <div className="h-4 w-11/12 animate-pulse rounded bg-slate-800/40" />
-            <div className="h-4 w-10/12 animate-pulse rounded bg-slate-800/40" />
-          </div>
+      {state.status === "loading" && (
+        <div className="rounded-xl border border-slate-800 p-6">
+          Loading entry…
         </div>
       )}
 
       {state.status === "not_found" && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-950/30 p-6">
-          <p className="text-red-300">This entry could not be found.</p>
-          <div className="mt-4">
-            <Link href="/journal" className="text-emerald-300 hover:underline">
-              ← Back to journal
-            </Link>
-          </div>
+        <div className="rounded-xl border border-slate-800 p-6 text-red-300">
+          This entry could not be found.
         </div>
       )}
 
       {state.status === "error" && (
-        <div className="rounded-2xl border border-red-900/60 bg-red-950/20 p-6">
+        <div className="rounded-xl border border-red-900 bg-red-950/30 p-6">
           <p className="text-red-200">
-            We couldn&apos;t load this entry right now. Please try again.
+            We couldn’t load this entry right now.
           </p>
-          <p className="mt-2 text-xs text-red-200/70">
-            {state.message}
-          </p>
-          <button
-            onClick={load}
-            className="mt-4 rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900 hover:bg-white"
-          >
-            Retry
-          </button>
+          <p className="mt-2 text-xs opacity-70">{state.message}</p>
         </div>
       )}
 
       {state.status === "loaded" && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-950/30 p-6">
-          <div className="flex flex-col gap-1">
-            <div className="text-xs text-slate-400">
-              {state.entry.created_at
-                ? new Date(state.entry.created_at).toLocaleString()
-                : "—"}
-            </div>
-            <h2 className="text-lg font-semibold text-slate-100">
-              {state.entry.title?.trim() ? state.entry.title : "Untitled entry"}
-            </h2>
+        <div className="rounded-xl border border-slate-800 p-6">
+          <div className="mb-2 text-xs text-slate-400">
+            {new Date(state.entry.created_at).toLocaleString()}
           </div>
-
-          <div className="mt-5 whitespace-pre-wrap text-slate-200 leading-relaxed">
+          <h2 className="mb-4 text-lg font-semibold">
+            {state.entry.title || "Untitled"}
+          </h2>
+          <div className="whitespace-pre-wrap leading-relaxed">
             {state.entry.content}
           </div>
         </div>
