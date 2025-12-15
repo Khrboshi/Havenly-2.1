@@ -1,117 +1,125 @@
 // app/about/page.tsx
+import Link from "next/link";
+
 export default function AboutPage() {
   return (
-    <div className="px-4 pb-16 pt-20 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-4xl space-y-8">
-        <div className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-hvn-accent-blue">
+    <div className="min-h-screen bg-hvn-bg text-hvn-text-primary bg-hvn-page-gradient">
+      <section className="mx-auto max-w-4xl px-4 pt-20 pb-24">
+        {/* Header */}
+        <div className="mb-12 space-y-4">
+          <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
             About Havenly
-          </p>
-          <h1 className="text-3xl font-semibold text-hvn-text-primary sm:text-4xl">
-            A calm, private space to{" "}
-            <span className="text-hvn-accent-mint">check in</span> with
-            yourself.
           </h1>
-          <p className="max-w-2xl text-sm text-hvn-text-muted sm:text-base">
-            Havenly is a lightweight micro-journal designed for real life—the
-            tired evenings, in-between meetings, and quiet moments where you
-            just need a safe place to think out loud for a few minutes.
+          <p className="max-w-2xl text-sm leading-relaxed text-hvn-text-muted sm:text-base">
+            Havenly exists to give your inner life a quieter place to land.
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          <AboutCard title="What Havenly is">
-            <ul className="space-y-2 text-sm text-hvn-text-muted">
-              <li>
-                • A distraction-free page where a few honest sentences are
-                enough.
-              </li>
-              <li>
-                • Gentle AI reflections that highlight what felt important in
-                your own words.
-              </li>
-              <li>
-                • A private way to notice emotional patterns without charts
-                judging you.
-              </li>
-            </ul>
-          </AboutCard>
+        {/* Core philosophy */}
+        <div className="space-y-10">
+          <section className="space-y-4">
+            <h2 className="text-lg font-semibold text-hvn-text-primary">
+              Why Havenly exists
+            </h2>
+            <p className="text-sm leading-relaxed text-hvn-text-muted">
+              Many tools are designed to help you optimize, track, or improve
+              yourself. Havenly is different. It was created for moments when
+              life feels full, complicated, or emotionally dense — and you
+              simply need a place to be honest.
+            </p>
+            <p className="text-sm leading-relaxed text-hvn-text-muted">
+              Havenly is not about fixing you. It is about helping you notice
+              what is already there, with clarity and kindness.
+            </p>
+          </section>
 
-          <AboutCard title="What Havenly is not">
-            <ul className="space-y-2 text-sm text-hvn-text-muted">
-              <li>• No public feed, comments, or “likes.”</li>
-              <li>• No streaks, productivity scores, or pushy reminders.</li>
-              <li>• No optimization or life-hacking advice from the AI.</li>
-            </ul>
-          </AboutCard>
+          {/* What Havenly is / is not */}
+          <section className="grid gap-6 sm:grid-cols-2">
+            <div className="rounded-2xl border border-hvn-card bg-slate-950/70 p-5">
+              <h3 className="mb-2 text-sm font-semibold text-emerald-300">
+                What Havenly is
+              </h3>
+              <ul className="space-y-2 text-sm text-hvn-text-muted">
+                <li>• A private journaling space</li>
+                <li>• A calm companion for reflection</li>
+                <li>• A way to notice patterns over time</li>
+                <li>• A tool that respects your pace and privacy</li>
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-hvn-card bg-slate-950/70 p-5">
+              <h3 className="mb-2 text-sm font-semibold text-amber-300">
+                What Havenly is not
+              </h3>
+              <ul className="space-y-2 text-sm text-hvn-text-muted">
+                <li>• Not therapy or clinical care</li>
+                <li>• Not a productivity system</li>
+                <li>• Not a public or social platform</li>
+                <li>• Not something you must use every day</li>
+              </ul>
+            </div>
+          </section>
+
+          {/* AI positioning */}
+          <section className="space-y-4">
+            <h2 className="text-lg font-semibold text-hvn-text-primary">
+              How AI is used
+            </h2>
+            <p className="text-sm leading-relaxed text-hvn-text-muted">
+              Havenly uses AI to gently reflect your words back to you. It may
+              highlight emotions, patterns, or themes — not to label you, but to
+              help you see yourself more clearly.
+            </p>
+            <p className="text-sm leading-relaxed text-hvn-text-muted">
+              The AI is designed to support reflection, not replace human
+              judgment, relationships, or professional help.
+            </p>
+          </section>
+
+          {/* Privacy & trust */}
+          <section className="space-y-4">
+            <h2 className="text-lg font-semibold text-hvn-text-primary">
+              Privacy comes first
+            </h2>
+            <p className="text-sm leading-relaxed text-hvn-text-muted">
+              Your journal is meant to stay yours. Entries are stored securely
+              and are not used to train public models. Havenly is built around
+              the idea that your inner life is not content.
+            </p>
+            <p className="text-sm text-hvn-text-muted">
+              If you would like more detail, you can read our{" "}
+              <Link
+                href="/privacy"
+                className="font-medium text-emerald-400 hover:underline"
+              >
+                Privacy Policy →
+              </Link>
+            </p>
+          </section>
+
+          {/* Closing CTA */}
+          <section className="mt-12 flex flex-col items-start gap-4 border-t border-slate-800 pt-8 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-hvn-text-muted">
+              Havenly works best when you use it honestly, gently, and at your
+              own pace.
+            </p>
+            <div className="flex gap-3">
+              <Link
+                href="/magic-login"
+                className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
+              >
+                Start free journal
+              </Link>
+              <Link
+                href="/blog"
+                className="inline-flex items-center justify-center rounded-full border border-slate-600 px-4 py-2 text-sm text-slate-100 hover:bg-slate-900"
+              >
+                Explore the blog →
+              </Link>
+            </div>
+          </section>
         </div>
-
-        <AboutCard title="A gentle use of AI you can trust">
-          <p className="text-sm text-hvn-text-muted">
-            The AI in Havenly is intentionally quiet. Its role is to mirror back
-            what you wrote, ask kinder questions, or surface themes you might
-            have missed—not to tell you what to do. Reflections are used only to
-            generate your summaries and insights, not for advertising or social
-            media content.
-          </p>
-          <ul className="mt-3 space-y-1.5 text-sm text-hvn-text-muted">
-            <li>• No ads or growth-hacking notifications.</li>
-            <li>• No selling your entries as “engagement data.”</li>
-            <li>• You stay in control—you choose what to write, and when.</li>
-          </ul>
-        </AboutCard>
-
-        <AboutCard title="Free today, with deeper insights coming soon">
-          <p className="text-sm text-hvn-text-muted">
-            Right now, Havenly focuses on making daily journaling feel as simple
-            and low-pressure as possible. The free plan gives you a private
-            space to write and revisit your reflections.
-          </p>
-          <p className="mt-2 text-sm text-hvn-text-muted">
-            We are working on{" "}
-            <span className="text-hvn-accent-mint font-medium">
-              Havenly Plus
-            </span>
-            , which will add:
-          </p>
-          <ul className="mt-2 space-y-1.5 text-sm text-hvn-text-muted">
-            <li>• Richer AI insights and weekly summaries.</li>
-            <li>• Emotional patterns and mood timelines over time.</li>
-            <li>• Backup, history, and advanced reflection tools.</li>
-          </ul>
-        </AboutCard>
-
-        <AboutCard title="A small, human-sized product">
-          <p className="text-sm text-hvn-text-muted">
-            Havenly is being built carefully and incrementally, with a focus on
-            calm design, emotional safety, and clear boundaries around how AI is
-            used. The goal is not to keep you online longer, but to give you a
-            few honest minutes with yourself and then let you get back to your
-            day.
-          </p>
-          <p className="mt-3 text-sm text-hvn-text-muted">
-            If Havenly helps you exhale a little, notice one feeling more
-            clearly, or speak to yourself with a bit more kindness, then it is
-            doing its job.
-          </p>
-        </AboutCard>
-      </div>
+      </section>
     </div>
-  );
-}
-
-type AboutCardProps = {
-  title: string;
-  children: React.ReactNode;
-};
-
-function AboutCard({ title, children }: AboutCardProps) {
-  return (
-    <section className="rounded-2xl border border-hvn-card bg-hvn-bg-elevated/85 p-5 shadow-sm shadow-black/50">
-      <h2 className="text-sm font-semibold text-hvn-text-secondary sm:text-base">
-        {title}
-      </h2>
-      <div className="mt-3 space-y-2">{children}</div>
-    </section>
   );
 }
