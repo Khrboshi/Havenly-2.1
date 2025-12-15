@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 export type PlanType = "FREE" | "PREMIUM" | "TRIAL" | null;
 
@@ -14,21 +14,19 @@ interface UserPlanState {
   // Preferred explicit field
   planType: PlanType;
 
-  // Monetization fields
+  // Additional fields used by Billing, Premium hub, etc.
   credits: number | null;
   renewalDate: string | null;
-
-  // Helpers
-  isPremium: boolean;
-  refresh: () => Promise<void>;
 }
 
 /**
  * Unified user plan hook.
- * Backwards compatible + monetization-safe.
+ * Fetches the current user's plan from /api/user/plan.
+ * Normalizes all values into a consistent state object.
+ * Fully compatible with existing components and Premium gating.
  */
 export function useUserPlan(): UserPlanState {
-  const [state, setState] = useState<Omit<UserPlanState, "isPremium" | "refresh">>({
+  const [state, setState] = useState<UserPlanState>({
     loading: true,
     error: null,
     plan: null,
@@ -37,73 +35,81 @@ export function useUserPlan(): UserPlanState {
     renewalDate: null,
   });
 
-  const loadPlan = useCallback(async () => {
-    try {
-      setState((s) => ({ ...s, loading: true }));
-
-      const res = await fetch("/api/user/premium", {
-        cache: "no-store",
-      });
-
-      if (!res.ok) {
-        throw new Error("Plan fetch failed");
-      }
-
-      const data = await res.json();
-
-      const serverPlanType: PlanType =
-        (typeof data.planType === "string"
-          ? (data.planType.toUpperCase() as PlanType)
-          : null) ??
-        (typeof data.plan === "string"
-          ? (data.plan.toUpperCase() as PlanType)
-          : null) ??
-        "FREE";
-
-      const normalized: PlanType =
-        serverPlanType === "PREMIUM" ||
-        serverPlanType === "TRIAL" ||
-        serverPlanType === "FREE"
-          ? serverPlanType
-          : "FREE";
-
-      setState({
-        loading: false,
-        error: null,
-        plan: normalized,
-        planType: normalized,
-        credits: typeof data.credits === "number" ? data.credits : 0,
-        renewalDate: typeof data.renewalDate === "string" ? data.renewalDate : null,
-      });
-    } catch (err) {
-      console.error("useUserPlan error:", err);
-      setState({
-        loading: false,
-        error: "Unable to load plan information.",
-        plan: "FREE",
-        planType: "FREE",
-        credits: 0,
-        renewalDate: null,
-      });
-    }
-  }, []);
-
   useEffect(() => {
     let cancelled = false;
-    if (!cancelled) loadPlan();
+
+    async function loadPlan() {
+      try {
+        const res = await fetch("/api/user/plan", {
+          cache: "no-store",
+        });
+
+        if (!res.ok) {
+          if (!cancelled) {
+            setState({
+              loading: false,
+              error: "Unable to load plan information.",
+              plan: "FREE",
+              planType: "FREE",
+              credits: 0,
+              renewalDate: null,
+            });
+          }
+          return;
+        }
+
+        const data = await res.json();
+        if (cancelled) return;
+
+        const serverPlanType: PlanType =
+          (typeof data.planType === "string"
+            ? (data.planType.toUpperCase() as PlanType)
+            : null) ??
+          (typeof data.plan === "string"
+            ? (data.plan.toUpperCase() as PlanType)
+            : null) ??
+          "FREE";
+
+        const normalized: PlanType =
+          serverPlanType === "PREMIUM" ||
+          serverPlanType === "TRIAL" ||
+          serverPlanType === "FREE"
+            ? serverPlanType
+            : "FREE";
+
+        const credits = typeof data.credits === "number" ? data.credits : 0;
+
+        const renewalDate =
+          typeof data.renewalDate === "string" ? data.renewalDate : null;
+
+        setState({
+          loading: false,
+          error: null,
+          plan: normalized,
+          planType: normalized,
+          credits,
+          renewalDate,
+        });
+      } catch (err) {
+        console.error("useUserPlan error:", err);
+        if (!cancelled) {
+          setState({
+            loading: false,
+            error: "Unable to load plan information.",
+            plan: "FREE",
+            planType: "FREE",
+            credits: 0,
+            renewalDate: null,
+          });
+        }
+      }
+    }
+
+    loadPlan();
     return () => {
       cancelled = true;
     };
-  }, [loadPlan]);
+  }, []);
 
-  const isPremium = useMemo(
-    () => state.planType === "PREMIUM",
-    [state.planType]
-  );
-
-  return {
-    ...state,
-    isPremium,
-    refresh: loadPlan,
-  };
+  return state;
 }
