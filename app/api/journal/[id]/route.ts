@@ -7,42 +7,32 @@ export async function GET(
   _req: Request,
   { params }: { params: { id: string } }
 ) {
-  try {
-    const supabase = await createServerSupabase();
+  const supabase = await createServerSupabase();
 
-    // Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    // Fetch journal entry
-    const { data, error } = await supabase
-      .from("journal_entries")
-      .select("id,title,content,reflection,created_at")
-      .eq("id", params.id)
-      .eq("user_id", user.id)
-      .single();
-
-    if (error || !data) {
-      return NextResponse.json(
-        { error: "Entry not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(data);
-  } catch (err) {
+  if (!session?.user) {
     return NextResponse.json(
-      { error: "Server error" },
-      { status: 500 }
+      { error: "Unauthorized" },
+      { status: 401 }
     );
   }
+
+  const { data, error } = await supabase
+    .from("journal_entries")
+    .select("id,title,content,reflection,created_at")
+    .eq("id", params.id)
+    .eq("user_id", session.user.id)
+    .single();
+
+  if (error || !data) {
+    return NextResponse.json(
+      { error: "Entry not found" },
+      { status: 404 }
+    );
+  }
+
+  return NextResponse.json(data);
 }
