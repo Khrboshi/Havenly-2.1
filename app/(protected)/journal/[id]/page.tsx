@@ -1,125 +1,102 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { supabaseClient } from "@/lib/supabase/client";
 
-type JournalEntry = {
-  id: string;
-  title: string | null;
-  content: string;
-  created_at: string;
-};
+export default function JournalEntryPage({
+  entry,
+}: {
+  entry: {
+    id: string;
+    title: string | null;
+    content: string;
+    created_at: string;
+  };
+}) {
+  const [reflection, setReflection] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [limitReached, setLimitReached] = useState(false);
 
-type State =
-  | { status: "loading" }
-  | { status: "not_found" }
-  | { status: "error"; message: string }
-  | { status: "loaded"; entry: JournalEntry };
+  async function generateReflection() {
+    setLoading(true);
+    setLimitReached(false);
 
-export default function JournalEntryPage() {
-  const params = useParams();
-  const id =
-    typeof params?.id === "string"
-      ? params.id
-      : Array.isArray(params?.id)
-      ? params.id[0]
-      : null;
+    try {
+      const res = await fetch("/api/reflect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: entry.content }),
+      });
 
-  const [state, setState] = useState<State>({ status: "loading" });
-
-  useEffect(() => {
-    if (!id) {
-      setState({ status: "not_found" });
-      return;
-    }
-
-    async function load() {
-      try {
-        const { data, error } = await supabaseClient
-          .from("journal_entries")
-          // ⚠️ ONLY columns that EXIST
-          .select("id, title, content, created_at")
-          .eq("id", id)
-          .maybeSingle();
-
-        if (error) {
-          setState({ status: "error", message: error.message });
-          return;
-        }
-
-        if (!data) {
-          setState({ status: "not_found" });
-          return;
-        }
-
-        setState({
-          status: "loaded",
-          entry: {
-            id: data.id,
-            title: data.title ?? null,
-            content: data.content,
-            created_at: data.created_at,
-          },
-        });
-      } catch (err: any) {
-        setState({
-          status: "error",
-          message: err?.message ?? "Unexpected error",
-        });
+      if (res.status === 403) {
+        setLimitReached(true);
+        return;
       }
-    }
 
-    load();
-  }, [id]);
+      const data = await res.json();
+      setReflection(data.reflection);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-10">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Journal Entry</h1>
-        <Link
-          href="/journal"
-          className="rounded-lg border border-slate-800 px-4 py-2 text-sm hover:bg-slate-900"
-        >
-          ← Back to journal
-        </Link>
+    <div className="max-w-3xl mx-auto space-y-6">
+      <Link
+        href="/journal"
+        className="text-sm text-slate-400 hover:text-slate-200"
+      >
+        ← Back to journal
+      </Link>
+
+      <div className="rounded-xl bg-slate-900 p-6">
+        <div className="text-xs text-slate-400 mb-1">
+          {new Date(entry.created_at).toLocaleString()}
+        </div>
+
+        <h1 className="text-xl font-semibold mb-3">
+          {entry.title || "Untitled"}
+        </h1>
+
+        <p className="whitespace-pre-wrap text-slate-200">
+          {entry.content}
+        </p>
       </div>
 
-      {state.status === "loading" && (
-        <div className="rounded-xl border border-slate-800 p-6">
-          Loading entry…
-        </div>
-      )}
+      {/* AI Reflection */}
+      <div className="rounded-xl bg-slate-900 p-6">
+        <h2 className="font-medium mb-2">AI Reflection</h2>
 
-      {state.status === "not_found" && (
-        <div className="rounded-xl border border-slate-800 p-6 text-red-300">
-          This entry could not be found.
-        </div>
-      )}
+        {!reflection && !limitReached && (
+          <button
+            onClick={generateReflection}
+            disabled={loading}
+            className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400 disabled:opacity-60"
+          >
+            {loading ? "Reflecting…" : "Generate reflection"}
+          </button>
+        )}
 
-      {state.status === "error" && (
-        <div className="rounded-xl border border-red-900 bg-red-950/30 p-6">
-          <p className="text-red-200">
-            We couldn’t load this entry right now.
+        {reflection && (
+          <p className="mt-3 whitespace-pre-wrap text-slate-200">
+            {reflection}
           </p>
-          <p className="mt-2 text-xs opacity-70">{state.message}</p>
-        </div>
-      )}
+        )}
 
-      {state.status === "loaded" && (
-        <div className="rounded-xl border border-slate-800 p-6">
-          <div className="mb-2 text-xs text-slate-400">
-            {new Date(state.entry.created_at).toLocaleString()}
+        {limitReached && (
+          <div className="mt-3 rounded-lg border border-amber-400/40 bg-amber-400/10 p-4 text-sm">
+            <p className="mb-2">
+              You’ve reached today’s free reflection limit.
+            </p>
+            <Link
+              href="/premium"
+              className="font-medium text-amber-400 hover:underline"
+            >
+              Upgrade to unlock unlimited reflections →
+            </Link>
           </div>
-          <h2 className="mb-4 text-lg font-semibold">
-            {state.entry.title || "Untitled"}
-          </h2>
-          <div className="whitespace-pre-wrap leading-relaxed">
-            {state.entry.content}
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
