@@ -22,7 +22,10 @@ export default async function UpgradePage() {
   const isLoggedIn = !!session;
 
   // CTA destinations
-  const primaryCtaHref = isLoggedIn ? "/premium" : "/magic-login";
+  const primaryCtaHref = isLoggedIn
+    ? "/upgrade/confirmed"
+    : "/magic-login";
+
   const secondaryCtaHref = isLoggedIn ? "/dashboard" : "/";
 
   return (
@@ -70,18 +73,9 @@ export default async function UpgradePage() {
                   Premium is for you if…
                 </h2>
                 <ul className="mt-3 space-y-2 text-slate-300">
-                  <li>
-                    • You want your emotional patterns to feel understandable,
-                    not overwhelming.
-                  </li>
-                  <li>
-                    • You&apos;d like gentle AI to help you spot what&apos;s
-                    actually supporting you each week.
-                  </li>
-                  <li>
-                    • You&apos;re ready to invest a small monthly amount to feel
-                    less lost inside your own life.
-                  </li>
+                  <li>• You want your emotional patterns to feel understandable, not overwhelming.</li>
+                  <li>• You&apos;d like gentle AI to help you spot what&apos;s actually supporting you each week.</li>
+                  <li>• You&apos;re ready to invest a small monthly amount to feel less lost inside your own life.</li>
                 </ul>
               </div>
             </div>
@@ -94,9 +88,7 @@ export default async function UpgradePage() {
             </p>
             <p className="mt-3 text-3xl font-semibold text-emerald-200">
               $25
-              <span className="text-base font-normal text-slate-400">
-                /month
-              </span>
+              <span className="text-base font-normal text-slate-400">/month</span>
             </p>
 
             <ul className="mt-5 space-y-2 text-sm text-slate-200">
@@ -126,8 +118,7 @@ export default async function UpgradePage() {
             What&apos;s different? Free vs Premium.
           </h2>
           <p className="mt-2 text-xs text-slate-300">
-            You keep everything in Free. Premium just adds more depth and
-            clarity.
+            You keep everything in Free. Premium just adds more depth and clarity.
           </p>
 
           <div className="mt-5 overflow-hidden rounded-2xl border border-slate-800 text-sm">
@@ -139,43 +130,19 @@ export default async function UpgradePage() {
 
             <div className="divide-y divide-slate-800 bg-slate-950/60">
               {[
-                {
-                  feature: "Daily private journaling",
-                  free: "Included",
-                  premium: "Included",
-                },
-                {
-                  feature: "AI reflections",
-                  free: "Light snapshots",
-                  premium: "Deep insights",
-                },
-                {
-                  feature: "Pattern timelines & themes",
-                  free: "Not included",
-                  premium: "Included",
-                },
-                {
-                  feature: "Monthly recap",
-                  free: "Not included",
-                  premium: "Included",
-                },
-                {
-                  feature: "Credits",
-                  free: "Limited",
-                  premium: "Higher balance",
-                },
+                { feature: "Daily private journaling", free: "Included", premium: "Included" },
+                { feature: "AI reflections", free: "Light snapshots", premium: "Deep insights" },
+                { feature: "Pattern timelines & themes", free: "Not included", premium: "Included" },
+                { feature: "Monthly recap", free: "Not included", premium: "Included" },
+                { feature: "Credits", free: "Limited", premium: "Higher balance" },
               ].map((row) => (
                 <div
                   key={row.feature}
                   className="grid grid-cols-[2fr,1fr,1fr] px-4 py-3 text-xs text-slate-200"
                 >
                   <span>{row.feature}</span>
-                  <span className="text-center text-slate-300">
-                    {row.free}
-                  </span>
-                  <span className="text-center text-emerald-300">
-                    {row.premium}
-                  </span>
+                  <span className="text-center text-slate-300">{row.free}</span>
+                  <span className="text-center text-emerald-300">{row.premium}</span>
                 </div>
               ))}
             </div>
