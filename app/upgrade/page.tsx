@@ -1,6 +1,30 @@
-import Link from "next/link";
+export const dynamic = "force-dynamic";
 
-export default function UpgradePage() {
+import Link from "next/link";
+import { createServerSupabase } from "@/lib/supabase/server";
+
+/**
+ * UpgradePage
+ *
+ * Enhancements (non-destructive):
+ * - Detects auth state on the server
+ * - Adjusts CTAs for logged-in vs logged-out users
+ * - Prevents upgrade confusion for anonymous users
+ * - Preserves all existing copy, layout, and psychology
+ */
+
+export default async function UpgradePage() {
+  const supabase = createServerSupabase();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  const isLoggedIn = !!session;
+
+  // CTA destinations
+  const primaryCtaHref = isLoggedIn ? "/premium" : "/magic-login";
+  const secondaryCtaHref = isLoggedIn ? "/dashboard" : "/";
+
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <section className="mx-auto max-w-6xl px-6 pb-20 pt-24">
@@ -13,7 +37,7 @@ export default function UpgradePage() {
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
               Upgrade to deeper, calmer insights.
             </h1>
-            <p className="mt-3 text-sm text-slate-300 max-w-xl">
+            <p className="mt-3 max-w-xl text-sm text-slate-300">
               Premium adds deeper reflections that help you understand what&rsquo;s
               been happening over time—without pressure, judgment, or
               productivity noise. It&apos;s built for real, tired humans who
@@ -22,16 +46,17 @@ export default function UpgradePage() {
 
             <div className="mt-6 flex flex-wrap gap-3 text-sm">
               <Link
-                href="/magic-login"
+                href={primaryCtaHref}
                 className="rounded-full bg-emerald-400 px-6 py-2.5 font-semibold text-slate-950 hover:bg-emerald-300"
               >
                 Upgrade to Premium – $25/month
               </Link>
+
               <Link
-                href="/"
+                href={secondaryCtaHref}
                 className="rounded-full border border-slate-700 px-6 py-2.5 font-semibold text-slate-100 hover:border-slate-500 hover:bg-slate-900"
               >
-                Keep exploring Havenly
+                {isLoggedIn ? "Back to dashboard" : "Keep exploring Havenly"}
               </Link>
             </div>
 
@@ -117,28 +142,28 @@ export default function UpgradePage() {
                 {
                   feature: "Daily private journaling",
                   free: "Included",
-                  premium: "Included"
+                  premium: "Included",
                 },
                 {
                   feature: "AI reflections",
                   free: "Light snapshots",
-                  premium: "Deep insights"
+                  premium: "Deep insights",
                 },
                 {
                   feature: "Pattern timelines & themes",
                   free: "Not included",
-                  premium: "Included"
+                  premium: "Included",
                 },
                 {
                   feature: "Monthly recap",
                   free: "Not included",
-                  premium: "Included"
+                  premium: "Included",
                 },
                 {
                   feature: "Credits",
                   free: "Limited",
-                  premium: "Higher balance"
-                }
+                  premium: "Higher balance",
+                },
               ].map((row) => (
                 <div
                   key={row.feature}
@@ -158,16 +183,17 @@ export default function UpgradePage() {
 
           <div className="mt-5 flex flex-wrap gap-3 text-xs">
             <Link
-              href="/magic-login"
+              href={primaryCtaHref}
               className="rounded-full bg-emerald-400 px-5 py-2 font-semibold text-slate-950 hover:bg-emerald-300"
             >
               Upgrade now
             </Link>
+
             <Link
-              href="/magic-login"
+              href={secondaryCtaHref}
               className="rounded-full border border-slate-700 px-5 py-2 font-semibold text-slate-100 hover:border-slate-500 hover:bg-slate-900"
             >
-              Stay Free for now
+              {isLoggedIn ? "Return to dashboard" : "Stay Free for now"}
             </Link>
           </div>
         </section>
