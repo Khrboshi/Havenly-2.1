@@ -28,8 +28,12 @@ export async function POST(req: Request) {
       );
     }
 
+    /**
+     * IMPORTANT:
+     * Update the table name below if your actual table is NOT `journal`
+     */
     const { data, error } = await supabase
-      .from("journal") // confirm table name = journal
+      .from("journal") // ← VERIFY THIS NAME IN SUPABASE
       .insert({
         user_id: user.id,
         title: body.title?.trim() || null,
