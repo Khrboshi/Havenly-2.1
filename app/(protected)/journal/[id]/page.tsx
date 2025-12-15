@@ -11,43 +11,46 @@ type JournalEntry = {
   created_at: string;
 };
 
+export const dynamic = "force-dynamic";
+
 export default function JournalEntryPage() {
-  const { id } = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>();
   const router = useRouter();
 
   const [entry, setEntry] = useState<JournalEntry | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!id) return;
+    if (!params?.id) return;
 
     async function loadEntry() {
       try {
-        const res = await fetch(`/api/journal/${id}`);
+        const res = await fetch(`/api/journal/${params.id}`, {
+          cache: "no-store",
+        });
 
         if (!res.ok) {
-          setError("This entry could not be found.");
-          return;
+          throw new Error("Entry not found");
         }
 
-        const data = await res.json();
+        const data = (await res.json()) as JournalEntry;
         setEntry(data);
       } catch {
-        setError("Failed to load entry.");
+        setError("This entry could not be found.");
       } finally {
         setLoading(false);
       }
     }
 
     loadEntry();
-  }, [id]);
+  }, [params?.id]);
 
   if (loading) {
     return <div className="p-6 text-slate-400">Loading…</div>;
   }
 
-  if (error) {
+  if (error || !entry) {
     return (
       <div className="p-6">
         <p className="text-red-400 mb-4">{error}</p>
@@ -61,22 +64,20 @@ export default function JournalEntryPage() {
     );
   }
 
-  if (!entry) return null;
-
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">
-        {entry.title ?? "Journal entry"}
-      </h1>
+    <div className="p-6 space-y-4 max-w-3xl">
+      {entry.title && (
+        <h1 className="text-2xl font-semibold">{entry.title}</h1>
+      )}
 
-      <p className="text-slate-300 whitespace-pre-wrap">
+      <p className="whitespace-pre-wrap text-slate-200">
         {entry.content}
       </p>
 
       {entry.reflection && (
-        <div className="border-t border-slate-800 pt-4">
-          <h2 className="text-lg font-medium mb-2">AI Reflection</h2>
-          <p className="text-slate-400 whitespace-pre-wrap">
+        <div className="mt-6 p-4 rounded-lg bg-slate-900 border border-slate-800">
+          <h2 className="font-medium mb-2">Reflection</h2>
+          <p className="whitespace-pre-wrap text-slate-300">
             {entry.reflection}
           </p>
         </div>
