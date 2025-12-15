@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useUserPlan } from "@/app/components/useUserPlan";
 import UpgradeTriggerModal from "@/app/components/UpgradeTriggerModal";
 
@@ -22,9 +21,9 @@ type Reflection = {
 };
 
 export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
-  const router = useRouter();
-  const { planType, credits, renewalDate, isPremium, loading, refresh } =
-    useUserPlan();
+  const { planType, credits, renewalDate, loading, refresh } = useUserPlan();
+
+  const isPremium = planType === "PREMIUM";
 
   const [busy, setBusy] = useState(false);
   const [reflection, setReflection] = useState<Reflection | null>(null);
@@ -40,7 +39,7 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
   async function generateReflection() {
     setError(null);
 
-    // STEP 3A — Trigger upgrade at moment of intent
+    // Upgrade trigger at the moment of intent
     if (!isPremium && !loading && credits <= 0) {
       setShowUpgrade(true);
       return;
@@ -72,6 +71,7 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
       const j = await res.json();
       setReflection(j?.reflection || null);
 
+      // refresh credits after consumption
       await refresh();
     } catch {
       setError("We couldn't generate a reflection right now.");
@@ -80,39 +80,17 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
     }
   }
 
-  async function handleUpgrade() {
-    try {
-      await fetch("/api/telemetry/upgrade-intent", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          source: "reflection_limit_modal",
-          entryId: entry.id,
-        }),
-      });
-    } catch {
-      // telemetry must never block UX
-    } finally {
-      router.push("/premium");
-    }
-  }
-
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-6 py-10 text-white">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">
-            {entry.title || "Untitled"}
-          </h1>
+          <h1 className="text-2xl font-semibold">{entry.title || "Untitled"}</h1>
           <p className="mt-1 text-xs text-white/50">
             {new Date(entry.created_at).toLocaleString()}
           </p>
         </div>
 
-        <Link
-          href="/journal"
-          className="text-sm text-emerald-400 hover:underline"
-        >
+        <Link href="/journal" className="text-sm text-emerald-400 hover:underline">
           ← Back to journal
         </Link>
       </header>
@@ -127,20 +105,16 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
             <h2 className="text-lg font-semibold">AI Reflection</h2>
             <p className="mt-1 text-sm text-white/70">
               Plan: <span className="text-emerald-300">{readablePlan}</span>
-              {!isPremium && (
+              {!isPremium ? (
                 <>
-                  {" · "}Reflections left:{" "}
-                  <span className="text-emerald-300">
-                    {loading ? "…" : credits}
-                  </span>
+                  {" "}
+                  · Reflections left:{" "}
+                  <span className="text-emerald-300">{loading ? "…" : credits}</span>
                   {renewalDate ? (
-                    <span className="text-white/50">
-                      {" "} (renews {renewalDate})
-                    </span>
+                    <span className="text-white/50"> (renews {renewalDate})</span>
                   ) : null}
                 </>
-              )}
-              {isPremium && (
+              ) : (
                 <span className="text-white/50"> · Unlimited</span>
               )}
             </p>
@@ -155,9 +129,7 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
           </button>
         </div>
 
-        {error && (
-          <p className="mt-4 text-sm text-red-300">{error}</p>
-        )}
+        {error ? <p className="mt-4 text-sm text-red-300">{error}</p> : null}
 
         {!reflection ? (
           <p className="mt-4 text-sm text-white/60">
@@ -168,6 +140,48 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
             <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
               <p className="text-white/90">{reflection.summary}</p>
             </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-white/70">
+                  Themes
+                </h3>
+                <ul className="mt-2 list-disc space-y-1 pl-5">
+                  {reflection.themes?.map((t, i) => (
+                    <li key={i}>{t}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-white/70">
+                  Emotions
+                </h3>
+                <ul className="mt-2 list-disc space-y-1 pl-5">
+                  {reflection.emotions?.map((e, i) => (
+                    <li key={i}>{e}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-white/70">
+                Gentle next step
+              </h3>
+              <p className="mt-2">{reflection.gentle_next_step}</p>
+            </div>
+
+            <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-white/70">
+                Two questions
+              </h3>
+              <ul className="mt-2 list-disc space-y-1 pl-5">
+                {reflection.questions?.map((q, i) => (
+                  <li key={i}>{q}</li>
+                ))}
+              </ul>
+            </div>
           </div>
         )}
       </section>
@@ -175,9 +189,11 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
       <UpgradeTriggerModal
         open={showUpgrade}
         onClose={() => setShowUpgrade(false)}
-        onUpgrade={handleUpgrade}
         title="You’ve reached your reflection limit"
         message="Upgrade to Premium for unlimited reflections and deeper insights when you need them most."
+        source="reflection_limit"
+        ctaHref="/upgrade"
+        ctaLabel="Upgrade to Premium"
       />
     </div>
   );
