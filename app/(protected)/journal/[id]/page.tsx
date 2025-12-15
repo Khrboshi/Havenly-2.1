@@ -11,49 +11,47 @@ type JournalEntry = {
   created_at: string;
 };
 
-export const dynamic = "force-dynamic";
-
 export default function JournalEntryPage() {
-  const params = useParams<{ id: string }>();
+  const { id } = useParams<{ id: string }>();
   const router = useRouter();
 
   const [entry, setEntry] = useState<JournalEntry | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!params?.id) return;
+    if (!id) return;
 
     async function loadEntry() {
       try {
-        const res = await fetch(`/api/journal/${params.id}`, {
+        const res = await fetch(`/api/journal/${id}`, {
           cache: "no-store",
         });
 
         if (!res.ok) {
-          throw new Error("Entry not found");
+          setEntry(null);
+          return;
         }
 
-        const data = (await res.json()) as JournalEntry;
+        const data: JournalEntry = await res.json();
         setEntry(data);
       } catch {
-        setError("This entry could not be found.");
+        setEntry(null);
       } finally {
         setLoading(false);
       }
     }
 
     loadEntry();
-  }, [params?.id]);
+  }, [id]);
 
   if (loading) {
-    return <div className="p-6 text-slate-400">Loading…</div>;
+    return <p className="text-slate-400">Loading entry…</p>;
   }
 
-  if (error || !entry) {
+  if (!entry) {
     return (
-      <div className="p-6">
-        <p className="text-red-400 mb-4">{error}</p>
+      <div className="space-y-4">
+        <p className="text-red-500">This entry could not be found.</p>
         <button
           onClick={() => router.push("/journal")}
           className="text-emerald-400 hover:underline"
@@ -65,23 +63,27 @@ export default function JournalEntryPage() {
   }
 
   return (
-    <div className="p-6 space-y-4 max-w-3xl">
-      {entry.title && (
-        <h1 className="text-2xl font-semibold">{entry.title}</h1>
-      )}
+    <article className="space-y-4 max-w-3xl">
+      <h1 className="text-2xl font-semibold">
+        {entry.title ?? "Journal entry"}
+      </h1>
 
-      <p className="whitespace-pre-wrap text-slate-200">
-        {entry.content}
+      <p className="text-slate-400 text-sm">
+        {new Date(entry.created_at).toLocaleString()}
       </p>
 
+      <div className="whitespace-pre-wrap text-slate-100">
+        {entry.content}
+      </div>
+
       {entry.reflection && (
-        <div className="mt-6 p-4 rounded-lg bg-slate-900 border border-slate-800">
-          <h2 className="font-medium mb-2">Reflection</h2>
-          <p className="whitespace-pre-wrap text-slate-300">
+        <div className="border-t border-slate-800 pt-4">
+          <h2 className="text-lg font-medium mb-2">Reflection</h2>
+          <p className="whitespace-pre-wrap text-slate-200">
             {entry.reflection}
           </p>
         </div>
       )}
-    </div>
+    </article>
   );
 }
