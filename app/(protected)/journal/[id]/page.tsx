@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
 
 type JournalEntry = {
   id: string;
@@ -28,14 +27,14 @@ export default function JournalEntryPage() {
         const res = await fetch(`/api/journal/${id}`);
 
         if (!res.ok) {
-          throw new Error("Entry not found");
+          setError("This entry could not be found.");
+          return;
         }
 
-        const data = (await res.json()) as JournalEntry;
-
+        const data = await res.json();
         setEntry(data);
-      } catch (err) {
-        setError("This entry could not be found.");
+      } catch {
+        setError("Failed to load entry.");
       } finally {
         setLoading(false);
       }
@@ -45,60 +44,43 @@ export default function JournalEntryPage() {
   }, [id]);
 
   if (loading) {
-    return (
-      <div className="p-8 text-slate-400">
-        Loading entry…
-      </div>
-    );
+    return <div className="p-6 text-slate-400">Loading…</div>;
   }
 
-  if (error || !entry) {
+  if (error) {
     return (
-      <div className="p-8">
-        <p className="text-red-400 mb-4">
-          {error ?? "This entry could not be found."}
-        </p>
-        <Link
-          href="/journal"
-          className="inline-block text-emerald-400 hover:underline"
+      <div className="p-6">
+        <p className="text-red-400 mb-4">{error}</p>
+        <button
+          onClick={() => router.push("/journal")}
+          className="text-emerald-400 hover:underline"
         >
           ← Back to journal
-        </Link>
+        </button>
       </div>
     );
   }
 
+  if (!entry) return null;
+
   return (
-    <div className="max-w-3xl mx-auto p-8 space-y-6">
-      {entry.title && (
-        <h1 className="text-2xl font-semibold">
-          {entry.title}
-        </h1>
-      )}
+    <div className="max-w-3xl mx-auto p-6 space-y-6">
+      <h1 className="text-2xl font-semibold">
+        {entry.title ?? "Journal entry"}
+      </h1>
 
       <p className="text-slate-300 whitespace-pre-wrap">
         {entry.content}
       </p>
 
       {entry.reflection && (
-        <div className="mt-8 rounded-lg border border-slate-800 bg-slate-900 p-4">
-          <h2 className="text-sm uppercase tracking-wide text-slate-400 mb-2">
-            Reflection
-          </h2>
-          <p className="text-slate-300 whitespace-pre-wrap">
+        <div className="border-t border-slate-800 pt-4">
+          <h2 className="text-lg font-medium mb-2">AI Reflection</h2>
+          <p className="text-slate-400 whitespace-pre-wrap">
             {entry.reflection}
           </p>
         </div>
       )}
-
-      <div className="pt-6">
-        <Link
-          href="/journal"
-          className="text-emerald-400 hover:underline"
-        >
-          ← Back to journal
-        </Link>
-      </div>
     </div>
   );
 }
