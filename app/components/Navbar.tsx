@@ -9,20 +9,17 @@ import { useSupabase } from "@/components/SupabaseSessionProvider";
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { session } = useSupabase();
+  const { session, supabase } = useSupabase();
 
   const [mobileOpen, setMobileOpen] = useState(false);
-
   const isLoggedIn = !!session;
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
   const linkBase =
     "text-sm font-medium transition-colors hover:text-emerald-400";
-
   const activeLink = "text-emerald-400";
   const inactiveLink = "text-slate-300";
 
@@ -41,20 +38,29 @@ export default function Navbar() {
   ];
 
   async function handleLogout() {
-    await fetch("/logout");
-    router.push("/magic-login?logged_out=1");
-    router.refresh();
+    try {
+      // 1️⃣ Immediately clear client-side Supabase session
+      await supabase.auth.signOut();
+
+      // 2️⃣ Clear server cookies
+      await fetch("/logout", { method: "GET" });
+
+      // 3️⃣ Hard reset navigation state
+      window.location.href = "/magic-login?logged_out=1";
+    } catch (err) {
+      console.error("Logout failed:", err);
+      window.location.href = "/magic-login";
+    }
   }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#020617]/80 backdrop-blur">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-        {/* Brand */}
         <Link href="/" className="text-lg font-semibold text-white">
           Havenly
         </Link>
 
-        {/* Desktop navigation */}
+        {/* Desktop */}
         <div className="hidden items-center gap-6 md:flex">
           {(isLoggedIn ? authLinks : publicLinks).map((link) => {
             const isActive =
@@ -91,9 +97,9 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile menu button */}
+        {/* Mobile toggle */}
         <button
-          className="flex items-center text-slate-200 md:hidden"
+          className="md:hidden text-slate-200"
           onClick={() => setMobileOpen((v) => !v)}
           aria-label="Toggle menu"
         >
@@ -101,47 +107,45 @@ export default function Navbar() {
         </button>
       </nav>
 
-      {/* Mobile menu panel */}
+      {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden">
-          <div className="border-t border-white/10 bg-[#020617] px-4 pb-4 pt-2">
-            <div className="flex flex-col gap-4">
-              {(isLoggedIn ? authLinks : publicLinks).map((link) => {
-                const isActive =
-                  pathname === link.href ||
-                  (link.href !== "/" && pathname.startsWith(link.href));
+        <div className="md:hidden border-t border-white/10 bg-[#020617] px-4 pb-4 pt-2">
+          <div className="flex flex-col gap-4">
+            {(isLoggedIn ? authLinks : publicLinks).map((link) => {
+              const isActive =
+                pathname === link.href ||
+                (link.href !== "/" && pathname.startsWith(link.href));
 
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`rounded-md px-2 py-2 text-base ${
-                      isActive
-                        ? "bg-white/5 text-emerald-400"
-                        : "text-slate-300"
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                );
-              })}
-
-              {!isLoggedIn ? (
+              return (
                 <Link
-                  href="/magic-login"
-                  className="mt-2 rounded-md bg-emerald-500 px-4 py-3 text-center text-sm font-medium text-black"
+                  key={link.href}
+                  href={link.href}
+                  className={`rounded-md px-2 py-2 text-base ${
+                    isActive
+                      ? "bg-white/5 text-emerald-400"
+                      : "text-slate-300"
+                  }`}
                 >
-                  Start free journal
+                  {link.label}
                 </Link>
-              ) : (
-                <button
-                  onClick={handleLogout}
-                  className="mt-2 rounded-md bg-red-500/10 px-4 py-3 text-sm font-medium text-red-400"
-                >
-                  Logout
-                </button>
-              )}
-            </div>
+              );
+            })}
+
+            {!isLoggedIn ? (
+              <Link
+                href="/magic-login"
+                className="mt-2 rounded-md bg-emerald-500 px-4 py-3 text-center text-sm font-medium text-black"
+              >
+                Start free journal
+              </Link>
+            ) : (
+              <button
+                onClick={handleLogout}
+                className="mt-2 rounded-md bg-red-500/10 px-4 py-3 text-sm font-medium text-red-400"
+              >
+                Logout
+              </button>
+            )}
           </div>
         </div>
       )}
