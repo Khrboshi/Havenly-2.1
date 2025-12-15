@@ -1,69 +1,65 @@
-// app/api/reflect/route.ts
-
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
-import Groq from "groq-sdk";
+
+const DAILY_FREE_LIMIT = 3;
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = createServerSupabase();
 
     const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      data: { session },
+    } = await supabase.auth.getSession();
 
-    if (!user) {
+    if (!session?.user) {
       return NextResponse.json(
-        { success: false, error: "NOT_AUTHENTICATED" },
+        { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    // Read request body
-    const body = await req.json();
-    const { journalEntry } = body;
+    const { content } = await req.json();
 
-    if (!journalEntry || typeof journalEntry !== "string") {
+    if (!content) {
       return NextResponse.json(
-        { success: false, error: "MISSING_INPUT" },
+        { error: "Missing journal content" },
         { status: 400 }
       );
     }
 
-    // Groq Client
-    const client = new Groq({
-      apiKey: process.env.GROQ_API_KEY,
+    const today = new Date().toISOString().slice(0, 10);
+
+    // Count today's reflections (stored in KV-style table via Supabase)
+    const { count } = await supabase
+      .from("reflection_usage")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", session.user.id)
+      .eq("date", today);
+
+    if ((count ?? 0) >= DAILY_FREE_LIMIT) {
+      return NextResponse.json(
+        { limitReached: true },
+        { status: 403 }
+      );
+    }
+
+    // 🔮 AI reflection (placeholder — swap model later)
+    const reflection = `Here is a thoughtful reflection on your entry:\n\n"${content.slice(
+      0,
+      200
+    )}..."`;
+
+    // Log usage (NO journal linkage)
+    await supabase.from("reflection_usage").insert({
+      user_id: session.user.id,
+      date: today,
     });
 
-    const prompt = `
-You are a supportive, calm, introspective AI coach.
-Provide a structured reflection on the user's journal entry.
-
-Journal Entry:
-"${journalEntry}"
-
-Return three parts:
-1. A grounding reflection
-2. A deeper insight
-3. A suggested next step
-    `;
-
-    const completion = await client.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      model: "llama3-70b-8192",
-      temperature: 0.6,
-    });
-
-    const aiText = completion.choices[0].message?.content || "";
-
-    return NextResponse.json({
-      success: true,
-      reflection: aiText,
-    });
+    return NextResponse.json({ reflection });
   } catch (err) {
-    console.error("Reflect API error:", err);
+    console.error("Reflection error:", err);
     return NextResponse.json(
-      { success: false, error: "SERVER_ERROR" },
+      { error: "Reflection failed" },
       { status: 500 }
     );
   }
