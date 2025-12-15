@@ -1,36 +1,34 @@
-// app/api/telemetry/upgrade-intent/route.ts
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 
-export const dynamic = "force-dynamic";
-
-/**
- * Minimal telemetry endpoint:
- * - Logs upgrade intent in Vercel logs (good enough until 10 users threshold).
- * - If you later want DB storage, you can extend it safely.
- */
-export async function POST() {
+export async function POST(req: Request) {
   try {
     const supabase = createServerSupabase();
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    console.log("UPGRADE_INTENT", {
-      userId: user?.id ?? null,
-      ts: new Date().toISOString(),
+    // If not logged in, we silently ignore
+    if (!user) {
+      return NextResponse.json({ ok: true });
+    }
+
+    const body = await req.json();
+    const source =
+      typeof body?.source === "string" ? body.source : "unknown";
+
+    await supabase.from("plan_history").insert({
+      user_id: user.id,
+      old_plan_type: "FREE",
+      new_plan_type: "FREE",
+      reason: `upgrade_intent:${source}`,
+      changed_by: "USER",
     });
 
-    return NextResponse.json(
-      { ok: true },
-      { headers: { "Cache-Control": "no-store, max-age=0" } }
-    );
+    return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("POST /api/telemetry/upgrade-intent failed:", err);
-    // still return ok to avoid UX issues
-    return NextResponse.json(
-      { ok: true },
-      { headers: { "Cache-Control": "no-store, max-age=0" } }
-    );
+    // Telemetry must NEVER break UX
+    return NextResponse.json({ ok: true });
   }
 }
