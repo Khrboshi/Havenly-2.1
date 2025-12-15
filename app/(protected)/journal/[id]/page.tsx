@@ -5,13 +5,23 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSupabase } from "@/app/components/SupabaseSessionProvider";
 
-type JournalEntry = {
+/* -----------------------------
+   Types
+----------------------------- */
+
+type JournalRow = {
   id: string;
   title: string | null;
   content: string;
   reflection: string | null;
   created_at: string;
 };
+
+type JournalEntry = JournalRow;
+
+/* -----------------------------
+   Page
+----------------------------- */
 
 export default function JournalEntryPage() {
   const { supabase, session } = useSupabase();
@@ -28,9 +38,9 @@ export default function JournalEntryPage() {
   const [error, setError] = useState<string | null>(null);
   const [upgradeMessage, setUpgradeMessage] = useState<string | null>(null);
 
-  /* -----------------------------------------
-     Load journal entry
-  ------------------------------------------ */
+  /* -----------------------------
+     Load entry
+  ----------------------------- */
   useEffect(() => {
     if (!entryId || !supabase || !session?.user) return;
 
@@ -38,27 +48,19 @@ export default function JournalEntryPage() {
       setLoading(true);
       setError(null);
 
-      const { data, error } = await supabase
-        .from("journal_entries")
+      const result = await supabase
+        .from<JournalRow>("journal_entries")
         .select("id,title,content,reflection,created_at")
         .eq("id", entryId)
         .eq("user_id", session.user.id)
         .maybeSingle();
 
-      if (error || !data) {
+      if (result.error || !result.data) {
         setError("This entry could not be loaded.");
         setEntry(null);
       } else {
-        const normalized: JournalEntry = {
-          id: data.id,
-          title: data.title,
-          content: data.content,
-          reflection: data.reflection,
-          created_at: data.created_at,
-        };
-
-        setEntry(normalized);
-        setReflectionDraft(normalized.reflection ?? "");
+        setEntry(result.data);
+        setReflectionDraft(result.data.reflection ?? "");
       }
 
       setLoading(false);
@@ -67,9 +69,9 @@ export default function JournalEntryPage() {
     loadEntry();
   }, [entryId, supabase, session]);
 
-  /* -----------------------------------------
+  /* -----------------------------
      Save reflection
-  ------------------------------------------ */
+  ----------------------------- */
   async function handleSaveReflection() {
     if (!entryId) return;
 
@@ -102,12 +104,13 @@ export default function JournalEntryPage() {
     setEntry((prev) =>
       prev ? { ...prev, reflection: reflectionDraft } : prev
     );
+
     setSaving(false);
   }
 
-  /* -----------------------------------------
+  /* -----------------------------
      Generate AI reflection
-  ------------------------------------------ */
+  ----------------------------- */
   async function handleGenerateReflection() {
     if (!entry) return;
 
@@ -142,9 +145,10 @@ export default function JournalEntryPage() {
     setGenerating(false);
   }
 
-  /* -----------------------------------------
+  /* -----------------------------
      Render
-  ------------------------------------------ */
+  ----------------------------- */
+
   if (loading) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-10 text-sm text-slate-400">
@@ -188,7 +192,7 @@ export default function JournalEntryPage() {
           </p>
 
           <p className="mt-4 text-xs text-slate-500">
-            This text stays private. AI reflections are only used to help you see
+            This text stays private. AI reflections are used only to help you see
             patterns — never for advertising.
           </p>
         </section>
