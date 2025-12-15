@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSupabase } from "@/app/components/SupabaseSessionProvider";
 import { useUserPlan } from "@/app/components/useUserPlan";
+import UpgradeNudge from "@/app/components/UpgradeNudge";
 
 type JournalEntry = {
   id: string;
@@ -50,6 +51,11 @@ export default function DashboardClient({ userId }: { userId: string }) {
   const isPremium = planType === "PREMIUM" || planType === "TRIAL";
 
   const planLabel = planLoading ? "Checking plan…" : `${readablePlan} plan`;
+
+  // Soft, contextual nudge: show only for non-premium users
+  const numericCredits = typeof credits === "number" ? credits : null;
+  const showCreditNudge =
+    !planLoading && !isPremium && typeof numericCredits === "number" && numericCredits <= 3;
 
   return (
     <div className="mx-auto max-w-5xl px-6 pt-24 pb-24 text-slate-200">
@@ -176,6 +182,16 @@ export default function DashboardClient({ userId }: { userId: string }) {
           </div>
         </div>
       </section>
+
+      {/* SOFT UPGRADE NUDGE (Free users only, calm + contextual) */}
+      {!isPremium && (
+        <section className="mb-10">
+          <UpgradeNudge
+            credits={numericCredits}
+            variant={showCreditNudge ? "credits" : "default"}
+          />
+        </section>
+      )}
 
       {/* LATEST ENTRY SECTION */}
       <section className="mb-10">
