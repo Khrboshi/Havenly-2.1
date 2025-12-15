@@ -5,7 +5,8 @@ import JournalForm from "@/components/JournalForm";
 export const dynamic = "force-dynamic";
 
 export default async function NewJournalPage() {
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
+
   const {
     data: { session },
   } = await supabase.auth.getSession();
