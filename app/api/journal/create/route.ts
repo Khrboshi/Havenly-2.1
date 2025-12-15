@@ -1,12 +1,13 @@
-export const dynamic = "force-dynamic";
+export see = "force-dynamic";
 export const runtime = "nodejs";
 
-import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
     const supabase = createServerSupabase();
+    const body = await req.json();
 
     const {
       data: { user },
@@ -20,10 +21,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const body = await req.json();
-    const { title, content } = body;
-
-    if (!content || typeof content !== "string") {
+    if (!body?.content || body.content.trim().length === 0) {
       return NextResponse.json(
         { error: "Content is required" },
         { status: 400 }
@@ -31,11 +29,11 @@ export async function POST(req: Request) {
     }
 
     const { data, error } = await supabase
-      .from("journal_entries") // ✅ IMPORTANT: match real table name
+      .from("journal") // ← CONFIRM TABLE NAME
       .insert({
         user_id: user.id,
-        title: title || null,
-        content,
+        title: body.title?.trim() || null,
+        content: body.content.trim(),
       })
       .select()
       .single();
@@ -50,7 +48,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, entry: data });
   } catch (err) {
-    console.error("Unexpected error:", err);
+    console.error("Unexpected journal error:", err);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
