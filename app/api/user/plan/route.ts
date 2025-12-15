@@ -14,7 +14,7 @@ function safeJson(data: {
   return NextResponse.json(
     {
       planType: data.planType,
-      plan: data.planType, // backwards compatibility
+      plan: data.planType, // backward compatibility
       credits: data.credits,
       renewalDate: data.renewalDate,
     },
@@ -26,22 +26,6 @@ function safeJson(data: {
   );
 }
 
-/**
- * /api/user/plan
- *
- * Goal:
- * - Never return 500 to the client.
- * - If DB tables/columns differ, fall back to FREE safely.
- * - Normalize output for useUserPlan + Premium gating.
- *
- * Optional DB support:
- * - If you have a table like `user_plans` with:
- *   user_id, plan_type, credits, renewal_date
- * - Or a `profiles` table with:
- *   id, plan_type, credits, renewal_date
- *
- * If neither exists, this still works (FREE fallback).
- */
 export async function GET() {
   try {
     const supabase = createServerSupabase();
@@ -49,14 +33,20 @@ export async function GET() {
     const {
       data: { user },
       error: userErr,
-    покаж }} = await supabase.auth.getUser();
+    } = await supabase.auth.getUser();
 
+    // Not logged in → FREE
     if (userErr || !user) {
-      // Not logged in -> FREE
-      return safeJson({ planType: "FREE", credits: 0, renewalDate: null });
+      return safeJson({
+        planType: "FREE",
+        credits: 0,
+        renewalDate: null,
+      });
     }
 
-    // 1) Try user_plans
+    /**
+     * 1️⃣ Try user_plans table
+     */
     try {
       const { data, error } = await supabase
         .from("user_plans")
@@ -66,21 +56,22 @@ export async function GET() {
 
       if (!error && data) {
         const planType = String(data.plan_type || "FREE").toUpperCase() as PlanType;
-        const credits = typeof data.credits === "number" ? data.credits : 0;
-        const renewalDate =
-          typeof data.renewal_date === "string" ? data.renewal_date : null;
 
         return safeJson({
-          planType: planType === "PREMIUM" || planType === "TRIAL" ? planType : "FREE",
-          credits,
-          renewalDate,
+          planType:
+            planType === "PREMIUM" || planType === "TRIAL" ? planType : "FREE",
+          credits: typeof data.credits === "number" ? data.credits : 0,
+          renewalDate:
+            typeof data.renewal_date === "string" ? data.renewal_date : null,
         });
       }
     } catch {
-      // ignore and fall through
+      // silently fall through
     }
 
-    // 2) Try profiles
+    /**
+     * 2️⃣ Try profiles table
+     */
     try {
       const { data, error } = await supabase
         .from("profiles")
@@ -90,25 +81,35 @@ export async function GET() {
 
       if (!error && data) {
         const planType = String(data.plan_type || "FREE").toUpperCase() as PlanType;
-        const credits = typeof data.credits === "number" ? data.credits : 0;
-        const renewalDate =
-          typeof data.renewal_date === "string" ? data.renewal_date : null;
 
         return safeJson({
-          planType: planType === "PREMIUM" || planType === "TRIAL" ? planType : "FREE",
-          credits,
-          renewalDate,
+          planType:
+            planType === "PREMIUM" || planType === "TRIAL" ? planType : "FREE",
+          credits: typeof data.credits === "number" ? data.credits : 0,
+          renewalDate:
+            typeof data.renewal_date === "string" ? data.renewal_date : null,
         });
       }
     } catch {
-      // ignore and fall through
+      // silently fall through
     }
 
-    // 3) Fallback if no plan table exists yet
-    return safeJson({ planType: "FREE", credits: 0, renewalDate: null });
+    /**
+     * 3️⃣ Absolute fallback
+     */
+    return safeJson({
+      planType: "FREE",
+      credits: 0,
+      renewalDate: null,
+    });
   } catch (err) {
     console.error("GET /api/user/plan failed:", err);
-    // Never 500 to client — keep UX stable
-    return safeJson({ planType: "FREE", credits: 0, renewalDate: null });
+
+    // Never break UX
+    return safeJson({
+      planType: "FREE",
+      credits: 0,
+      renewalDate: null,
+    });
   }
 }
