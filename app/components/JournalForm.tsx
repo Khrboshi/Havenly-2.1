@@ -4,114 +4,117 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type Props = {
-  userId?: string; // kept for compatibility with your current New page
+  userId?: string; // kept for compatibility with your current import usage
 };
 
-export default function JournalForm({ userId }: Props) {
+export default function JournalForm(_props: Props) {
   const router = useRouter();
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [status, setStatus] = useState<"idle" | "saving" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "saving" | "error" | "success">(
+    "idle"
+  );
   const [error, setError] = useState<string>("");
 
-  const canSave = useMemo(() => {
-    return status !== "saving" && content.trim().length > 0;
-  }, [status, content]);
+  const canSave = useMemo(() => content.trim().length > 0 && status !== "saving", [
+    content,
+    status,
+  ]);
 
-  async function handleSave() {
-    setStatus("saving");
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
     setError("");
+
+    const contentTrimmed = content.trim();
+    if (!contentTrimmed) {
+      setStatus("error");
+      setError("Please write a few words before saving.");
+      return;
+    }
+
+    setStatus("saving");
 
     try {
       const res = await fetch("/api/journal/create", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
-          title: title.trim() || "",
-          content: content.trim(),
-          // userId is intentionally NOT sent; server derives user from session
+          title: title.trim() || null,
+          content: contentTrimmed,
         }),
+        cache: "no-store",
       });
 
-      const data = await res.json().catch(() => null);
+      const json = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        const msg =
-          data?.error ||
-          "Something went wrong. Please try again.";
         setStatus("error");
-        setError(msg);
+        setError(
+          json?.error ||
+            json?.message ||
+            "Failed to save journal entry. Please try again."
+        );
         return;
       }
 
-      const journalId = data?.journal?.id;
+      setStatus("success");
 
-      // Redirect to the saved entry to reinforce the habit loop
-      if (journalId) {
-        router.push(`/journal/${journalId}`);
-      } else {
-        // Fallback to journal list if id not returned for any reason
-        router.push("/journal");
+      // If API returns an id, send user to the new entry (better “reward loop”)
+      const id = json?.id;
+      if (id) {
+        router.push(`/journal/${id}`);
+        router.refresh();
+        return;
       }
 
+      // Fallback: go back to list
+      router.push("/journal");
       router.refresh();
-    } catch (e) {
+    } catch (err: any) {
       setStatus("error");
-      setError("Network error. Please try again.");
+      setError(err?.message || "Network error. Please try again.");
     }
   }
 
   return (
-    <div className="w-full">
-      <div className="mb-3">
-        <div className="text-sm font-semibold text-slate-100">
-          Write your thoughts
-        </div>
-        <div className="mt-2">
-          {/* Optional title field (kept subtle; does not change your UI drastically) */}
+    <form onSubmit={onSubmit} className="w-full">
+      <div className="space-y-3">
+        <div>
+          <div className="text-sm font-medium text-white/80 mb-2">
+            Write your thoughts
+          </div>
+
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Optional title (e.g., A quick check-in)"
-            className="w-full mb-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-slate-100 placeholder:text-slate-400 outline-none focus:border-emerald-400/40"
-            aria-label="Title"
+            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/40 outline-none focus:border-white/20 focus:bg-white/[0.07]"
+            maxLength={120}
           />
 
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="How are you feeling today?"
-            className="w-full min-h-[180px] rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-slate-100 placeholder:text-slate-400 outline-none focus:border-emerald-400/40"
-            aria-label="Journal content"
+            className="mt-3 w-full min-h-[180px] rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/40 outline-none focus:border-white/20 focus:bg-white/[0.07]"
           />
         </div>
 
-        {error ? (
-          <div className="mt-2 text-sm text-red-400">{error}</div>
-        ) : null}
+        {status === "error" && (
+          <div className="text-sm text-red-400">{error}</div>
+        )}
 
         <button
-          type="button"
-          onClick={handleSave}
+          type="submit"
           disabled={!canSave}
-          className={[
-            "mt-6 w-full rounded-xl px-4 py-4 font-semibold",
-            "transition",
-            canSave
-              ? "bg-emerald-400 text-slate-900 hover:brightness-110"
-              : "bg-emerald-400/40 text-slate-900/70 cursor-not-allowed",
-          ].join(" ")}
+          className="w-full rounded-xl bg-emerald-400/90 px-4 py-4 font-semibold text-black transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {status === "saving" ? "Saving..." : "Save Entry"}
         </button>
-
-        {/* This is intentionally minimal; monetization hooks belong on the entry page */}
-        <div className="mt-2 text-xs text-slate-400">
-          {userId ? null : null}
-        </div>
       </div>
-    </div>
+    </form>
   );
 }
