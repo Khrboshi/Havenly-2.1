@@ -37,40 +37,24 @@ export default function JournalEntryPage() {
       setErrorMsg(null);
 
       try {
-        const result = await supabase
+        // ✅ THE ONLY TS-SAFE SUPABASE PATTERN
+        const response = await supabase
           .from("journal_entries")
           .select("id,user_id,title,content,reflection,created_at")
           .eq("id", entryId)
           .eq("user_id", session.user.id)
           .maybeSingle();
 
-        if (result.error || !result.data) {
-          setErrorMsg("This entry could not be loaded.");
+        const data = response.data as JournalEntry | null;
+
+        if (!data) {
+          setErrorMsg("This entry could not be found.");
           setEntry(null);
           return;
         }
 
-        // ✅ Explicit, build-safe normalization
-        const row = result.data as {
-          id: string;
-          user_id: string;
-          title: string | null;
-          content: string;
-          reflection: string | null;
-          created_at: string;
-        };
-
-        const normalized: JournalEntry = {
-          id: row.id,
-          user_id: row.user_id,
-          title: row.title,
-          content: row.content,
-          reflection: row.reflection,
-          created_at: row.created_at,
-        };
-
-        setEntry(normalized);
-        setReflectionDraft(row.reflection ?? "");
+        setEntry(data);
+        setReflectionDraft(data.reflection ?? "");
       } catch {
         setErrorMsg("Unexpected error loading entry.");
         setEntry(null);
@@ -172,7 +156,6 @@ export default function JournalEntryPage() {
       </button>
 
       <div className="grid gap-6 md:grid-cols-[1.4fr,1fr]">
-        {/* Entry */}
         <section className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
           {entry.title && (
             <h1 className="mb-3 text-lg font-semibold text-slate-100">
@@ -184,7 +167,6 @@ export default function JournalEntryPage() {
           </p>
         </section>
 
-        {/* Reflection */}
         <section className="flex flex-col rounded-2xl border border-slate-800 bg-slate-950/70 p-5">
           <h2 className="mb-2 text-sm font-semibold text-slate-100">
             AI Reflection
