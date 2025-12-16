@@ -11,6 +11,7 @@ type JournalEntry = {
   created_at: string;
   title: string | null;
   content: string | null;
+  reflection: string | null;
 };
 
 export default function DashboardClient({ userId }: { userId: string }) {
@@ -33,7 +34,7 @@ export default function DashboardClient({ userId }: { userId: string }) {
 
       const { data } = await supabase
         .from("journal_entries")
-        .select("id, created_at, title, content")
+        .select("id, created_at, title, content, reflection")
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
         .limit(1)
@@ -74,6 +75,12 @@ export default function DashboardClient({ userId }: { userId: string }) {
     numericCredits <= 3;
 
   // -----------------------------
+  // Retention intelligence
+  // -----------------------------
+  const hasUnreflectedEntry =
+    latest && latest.content && !latest.reflection;
+
+  // -----------------------------
   // Render
   // -----------------------------
   return (
@@ -93,97 +100,46 @@ export default function DashboardClient({ userId }: { userId: string }) {
           <span className="inline-flex items-center rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1 text-[11px] font-medium text-slate-200">
             {planLoading ? "Checking plan…" : `${readablePlan} plan`}
           </span>
-
-          {!planLoading && !isPremium && (
-            <span className="text-[11px] text-slate-500">
-              Credits available:{" "}
-              <span className="font-medium text-slate-200">
-                {numericCredits ?? 0}
-              </span>
-            </span>
-          )}
         </div>
       </section>
 
-      {/* PRIMARY CARDS */}
-      <section className="mb-10 grid gap-4 md:grid-cols-[1.5fr,1.1fr]">
-        {/* Today’s check-in */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5">
-          <h2 className="text-sm font-semibold text-slate-100">
-            Today’s check-in
-          </h2>
-          <p className="mt-2 text-sm text-slate-400">
-            Take a few quiet minutes to write about what’s on your mind. You do
-            not have to fix anything — just notice.
-          </p>
+      {/* PRIMARY ACTION */}
+      <section className="mb-10 rounded-2xl border border-slate-800 bg-slate-950/60 p-6">
+        <h2 className="text-sm font-semibold text-slate-100">
+          {hasUnreflectedEntry
+            ? "Continue where you left off"
+            : "Today’s check-in"}
+        </h2>
 
-          <div className="mt-4 flex flex-wrap gap-3">
+        <p className="mt-2 text-sm text-slate-400">
+          {hasUnreflectedEntry
+            ? "You started writing recently. You can return gently, or leave it as it is."
+            : "Take a few quiet minutes to write about what’s on your mind. Nothing needs fixing."}
+        </p>
+
+        <div className="mt-4 flex flex-wrap gap-3">
+          {hasUnreflectedEntry ? (
+            <Link
+              href={`/journal/${latest.id}`}
+              className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-300"
+            >
+              Continue reflection
+            </Link>
+          ) : (
             <Link
               href="/journal/new"
               className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-300"
             >
               Start a new reflection
             </Link>
+          )}
 
-            <Link
-              href="/journal"
-              className="rounded-full bg-slate-800 px-5 py-2.5 text-sm text-slate-100 hover:bg-slate-700"
-            >
-              View journal history
-            </Link>
-          </div>
-        </div>
-
-        {/* Plan & tools */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5">
-          <h2 className="text-sm font-semibold text-slate-100">
-            Your plan & tools
-          </h2>
-
-          <div className="mt-4 space-y-2 text-xs text-slate-300">
-            {isPremium ? (
-              <>
-                <p>
-                  You have access to{" "}
-                  <span className="font-semibold text-emerald-300">
-                    Premium tools
-                  </span>{" "}
-                  including deeper reflections and timelines.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Link
-                    href="/tools"
-                    className="rounded-full border border-slate-700 px-4 py-2 text-xs text-slate-200 hover:bg-slate-800"
-                  >
-                    Explore tools
-                  </Link>
-                  <Link
-                    href="/insights"
-                    className="rounded-full border border-slate-700 px-4 py-2 text-xs text-slate-200 hover:bg-slate-800"
-                  >
-                    View insights
-                  </Link>
-                </div>
-              </>
-            ) : (
-              <>
-                <p>
-                  You’re on the{" "}
-                  <span className="font-semibold text-slate-100">Free</span>{" "}
-                  plan — perfect for regular journaling. Premium adds clearer
-                  timelines and deeper, multi-entry reflections.
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Link
-                    href="/upgrade"
-                    className="rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-400"
-                  >
-                    Explore Premium
-                  </Link>
-                </div>
-              </>
-            )}
-          </div>
+          <Link
+            href="/journal"
+            className="rounded-full bg-slate-800 px-5 py-2.5 text-sm text-slate-100 hover:bg-slate-700"
+          >
+            View journal history
+          </Link>
         </div>
       </section>
 
@@ -197,44 +153,25 @@ export default function DashboardClient({ userId }: { userId: string }) {
         </section>
       )}
 
-      {/* LATEST ENTRY */}
-      <section className="mb-10">
-        {loadingLatest && (
-          <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-6 text-sm text-slate-400">
-            Loading your latest reflection…
-          </div>
-        )}
+      {/* VALUE TEASERS */}
+      <section className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-6">
+          <h2 className="text-sm font-semibold text-slate-100">
+            Patterns, not pressure
+          </h2>
+          <p className="mt-2 text-sm text-slate-400">
+            Havenly looks for meaning over time — without turning your life into a task list.
+          </p>
+        </div>
 
-        {!loadingLatest && !latest && (
-          <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-6 text-sm text-slate-400">
-            You haven’t saved any reflections yet.
-          </div>
-        )}
-
-        {!loadingLatest && latest && (
-          <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-950/60 p-6">
-            <h2 className="text-lg font-medium text-slate-100">
-              Most recent reflection
-            </h2>
-
-            <p className="text-xs text-slate-500">
-              {new Date(latest.created_at).toLocaleString()}
-            </p>
-
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-200">
-              {latest.content && latest.content.length > 350
-                ? latest.content.slice(0, 350) + "…"
-                : latest.content}
-            </p>
-
-            <Link
-              href={`/journal/${latest.id}`}
-              className="inline-block text-sm text-emerald-400 hover:underline"
-            >
-              Read full entry →
-            </Link>
-          </div>
-        )}
+        <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-6">
+          <h2 className="text-sm font-semibold text-slate-100">
+            Return when it feels right
+          </h2>
+          <p className="mt-2 text-sm text-slate-400">
+            There are no streaks here. Just space to think, whenever you need it.
+          </p>
+        </div>
       </section>
     </div>
   );
