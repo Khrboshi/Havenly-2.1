@@ -20,9 +20,14 @@ export default function DashboardClient({ userId }: { userId: string }) {
   const [latest, setLatest] = useState<JournalEntry | null>(null);
   const [loadingLatest, setLoadingLatest] = useState(true);
 
-  const email = session?.user?.email ?? "your account";
+  const email = session?.user?.email ?? null;
 
+  // -----------------------------
+  // Load latest journal entry
+  // -----------------------------
   useEffect(() => {
+    let cancelled = false;
+
     async function loadLatest() {
       setLoadingLatest(true);
 
@@ -34,13 +39,22 @@ export default function DashboardClient({ userId }: { userId: string }) {
         .limit(1)
         .maybeSingle();
 
-      setLatest(data ?? null);
-      setLoadingLatest(false);
+      if (!cancelled) {
+        setLatest(data ?? null);
+        setLoadingLatest(false);
+      }
     }
 
     loadLatest();
+
+    return () => {
+      cancelled = true;
+    };
   }, [supabase, userId]);
 
+  // -----------------------------
+  // Plan & credits logic
+  // -----------------------------
   const readablePlan =
     planType === "PREMIUM"
       ? "Premium"
@@ -49,22 +63,26 @@ export default function DashboardClient({ userId }: { userId: string }) {
       : "Free";
 
   const isPremium = planType === "PREMIUM" || planType === "TRIAL";
-  const planLabel = planLoading ? "Checking plan…" : `${readablePlan} plan`;
 
-  const numericCredits = typeof credits === "number" ? credits : null;
+  const numericCredits =
+    typeof credits === "number" && credits >= 0 ? credits : null;
+
   const showCreditNudge =
     !planLoading &&
     !isPremium &&
-    typeof numericCredits === "number" &&
+    numericCredits !== null &&
     numericCredits <= 3;
 
+  // -----------------------------
+  // Render
+  // -----------------------------
   return (
     <div className="mx-auto max-w-5xl px-6 pt-24 pb-24 text-slate-200">
       {/* HEADER */}
       <section className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">
-            Welcome back{email ? `, ${email.split("@")[0]}` : ""} 👋
+            Welcome back{email ? `, ${email.split("@")[0]}` : ""}.
           </h1>
           <p className="mt-1 text-sm text-slate-400">
             A calm space to see how you’ve been doing and decide what you need today.
@@ -73,14 +91,17 @@ export default function DashboardClient({ userId }: { userId: string }) {
 
         <div className="flex flex-col items-start gap-2 text-xs sm:items-end">
           <span className="inline-flex items-center rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1 text-[11px] font-medium text-slate-200">
-            {planLabel}
+            {planLoading ? "Checking plan…" : `${readablePlan} plan`}
           </span>
-          <span className="text-[11px] text-slate-500">
-            Credits available:{" "}
-            <span className="font-medium text-slate-200">
-              {numericCredits ?? 0}
+
+          {!planLoading && !isPremium && (
+            <span className="text-[11px] text-slate-500">
+              Credits available:{" "}
+              <span className="font-medium text-slate-200">
+                {numericCredits ?? 0}
+              </span>
             </span>
-          </span>
+          )}
         </div>
       </section>
 
@@ -118,9 +139,6 @@ export default function DashboardClient({ userId }: { userId: string }) {
           <h2 className="text-sm font-semibold text-slate-100">
             Your plan & tools
           </h2>
-          <p className="mt-2 text-xs text-slate-400">
-            Havenly adapts to how deeply you want to explore your patterns.
-          </p>
 
           <div className="mt-4 space-y-2 text-xs text-slate-300">
             {isPremium ? (
@@ -133,12 +151,6 @@ export default function DashboardClient({ userId }: { userId: string }) {
                   including deeper reflections and timelines.
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <Link
-                    href="/premium"
-                    className="rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-400"
-                  >
-                    Open Premium hub
-                  </Link>
                   <Link
                     href="/tools"
                     className="rounded-full border border-slate-700 px-4 py-2 text-xs text-slate-200 hover:bg-slate-800"
@@ -168,16 +180,7 @@ export default function DashboardClient({ userId }: { userId: string }) {
                   >
                     Explore Premium
                   </Link>
-                  <Link
-                    href="/insights/preview"
-                    className="rounded-full border border-slate-700 px-4 py-2 text-xs text-slate-200 hover:bg-slate-800"
-                  >
-                    Preview insights
-                  </Link>
                 </div>
-                <p className="mt-2 text-[11px] text-slate-500">
-                  No pressure to upgrade — Free remains fully usable on its own.
-                </p>
               </>
             )}
           </div>
@@ -232,37 +235,6 @@ export default function DashboardClient({ userId }: { userId: string }) {
             </Link>
           </div>
         )}
-      </section>
-
-      {/* VALUE TEASERS */}
-      <section className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-6">
-          <h2 className="text-sm font-semibold text-slate-100">
-            Your patterns over time
-          </h2>
-          <p className="mt-2 text-sm text-slate-400">
-            Havenly will surface gentle timelines and themes — without turning
-            your life into a productivity project.
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-6">
-          <h2 className="text-sm font-semibold text-slate-100">
-            What’s coming next
-          </h2>
-          <p className="mt-2 text-sm text-slate-400">
-            Upcoming Premium tools include richer weekly reviews and calmer
-            summaries.
-          </p>
-          {!isPremium && (
-            <Link
-              href="/upgrade"
-              className="mt-3 inline-flex rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-400"
-            >
-              See Premium roadmap
-            </Link>
-          )}
-        </div>
       </section>
     </div>
   );
