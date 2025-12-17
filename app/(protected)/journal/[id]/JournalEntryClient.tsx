@@ -23,9 +23,7 @@ type Reflection = {
 export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
   const { planType, credits, renewalDate, loading, refresh } = useUserPlan();
 
-  // ✅ PREMIUM = PREMIUM + TRIAL (consistent everywhere)
-  const isPremium = planType === "PREMIUM" || planType === "TRIAL";
-  const numericCredits = typeof credits === "number" ? credits : 0;
+  const isPremium = planType === "PREMIUM";
 
   const [busy, setBusy] = useState(false);
   const [reflection, setReflection] = useState<Reflection | null>(null);
@@ -40,15 +38,9 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
 
   async function generateReflection() {
     if (busy) return;
-    setError(null);
-
-    // 🚫 STEP 2B — AI LIMIT ENFORCED HERE ONLY
-    if (!isPremium && !loading && numericCredits <= 0) {
-      setShowUpgrade(true);
-      return;
-    }
 
     setBusy(true);
+    setError(null);
 
     try {
       const res = await fetch("/api/ai/reflection", {
@@ -61,7 +53,7 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
         }),
       });
 
-      // Server-side enforcement fallback
+      // 🔒 SERVER IS THE ONLY GATE
       if (res.status === 402) {
         setShowUpgrade(true);
         return;
@@ -76,7 +68,7 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
       const j = await res.json();
       setReflection(j?.reflection || null);
 
-      // Refresh credits AFTER successful use
+      // sync credits AFTER server consumption
       await refresh();
     } catch {
       setError("We couldn't generate a reflection right now.");
@@ -97,10 +89,7 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
           </p>
         </div>
 
-        <Link
-          href="/journal"
-          className="text-sm text-emerald-400 hover:underline"
-        >
+        <Link href="/journal" className="text-sm text-emerald-400 hover:underline">
           ← Back to journal
         </Link>
       </header>
@@ -109,7 +98,6 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
         {entry.content}
       </article>
 
-      {/* AI REFLECTION — ONLY PLACE WHERE LIMIT EXISTS */}
       <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -122,14 +110,14 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
                   {" "}
                   · Reflections left:{" "}
                   <span className="text-emerald-300">
-                    {loading ? "…" : numericCredits}
+                    {loading ? "…" : credits}
                   </span>
-                  {renewalDate ? (
+                  {renewalDate && (
                     <span className="text-white/50">
                       {" "}
                       (renews {renewalDate})
                     </span>
-                  ) : null}
+                  )}
                 </>
               ) : (
                 <span className="text-white/50"> · Unlimited</span>
@@ -146,14 +134,12 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
           </button>
         </div>
 
-        {error && (
-          <p className="mt-4 text-sm text-red-300">{error}</p>
-        )}
+        {error && <p className="mt-4 text-sm text-red-300">{error}</p>}
 
         {!reflection ? (
           <p className="mt-4 text-sm text-white/60">
-            When you’re ready, Havenly will reflect back themes, emotions,
-            and a gentle next step.
+            When you’re ready, Havenly will reflect back themes, emotions, and a
+            gentle next step.
           </p>
         ) : (
           <div className="mt-5 space-y-4 text-sm text-white/80">
@@ -167,7 +153,7 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
                   Themes
                 </h3>
                 <ul className="mt-2 list-disc space-y-1 pl-5">
-                  {reflection.themes?.map((t, i) => (
+                  {reflection.themes.map((t, i) => (
                     <li key={i}>{t}</li>
                   ))}
                 </ul>
@@ -178,7 +164,7 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
                   Emotions
                 </h3>
                 <ul className="mt-2 list-disc space-y-1 pl-5">
-                  {reflection.emotions?.map((e, i) => (
+                  {reflection.emotions.map((e, i) => (
                     <li key={i}>{e}</li>
                   ))}
                 </ul>
@@ -197,7 +183,7 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
                 Two questions
               </h3>
               <ul className="mt-2 list-disc space-y-1 pl-5">
-                {reflection.questions?.map((q, i) => (
+                {reflection.questions.map((q, i) => (
                   <li key={i}>{q}</li>
                 ))}
               </ul>
