@@ -6,66 +6,51 @@ import { generateReflectionFromEntry } from "@/lib/ai/generateReflection";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
+  const supabase = createServerSupabase();
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const userId = session.user.id;
+  const body = await req.json();
+
+  /**
+   * 🔒 CREDIT ENFORCEMENT — SINGLE SOURCE OF TRUTH
+   */
+  const creditResult = await decrementCreditIfAllowed({
+    supabase,
+    userId,
+    feature: "ai_reflection",
+  });
+
+  if (!creditResult.ok) {
+    return NextResponse.json(
+      { error: creditResult.reason || "Reflection limit reached" },
+      { status: 402 }
+    );
+  }
+
+  /**
+   * 🧠 AI GENERATION (only reached if credit allowed)
+   */
   try {
-    const supabase = createServerSupabase();
-
-    const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
-
-    if (sessionError || !session?.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    const userId = session.user.id;
-    const body = await req.json();
-
-    const { entryId, content, title } = body;
-
-    if (!entryId || !content) {
-      return NextResponse.json(
-        { error: "Invalid request" },
-        { status: 400 }
-      );
-    }
-
-    /**
-     * 🔒 CREDIT ENFORCEMENT — SINGLE SOURCE OF TRUTH
-     */
-    const creditResult = await decrementCreditIfAllowed({
-      supabase,
-      userId,
-      feature: "ai_reflection",
-    });
-
-    if (!creditResult.allowed) {
-      return NextResponse.json(
-        { error: "Reflection limit reached" },
-        { status: 402 }
-      );
-    }
-
-    /**
-     * 🤖 AI GENERATION
-     */
     const reflection = await generateReflectionFromEntry({
-      title,
-      content,
+      content: body.content,
+      title: body.title,
     });
 
     return NextResponse.json({
       reflection,
+      remainingCredits: creditResult.remaining,
     });
   } catch (err) {
-    console.error("AI reflection error:", err);
-
-    // IMPORTANT: never leak 500 to client for credit issues
     return NextResponse.json(
-      { error: "Unable to generate reflection" },
+      { error: "Failed to generate reflection" },
       { status: 500 }
     );
   }
