@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { ensureCreditsFresh } from "@/lib/creditRules";
+import { decrementCreditIfAllowed } from "@/lib/creditRules";
 import { generateReflectionFromEntry } from "@/lib/ai/generateReflection";
 
 export const dynamic = "force-dynamic";
@@ -20,29 +20,20 @@ export async function POST(req: Request) {
   const body = await req.json();
 
   /**
-   * 🔒 STEP 1: Ensure credits are fresh
+   * 🔒 STEP 1: Attempt credit consumption (single source of truth)
+   * This handles:
+   * - credit existence
+   * - renewal
+   * - plan type
+   * - RLS safely
    */
-  await ensureCreditsFresh({ supabase, userId });
+  const creditResult = await decrementCreditIfAllowed({
+    supabase,
+    userId,
+    feature: "ai_reflection",
+  });
 
-  /**
-   * 🔍 STEP 2: Read credits WITHOUT mutating
-   */
-  const { data: creditsRow, error } = await supabase
-    .from("user_credits")
-    .select("credits, plan_type")
-    .eq("user_id", userId)
-    .single();
-
-  if (error || !creditsRow) {
-    return NextResponse.json(
-      { error: "Unable to verify credits" },
-      { status: 500 }
-    );
-  }
-
-  const isPremium = creditsRow.plan_type === "PREMIUM";
-
-  if (!isPremium && creditsRow.credits <= 0) {
+  if (!creditResult.ok) {
     return NextResponse.json(
       { error: "Reflection limit reached" },
       { status: 402 }
@@ -50,37 +41,33 @@ export async function POST(req: Request) {
   }
 
   /**
-   * 🧠 STEP 3: Generate AI reflection
+   * 🧠 STEP 2: Generate AI reflection
    */
-  let reflection;
   try {
-    reflection = await generateReflectionFromEntry({
+    const reflection = await generateReflectionFromEntry({
       content: body.content,
       title: body.title,
     });
-  } catch {
+
+    return NextResponse.json({
+      reflection,
+      remainingCredits: creditResult.remaining,
+    });
+  } catch (err) {
+    /**
+     * ⚠️ IMPORTANT SAFETY NET
+     * If AI generation fails, restore the consumed credit
+     */
+    await supabase
+      .from("user_credits")
+      .update({
+        credits: (creditResult.remaining ?? 0) + 1,
+      })
+      .eq("user_id", userId);
+
     return NextResponse.json(
       { error: "Failed to generate reflection" },
       { status: 500 }
     );
   }
-
-  /**
-   * ➖ STEP 4: Decrement credits ONLY after success (Free users)
-   */
-  if (!isPremium) {
-    const remaining = Math.max(creditsRow.credits - 1, 0);
-
-    await supabase
-      .from("user_credits")
-      .update({ credits: remaining })
-      .eq("user_id", userId);
-  }
-
-  /**
-   * ✅ STEP 5: Respond
-   */
-  return NextResponse.json({
-    reflection,
-  });
 }
