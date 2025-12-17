@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
+import { useSupabase } from "@/app/components/SupabaseSessionProvider";
 
 interface UpgradeTriggerModalProps {
   open: boolean;
   onClose: () => void;
-
-  // Optional props already used elsewhere in the app
   title?: string;
   message?: string;
   source?: string;
@@ -19,9 +19,23 @@ export default function UpgradeTriggerModal({
   onClose,
   title = "You’ve used your free AI reflections",
   message = "The Free plan includes 3 AI reflections per month. Premium unlocks unlimited reflections and deeper insights.",
+  source = "unknown",
   ctaHref = "/upgrade",
   ctaLabel = "Unlock Premium",
 }: UpgradeTriggerModalProps) {
+  const { supabase, session } = useSupabase();
+
+  useEffect(() => {
+    if (!open) return;
+
+    supabase.from("analytics_events").insert({
+      user_id: session?.user?.id ?? null,
+      event: "upgrade_modal_shown",
+      source,
+      created_at: new Date().toISOString(),
+    });
+  }, [open, supabase, session, source]);
+
   if (!open) return null;
 
   return (
@@ -39,6 +53,14 @@ export default function UpgradeTriggerModal({
         <div className="mt-6 flex gap-3">
           <Link
             href={ctaHref}
+            onClick={() => {
+              supabase.from("analytics_events").insert({
+                user_id: session?.user?.id ?? null,
+                event: "upgrade_clicked",
+                source,
+                created_at: new Date().toISOString(),
+              });
+            }}
             className="flex-1 rounded-full bg-emerald-400 px-5 py-2.5 text-center text-sm font-semibold text-slate-900 hover:bg-emerald-300"
           >
             {ctaLabel}
