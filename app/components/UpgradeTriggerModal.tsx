@@ -28,7 +28,8 @@ export default function UpgradeTriggerModal({
   useEffect(() => {
     if (!open) return;
 
-    supabase.from("analytics_events").insert({
+    // Type-safe runtime insert without requiring regenerated Supabase types
+    (supabase.from("analytics_events") as unknown as any).insert({
       user_id: session?.user?.id ?? null,
       event: "upgrade_modal_shown",
       source,
@@ -54,7 +55,7 @@ export default function UpgradeTriggerModal({
           <Link
             href={ctaHref}
             onClick={() => {
-              supabase.from("analytics_events").insert({
+              (supabase.from("analytics_events") as unknown as any).insert({
                 user_id: session?.user?.id ?? null,
                 event: "upgrade_clicked",
                 source,
