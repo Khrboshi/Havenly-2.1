@@ -4,27 +4,39 @@ import { createServerSupabase } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 
 /**
- * Records user intent to upgrade (NO payments).
- * Used to validate real demand before enabling Stripe.
+ * Telemetry endpoint for upgrade intent
+ * - Records modal views & clicks
+ * - Never blocks UX
+ * - Used ONLY for decision-making (Stripe later)
  */
 export async function POST(req: Request) {
-  const supabase = await createServerSupabase();
+  try {
+    const supabase = await createServerSupabase();
+    const body = await req.json();
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    const {
+      event,
+      source = "unknown",
+      path = "",
+      ts = new Date().toISOString(),
+    } = body ?? {};
 
-  if (!session?.user) {
-    return NextResponse.json({ ok: true }); // anonymous intent ignored
+    // Try to associate with user if logged in
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    await supabase.from("upgrade_intents").insert({
+      user_id: user?.id ?? null,
+      event,
+      source,
+      path,
+      created_at: ts,
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("upgrade-intent telemetry error", err);
+    return NextResponse.json({ ok: true });
   }
-
-  const body = await req.json().catch(() => ({}));
-  const source = body?.source ?? "unknown";
-
-  await supabase.from("upgrade_intents").insert({
-    user_id: session.user.id,
-    source,
-  });
-
-  return NextResponse.json({ ok: true });
 }
