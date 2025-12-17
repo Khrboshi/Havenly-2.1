@@ -5,37 +5,43 @@ import Link from "next/link";
 interface UpgradeTriggerModalProps {
   open: boolean;
   onClose: () => void;
+
+  // Optional props already used elsewhere in the app
+  title?: string;
+  message?: string;
+  source?: string;
+  ctaHref?: string;
+  ctaLabel?: string;
 }
 
 export default function UpgradeTriggerModal({
   open,
   onClose,
+  title = "You’ve used your free AI reflections",
+  message = "The Free plan includes 3 AI reflections per month. Premium unlocks unlimited reflections and deeper insights.",
+  ctaHref = "/upgrade",
+  ctaLabel = "Unlock Premium",
 }: UpgradeTriggerModalProps) {
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
       <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 text-slate-200 shadow-xl">
-        <h2 className="text-lg font-semibold">
-          You’ve used your free AI reflections
-        </h2>
+        <h2 className="text-lg font-semibold">{title}</h2>
+
+        <p className="mt-3 text-sm text-slate-400">{message}</p>
 
         <p className="mt-3 text-sm text-slate-400">
-          The Free plan includes <strong>3 AI reflections per month</strong>.
-          You can continue journaling freely, but AI insights pause here.
-        </p>
-
-        <p className="mt-3 text-sm text-slate-400">
-          Premium unlocks unlimited AI reflections and deeper insights that grow
-          with your reflections over time.
+          You can continue journaling freely. AI reflections resume immediately
+          with Premium.
         </p>
 
         <div className="mt-6 flex gap-3">
           <Link
-            href="/upgrade"
+            href={ctaHref}
             className="flex-1 rounded-full bg-emerald-400 px-5 py-2.5 text-center text-sm font-semibold text-slate-900 hover:bg-emerald-300"
           >
-            Unlock Premium
+            {ctaLabel}
           </Link>
 
           <button
