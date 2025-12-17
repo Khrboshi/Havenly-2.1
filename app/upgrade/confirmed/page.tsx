@@ -5,20 +5,16 @@ import { createServerSupabase } from "@/lib/supabase/server";
 
 export default async function UpgradeConfirmedPage() {
   const supabase = createServerSupabase();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { data: { session } } = await supabase.auth.getSession();
 
   if (!session) {
     return (
       <main className="min-h-screen bg-slate-950 px-6 py-24 text-white">
         <div className="mx-auto max-w-xl text-center space-y-4">
-          <h1 className="text-2xl font-semibold">
-            Please sign in to continue
-          </h1>
+          <h1 className="text-2xl font-semibold">Please sign in to continue</h1>
           <Link
             href="/magic-login"
-            className="inline-flex rounded-full bg-emerald-400 px-6 py-2.5 font-semibold text-slate-950 hover:bg-emerald-300"
+            className="rounded-full bg-emerald-400 px-6 py-2.5 font-semibold text-slate-950"
           >
             Sign in
           </Link>
@@ -30,30 +26,30 @@ export default async function UpgradeConfirmedPage() {
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-24 text-white">
       <div className="mx-auto max-w-xl space-y-6">
-        <p className="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+        <p className="inline-flex rounded-full bg-emerald-500/10 px-3 py-1 text-xs text-emerald-300">
           Almost there
         </p>
 
         <h1 className="text-3xl font-semibold">
-          You’re ready to unlock Havenly Premium
+          You’re ready to unlock Premium
         </h1>
 
         <p className="text-sm text-white/70">
-          Premium gives you unlimited reflections, deeper insights across entries,
-          and calmer emotional timelines. You can continue when it feels right.
+          Premium increases your monthly reflection allowance and gives you
+          priority access to deeper insight tools as they’re released.
         </p>
 
-        <div className="flex flex-wrap gap-3 pt-2">
+        <div className="flex gap-3">
           <Link
             href="/settings/billing"
-            className="rounded-full bg-emerald-400 px-6 py-2.5 font-semibold text-slate-950 hover:bg-emerald-300"
+            className="rounded-full bg-emerald-400 px-6 py-2.5 font-semibold text-slate-950"
           >
             Continue to billing
           </Link>
 
           <Link
             href="/dashboard"
-            className="rounded-full border border-slate-700 px-6 py-2.5 font-semibold text-slate-100 hover:border-slate-500 hover:bg-slate-900"
+            className="rounded-full border border-slate-700 px-6 py-2.5"
           >
             Back to dashboard
           </Link>
