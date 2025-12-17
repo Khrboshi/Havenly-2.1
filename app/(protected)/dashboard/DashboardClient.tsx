@@ -20,7 +20,10 @@ export default function DashboardClient({ userId }: { userId: string }) {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loadingEntries, setLoadingEntries] = useState(true);
 
-  const email = session?.user?.email ?? "your account";
+  const email = session?.user?.email ?? "";
+  const numericCredits = typeof credits === "number" ? credits : 0;
+
+  const isPremium = planType === "PREMIUM" || planType === "TRIAL";
 
   useEffect(() => {
     async function loadEntries() {
@@ -42,16 +45,6 @@ export default function DashboardClient({ userId }: { userId: string }) {
 
   const latest = entries[0] ?? null;
 
-  const readablePlan =
-    planType === "PREMIUM"
-      ? "Premium"
-      : planType === "TRIAL"
-      ? "Trial"
-      : "Free";
-
-  const isPremium = planType === "PREMIUM" || planType === "TRIAL";
-  const numericCredits = typeof credits === "number" ? credits : 0;
-
   const entriesThisWeek = useMemo(() => {
     const startOfWeek = new Date();
     startOfWeek.setHours(0, 0, 0, 0);
@@ -59,6 +52,24 @@ export default function DashboardClient({ userId }: { userId: string }) {
 
     return entries.filter((e) => new Date(e.created_at) >= startOfWeek);
   }, [entries]);
+
+  /** STEP 2A — Primary dashboard action logic */
+  const primaryAction =
+    numericCredits > 0 ? (
+      <Link
+        href="/journal/new"
+        className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-300"
+      >
+        Start a new reflection
+      </Link>
+    ) : (
+      <Link
+        href="/journal"
+        className="rounded-full bg-slate-800 px-5 py-2.5 text-sm text-slate-100 hover:bg-slate-700"
+      >
+        View journal history
+      </Link>
+    );
 
   return (
     <div className="mx-auto max-w-5xl px-6 pt-24 pb-24 text-slate-200">
@@ -74,7 +85,7 @@ export default function DashboardClient({ userId }: { userId: string }) {
         </div>
 
         <div className="text-xs text-slate-400">
-          {planLoading ? "Checking plan…" : `${readablePlan} plan`}
+          {planLoading ? "Checking plan…" : `${isPremium ? "Premium" : "Free"} plan`}
           <span className="ml-2 text-slate-300">
             · Credits: {numericCredits}
           </span>
@@ -91,12 +102,7 @@ export default function DashboardClient({ userId }: { userId: string }) {
         </p>
 
         <div className="mt-4 flex flex-wrap gap-3">
-          <Link
-            href="/journal/new"
-            className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-300"
-          >
-            Start a new reflection
-          </Link>
+          {primaryAction}
 
           <Link
             href="/journal"
@@ -116,7 +122,7 @@ export default function DashboardClient({ userId }: { userId: string }) {
 
           <p className="mt-2 text-sm text-slate-400">
             {entriesThisWeek.length === 0
-              ? "No entries yet this week."
+              ? "No reflections yet this week."
               : `You’ve written ${entriesThisWeek.length} reflection${
                   entriesThisWeek.length > 1 ? "s" : ""
                 } this week.`}
@@ -145,7 +151,7 @@ export default function DashboardClient({ userId }: { userId: string }) {
         </div>
       </section>
 
-      {/* LATEST ENTRY */}
+      {/* LATEST ENTRY / EMPTY STATE */}
       <section className="mb-8">
         {loadingEntries && (
           <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-6 text-sm text-slate-400">
@@ -153,9 +159,9 @@ export default function DashboardClient({ userId }: { userId: string }) {
           </div>
         )}
 
-        {!loadingEntries && !latest && (
+        {!loadingEntries && entries.length === 0 && (
           <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-6 text-sm text-slate-400">
-            Your reflections will appear here when you start writing.
+            Your space is ready. Your first reflection can be short.
           </div>
         )}
 
@@ -185,8 +191,8 @@ export default function DashboardClient({ userId }: { userId: string }) {
         )}
       </section>
 
-      {/* UPGRADE NUDGE */}
-      {!isPremium && (
+      {/* UPGRADE NUDGE — ONLY WHEN IT MAKES SENSE */}
+      {!isPremium && numericCredits > 0 && (
         <UpgradeNudge
           credits={numericCredits}
           variant={numericCredits <= 3 ? "credits" : "default"}
