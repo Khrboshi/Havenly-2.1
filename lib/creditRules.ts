@@ -1,6 +1,6 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 
-const FREE_MONTHLY_CREDITS = 5;
+const FREE_MONTHLY_CREDITS = 3;
 
 function getNextRenewalDate(from: Date) {
   const d = new Date(from);
@@ -8,9 +8,40 @@ function getNextRenewalDate(from: Date) {
   return d;
 }
 
+async function ensureCreditRowExists({
+  supabase,
+  userId,
+}: {
+  supabase: SupabaseClient;
+  userId: string;
+}) {
+  const { data } = await supabase
+    .from("user_credits")
+    .select("user_id")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (data?.user_id) return;
+
+  const now = new Date();
+
+  // Create a safe default row for new users.
+  await supabase.from("user_credits").upsert(
+    {
+      user_id: userId,
+      plan_type: "FREE",
+      credits: FREE_MONTHLY_CREDITS,
+      renewal_date: getNextRenewalDate(now).toISOString(),
+      updated_at: now.toISOString(),
+    },
+    { onConflict: "user_id" }
+  );
+}
+
 /**
  * Ensures credits are reset if renewal date has passed.
- * This is SAFE to call multiple times.
+ * SAFE to call multiple times.
+ * Also provisions a user_credits row if missing.
  */
 export async function ensureCreditsFresh({
   supabase,
@@ -19,6 +50,8 @@ export async function ensureCreditsFresh({
   supabase: SupabaseClient;
   userId: string;
 }) {
+  await ensureCreditRowExists({ supabase, userId });
+
   const { data, error } = await supabase
     .from("user_credits")
     .select("credits, renewal_date, plan_type")
@@ -28,9 +61,7 @@ export async function ensureCreditsFresh({
   if (error || !data) return;
 
   const now = new Date();
-  const renewalDate = data.renewal_date
-    ? new Date(data.renewal_date)
-    : null;
+  const renewalDate = data.renewal_date ? new Date(data.renewal_date) : null;
 
   if (!renewalDate || now < renewalDate) return;
 
