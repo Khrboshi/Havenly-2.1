@@ -1,50 +1,39 @@
+"use client";
+
 import Link from "next/link";
 
-type Props = {
-  credits?: number | null;
+interface UpgradeNudgeProps {
+  credits: number;
   variant?: "default" | "credits";
-};
+}
 
-export default function UpgradeNudge({ credits = null, variant = "default" }: Props) {
-  const showCredits = variant === "credits" && typeof credits === "number";
+export default function UpgradeNudge({
+  credits,
+  variant = "default",
+}: UpgradeNudgeProps) {
+  const message =
+    variant === "credits"
+      ? "You’ve reached the Free plan limit of 3 AI reflections this month."
+      : "Want deeper insights from your reflections?";
 
   return (
-    <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6">
-      <h3 className="mb-2 text-sm font-semibold text-emerald-300">
-        {showCredits ? "You’re close to the edge of your free credits" : "Seeing patterns takes time"}
-      </h3>
+    <div className="mt-10 rounded-2xl border border-slate-800 bg-slate-950/60 p-6 text-slate-200">
+      <h3 className="text-sm font-semibold">Premium unlocks more clarity</h3>
 
-      <p className="mb-4 text-sm text-slate-300">
-        {showCredits ? (
-          <>
-            You have{" "}
-            <span className="font-semibold text-slate-100">
-              {credits}
-            </span>{" "}
-            credits left. Premium adds deeper multi-entry reflections and calmer summaries so your
-            patterns become clearer—without asking you to do more.
-          </>
-        ) : (
-          <>
-            As you keep writing, Havenly begins to surface recurring themes and emotional patterns.
-            Premium adds gentle timelines and deeper summaries that help those patterns become clearer
-            — without extra effort.
-          </>
-        )}
-      </p>
+      <p className="mt-2 text-sm text-slate-400">{message}</p>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <Link
-          href="/upgrade"
-          className="rounded-full bg-emerald-400 px-5 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-300"
-        >
-          Explore Premium
-        </Link>
+      <ul className="mt-3 list-disc pl-5 text-sm text-slate-400">
+        <li>Unlimited AI reflections</li>
+        <li>Emotional patterns over time</li>
+        <li>Calmer, more intentional journaling</li>
+      </ul>
 
-        <span className="text-xs text-slate-400">
-          No pressure. Free remains fully usable.
-        </span>
-      </div>
+      <Link
+        href="/upgrade"
+        className="mt-4 inline-flex rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-300"
+      >
+        Explore Premium
+      </Link>
     </div>
   );
 }
