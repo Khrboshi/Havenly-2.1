@@ -142,3 +142,61 @@ export default function DashboardClient({ userId }: { userId: string }) {
           {!isPremium && (
             <Link
               href="/upgrade"
+              className="mt-3 inline-flex rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-400"
+            >
+              Explore Premium
+            </Link>
+          )}
+        </div>
+      </section>
+
+      {/* LATEST ENTRY */}
+      <section className="mb-8">
+        {loadingEntries && (
+          <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-6 text-sm text-slate-400">
+            Loading your reflections…
+          </div>
+        )}
+
+        {!loadingEntries && entries.length === 0 && (
+          <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-6 text-sm text-slate-400">
+            Your space is ready. Your first reflection can be short.
+          </div>
+        )}
+
+        {!loadingEntries && latest && (
+          <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-6">
+            <h3 className="text-sm font-semibold text-slate-100">
+              Most recent reflection
+            </h3>
+
+            <p className="mt-1 text-xs text-slate-500">
+              {new Date(latest.created_at).toLocaleString()}
+            </p>
+
+            <p className="mt-3 whitespace-pre-wrap text-sm text-slate-200">
+              {latest.content && latest.content.length > 300
+                ? latest.content.slice(0, 300) + "…"
+                : latest.content}
+            </p>
+
+            <Link
+              href={`/journal/${latest.id}`}
+              className="mt-3 inline-block text-sm text-emerald-400 hover:underline"
+            >
+              Read full entry →
+            </Link>
+          </div>
+        )}
+      </section>
+
+      {/* UPGRADE NUDGE */}
+      {!isPremium && (
+        <UpgradeNudge
+          credits={numericCredits}
+          variant={numericCredits === 0 ? "credits" : "default"}
+        />
+      )}
+    </div>
+  );
+}
