@@ -25,7 +25,6 @@ async function ensureCreditRowExists({
 
   const now = new Date();
 
-  // Create a safe default row for new users.
   await supabase.from("user_credits").upsert(
     {
       user_id: userId,
@@ -38,11 +37,6 @@ async function ensureCreditRowExists({
   );
 }
 
-/**
- * Ensures credits are reset if renewal date has passed.
- * SAFE to call multiple times.
- * Also provisions a user_credits row if missing.
- */
 export async function ensureCreditsFresh({
   supabase,
   userId,
@@ -52,70 +46,73 @@ export async function ensureCreditsFresh({
 }) {
   await ensureCreditRowExists({ supabase, userId });
 
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from("user_credits")
     .select("credits, renewal_date, plan_type")
     .eq("user_id", userId)
     .single();
 
-  if (error || !data) return;
+  if (!data) return;
 
   const now = new Date();
-  const renewalDate = data.renewal_date ? new Date(data.renewal_date) : null;
+  const renewalDate = data.renewal_date
+    ? new Date(data.renewal_date)
+    : null;
 
   if (!renewalDate || now < renewalDate) return;
-
-  const isPremium = data.plan_type === "PREMIUM";
 
   await supabase
     .from("user_credits")
     .update({
-      credits: isPremium ? data.credits : FREE_MONTHLY_CREDITS,
+      credits:
+        data.plan_type === "PREMIUM"
+          ? data.credits
+          : FREE_MONTHLY_CREDITS,
       renewal_date: getNextRenewalDate(now).toISOString(),
     })
     .eq("user_id", userId);
 }
 
 /**
- * SINGLE SOURCE OF TRUTH
- * - Ensures credits are fresh
- * - Decrements exactly once
+ * CHECK ONLY — does NOT mutate credits
  */
-export async function decrementCreditIfAllowed({
+export async function canConsumeCredit({
   supabase,
   userId,
-  feature,
 }: {
   supabase: SupabaseClient;
   userId: string;
-  feature: string;
-}): Promise<{ ok: boolean; remaining?: number; reason?: string }> {
+}): Promise<{ ok: boolean; credits?: number }> {
   await ensureCreditsFresh({ supabase, userId });
 
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from("user_credits")
     .select("credits, plan_type")
     .eq("user_id", userId)
     .single();
 
-  if (error || !data) {
-    return { ok: false, reason: "credits_unavailable" };
-  }
+  if (!data) return { ok: false };
 
   if (data.plan_type === "PREMIUM") {
     return { ok: true };
   }
 
   if (data.credits <= 0) {
-    return { ok: false, reason: "limit_reached" };
+    return { ok: false };
   }
 
-  const remaining = data.credits - 1;
+  return { ok: true, credits: data.credits };
+}
 
-  await supabase
-    .from("user_credits")
-    .update({ credits: remaining })
-    .eq("user_id", userId);
-
-  return { ok: true, remaining };
+/**
+ * MUTATE — called ONLY after success
+ */
+export async function consumeCredit({
+  supabase,
+  userId,
+}: {
+  supabase: SupabaseClient;
+  userId: string;
+}) {
+  await supabase.rpc("decrement_user_credit", { uid: userId });
 }
