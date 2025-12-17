@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
             name,
             value,
             ...options,
-            path: "/", // CRITICAL
+            path: "/", // REQUIRED
           });
         },
         remove(name, options) {
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
             name,
             value: "",
             ...options,
-            path: "/", // CRITICAL
+            path: "/", // REQUIRED
           });
         },
       },
