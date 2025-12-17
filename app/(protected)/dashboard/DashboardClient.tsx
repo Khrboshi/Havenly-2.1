@@ -53,8 +53,6 @@ export default function DashboardClient({ userId }: { userId: string }) {
     return entries.filter((e) => new Date(e.created_at) >= startOfWeek);
   }, [entries]);
 
-  const canStartReflection = numericCredits > 0;
-
   return (
     <div className="mx-auto max-w-5xl px-6 pt-24 pb-24 text-slate-200">
       {/* HEADER */}
@@ -69,51 +67,56 @@ export default function DashboardClient({ userId }: { userId: string }) {
         </div>
 
         <div className="text-xs text-slate-400">
-          {planLoading ? "Checking plan…" : `${isPremium ? "Premium" : "Free"} plan`}
-          <span className="ml-2 text-slate-300">· Credits: {numericCredits}</span>
+          {planLoading
+            ? "Checking plan…"
+            : `${isPremium ? "Premium" : "Free"} plan`}
+          <span className="ml-2 text-slate-300">
+            · Credits: {numericCredits}
+          </span>
         </div>
       </section>
 
       {/* TODAY */}
       <section className="mb-8 rounded-2xl border border-slate-800 bg-slate-950/60 p-6">
-        <h2 className="text-sm font-semibold text-slate-100">Today’s check-in</h2>
+        <h2 className="text-sm font-semibold text-slate-100">
+          Today’s check-in
+        </h2>
         <p className="mt-2 text-sm text-slate-400">
           You don’t need to solve anything. Just write what’s here.
         </p>
 
         <div className="mt-4 flex flex-wrap gap-3">
-          {canStartReflection ? (
-            <Link
-              href="/journal/new"
-              className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-300"
-            >
-              Start a new reflection
-            </Link>
-          ) : (
-            <Link
-              href="/journal"
-              className="rounded-full bg-slate-800 px-5 py-2.5 text-sm text-slate-100 hover:bg-slate-700"
-            >
-              View journal history
-            </Link>
-          )}
+          {/* Journaling is ALWAYS available */}
+          <Link
+            href="/journal/new"
+            className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-300"
+          >
+            Start a new reflection
+          </Link>
 
-          {/* IMPORTANT: avoid duplicate button when credits = 0 */}
-          {canStartReflection && (
-            <Link
-              href="/journal"
-              className="rounded-full bg-slate-800 px-5 py-2.5 text-sm text-slate-100 hover:bg-slate-700"
-            >
-              View journal history
-            </Link>
-          )}
+          <Link
+            href="/journal"
+            className="rounded-full bg-slate-800 px-5 py-2.5 text-sm text-slate-100 hover:bg-slate-700"
+          >
+            View journal history
+          </Link>
         </div>
+
+        {/* Gentle note when credits are exhausted */}
+        {!isPremium && numericCredits === 0 && (
+          <p className="mt-3 text-xs text-slate-500">
+            Free journaling is always available. AI reflections are limited on
+            the Free plan.
+          </p>
+        )}
       </section>
 
       {/* THIS WEEK */}
       <section className="mb-8 grid gap-4 md:grid-cols-2">
         <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
-          <h3 className="text-sm font-semibold text-slate-100">This week so far</h3>
+          <h3 className="text-sm font-semibold text-slate-100">
+            This week so far
+          </h3>
 
           <p className="mt-2 text-sm text-slate-400">
             {entriesThisWeek.length === 0
@@ -125,7 +128,9 @@ export default function DashboardClient({ userId }: { userId: string }) {
         </div>
 
         <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
-          <h3 className="text-sm font-semibold text-slate-100">Insight preview</h3>
+          <h3 className="text-sm font-semibold text-slate-100">
+            Insight preview
+          </h3>
 
           <p className="mt-2 text-sm text-slate-400">
             {isPremium
@@ -144,7 +149,7 @@ export default function DashboardClient({ userId }: { userId: string }) {
         </div>
       </section>
 
-      {/* LATEST ENTRY / EMPTY STATE */}
+      {/* LATEST ENTRY */}
       <section className="mb-8">
         {loadingEntries && (
           <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-6 text-sm text-slate-400">
@@ -184,11 +189,11 @@ export default function DashboardClient({ userId }: { userId: string }) {
         )}
       </section>
 
-      {/* UPGRADE NUDGE — ONLY WHEN IT MAKES SENSE */}
-      {!isPremium && numericCredits > 0 && (
+      {/* UPGRADE NUDGE */}
+      {!isPremium && (
         <UpgradeNudge
           credits={numericCredits}
-          variant={numericCredits <= 3 ? "credits" : "default"}
+          variant={numericCredits === 0 ? "credits" : "default"}
         />
       )}
     </div>
