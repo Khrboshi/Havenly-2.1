@@ -1,29 +1,54 @@
-// lib/creditRules.ts
-
 import { SupabaseClient } from "@supabase/supabase-js";
 
-export type PlanType = "FREE" | "PREMIUM" | "TRIAL";
+const FREE_MONTHLY_CREDITS = 5;
 
-export const PLAN_CREDIT_ALLOWANCES: Record<PlanType, number> = {
-  FREE: 20,
-  PREMIUM: 300,
-  TRIAL: 300,
-};
-
-/**
- * Computes the next monthly renewal date.
- */
-export function computeNextRenewalDate(): string {
-  const now = new Date();
-  const next = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
-  return next.toISOString();
+function getNextRenewalDate(from: Date) {
+  const d = new Date(from);
+  d.setMonth(d.getMonth() + 1);
+  return d;
 }
 
 /**
- * 🔒 SINGLE SOURCE OF TRUTH — CREDIT ENFORCEMENT
- *
- * Called ONLY from server routes.
- * Client never decides credit usage.
+ * Ensures credits are reset if renewal date has passed.
+ * This is SAFE to call multiple times.
+ */
+export async function ensureCreditsFresh({
+  supabase,
+  userId,
+}: {
+  supabase: SupabaseClient;
+  userId: string;
+}) {
+  const { data, error } = await supabase
+    .from("user_credits")
+    .select("credits, renewal_date, plan_type")
+    .eq("user_id", userId)
+    .single();
+
+  if (error || !data) return;
+
+  const now = new Date();
+  const renewalDate = data.renewal_date
+    ? new Date(data.renewal_date)
+    : null;
+
+  if (!renewalDate || now < renewalDate) return;
+
+  const isPremium = data.plan_type === "PREMIUM";
+
+  await supabase
+    .from("user_credits")
+    .update({
+      credits: isPremium ? data.credits : FREE_MONTHLY_CREDITS,
+      renewal_date: getNextRenewalDate(now).toISOString(),
+    })
+    .eq("user_id", userId);
+}
+
+/**
+ * SINGLE SOURCE OF TRUTH
+ * - Ensures credits are fresh
+ * - Decrements exactly once
  */
 export async function decrementCreditIfAllowed({
   supabase,
@@ -32,46 +57,34 @@ export async function decrementCreditIfAllowed({
 }: {
   supabase: SupabaseClient;
   userId: string;
-  feature: "ai_reflection";
-}): Promise<{
-  ok: boolean;
-  remaining?: number;
-  reason?: string;
-}> {
-  // Load user plan
-  const { data: plan, error } = await supabase
-    .from("user_plans")
-    .select("plan_type, credits")
+  feature: string;
+}): Promise<{ ok: boolean; remaining?: number; reason?: string }> {
+  await ensureCreditsFresh({ supabase, userId });
+
+  const { data, error } = await supabase
+    .from("user_credits")
+    .select("credits, plan_type")
     .eq("user_id", userId)
     .single();
 
-  if (error || !plan) {
-    return { ok: false, reason: "Unable to verify credits" };
+  if (error || !data) {
+    return { ok: false, reason: "credits_unavailable" };
   }
 
-  // Premium / Trial = unlimited
-  if (plan.plan_type === "PREMIUM" || plan.plan_type === "TRIAL") {
+  if (data.plan_type === "PREMIUM") {
     return { ok: true };
   }
 
-  // Free plan enforcement
-  if (plan.credits <= 0) {
-    return { ok: false, reason: "No credits remaining" };
+  if (data.credits <= 0) {
+    return { ok: false, reason: "limit_reached" };
   }
 
-  // Atomic decrement (race-safe)
-  const { error: updateError } = await supabase
-    .from("user_plans")
-    .update({ credits: plan.credits - 1 })
-    .eq("user_id", userId)
-    .eq("credits", plan.credits);
+  const remaining = data.credits - 1;
 
-  if (updateError) {
-    return { ok: false, reason: "Credit update failed" };
-  }
+  await supabase
+    .from("user_credits")
+    .update({ credits: remaining })
+    .eq("user_id", userId);
 
-  return {
-    ok: true,
-    remaining: plan.credits - 1,
-  };
+  return { ok: true, remaining };
 }
