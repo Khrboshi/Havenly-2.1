@@ -7,8 +7,9 @@ import { createServerSupabase } from "@/lib/supabase/server";
  * UpgradePage
  *
  * ✔ Structure preserved
+ * ✔ Auth logic preserved
  * ✔ CTAs preserved
- * ✔ Only copy alignment fixed
+ * ✔ Copy aligned with Free (3/month) vs Premium (unlimited)
  */
 
 export default async function UpgradePage() {
@@ -37,9 +38,9 @@ export default async function UpgradePage() {
             </h1>
 
             <p className="mt-3 max-w-xl text-sm text-slate-300">
-              Premium expands what you already use in Havenly — higher reflection
-              limits, richer responses, and priority access to new insight tools
-              as they’re introduced.
+              Havenly’s Free plan includes <strong>3 AI reflections per month</strong>,
+              with unlimited personal journaling. Premium removes those limits and
+              unlocks richer, evolving insights as you continue reflecting.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3 text-sm">
@@ -69,13 +70,13 @@ export default async function UpgradePage() {
                 </h2>
                 <ul className="mt-3 space-y-2 text-slate-300">
                   <li>
-                    • You want more room to reflect without pressure or noise.
+                    • You want unlimited AI reflections without monthly limits.
                   </li>
                   <li>
-                    • You value deeper AI responses and evolving insight tools.
+                    • You value deeper responses and insights that grow over time.
                   </li>
                   <li>
-                    • You’re ready to invest a small monthly amount in clarity.
+                    • You’re ready to invest a small monthly amount in clarity and self-understanding.
                   </li>
                 </ul>
               </div>
@@ -96,15 +97,15 @@ export default async function UpgradePage() {
             </p>
 
             <ul className="mt-5 space-y-2 text-sm text-slate-200">
-              <li>• Higher monthly AI reflection limits</li>
-              <li>• Richer AI reflections and context</li>
-              <li>• Priority access to new features</li>
+              <li>• Unlimited AI reflections</li>
+              <li>• Richer, more contextual AI responses</li>
+              <li>• Priority access to new insight tools</li>
               <li>• Early access to Premium experiments</li>
             </ul>
 
             <div className="mt-6 rounded-xl border border-slate-800 bg-slate-950/70 p-4 text-xs text-slate-300">
-              Premium grows with Havenly — you unlock what’s available now,
-              and what’s introduced next.
+              Free includes 3 AI reflections per month. Premium removes limits and
+              grows with Havenly as new features are introduced.
             </div>
           </div>
         </div>
