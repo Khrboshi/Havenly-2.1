@@ -23,7 +23,9 @@ type Reflection = {
 export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
   const { planType, credits, renewalDate, loading, refresh } = useUserPlan();
 
-  const isPremium = planType === "PREMIUM";
+  // ✅ PREMIUM = PREMIUM + TRIAL (consistent everywhere)
+  const isPremium = planType === "PREMIUM" || planType === "TRIAL";
+  const numericCredits = typeof credits === "number" ? credits : 0;
 
   const [busy, setBusy] = useState(false);
   const [reflection, setReflection] = useState<Reflection | null>(null);
@@ -37,15 +39,17 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
   }, [planType]);
 
   async function generateReflection() {
+    if (busy) return;
     setError(null);
 
-    // Upgrade trigger at the moment of intent
-    if (!isPremium && !loading && credits <= 0) {
+    // 🚫 STEP 2B — AI LIMIT ENFORCED HERE ONLY
+    if (!isPremium && !loading && numericCredits <= 0) {
       setShowUpgrade(true);
       return;
     }
 
     setBusy(true);
+
     try {
       const res = await fetch("/api/ai/reflection", {
         method: "POST",
@@ -57,6 +61,7 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
         }),
       });
 
+      // Server-side enforcement fallback
       if (res.status === 402) {
         setShowUpgrade(true);
         return;
@@ -71,7 +76,7 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
       const j = await res.json();
       setReflection(j?.reflection || null);
 
-      // refresh credits after consumption
+      // Refresh credits AFTER successful use
       await refresh();
     } catch {
       setError("We couldn't generate a reflection right now.");
@@ -84,13 +89,18 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
     <div className="mx-auto max-w-3xl space-y-6 px-6 py-10 text-white">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">{entry.title || "Untitled"}</h1>
+          <h1 className="text-2xl font-semibold">
+            {entry.title || "Untitled"}
+          </h1>
           <p className="mt-1 text-xs text-white/50">
             {new Date(entry.created_at).toLocaleString()}
           </p>
         </div>
 
-        <Link href="/journal" className="text-sm text-emerald-400 hover:underline">
+        <Link
+          href="/journal"
+          className="text-sm text-emerald-400 hover:underline"
+        >
           ← Back to journal
         </Link>
       </header>
@@ -99,19 +109,26 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
         {entry.content}
       </article>
 
+      {/* AI REFLECTION — ONLY PLACE WHERE LIMIT EXISTS */}
       <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold">AI Reflection</h2>
             <p className="mt-1 text-sm text-white/70">
-              Plan: <span className="text-emerald-300">{readablePlan}</span>
+              Plan:{" "}
+              <span className="text-emerald-300">{readablePlan}</span>
               {!isPremium ? (
                 <>
                   {" "}
                   · Reflections left:{" "}
-                  <span className="text-emerald-300">{loading ? "…" : credits}</span>
+                  <span className="text-emerald-300">
+                    {loading ? "…" : numericCredits}
+                  </span>
                   {renewalDate ? (
-                    <span className="text-white/50"> (renews {renewalDate})</span>
+                    <span className="text-white/50">
+                      {" "}
+                      (renews {renewalDate})
+                    </span>
                   ) : null}
                 </>
               ) : (
@@ -129,11 +146,14 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
           </button>
         </div>
 
-        {error ? <p className="mt-4 text-sm text-red-300">{error}</p> : null}
+        {error && (
+          <p className="mt-4 text-sm text-red-300">{error}</p>
+        )}
 
         {!reflection ? (
           <p className="mt-4 text-sm text-white/60">
-            When you’re ready, Havenly will reflect back themes, emotions, and a gentle next step.
+            When you’re ready, Havenly will reflect back themes, emotions,
+            and a gentle next step.
           </p>
         ) : (
           <div className="mt-5 space-y-4 text-sm text-white/80">
