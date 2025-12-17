@@ -9,8 +9,25 @@ export function createServerSupabase() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name) {
-          return cookieStore.get(name)?.value;
+        /**
+         * Supabase SSR expects getAll/setAll so it can refresh/rotate auth cookies
+         * during server requests (route handlers, server components, etc.).
+         */
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options);
+            });
+          } catch {
+            /**
+             * In some server-rendered contexts (e.g., certain Server Components),
+             * Next.js cookie store may be read-only. Middleware already refreshes
+             * cookies broadly, so we safely no-op here to avoid runtime crashes.
+             */
+          }
         },
       },
     }
