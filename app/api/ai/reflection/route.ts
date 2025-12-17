@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { decrementCreditIfAllowed } from "@/lib/creditRules";
+import { generateReflectionFromEntry } from "@/lib/ai/generateReflection";
 
 export const dynamic = "force-dynamic";
 
@@ -7,90 +9,63 @@ export async function POST(req: Request) {
   try {
     const supabase = createServerSupabase();
 
-    // 1️⃣ Auth check
     const {
-      data: { user },
-      error: authErr,
-    } = await supabase.auth.getUser();
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
 
-    if (authErr || !user) {
+    if (sessionError || !session?.user) {
       return NextResponse.json(
-        { error: "Not authenticated" },
+        { error: "Unauthorized" },
         { status: 401 }
       );
     }
 
+    const userId = session.user.id;
     const body = await req.json();
-    const { entryId, content, title } = body || {};
+
+    const { entryId, content, title } = body;
 
     if (!entryId || !content) {
       return NextResponse.json(
-        { error: "Missing entry content" },
+        { error: "Invalid request" },
         { status: 400 }
       );
     }
 
-    // 2️⃣ HARD CREDIT ENFORCEMENT (ATOMIC)
-    const { data: creditData, error: creditErr } = await supabase.rpc(
-      "consume_reflection_credit",
-      { p_amount: 1 }
-    );
+    /**
+     * 🔒 CREDIT ENFORCEMENT — SINGLE SOURCE OF TRUTH
+     */
+    const creditResult = await decrementCreditIfAllowed({
+      supabase,
+      userId,
+      feature: "ai_reflection",
+    });
 
-    if (creditErr) {
-      console.error("Credit RPC error:", creditErr);
-      return NextResponse.json(
-        { error: "Unable to verify credits" },
-        { status: 500 }
-      );
-    }
-
-    // ❌ No credits left → STOP HERE
-    if (!creditData || creditData.length === 0) {
+    if (!creditResult.allowed) {
       return NextResponse.json(
         { error: "Reflection limit reached" },
         { status: 402 }
       );
     }
 
-    // 3️⃣ Generate reflection (ONLY if credit consumed)
-    const aiResponse = await fetch(process.env.AI_REFLECTION_ENDPOINT!, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.AI_SECRET}`,
-      },
-      body: JSON.stringify({
-        title: title || "",
-        content,
-      }),
+    /**
+     * 🤖 AI GENERATION
+     */
+    const reflection = await generateReflectionFromEntry({
+      title,
+      content,
     });
 
-    if (!aiResponse.ok) {
-      console.error("AI generation failed");
-
-      // OPTIONAL: refund credit on AI failure
-      await supabase.rpc("consume_reflection_credit", { p_amount: -1 });
-
-      return NextResponse.json(
-        { error: "AI generation failed" },
-        { status: 500 }
-      );
-    }
-
-    const reflection = await aiResponse.json();
-
-    // 4️⃣ Save reflection (optional but recommended)
-    await supabase.from("journal_reflections").insert({
-      entry_id: entryId,
-      user_id: user.id,
+    return NextResponse.json({
       reflection,
     });
-
-    return NextResponse.json({ reflection });
   } catch (err) {
-    console.error("Reflection API error:", err);
+    console.error("AI reflection error:", err);
+
+    // IMPORTANT: never leak 500 to client for credit issues
     return NextResponse.json(
-      { error: "Unexpected server error" },
+      { error: "Unable to generate reflection" },
       { status: 500 }
     );
   }
