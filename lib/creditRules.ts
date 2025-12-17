@@ -1,18 +1,17 @@
 // lib/creditRules.ts
 
-import { createServerSupabase } from "@/lib/supabase/server";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 export type PlanType = "FREE" | "PREMIUM" | "TRIAL";
 
 export const PLAN_CREDIT_ALLOWANCES: Record<PlanType, number> = {
-  FREE: 20,      // Free users: 20 reflections per period
-  PREMIUM: 300,  // Premium users
-  TRIAL: 300,    // Trial behaves like premium
+  FREE: 20,
+  PREMIUM: 300,
+  TRIAL: 300,
 };
 
 /**
  * Computes the next monthly renewal date.
- * If no renewal date exists, start from today.
  */
 export function computeNextRenewalDate(): string {
   const now = new Date();
@@ -21,21 +20,25 @@ export function computeNextRenewalDate(): string {
 }
 
 /**
- * Atomically decrements a user's credit if allowed.
- * This is the ONLY place credits are consumed.
+ * 🔒 SINGLE SOURCE OF TRUTH — CREDIT ENFORCEMENT
  *
- * Returns:
- * - { ok: true, remaining }
- * - { ok: false, reason }
+ * Called ONLY from server routes.
+ * Client never decides credit usage.
  */
-export async function decrementCreditIfAllowed(userId: string): Promise<{
+export async function decrementCreditIfAllowed({
+  supabase,
+  userId,
+  feature,
+}: {
+  supabase: SupabaseClient;
+  userId: string;
+  feature: "ai_reflection";
+}): Promise<{
   ok: boolean;
   remaining?: number;
   reason?: string;
 }> {
-  const supabase = createServerSupabase();
-
-  // Read current plan + credits
+  // Load user plan
   const { data: plan, error } = await supabase
     .from("user_plans")
     .select("plan_type, credits")
@@ -46,21 +49,22 @@ export async function decrementCreditIfAllowed(userId: string): Promise<{
     return { ok: false, reason: "Unable to verify credits" };
   }
 
-  // Premium & Trial never decrement
+  // Premium / Trial = unlimited
   if (plan.plan_type === "PREMIUM" || plan.plan_type === "TRIAL") {
     return { ok: true };
   }
 
+  // Free plan enforcement
   if (plan.credits <= 0) {
     return { ok: false, reason: "No credits remaining" };
   }
 
-  // Atomic decrement
+  // Atomic decrement (race-safe)
   const { error: updateError } = await supabase
     .from("user_plans")
     .update({ credits: plan.credits - 1 })
     .eq("user_id", userId)
-    .eq("credits", plan.credits); // prevents race conditions
+    .eq("credits", plan.credits);
 
   if (updateError) {
     return { ok: false, reason: "Credit update failed" };
