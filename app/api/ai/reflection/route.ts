@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { decrementCreditIfAllowed } from "@/lib/creditRules";
+import { ensureCreditsFresh } from "@/lib/creditRules";
 import { generateReflectionFromEntry } from "@/lib/ai/generateReflection";
 
 export const dynamic = "force-dynamic";
@@ -20,38 +20,67 @@ export async function POST(req: Request) {
   const body = await req.json();
 
   /**
-   * 🔒 CREDIT ENFORCEMENT — SINGLE SOURCE OF TRUTH
+   * 🔒 STEP 1: Ensure credits are fresh
    */
-  const creditResult = await decrementCreditIfAllowed({
-    supabase,
-    userId,
-    feature: "ai_reflection",
-  });
+  await ensureCreditsFresh({ supabase, userId });
 
-  if (!creditResult.ok) {
+  /**
+   * 🔍 STEP 2: Read credits WITHOUT mutating
+   */
+  const { data: creditsRow, error } = await supabase
+    .from("user_credits")
+    .select("credits, plan_type")
+    .eq("user_id", userId)
+    .single();
+
+  if (error || !creditsRow) {
     return NextResponse.json(
-      { error: creditResult.reason || "Reflection limit reached" },
+      { error: "Unable to verify credits" },
+      { status: 500 }
+    );
+  }
+
+  const isPremium = creditsRow.plan_type === "PREMIUM";
+
+  if (!isPremium && creditsRow.credits <= 0) {
+    return NextResponse.json(
+      { error: "Reflection limit reached" },
       { status: 402 }
     );
   }
 
   /**
-   * 🧠 AI GENERATION (only reached if credit allowed)
+   * 🧠 STEP 3: Generate AI reflection
    */
+  let reflection;
   try {
-    const reflection = await generateReflectionFromEntry({
+    reflection = await generateReflectionFromEntry({
       content: body.content,
       title: body.title,
     });
-
-    return NextResponse.json({
-      reflection,
-      remainingCredits: creditResult.remaining,
-    });
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to generate reflection" },
       { status: 500 }
     );
   }
+
+  /**
+   * ➖ STEP 4: Decrement credits ONLY after success (Free users)
+   */
+  if (!isPremium) {
+    const remaining = Math.max(creditsRow.credits - 1, 0);
+
+    await supabase
+      .from("user_credits")
+      .update({ credits: remaining })
+      .eq("user_id", userId);
+  }
+
+  /**
+   * ✅ STEP 5: Respond
+   */
+  return NextResponse.json({
+    reflection,
+  });
 }
