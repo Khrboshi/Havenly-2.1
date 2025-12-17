@@ -53,23 +53,7 @@ export default function DashboardClient({ userId }: { userId: string }) {
     return entries.filter((e) => new Date(e.created_at) >= startOfWeek);
   }, [entries]);
 
-  /** STEP 2A — Primary dashboard action logic */
-  const primaryAction =
-    numericCredits > 0 ? (
-      <Link
-        href="/journal/new"
-        className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-300"
-      >
-        Start a new reflection
-      </Link>
-    ) : (
-      <Link
-        href="/journal"
-        className="rounded-full bg-slate-800 px-5 py-2.5 text-sm text-slate-100 hover:bg-slate-700"
-      >
-        View journal history
-      </Link>
-    );
+  const canStartReflection = numericCredits > 0;
 
   return (
     <div className="mx-auto max-w-5xl px-6 pt-24 pb-24 text-slate-200">
@@ -86,39 +70,50 @@ export default function DashboardClient({ userId }: { userId: string }) {
 
         <div className="text-xs text-slate-400">
           {planLoading ? "Checking plan…" : `${isPremium ? "Premium" : "Free"} plan`}
-          <span className="ml-2 text-slate-300">
-            · Credits: {numericCredits}
-          </span>
+          <span className="ml-2 text-slate-300">· Credits: {numericCredits}</span>
         </div>
       </section>
 
       {/* TODAY */}
       <section className="mb-8 rounded-2xl border border-slate-800 bg-slate-950/60 p-6">
-        <h2 className="text-sm font-semibold text-slate-100">
-          Today’s check-in
-        </h2>
+        <h2 className="text-sm font-semibold text-slate-100">Today’s check-in</h2>
         <p className="mt-2 text-sm text-slate-400">
           You don’t need to solve anything. Just write what’s here.
         </p>
 
         <div className="mt-4 flex flex-wrap gap-3">
-          {primaryAction}
+          {canStartReflection ? (
+            <Link
+              href="/journal/new"
+              className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-300"
+            >
+              Start a new reflection
+            </Link>
+          ) : (
+            <Link
+              href="/journal"
+              className="rounded-full bg-slate-800 px-5 py-2.5 text-sm text-slate-100 hover:bg-slate-700"
+            >
+              View journal history
+            </Link>
+          )}
 
-          <Link
-            href="/journal"
-            className="rounded-full bg-slate-800 px-5 py-2.5 text-sm text-slate-100 hover:bg-slate-700"
-          >
-            View journal history
-          </Link>
+          {/* IMPORTANT: avoid duplicate button when credits = 0 */}
+          {canStartReflection && (
+            <Link
+              href="/journal"
+              className="rounded-full bg-slate-800 px-5 py-2.5 text-sm text-slate-100 hover:bg-slate-700"
+            >
+              View journal history
+            </Link>
+          )}
         </div>
       </section>
 
       {/* THIS WEEK */}
       <section className="mb-8 grid gap-4 md:grid-cols-2">
         <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
-          <h3 className="text-sm font-semibold text-slate-100">
-            This week so far
-          </h3>
+          <h3 className="text-sm font-semibold text-slate-100">This week so far</h3>
 
           <p className="mt-2 text-sm text-slate-400">
             {entriesThisWeek.length === 0
@@ -130,9 +125,7 @@ export default function DashboardClient({ userId }: { userId: string }) {
         </div>
 
         <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
-          <h3 className="text-sm font-semibold text-slate-100">
-            Insight preview
-          </h3>
+          <h3 className="text-sm font-semibold text-slate-100">Insight preview</h3>
 
           <p className="mt-2 text-sm text-slate-400">
             {isPremium
