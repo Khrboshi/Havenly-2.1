@@ -8,7 +8,6 @@ export async function POST(req: Request) {
     const body = await req.json();
     const newPlanRaw = (body.plan || "free") as string;
 
-    // Normalize & constrain the plan
     const allowedPlans = ["FREE", "PREMIUM", "TRIAL"];
     let newPlan = newPlanRaw.toUpperCase();
     if (!allowedPlans.includes(newPlan)) {
@@ -17,7 +16,6 @@ export async function POST(req: Request) {
 
     const supabase = createServerSupabase();
 
-    // Get current user
     const {
       data: { user },
       error: userError,
@@ -30,8 +28,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Upsert user plan so new users are handled as well
-    const { error: upsertError } = await supabase
+    // Preserve existing behavior
+    const { error: upsertPlanError } = await supabase
       .from("user_plans")
       .upsert(
         {
@@ -42,12 +40,28 @@ export async function POST(req: Request) {
         { onConflict: "user_id" }
       );
 
-    if (upsertError) {
-      console.error("Plan upsert error:", upsertError.message);
+    if (upsertPlanError) {
+      console.error("Plan upsert error:", upsertPlanError.message);
       return NextResponse.json(
-        { error: upsertError.message },
+        { error: upsertPlanError.message },
         { status: 500 }
       );
+    }
+
+    // Keep canonical table aligned as well (best-effort, non-breaking)
+    try {
+      await supabase
+        .from("user_credits")
+        .upsert(
+          {
+            user_id: user.id,
+            plan_type: newPlan,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" }
+        );
+    } catch {
+      // Do not fail the request if user_credits is not available in this environment.
     }
 
     return NextResponse.json({ success: true, plan: newPlan });
