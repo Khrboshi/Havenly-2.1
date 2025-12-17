@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { decrementCreditIfAllowed } from "@/lib/creditRules";
+import {
+  canConsumeCredit,
+  consumeCredit,
+} from "@/lib/creditRules";
 import { generateReflectionFromEntry } from "@/lib/ai/generateReflection";
 
 export const dynamic = "force-dynamic";
@@ -20,20 +23,14 @@ export async function POST(req: Request) {
   const body = await req.json();
 
   /**
-   * 🔒 STEP 1: Attempt credit consumption (single source of truth)
-   * This handles:
-   * - credit existence
-   * - renewal
-   * - plan type
-   * - RLS safely
+   * 🔍 CHECK CREDIT — NO MUTATION
    */
-  const creditResult = await decrementCreditIfAllowed({
+  const allowed = await canConsumeCredit({
     supabase,
     userId,
-    feature: "ai_reflection",
   });
 
-  if (!creditResult.ok) {
+  if (!allowed.ok) {
     return NextResponse.json(
       { error: "Reflection limit reached" },
       { status: 402 }
@@ -41,33 +38,25 @@ export async function POST(req: Request) {
   }
 
   /**
-   * 🧠 STEP 2: Generate AI reflection
+   * 🧠 AI GENERATION
    */
+  let reflection;
   try {
-    const reflection = await generateReflectionFromEntry({
+    reflection = await generateReflectionFromEntry({
       content: body.content,
       title: body.title,
     });
-
-    return NextResponse.json({
-      reflection,
-      remainingCredits: creditResult.remaining,
-    });
-  } catch (err) {
-    /**
-     * ⚠️ IMPORTANT SAFETY NET
-     * If AI generation fails, restore the consumed credit
-     */
-    await supabase
-      .from("user_credits")
-      .update({
-        credits: (creditResult.remaining ?? 0) + 1,
-      })
-      .eq("user_id", userId);
-
+  } catch {
     return NextResponse.json(
       { error: "Failed to generate reflection" },
       { status: 500 }
     );
   }
+
+  /**
+   * ✅ CONSUME CREDIT ONLY AFTER SUCCESS
+   */
+  await consumeCredit({ supabase, userId });
+
+  return NextResponse.json({ reflection });
 }
