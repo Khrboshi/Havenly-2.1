@@ -86,7 +86,6 @@ export default function UpgradeTriggerModal({
       ts: new Date().toISOString(),
     });
 
-    // Close first (prevents UI glitch), then navigate
     onClose();
     router.push(ctaHref);
   }
@@ -98,14 +97,12 @@ export default function UpgradeTriggerModal({
       aria-modal="true"
       aria-label={title}
     >
-      {/* Backdrop */}
       <button
         aria-label="Close modal"
         className="absolute inset-0 bg-black/60"
         onClick={onClose}
       />
 
-      {/* Modal */}
       <div className="relative w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-950/90 p-6 text-white shadow-2xl backdrop-blur">
         <h3 className="text-lg font-semibold">{title}</h3>
         <p className="mt-2 text-sm text-white/70">{message}</p>
