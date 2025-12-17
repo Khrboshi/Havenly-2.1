@@ -7,6 +7,12 @@ export const dynamic = "force-dynamic";
 
 type PlanType = "FREE" | "TRIAL" | "PREMIUM";
 
+/**
+ * Must match lib/creditRules.ts
+ * Kept locally to avoid changing other files/exports.
+ */
+const FREE_MONTHLY_CREDITS = 3;
+
 function safeJson(data: {
   planType: PlanType;
   credits: number;
@@ -67,6 +73,22 @@ export async function GET() {
     }
 
     /**
+     * ✅ CRITICAL UX SAFETY (prevents false "limit reached" for new users)
+     * If user_credits cannot be read (often due to RLS/missing policy),
+     * do NOT treat the user as having 0 credits — that creates a false warning.
+     *
+     * Instead, return the Free default allowance so the UI remains truthful.
+     */
+    if (creditsErr) {
+      console.error("user_credits read failed in /api/user/plan:", creditsErr.message);
+      return safeJson({
+        planType: "FREE",
+        credits: FREE_MONTHLY_CREDITS,
+        renewalDate: null,
+      });
+    }
+
+    /**
      * Fallbacks preserved (do not break prior setups):
      * 1) user_plans
      * 2) profiles
@@ -83,7 +105,7 @@ export async function GET() {
 
         return safeJson({
           planType: planType === "PREMIUM" || planType === "TRIAL" ? planType : "FREE",
-          credits: typeof data.credits === "number" ? data.credits : 0,
+          credits: typeof data.credits === "number" ? data.credits : FREE_MONTHLY_CREDITS,
           renewalDate: typeof data.renewal_date === "string" ? data.renewal_date : null,
         });
       }
@@ -103,7 +125,7 @@ export async function GET() {
 
         return safeJson({
           planType: planType === "PREMIUM" || planType === "TRIAL" ? planType : "FREE",
-          credits: typeof data.credits === "number" ? data.credits : 0,
+          credits: typeof data.credits === "number" ? data.credits : FREE_MONTHLY_CREDITS,
           renewalDate: typeof data.renewal_date === "string" ? data.renewal_date : null,
         });
       }
@@ -111,9 +133,10 @@ export async function GET() {
       // fall through
     }
 
+    // Final safe default for authenticated users
     return safeJson({
       planType: "FREE",
-      credits: 0,
+      credits: FREE_MONTHLY_CREDITS,
       renewalDate: null,
     });
   } catch (err) {
