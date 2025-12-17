@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { trackEvent } from "@/lib/analytics";
 
 /**
  * UpgradePage
@@ -9,7 +10,8 @@ import { createServerSupabase } from "@/lib/supabase/server";
  * ✔ Structure preserved
  * ✔ Auth logic preserved
  * ✔ CTAs preserved
- * ✔ Copy aligned with Free (3/month) vs Premium (unlimited)
+ * ✔ Copy preserved
+ * ✔ Server-side analytics added (safe, single fire)
  */
 
 export default async function UpgradePage() {
@@ -19,6 +21,17 @@ export default async function UpgradePage() {
   } = await supabase.auth.getSession();
 
   const isLoggedIn = !!session;
+
+  /**
+   * STEP 5 — Analytics
+   * Track intentional upgrade page views (server-side, no duplication)
+   */
+  await trackEvent({
+    supabase,
+    userId: session?.user?.id,
+    event: "upgrade_page_viewed",
+    source: "upgrade_page",
+  });
 
   const primaryCtaHref = isLoggedIn ? "/upgrade/confirmed" : "/magic-login";
   const secondaryCtaHref = isLoggedIn ? "/dashboard" : "/";
