@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSupabase } from "@/app/components/SupabaseSessionProvider";
 import { useUserPlan } from "@/app/components/useUserPlan";
 import UpgradeNudge from "@/app/components/UpgradeNudge";
@@ -11,51 +11,37 @@ type JournalEntry = {
   created_at: string;
   title: string | null;
   content: string | null;
-  reflection: string | null;
 };
 
 export default function DashboardClient({ userId }: { userId: string }) {
   const { supabase, session } = useSupabase();
   const { loading: planLoading, planType, credits } = useUserPlan();
 
-  const [latest, setLatest] = useState<JournalEntry | null>(null);
-  const [loadingLatest, setLoadingLatest] = useState(true);
+  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [loadingEntries, setLoadingEntries] = useState(true);
 
-  const email = session?.user?.email ?? null;
+  const email = session?.user?.email ?? "your account";
 
-  // -----------------------------
-  // Load latest journal entry
-  // -----------------------------
   useEffect(() => {
-    let cancelled = false;
-
-    async function loadLatest() {
-      setLoadingLatest(true);
+    async function loadEntries() {
+      setLoadingEntries(true);
 
       const { data } = await supabase
         .from("journal_entries")
-        .select("id, created_at, title, content, reflection")
+        .select("id, created_at, title, content")
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .limit(7);
 
-      if (!cancelled) {
-        setLatest(data ?? null);
-        setLoadingLatest(false);
-      }
+      setEntries(data ?? []);
+      setLoadingEntries(false);
     }
 
-    loadLatest();
-
-    return () => {
-      cancelled = true;
-    };
+    loadEntries();
   }, [supabase, userId]);
 
-  // -----------------------------
-  // Plan & credits logic
-  // -----------------------------
+  const latest = entries[0] ?? null;
+
   const readablePlan =
     planType === "PREMIUM"
       ? "Premium"
@@ -64,75 +50,53 @@ export default function DashboardClient({ userId }: { userId: string }) {
       : "Free";
 
   const isPremium = planType === "PREMIUM" || planType === "TRIAL";
+  const numericCredits = typeof credits === "number" ? credits : 0;
 
-  const numericCredits =
-    typeof credits === "number" && credits >= 0 ? credits : null;
+  const entriesThisWeek = useMemo(() => {
+    const startOfWeek = new Date();
+    startOfWeek.setHours(0, 0, 0, 0);
+    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
 
-  const showCreditNudge =
-    !planLoading &&
-    !isPremium &&
-    numericCredits !== null &&
-    numericCredits <= 3;
+    return entries.filter((e) => new Date(e.created_at) >= startOfWeek);
+  }, [entries]);
 
-  // -----------------------------
-  // Retention intelligence
-  // -----------------------------
-  const hasUnreflectedEntry =
-    latest && latest.content && !latest.reflection;
-
-  // -----------------------------
-  // Render
-  // -----------------------------
   return (
     <div className="mx-auto max-w-5xl px-6 pt-24 pb-24 text-slate-200">
       {/* HEADER */}
-      <section className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <section className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">
-            Welcome back{email ? `, ${email.split("@")[0]}` : ""}.
+            Welcome back{email ? `, ${email.split("@")[0]}` : ""}
           </h1>
           <p className="mt-1 text-sm text-slate-400">
-            A calm space to see how you’ve been doing and decide what you need today.
+            A calm space to notice how things have been unfolding.
           </p>
         </div>
 
-        <div className="flex flex-col items-start gap-2 text-xs sm:items-end">
-          <span className="inline-flex items-center rounded-full border border-slate-700 bg-slate-900/80 px-3 py-1 text-[11px] font-medium text-slate-200">
-            {planLoading ? "Checking plan…" : `${readablePlan} plan`}
+        <div className="text-xs text-slate-400">
+          {planLoading ? "Checking plan…" : `${readablePlan} plan`}
+          <span className="ml-2 text-slate-300">
+            · Credits: {numericCredits}
           </span>
         </div>
       </section>
 
-      {/* PRIMARY ACTION */}
-      <section className="mb-10 rounded-2xl border border-slate-800 bg-slate-950/60 p-6">
+      {/* TODAY */}
+      <section className="mb-8 rounded-2xl border border-slate-800 bg-slate-950/60 p-6">
         <h2 className="text-sm font-semibold text-slate-100">
-          {hasUnreflectedEntry
-            ? "Continue where you left off"
-            : "Today’s check-in"}
+          Today’s check-in
         </h2>
-
         <p className="mt-2 text-sm text-slate-400">
-          {hasUnreflectedEntry
-            ? "You started writing recently. You can return gently, or leave it as it is."
-            : "Take a few quiet minutes to write about what’s on your mind. Nothing needs fixing."}
+          You don’t need to solve anything. Just write what’s here.
         </p>
 
         <div className="mt-4 flex flex-wrap gap-3">
-          {hasUnreflectedEntry ? (
-            <Link
-              href={`/journal/${latest.id}`}
-              className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-300"
-            >
-              Continue reflection
-            </Link>
-          ) : (
-            <Link
-              href="/journal/new"
-              className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-300"
-            >
-              Start a new reflection
-            </Link>
-          )}
+          <Link
+            href="/journal/new"
+            className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-300"
+          >
+            Start a new reflection
+          </Link>
 
           <Link
             href="/journal"
@@ -143,36 +107,91 @@ export default function DashboardClient({ userId }: { userId: string }) {
         </div>
       </section>
 
-      {/* UPGRADE NUDGE */}
-      {!isPremium && (
-        <section className="mb-10">
-          <UpgradeNudge
-            credits={numericCredits}
-            variant={showCreditNudge ? "credits" : "default"}
-          />
-        </section>
-      )}
+      {/* THIS WEEK */}
+      <section className="mb-8 grid gap-4 md:grid-cols-2">
+        <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
+          <h3 className="text-sm font-semibold text-slate-100">
+            This week so far
+          </h3>
 
-      {/* VALUE TEASERS */}
-      <section className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-6">
-          <h2 className="text-sm font-semibold text-slate-100">
-            Patterns, not pressure
-          </h2>
           <p className="mt-2 text-sm text-slate-400">
-            Havenly looks for meaning over time — without turning your life into a task list.
+            {entriesThisWeek.length === 0
+              ? "No entries yet this week."
+              : `You’ve written ${entriesThisWeek.length} reflection${
+                  entriesThisWeek.length > 1 ? "s" : ""
+                } this week.`}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-6">
-          <h2 className="text-sm font-semibold text-slate-100">
-            Return when it feels right
-          </h2>
+        <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
+          <h3 className="text-sm font-semibold text-slate-100">
+            Insight preview
+          </h3>
+
           <p className="mt-2 text-sm text-slate-400">
-            There are no streaks here. Just space to think, whenever you need it.
+            {isPremium
+              ? "Your emotional timelines and themes will appear here."
+              : "Premium reveals patterns across your entries — gently, over time."}
           </p>
+
+          {!isPremium && (
+            <Link
+              href="/upgrade"
+              className="mt-3 inline-flex rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-400"
+            >
+              Explore Premium
+            </Link>
+          )}
         </div>
       </section>
+
+      {/* LATEST ENTRY */}
+      <section className="mb-8">
+        {loadingEntries && (
+          <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-6 text-sm text-slate-400">
+            Loading your reflections…
+          </div>
+        )}
+
+        {!loadingEntries && !latest && (
+          <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-6 text-sm text-slate-400">
+            Your reflections will appear here when you start writing.
+          </div>
+        )}
+
+        {!loadingEntries && latest && (
+          <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-6">
+            <h3 className="text-sm font-semibold text-slate-100">
+              Most recent reflection
+            </h3>
+
+            <p className="mt-1 text-xs text-slate-500">
+              {new Date(latest.created_at).toLocaleString()}
+            </p>
+
+            <p className="mt-3 whitespace-pre-wrap text-sm text-slate-200">
+              {latest.content && latest.content.length > 300
+                ? latest.content.slice(0, 300) + "…"
+                : latest.content}
+            </p>
+
+            <Link
+              href={`/journal/${latest.id}`}
+              className="mt-3 inline-block text-sm text-emerald-400 hover:underline"
+            >
+              Read full entry →
+            </Link>
+          </div>
+        )}
+      </section>
+
+      {/* UPGRADE NUDGE */}
+      {!isPremium && (
+        <UpgradeNudge
+          credits={numericCredits}
+          variant={numericCredits <= 3 ? "credits" : "default"}
+        />
+      )}
     </div>
   );
 }
