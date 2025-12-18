@@ -21,7 +21,7 @@ type Reflection = {
 };
 
 export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
-  const { planType, credits, renewalDate, loading, refresh } = useUserPlan();
+  const { planType, credits, loading, refresh } = useUserPlan();
 
   const isPremium = planType === "PREMIUM";
 
@@ -102,9 +102,11 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold">AI Reflection</h2>
+
             <p className="mt-1 text-sm text-white/70">
               Plan:{" "}
               <span className="text-emerald-300">{readablePlan}</span>
+
               {!isPremium ? (
                 <>
                   {" "}
@@ -112,10 +114,10 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
                   <span className="text-emerald-300">
                     {loading ? "…" : credits}
                   </span>
-                  {renewalDate && (
-                    <span className="text-white/50">
-                      {" "}
-                      (renews {renewalDate})
+
+                  {credits === 0 && (
+                    <span className="ml-2 text-xs text-white/50">
+                      (resets next month)
                     </span>
                   )}
                 </>
