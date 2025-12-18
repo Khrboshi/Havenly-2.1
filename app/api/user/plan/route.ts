@@ -1,105 +1,58 @@
-// app/api/user/plan/route.ts
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { ensureCreditsFresh } from "@/lib/creditRules";
 
 export const dynamic = "force-dynamic";
 
-type PlanType = "FREE" | "TRIAL" | "PREMIUM";
+export async function POST(req: Request) {
+  const supabase = createServerSupabase();
 
-function safeJson(data: {
-  planType: PlanType;
-  credits: number;
-  renewalDate: string | null;
-}) {
-  return NextResponse.json(
-    {
-      planType: data.planType,
-      plan: data.planType, // backward compatibility
-      credits: data.credits,
-      renewalDate: data.renewalDate, // will be null (schema has no renewal_date)
-    },
-    {
-      headers: {
-        "Cache-Control": "no-store, max-age=0",
-      },
-    }
-  );
-}
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-async function readPlanType(params: { supabase: any; userId: string }): Promise<PlanType> {
-  const { supabase, userId } = params;
-
-  // 1) user_plans
-  try {
-    const { data, error } = await supabase
-      .from("user_plans")
-      .select("plan_type")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    if (!error && data?.plan_type) {
-      const p = String(data.plan_type).toUpperCase();
-      return (p === "PREMIUM" || p === "TRIAL") ? (p as PlanType) : "FREE";
-    }
-  } catch {}
-
-  // 2) profiles fallback
-  try {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("plan_type")
-      .eq("id", userId)
-      .maybeSingle();
-
-    if (!error && data?.plan_type) {
-      const p = String(data.plan_type).toUpperCase();
-      return (p === "PREMIUM" || p === "TRIAL") ? (p as PlanType) : "FREE";
-    }
-  } catch {}
-
-  return "FREE";
-}
-
-async function readCredits(params: { supabase: any; userId: string }): Promise<number> {
-  const { supabase, userId } = params;
-
-  const { data, error } = await supabase
-    .from("user_credits")
-    .select("credits")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (error || !data) return 0;
-  return typeof data.credits === "number" ? data.credits : 0;
-}
-
-export async function GET() {
-  try {
-    const supabase = createServerSupabase();
-
-    const {
-      data: { user },
-      error: userErr,
-    } = await supabase.auth.getUser();
-
-    if (userErr || !user) {
-      return safeJson({ planType: "FREE", credits: 0, renewalDate: null });
-    }
-
-    // Provisions missing user_credits row + monthly reset (FREE only)
-    await ensureCreditsFresh({ supabase, userId: user.id });
-
-    const planType = await readPlanType({ supabase, userId: user.id });
-    const credits = await readCredits({ supabase, userId: user.id });
-
-    return safeJson({
-      planType,
-      credits,
-      renewalDate: null, // your schema does not include a renewal_date column
-    });
-  } catch (err) {
-    console.error("GET /api/user/plan failed:", err);
-    return safeJson({ planType: "FREE", credits: 0, renewalDate: null });
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const userId = session.user.id;
+  const body = await req.json();
+  const targetPlan = body?.plan;
+
+  if (!["FREE", "TRIAL", "PREMIUM"].includes(targetPlan)) {
+    return NextResponse.json(
+      { error: "Invalid plan type" },
+      { status: 400 }
+    );
+  }
+
+  /**
+   * 🔒 SINGLE SOURCE OF TRUTH — user_credits
+   * Plan update + credit reset happens HERE
+   */
+  const { error } = await supabase
+    .from("user_credits")
+    .upsert(
+      {
+        user_id: userId,
+        plan_type: targetPlan,
+        credits_remaining:
+          targetPlan === "PREMIUM"
+            ? 9999
+            : targetPlan === "TRIAL"
+            ? 10
+            : 3,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" }
+    );
+
+  if (error) {
+    console.error("Plan update failed:", error);
+    return NextResponse.json(
+      { error: "Failed to update plan" },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({ success: true });
 }
