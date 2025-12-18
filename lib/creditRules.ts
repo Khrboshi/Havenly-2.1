@@ -1,130 +1,82 @@
+// lib/creditRules.ts
 import { SupabaseClient } from "@supabase/supabase-js";
 
 const FREE_MONTHLY_CREDITS = 3;
 
-function getNextRenewalDate(from: Date) {
-  const d = new Date(from);
-  d.setMonth(d.getMonth() + 1);
-  return d;
+type PlanType = "FREE" | "TRIAL" | "PREMIUM";
+
+/**
+ * Pull plan type from user_plans (fallback to profiles if needed).
+ * This keeps "plan" separate from "credits" which live in user_credits.
+ */
+async function getPlanTypeForUser(params: {
+  supabase: SupabaseClient;
+  userId: string;
+}): Promise<PlanType> {
+  const { supabase, userId } = params;
+
+  // 1) user_plans
+  try {
+    const { data, error } = await supabase
+      .from("user_plans")
+      .select("plan_type")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (!error && data?.plan_type) {
+      const p = String(data.plan_type).toUpperCase();
+      return (p === "PREMIUM" || p === "TRIAL") ? (p as PlanType) : "FREE";
+    }
+  } catch {
+    // ignore
+  }
+
+  // 2) profiles (legacy fallback)
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("plan_type")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (!error && data?.plan_type) {
+      const p = String(data.plan_type).toUpperCase();
+      return (p === "PREMIUM" || p === "TRIAL") ? (p as PlanType) : "FREE";
+    }
+  } catch {
+    // ignore
+  }
+
+  return "FREE";
 }
 
 type CreditsRow = {
   credits: number;
-  renewal_date: string | null;
-  plan: string | null; // normalized field (could come from plan_type or plan)
+  updated_at: string | null;
 };
 
-async function selectCreditsRowFlexible(params: {
+async function getCreditsRow(params: {
   supabase: SupabaseClient;
   userId: string;
 }): Promise<{ row: CreditsRow | null; err: any | null }> {
   const { supabase, userId } = params;
 
-  // Try schema A: plan_type
-  const attemptA = await supabase
+  const { data, error } = await supabase
     .from("user_credits")
-    .select("credits, renewal_date, plan_type")
+    .select("credits, updated_at")
     .eq("user_id", userId)
     .maybeSingle();
 
-  if (!attemptA.error) {
-    const r: any = attemptA.data;
-    if (!r) return { row: null, err: null };
-    return {
-      row: {
-        credits: typeof r.credits === "number" ? r.credits : 0,
-        renewal_date: typeof r.renewal_date === "string" ? r.renewal_date : null,
-        plan: typeof r.plan_type === "string" ? r.plan_type : null,
-      },
-      err: null,
-    };
-  }
-
-  // If the error is likely "column plan_type does not exist", try schema B: plan
-  const msg = String((attemptA.error as any)?.message || "");
-  if (!msg.toLowerCase().includes("plan_type")) {
-    return { row: null, err: attemptA.error };
-  }
-
-  const attemptB = await supabase
-    .from("user_credits")
-    .select("credits, renewal_date, plan")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (attemptB.error) return { row: null, err: attemptB.error };
-
-  const r: any = attemptB.data;
-  if (!r) return { row: null, err: null };
+  if (error) return { row: null, err: error };
+  if (!data) return { row: null, err: null };
 
   return {
     row: {
-      credits: typeof r.credits === "number" ? r.credits : 0,
-      renewal_date: typeof r.renewal_date === "string" ? r.renewal_date : null,
-      plan: typeof r.plan === "string" ? r.plan : null,
+      credits: typeof (data as any).credits === "number" ? (data as any).credits : 0,
+      updated_at: typeof (data as any).updated_at === "string" ? (data as any).updated_at : null,
     },
     err: null,
   };
-}
-
-async function upsertCreditRowFlexible(params: {
-  supabase: SupabaseClient;
-  userId: string;
-  plan: "FREE" | "TRIAL" | "PREMIUM";
-  credits: number;
-  renewalDateIso: string;
-}) {
-  const { supabase, userId, plan, credits, renewalDateIso } = params;
-
-  // Try schema A: plan_type
-  const a = await supabase.from("user_credits").upsert(
-    {
-      user_id: userId,
-      plan_type: plan,
-      credits,
-      renewal_date: renewalDateIso,
-      updated_at: new Date().toISOString(),
-    } as any,
-    { onConflict: "user_id" }
-  );
-
-  if (!a.error) return;
-
-  const msg = String((a.error as any)?.message || "");
-  if (!msg.toLowerCase().includes("plan_type")) {
-    // Some other real error
-    throw a.error;
-  }
-
-  // Fallback schema B: plan
-  const b = await supabase.from("user_credits").upsert(
-    {
-      user_id: userId,
-      plan,
-      credits,
-      renewal_date: renewalDateIso,
-      updated_at: new Date().toISOString(),
-    } as any,
-    { onConflict: "user_id" }
-  );
-
-  if (b.error) throw b.error;
-}
-
-async function updateCreditsFlexible(params: {
-  supabase: SupabaseClient;
-  userId: string;
-  credits?: number;
-  renewalDateIso?: string;
-}) {
-  const { supabase, userId, credits, renewalDateIso } = params;
-
-  const payload: any = {};
-  if (typeof credits === "number") payload.credits = credits;
-  if (typeof renewalDateIso === "string") payload.renewal_date = renewalDateIso;
-  payload.updated_at = new Date().toISOString();
-
-  await supabase.from("user_credits").update(payload).eq("user_id", userId);
 }
 
 async function ensureCreditRowExists(params: {
@@ -133,24 +85,31 @@ async function ensureCreditRowExists(params: {
 }) {
   const { supabase, userId } = params;
 
-  const { row, err } = await selectCreditsRowFlexible({ supabase, userId });
-  if (err) return; // do not block, caller will handle
+  const { row, err } = await getCreditsRow({ supabase, userId });
+  if (err) return; // do not block
   if (row) return;
 
-  const now = new Date();
-  await upsertCreditRowFlexible({
-    supabase,
-    userId,
-    plan: "FREE",
-    credits: FREE_MONTHLY_CREDITS,
-    renewalDateIso: getNextRenewalDate(now).toISOString(),
-  });
+  const nowIso = new Date().toISOString();
+
+  await supabase.from("user_credits").upsert(
+    {
+      user_id: userId,
+      credits: FREE_MONTHLY_CREDITS,
+      updated_at: nowIso,
+    } as any,
+    { onConflict: "user_id" }
+  );
+}
+
+function isSameUtcMonth(aIso: string, b: Date) {
+  const a = new Date(aIso);
+  return a.getUTCFullYear() === b.getUTCFullYear() && a.getUTCMonth() === b.getUTCMonth();
 }
 
 /**
- * Ensures credits are reset if renewal date has passed.
- * SAFE to call multiple times.
- * Also provisions a user_credits row if missing.
+ * ✅ Monthly reset using ONLY updated_at (since renewal_date does not exist in your schema).
+ * - If user is FREE and updated_at is from a previous UTC month => reset to 3
+ * - PREMIUM/TRIAL => unlimited (credits not enforced)
  */
 export async function ensureCreditsFresh(params: {
   supabase: SupabaseClient;
@@ -160,29 +119,63 @@ export async function ensureCreditsFresh(params: {
 
   await ensureCreditRowExists({ supabase, userId });
 
-  const { row, err } = await selectCreditsRowFlexible({ supabase, userId });
+  const planType = await getPlanTypeForUser({ supabase, userId });
+  if (planType === "PREMIUM" || planType === "TRIAL") return;
+
+  const { row, err } = await getCreditsRow({ supabase, userId });
   if (err || !row) return;
 
   const now = new Date();
-  const renewalDate = row.renewal_date ? new Date(row.renewal_date) : null;
 
-  if (!renewalDate || now < renewalDate) return;
+  // If updated_at is missing or from a prior month => reset credits
+  if (!row.updated_at || !isSameUtcMonth(row.updated_at, now)) {
+    await supabase
+      .from("user_credits")
+      .update({
+        credits: FREE_MONTHLY_CREDITS,
+        updated_at: now.toISOString(),
+      } as any)
+      .eq("user_id", userId);
+  }
+}
 
-  const plan = String(row.plan || "FREE").toUpperCase();
-  const isPremium = plan === "PREMIUM";
+/**
+ * Attempts atomic consumption via SQL function if present:
+ *   public.consume_free_credit(uid uuid) returns integer
+ * Returns:
+ *   >=0 remaining credits
+ *   -1 means limit reached (no decrement occurred)
+ */
+async function tryConsumeViaRpc(params: {
+  supabase: SupabaseClient;
+  userId: string;
+}): Promise<{ ok: boolean; remaining?: number; notInstalled?: boolean }> {
+  const { supabase, userId } = params;
 
-  await updateCreditsFlexible({
-    supabase,
-    userId,
-    credits: isPremium ? row.credits : FREE_MONTHLY_CREDITS,
-    renewalDateIso: getNextRenewalDate(now).toISOString(),
-  });
+  const { data, error } = await supabase.rpc("consume_free_credit" as any, {
+    uid: userId,
+  } as any);
+
+  if (error) {
+    const msg = String((error as any)?.message || "").toLowerCase();
+    if (msg.includes("function") && msg.includes("does not exist")) {
+      return { ok: false, notInstalled: true };
+    }
+    return { ok: false };
+  }
+
+  const n = typeof data === "number" ? data : Number(data);
+  if (!Number.isFinite(n)) return { ok: false };
+
+  if (n === -1) return { ok: false, remaining: 0 }; // limit reached
+  return { ok: true, remaining: n };
 }
 
 /**
  * SINGLE SOURCE OF TRUTH
- * - Ensures credits are fresh
- * - Decrements exactly once
+ * - Ensures monthly reset + row provisioning
+ * - Enforces only for FREE users
+ * - PREMIUM/TRIAL bypass
  */
 export async function decrementCreditIfAllowed(params: {
   supabase: SupabaseClient;
@@ -193,28 +186,28 @@ export async function decrementCreditIfAllowed(params: {
 
   await ensureCreditsFresh({ supabase, userId });
 
-  const { row, err } = await selectCreditsRowFlexible({ supabase, userId });
-  if (err || !row) {
-    return { ok: false, reason: "credits_unavailable" };
-  }
-
-  const plan = String(row.plan || "FREE").toUpperCase();
-
-  if (plan === "PREMIUM") {
+  const planType = await getPlanTypeForUser({ supabase, userId });
+  if (planType === "PREMIUM" || planType === "TRIAL") {
     return { ok: true };
   }
 
-  if (row.credits <= 0) {
-    return { ok: false, reason: "limit_reached" };
-  }
+  // Prefer atomic RPC (if installed)
+  const rpc = await tryConsumeViaRpc({ supabase, userId });
+  if (rpc.ok) return { ok: true, remaining: rpc.remaining };
+  if (!rpc.notInstalled && rpc.remaining === 0) return { ok: false, reason: "limit_reached" };
+
+  // Fallback (non-atomic): select then update
+  const { row, err } = await getCreditsRow({ supabase, userId });
+  if (err || !row) return { ok: false, reason: "credits_unavailable" };
+
+  if (row.credits <= 0) return { ok: false, reason: "limit_reached" };
 
   const remaining = row.credits - 1;
 
-  await updateCreditsFlexible({
-    supabase,
-    userId,
-    credits: remaining,
-  });
+  await supabase
+    .from("user_credits")
+    .update({ credits: remaining, updated_at: new Date().toISOString() } as any)
+    .eq("user_id", userId);
 
   return { ok: true, remaining };
 }
