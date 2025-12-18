@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { ensureCreditsFresh } from "@/lib/creditRules";
+import { decrementCreditIfAllowed } from "@/lib/creditRules";
 
 export const dynamic = "force-dynamic";
 
@@ -8,27 +8,38 @@ export async function GET() {
   const supabase = createServerSupabase();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  if (!user) {
-    return NextResponse.json({ credits: 0 });
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  await ensureCreditsFresh({
+  const userId = session.user.id;
+
+  // Ensure credits are fresh WITHOUT consuming
+  await decrementCreditIfAllowed({
     supabase,
-    userId: user.id,
+    userId,
+    feature: "__noop__",
   });
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("user_credits")
-    .select("credits, renewal_date, plan_type")
-    .eq("user_id", user.id)
-    .single();
+    .select("plan_type, credits_remaining, updated_at")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    return NextResponse.json(
+      { error: "Failed to load credits" },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json({
-    credits: data?.credits ?? 0,
-    renewalDate: data?.renewal_date ?? null,
     planType: data?.plan_type ?? "FREE",
+    credits: data?.credits_remaining ?? 0,
+    renewalDate: data?.updated_at ?? null,
   });
 }
