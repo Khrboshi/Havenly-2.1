@@ -1,10 +1,6 @@
 // lib/ai/generateReflection.ts
 
-import OpenAI from "openai";
-
-const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import Groq from "groq-sdk";
 
 export type ReflectionResult = {
   summary: string;
@@ -15,6 +11,10 @@ export type ReflectionResult = {
 };
 
 type PlanType = "FREE" | "PREMIUM";
+
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
 
 function buildPrompt(params: {
   plan: PlanType;
@@ -27,20 +27,22 @@ function buildPrompt(params: {
     return `
 You are a calm, emotionally intelligent reflective companion.
 
-Your role is to help the user gently understand the deeper meaning of what they wrote — not to motivate, judge, diagnose, or problem-solve.
+Rules:
+- Base everything strictly on what the user actually wrote.
+- Do NOT invent events, causes, or emotions.
+- Avoid generic therapy language.
+- Be specific, grounded, and humane.
 
-Analyze the journal entry below and respond with:
-- A short reflective summary that captures emotional tension or meaning
-- 2–4 meaningful themes (not generic)
-- 1–3 emotions that are implied or felt
-- One gentle next step phrased as an invitation, not advice
-- Two thoughtful reflection questions that deepen self-awareness
+Respond ONLY with valid JSON in this exact structure:
+{
+  "summary": string,
+  "themes": string[],
+  "emotions": string[],
+  "gentle_next_step": string,
+  "questions": string[]
+}
 
-Avoid clichés, productivity language, or motivational tone.
-Do not repeat the entry.
-Write with warmth, clarity, and emotional intelligence.
-
-Journal title (optional):
+Journal title:
 ${title ?? "(none)"}
 
 Journal entry:
@@ -52,15 +54,17 @@ ${content}
   return `
 You are a gentle reflective assistant.
 
-Provide a simple, supportive reflection on the journal entry below.
-Keep insights light and non-intrusive.
+Provide a light, supportive reflection.
+Do not over-analyze or add depth that is not present.
 
-Respond with:
-- A brief summary
-- 1–3 themes
-- 1–2 emotions
-- One gentle next step
-- One or two reflection questions
+Respond ONLY with valid JSON in this exact structure:
+{
+  "summary": string,
+  "themes": string[],
+  "emotions": string[],
+  "gentle_next_step": string,
+  "questions": string[]
+}
 
 Journal entry:
 ${content}
@@ -74,53 +78,57 @@ export async function generateReflectionFromEntry(params: {
 }): Promise<ReflectionResult> {
   const prompt = buildPrompt(params);
 
-  const response = await client.chat.completions.create({
-    model: "gpt-4o-mini",
-    temperature: params.plan === "PREMIUM" ? 0.6 : 0.8,
-    messages: [
-      {
-        role: "system",
-        content:
-          "You generate calm, emotionally grounded reflections in structured JSON.",
-      },
-      {
-        role: "user",
-        content: prompt,
-      },
-    ],
-    response_format: {
-      type: "json_schema",
-      json_schema: {
-        name: "reflection",
-        schema: {
-          type: "object",
-          properties: {
-            summary: { type: "string" },
-            themes: {
-              type: "array",
-              items: { type: "string" },
-            },
-            emotions: {
-              type: "array",
-              items: { type: "string" },
-            },
-            gentle_next_step: { type: "string" },
-            questions: {
-              type: "array",
-              items: { type: "string" },
-            },
-          },
-          required: [
-            "summary",
-            "themes",
-            "emotions",
-            "gentle_next_step",
-            "questions",
-          ],
+  try {
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.1-8b-instant",
+      temperature: params.plan === "PREMIUM" ? 0.4 : 0.6,
+      max_tokens: 700,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You generate calm, grounded journaling reflections in strict JSON.",
         },
-      },
-    },
-  });
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+    });
 
-  return response.choices[0].message.parsed as ReflectionResult;
+    const raw = completion.choices[0]?.message?.content;
+    if (!raw) {
+      throw new Error("Empty Groq response");
+    }
+
+    const parsed = JSON.parse(raw);
+
+    return {
+      summary: String(parsed.summary ?? "").trim(),
+      themes: Array.isArray(parsed.themes) ? parsed.themes.map(String) : [],
+      emotions: Array.isArray(parsed.emotions)
+        ? parsed.emotions.map(String)
+        : [],
+      gentle_next_step: String(parsed.gentle_next_step ?? "").trim(),
+      questions: Array.isArray(parsed.questions)
+        ? parsed.questions.map(String)
+        : [],
+    };
+  } catch (err) {
+    console.error("Groq reflection failed:", err);
+
+    // Absolute-safe fallback
+    return {
+      summary:
+        "This entry captures a moment you chose to pause and reflect on.",
+      themes: [],
+      emotions: [],
+      gentle_next_step:
+        "You might take a brief moment today to notice how this stays with you.",
+      questions: [
+        "What felt most important to express here?",
+        "What would you like to remember from this entry?",
+      ],
+    };
+  }
 }
