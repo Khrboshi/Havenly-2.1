@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
-import {
-  canConsumeCredit,
-  consumeCredit,
-} from "@/lib/creditRules";
+import { decrementCreditIfAllowed } from "@/lib/creditRules";
 import { generateReflectionFromEntry } from "@/lib/ai/generateReflection";
 
 export const dynamic = "force-dynamic";
@@ -23,40 +20,47 @@ export async function POST(req: Request) {
   const body = await req.json();
 
   /**
-   * 🔍 CHECK CREDIT — NO MUTATION
+   * 🔒 CREDIT ENFORCEMENT — SINGLE SOURCE OF TRUTH
    */
-  const allowed = await canConsumeCredit({
+  const creditResult = await decrementCreditIfAllowed({
     supabase,
     userId,
+    feature: "ai_reflection",
   });
 
-  if (!allowed.ok) {
-    return NextResponse.json(
-      { error: "Reflection limit reached" },
-      { status: 402 }
-    );
-  }
+  if (!creditResult.ok) {
+    // Only trigger upgrade flow if we are sure it is the limit.
+    if (creditResult.reason === "limit_reached") {
+      return NextResponse.json(
+        { error: "Reflection limit reached" },
+        { status: 402 }
+      );
+    }
 
-  /**
-   * 🧠 AI GENERATION
-   */
-  let reflection;
-  try {
-    reflection = await generateReflectionFromEntry({
-      content: body.content,
-      title: body.title,
-    });
-  } catch {
+    // Otherwise, do not mislead the UI into showing "limit reached".
     return NextResponse.json(
-      { error: "Failed to generate reflection" },
+      { error: creditResult.reason || "Unable to verify credits" },
       { status: 500 }
     );
   }
 
   /**
-   * ✅ CONSUME CREDIT ONLY AFTER SUCCESS
+   * 🧠 AI GENERATION (only reached if credit allowed)
    */
-  await consumeCredit({ supabase, userId });
+  try {
+    const reflection = await generateReflectionFromEntry({
+      content: body.content,
+      title: body.title,
+    });
 
-  return NextResponse.json({ reflection });
+    return NextResponse.json({
+      reflection,
+      remainingCredits: creditResult.remaining,
+    });
+  } catch (err) {
+    return NextResponse.json(
+      { error: "Failed to generate reflection" },
+      { status: 500 }
+    );
+  }
 }
