@@ -1,4 +1,3 @@
-// app/api/user/plan/route.ts
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { ensureCreditsFresh } from "@/lib/creditRules";
@@ -6,12 +5,6 @@ import { ensureCreditsFresh } from "@/lib/creditRules";
 export const dynamic = "force-dynamic";
 
 type PlanType = "FREE" | "TRIAL" | "PREMIUM";
-
-/**
- * Must match lib/creditRules.ts
- * Kept locally to avoid changing other files/exports.
- */
-const FREE_MONTHLY_CREDITS = 3;
 
 function safeJson(data: {
   planType: PlanType;
@@ -33,6 +26,60 @@ function safeJson(data: {
   );
 }
 
+async function readCreditsFlexible({
+  supabase,
+  userId,
+}: {
+  supabase: any;
+  userId: string;
+}): Promise<{
+  ok: boolean;
+  planType?: PlanType;
+  credits?: number;
+  renewalDate?: string | null;
+}> {
+  // Try schema A: plan_type
+  const a = await supabase
+    .from("user_credits")
+    .select("plan_type, credits, renewal_date")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (!a.error && a.data) {
+    const planType = String(a.data.plan_type || "FREE").toUpperCase() as PlanType;
+    return {
+      ok: true,
+      planType: planType === "PREMIUM" || planType === "TRIAL" ? planType : "FREE",
+      credits: typeof a.data.credits === "number" ? a.data.credits : 0,
+      renewalDate: typeof a.data.renewal_date === "string" ? a.data.renewal_date : null,
+    };
+  }
+
+  const msg = String((a.error as any)?.message || "");
+  if (!msg.toLowerCase().includes("plan_type")) {
+    return { ok: false };
+  }
+
+  // Try schema B: plan
+  const b = await supabase
+    .from("user_credits")
+    .select("plan, credits, renewal_date")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (!b.error && b.data) {
+    const planType = String(b.data.plan || "FREE").toUpperCase() as PlanType;
+    return {
+      ok: true,
+      planType: planType === "PREMIUM" || planType === "TRIAL" ? planType : "FREE",
+      credits: typeof b.data.credits === "number" ? b.data.credits : 0,
+      renewalDate: typeof b.data.renewal_date === "string" ? b.data.renewal_date : null,
+    };
+  }
+
+  return { ok: false };
+}
+
 export async function GET() {
   try {
     const supabase = createServerSupabase();
@@ -50,49 +97,21 @@ export async function GET() {
       });
     }
 
-    /**
-     * ✅ Canonical source: user_credits
-     * - provisions & refreshes monthly credits safely
-     */
+    // Canonical source: user_credits (also provisions new users + refreshes monthly)
     await ensureCreditsFresh({ supabase, userId: user.id });
 
-    const { data: creditsRow, error: creditsErr } = await supabase
-      .from("user_credits")
-      .select("plan_type, credits, renewal_date")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (!creditsErr && creditsRow) {
-      const planType = String(creditsRow.plan_type || "FREE").toUpperCase() as PlanType;
-
+    const creditsRead = await readCreditsFlexible({ supabase, userId: user.id });
+    if (creditsRead.ok) {
       return safeJson({
-        planType: planType === "PREMIUM" || planType === "TRIAL" ? planType : "FREE",
-        credits: typeof creditsRow.credits === "number" ? creditsRow.credits : 0,
-        renewalDate: typeof creditsRow.renewal_date === "string" ? creditsRow.renewal_date : null,
+        planType: creditsRead.planType!,
+        credits: creditsRead.credits!,
+        renewalDate: creditsRead.renewalDate ?? null,
       });
     }
 
-    /**
-     * ✅ CRITICAL UX SAFETY (prevents false "limit reached" for new users)
-     * If user_credits cannot be read (often due to RLS/missing policy),
-     * do NOT treat the user as having 0 credits — that creates a false warning.
-     *
-     * Instead, return the Free default allowance so the UI remains truthful.
-     */
-    if (creditsErr) {
-      console.error("user_credits read failed in /api/user/plan:", creditsErr.message);
-      return safeJson({
-        planType: "FREE",
-        credits: FREE_MONTHLY_CREDITS,
-        renewalDate: null,
-      });
-    }
-
-    /**
-     * Fallbacks preserved (do not break prior setups):
-     * 1) user_plans
-     * 2) profiles
-     */
+    // Fallbacks preserved (do not break prior setups):
+    // 1) user_plans
+    // 2) profiles
     try {
       const { data, error } = await supabase
         .from("user_plans")
@@ -105,7 +124,7 @@ export async function GET() {
 
         return safeJson({
           planType: planType === "PREMIUM" || planType === "TRIAL" ? planType : "FREE",
-          credits: typeof data.credits === "number" ? data.credits : FREE_MONTHLY_CREDITS,
+          credits: typeof data.credits === "number" ? data.credits : 0,
           renewalDate: typeof data.renewal_date === "string" ? data.renewal_date : null,
         });
       }
@@ -125,7 +144,7 @@ export async function GET() {
 
         return safeJson({
           planType: planType === "PREMIUM" || planType === "TRIAL" ? planType : "FREE",
-          credits: typeof data.credits === "number" ? data.credits : FREE_MONTHLY_CREDITS,
+          credits: typeof data.credits === "number" ? data.credits : 0,
           renewalDate: typeof data.renewal_date === "string" ? data.renewal_date : null,
         });
       }
@@ -133,10 +152,9 @@ export async function GET() {
       // fall through
     }
 
-    // Final safe default for authenticated users
     return safeJson({
       planType: "FREE",
-      credits: FREE_MONTHLY_CREDITS,
+      credits: 0,
       renewalDate: null,
     });
   } catch (err) {
