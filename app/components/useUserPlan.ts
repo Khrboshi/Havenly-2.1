@@ -35,12 +35,15 @@ export function useUserPlan() {
 
       const data: PlanResponse = await res.json();
 
-      setPlanType(data.planType || data.plan || "FREE");
+      const resolvedPlan =
+        data.planType || data.plan || "FREE";
+
+      setPlanType(resolvedPlan);
       setCredits(typeof data.credits === "number" ? data.credits : 0);
       setRenewalDate(data.renewalDate ?? null);
     } catch (err) {
-      setError("Unable to load plan information");
       console.error("useUserPlan error:", err);
+      setError("Unable to load plan information");
     } finally {
       setLoading(false);
     }
@@ -51,7 +54,12 @@ export function useUserPlan() {
   }, [fetchPlan]);
 
   return {
+    // ✅ canonical
     planType,
+
+    // ✅ backward compatibility (DO NOT REMOVE)
+    plan: planType,
+
     credits,
     renewalDate,
     loading,
