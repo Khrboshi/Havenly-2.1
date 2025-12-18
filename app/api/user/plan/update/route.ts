@@ -1,72 +1,58 @@
-// app/api/user/plan/update/route.ts
-
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const newPlanRaw = (body.plan || "free") as string;
+  const supabase = createServerSupabase();
 
-    const allowedPlans = ["FREE", "PREMIUM", "TRIAL"];
-    let newPlan = newPlanRaw.toUpperCase();
-    if (!allowedPlans.includes(newPlan)) {
-      newPlan = "FREE";
-    }
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
-    const supabase = createServerSupabase();
-
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return NextResponse.json(
-        { error: "User not authenticated" },
-        { status: 401 }
-      );
-    }
-
-    // Preserve existing behavior
-    const { error: upsertPlanError } = await supabase
-      .from("user_plans")
-      .upsert(
-        {
-          user_id: user.id,
-          plan_type: newPlan,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id" }
-      );
-
-    if (upsertPlanError) {
-      console.error("Plan upsert error:", upsertPlanError.message);
-      return NextResponse.json(
-        { error: upsertPlanError.message },
-        { status: 500 }
-      );
-    }
-
-    // Keep canonical table aligned as well (best-effort, non-breaking)
-    try {
-      await supabase
-        .from("user_credits")
-        .upsert(
-          {
-            user_id: user.id,
-            plan_type: newPlan,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "user_id" }
-        );
-    } catch {
-      // Do not fail the request if user_credits is not available in this environment.
-    }
-
-    return NextResponse.json({ success: true, plan: newPlan });
-  } catch (e) {
-    console.error("Plan update error:", e);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const userId = session.user.id;
+  const body = await req.json();
+  const targetPlan = body?.plan;
+
+  if (!["FREE", "TRIAL", "PREMIUM"].includes(targetPlan)) {
+    return NextResponse.json(
+      { error: "Invalid plan type" },
+      { status: 400 }
+    );
+  }
+
+  /**
+   * 🔒 SINGLE SOURCE OF TRUTH — user_credits
+   */
+  const { error } = await supabase
+    .from("user_credits")
+    .upsert(
+      {
+        user_id: userId,
+        plan_type: targetPlan,
+        // Optional but recommended reset logic
+        credits_remaining:
+          targetPlan === "PREMIUM"
+            ? 9999
+            : targetPlan === "TRIAL"
+            ? 10
+            : 3,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" }
+    );
+
+  if (error) {
+    console.error("Plan update failed:", error);
+    return NextResponse.json(
+      { error: "Failed to update plan" },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({ success: true });
 }
