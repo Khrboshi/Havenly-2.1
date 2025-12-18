@@ -2,96 +2,56 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-export type PlanType = "FREE" | "PREMIUM" | "TRIAL" | null;
+type PlanType = "FREE" | "TRIAL" | "PREMIUM";
 
-export interface UserPlanState {
-  loading: boolean;
-  error: string | null;
-
-  // Legacy compatibility
-  plan: PlanType;
-
-  // Canonical field
+type PlanResponse = {
   planType: PlanType;
-
-  credits: number | null;
+  plan?: PlanType; // backward compatibility
+  credits: number;
   renewalDate: string | null;
+};
 
-  // Derived helpers (required by JournalEntryClient)
-  isPremium: boolean;
+export function useUserPlan() {
+  const [planType, setPlanType] = useState<PlanType>("FREE");
+  const [credits, setCredits] = useState<number>(0);
+  const [renewalDate, setRenewalDate] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Future-safe (used by some clients)
-  refresh: () => void;
-}
+  const fetchPlan = useCallback(async () => {
+    setLoading(true);
 
-/**
- * Unified user plan hook.
- * Backwards compatible with all existing consumers.
- */
-export function useUserPlan(): UserPlanState {
-  const [state, setState] = useState<Omit<UserPlanState, "isPremium" | "refresh">>(
-    {
-      loading: true,
-      error: null,
-      plan: null,
-      planType: null,
-      credits: null,
-      renewalDate: null,
-    }
-  );
-
-  const loadPlan = useCallback(async () => {
     try {
       const res = await fetch("/api/user/plan", {
+        method: "GET",
         cache: "no-store",
       });
 
       if (!res.ok) {
-        throw new Error("Plan fetch failed");
+        console.error("Failed to fetch plan:", res.status);
+        return;
       }
 
-      const data = await res.json();
+      const data: PlanResponse = await res.json();
 
-      const normalizedPlan: PlanType =
-        typeof data.planType === "string"
-          ? (data.planType.toUpperCase() as PlanType)
-          : typeof data.plan === "string"
-          ? (data.plan.toUpperCase() as PlanType)
-          : "FREE";
-
-      setState({
-        loading: false,
-        error: null,
-        plan: normalizedPlan,
-        planType: normalizedPlan,
-        credits: typeof data.credits === "number" ? data.credits : 0,
-        renewalDate:
-          typeof data.renewalDate === "string" ? data.renewalDate : null,
-      });
+      setPlanType(data.planType || data.plan || "FREE");
+      setCredits(typeof data.credits === "number" ? data.credits : 0);
+      setRenewalDate(data.renewalDate ?? null);
     } catch (err) {
       console.error("useUserPlan error:", err);
-
-      setState({
-        loading: false,
-        error: "Unable to load plan information.",
-        plan: "FREE",
-        planType: "FREE",
-        credits: 0,
-        renewalDate: null,
-      });
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    loadPlan();
-  }, [loadPlan]);
-
-  const isPremium =
-    state.planType === "PREMIUM" || state.planType === "TRIAL";
+    fetchPlan();
+  }, [fetchPlan]);
 
   return {
-    ...state,
-    isPremium,
-    refresh: loadPlan,
+    planType,
+    credits,
+    renewalDate,
+    loading,
+    refresh: fetchPlan,
   };
 }
