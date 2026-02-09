@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { decrementCreditIfAllowed } from "@/lib/creditRules";
+import { decrementCreditIfAllowed } from "@/lib/supabase/creditRules";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: Request) {
   const supabase = createServerSupabase();
-
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -17,29 +16,23 @@ export async function GET() {
 
   const userId = session.user.id;
 
-  // Ensure credits are fresh WITHOUT consuming
-  await decrementCreditIfAllowed({
-    supabase,
-    userId,
-    feature: "__noop__",
-  });
+  try {
+    const { data, error } = await supabase
+      .from("user_credits")
+      .select("plan_type, remaining_credits")
+      .eq("user_id", userId)
+      .maybeSingle();
 
-  const { data, error } = await supabase
-    .from("user_credits")
-    .select("plan_type, credits_remaining, updated_at")
-    .eq("user_id", userId)
-    .maybeSingle();
+    if (error) throw error;
 
-  if (error) {
-    return NextResponse.json(
-      { error: "Failed to load credits" },
-      { status: 500 }
-    );
+    const creditInfo = {
+      plan: data?.plan_type || "FREE",
+      remaining: data?.remaining_credits ?? 0,
+    };
+
+    return NextResponse.json(creditInfo, { status: 200 });
+  } catch (err) {
+    console.error("Credits fetch failed:", err);
+    return NextResponse.json({ error: "Unable to fetch credits" }, { status: 500 });
   }
-
-  return NextResponse.json({
-    planType: data?.plan_type ?? "FREE",
-    credits: data?.credits_remaining ?? 0,
-    renewalDate: data?.updated_at ?? null,
-  });
 }
