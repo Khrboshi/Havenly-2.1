@@ -1,28 +1,24 @@
-// lib/analytics.ts
-import { SupabaseClient } from "@supabase/supabase-js";
-import { createServerSupabase } from "@/lib/supabase/server";
+import { createServerSupabase } from "./supabase/server";
 
-type TrackEventParams = {
-  supabase?: SupabaseClient;
-  userId?: string | null;
-  event: string;
-  source?: string;
-};
-
-export async function trackEvent(params: TrackEventParams) {
-  const { supabase: provided, userId, event, source } = params;
-
-  const supabase = provided ?? createServerSupabase();
-
+/**
+ * Minimal server-side analytics tracker.
+ * Writes into `analytics_events` if it exists; never throws.
+ */
+export async function trackEvent(
+  userId: string | null,
+  event: string,
+  context?: Record<string, any>
+) {
   try {
-    await (supabase.from("analytics_events") as unknown as any).insert({
-      user_id: userId ?? null,
+    const supabase = createServerSupabase();
+
+    await (supabase.from("analytics_events") as any).insert({
+      user_id: userId,
       event,
-      source: source ?? null,
+      context: context ?? null,
       created_at: new Date().toISOString(),
     });
-  } catch (err) {
-    // Analytics must never block product flows.
-    console.warn("trackEvent failed:", err);
+  } catch {
+    // Never block app on analytics
   }
 }
