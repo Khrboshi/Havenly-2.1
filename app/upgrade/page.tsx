@@ -13,7 +13,6 @@ import { trackEvent } from "@/lib/analytics";
  * ✔ Copy preserved
  * ✔ Server-side analytics added (safe, single fire)
  */
-
 export default async function UpgradePage() {
   const supabase = createServerSupabase();
   const {
@@ -23,13 +22,9 @@ export default async function UpgradePage() {
   const isLoggedIn = !!session;
 
   /**
-   * STEP 5 — Analytics
-   * Track intentional upgrade page views (server-side, no duplication)
+   * Analytics: Track intentional upgrade page views (server-side)
    */
-  await trackEvent({
-    supabase,
-    userId: session?.user?.id,
-    event: "upgrade_page_viewed",
+  await trackEvent(session?.user?.id ?? null, "upgrade_page_viewed", {
     source: "upgrade_page",
   });
 
@@ -51,9 +46,10 @@ export default async function UpgradePage() {
             </h1>
 
             <p className="mt-3 max-w-xl text-sm text-slate-300">
-              Havenly’s Free plan includes <strong>3 AI reflections per month</strong>,
-              with unlimited personal journaling. Premium removes those limits and
-              unlocks richer, evolving insights as you continue reflecting.
+              Havenly’s Free plan includes{" "}
+              <strong>3 AI reflections per month</strong>, with unlimited
+              personal journaling. Premium removes those limits and unlocks
+              richer, evolving insights as you continue reflecting.
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3 text-sm">
@@ -82,14 +78,11 @@ export default async function UpgradePage() {
                   Premium is for you if…
                 </h2>
                 <ul className="mt-3 space-y-2 text-slate-300">
+                  <li>• You want unlimited AI reflections without monthly limits.</li>
+                  <li>• You value deeper responses and insights that grow over time.</li>
                   <li>
-                    • You want unlimited AI reflections without monthly limits.
-                  </li>
-                  <li>
-                    • You value deeper responses and insights that grow over time.
-                  </li>
-                  <li>
-                    • You’re ready to invest a small monthly amount in clarity and self-understanding.
+                    • You’re ready to invest a small monthly amount in clarity and
+                    self-understanding.
                   </li>
                 </ul>
               </div>
@@ -104,9 +97,7 @@ export default async function UpgradePage() {
 
             <p className="mt-3 text-3xl font-semibold text-emerald-200">
               $25
-              <span className="text-base font-normal text-slate-400">
-                /month
-              </span>
+              <span className="text-base font-normal text-slate-400">/month</span>
             </p>
 
             <ul className="mt-5 space-y-2 text-sm text-slate-200">
@@ -117,8 +108,8 @@ export default async function UpgradePage() {
             </ul>
 
             <div className="mt-6 rounded-xl border border-slate-800 bg-slate-950/70 p-4 text-xs text-slate-300">
-              Free includes 3 AI reflections per month. Premium removes limits and
-              grows with Havenly as new features are introduced.
+              Free includes 3 AI reflections per month. Premium removes limits
+              and grows with Havenly as new features are introduced.
             </div>
           </div>
         </div>
