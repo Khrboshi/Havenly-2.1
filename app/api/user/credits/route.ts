@@ -1,38 +1,50 @@
+// app/api/user/credits/route.ts
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { decrementCreditIfAllowed } from "@/lib/supabase/creditRules";
+import { ensureCreditsFresh } from "@/lib/creditRules";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: Request) {
-  const supabase = createServerSupabase();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const userId = session.user.id;
-
+/**
+ * Returns remaining credits for the authenticated user.
+ * Canonical source: user_credits. Safe to call from dashboard.
+ */
+export async function GET() {
   try {
+    const supabase = createServerSupabase();
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = session.user.id;
+
+    await ensureCreditsFresh({ supabase, userId });
+
     const { data, error } = await supabase
       .from("user_credits")
-      .select("plan_type, remaining_credits")
+      .select("credits")
       .eq("user_id", userId)
       .maybeSingle();
 
-    if (error) throw error;
+    if (error) {
+      console.error("GET /api/user/credits failed:", error);
+      return NextResponse.json({ credits: 0 }, { status: 200 });
+    }
 
-    const creditInfo = {
-      plan: data?.plan_type || "FREE",
-      remaining: data?.remaining_credits ?? 0,
-    };
+    const credits =
+      typeof (data as any)?.credits === "number" ? (data as any).credits : 0;
 
-    return NextResponse.json(creditInfo, { status: 200 });
+    return NextResponse.json(
+      { credits },
+      { headers: { "Cache-Control": "no-store, max-age=0" } }
+    );
   } catch (err) {
-    console.error("Credits fetch failed:", err);
-    return NextResponse.json({ error: "Unable to fetch credits" }, { status: 500 });
+    console.error("GET /api/user/credits failed:", err);
+    return NextResponse.json({ credits: 0 }, { status: 200 });
   }
 }
