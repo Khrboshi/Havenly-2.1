@@ -1,18 +1,9 @@
-// app/api/ai/reflection/route.ts
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { decrementCreditIfAllowed } from "@/lib/creditRules";
 import { generateReflectionFromEntry } from "@/lib/ai/generateReflection";
 
 export const dynamic = "force-dynamic";
-
-type PlanType = "FREE" | "PREMIUM" | "TRIAL";
-
-function normalizePlan(v: unknown): PlanType {
-  const p = String(v ?? "FREE").toUpperCase();
-  if (p === "PREMIUM" || p === "TRIAL") return p as PlanType;
-  return "FREE";
-}
 
 export async function POST(req: Request) {
   const supabase = createServerSupabase();
@@ -39,7 +30,10 @@ export async function POST(req: Request) {
 
   if (!creditResult.ok) {
     if (creditResult.reason === "limit_reached") {
-      return NextResponse.json({ error: "Reflection limit reached" }, { status: 402 });
+      return NextResponse.json(
+        { error: "Reflection limit reached" },
+        { status: 402 }
+      );
     }
 
     return NextResponse.json(
@@ -49,8 +43,8 @@ export async function POST(req: Request) {
   }
 
   /**
-   * 🧠 READ PLAN (for prompt depth). Canonical: user_credits.plan_type
-   * Fallback: FREE
+   * 🧠 DETERMINE USER PLAN (FREE vs PREMIUM)
+   * Canonical source: user_credits → fallback to FREE
    */
   let plan: "FREE" | "PREMIUM" = "FREE";
 
@@ -61,10 +55,11 @@ export async function POST(req: Request) {
       .eq("user_id", userId)
       .maybeSingle();
 
-    const planType = normalizePlan((data as any)?.plan_type);
-    plan = planType === "PREMIUM" ? "PREMIUM" : "FREE";
+    if (data?.plan_type === "PREMIUM") {
+      plan = "PREMIUM";
+    }
   } catch {
-    // silent fallback
+    // Silent fallback to FREE (never block reflection)
   }
 
   /**
@@ -83,6 +78,10 @@ export async function POST(req: Request) {
     });
   } catch (err) {
     console.error("Reflection generation failed:", err);
-    return NextResponse.json({ error: "Failed to generate reflection" }, { status: 500 });
+
+    return NextResponse.json(
+      { error: "Failed to generate reflection" },
+      { status: 500 }
+    );
   }
 }
