@@ -1,58 +1,41 @@
+// app/api/user/plan/update/route.ts
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { setUserPlan, PlanType } from "@/lib/creditRules";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
-  const supabase = createServerSupabase();
+  try {
+    const supabase = createServerSupabase();
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = session.user.id;
+
+    const body = await req.json().catch(() => ({}));
+    const target = String(body?.plan ?? "").toUpperCase();
+
+    const targetPlan: PlanType =
+      target === "PREMIUM" || target === "TRIAL" || target === "FREE"
+        ? (target as PlanType)
+        : "FREE";
+
+    if (!["FREE", "TRIAL", "PREMIUM"].includes(targetPlan)) {
+      return NextResponse.json({ error: "Invalid plan type" }, { status: 400 });
+    }
+
+    await setUserPlan({ supabase, userId, planType: targetPlan });
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("POST /api/user/plan/update failed:", err);
+    return NextResponse.json({ error: "Failed to update plan" }, { status: 500 });
   }
-
-  const userId = session.user.id;
-  const body = await req.json();
-  const targetPlan = body?.plan;
-
-  if (!["FREE", "TRIAL", "PREMIUM"].includes(targetPlan)) {
-    return NextResponse.json(
-      { error: "Invalid plan type" },
-      { status: 400 }
-    );
-  }
-
-  /**
-   * 🔒 SINGLE SOURCE OF TRUTH — user_credits
-   */
-  const { error } = await supabase
-    .from("user_credits")
-    .upsert(
-      {
-        user_id: userId,
-        plan_type: targetPlan,
-        // Optional but recommended reset logic
-        credits_remaining:
-          targetPlan === "PREMIUM"
-            ? 9999
-            : targetPlan === "TRIAL"
-            ? 10
-            : 3,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id" }
-    );
-
-  if (error) {
-    console.error("Plan update failed:", error);
-    return NextResponse.json(
-      { error: "Failed to update plan" },
-      { status: 500 }
-    );
-  }
-
-  return NextResponse.json({ success: true });
 }
