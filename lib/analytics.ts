@@ -1,33 +1,28 @@
-import { createServerSupabase } from "./server";
+// lib/analytics.ts
+import { SupabaseClient } from "@supabase/supabase-js";
+import { createServerSupabase } from "@/lib/supabase/server";
 
-/**
- * Record analytics and engagement events in Supabase.
- * Works in API routes or Server Components.
- */
-export async function trackEvent(
-  userId: string,
-  event: string,
-  context: Record<string, any> = {}
-) {
+type TrackEventParams = {
+  supabase?: SupabaseClient;
+  userId?: string | null;
+  event: string;
+  source?: string;
+};
+
+export async function trackEvent(params: TrackEventParams) {
+  const { supabase: provided, userId, event, source } = params;
+
+  const supabase = provided ?? createServerSupabase();
+
   try {
-    const supabase = createServerSupabase();
-    const { error } = await supabase
-      .from("analytics_events")
-      .insert([{ user_id: userId, event, context }]);
-    if (error) console.error("Analytics trackEvent error:", error);
+    await (supabase.from("analytics_events") as unknown as any).insert({
+      user_id: userId ?? null,
+      event,
+      source: source ?? null,
+      created_at: new Date().toISOString(),
+    });
   } catch (err) {
-    console.error("Analytics insert failed:", err);
+    // Analytics must never block product flows.
+    console.warn("trackEvent failed:", err);
   }
-}
-
-export async function getUserEvents(userId: string, limit = 100) {
-  const supabase = createServerSupabase();
-  const { data, error } = await supabase
-    .from("analytics_events")
-    .select("*")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(limit);
-  if (error) throw error;
-  return data;
 }
