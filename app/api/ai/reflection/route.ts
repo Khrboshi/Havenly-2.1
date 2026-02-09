@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { decrementCreditIfAllowed } from "@/lib/creditRules";
+import { decrementCreditIfAllowed } from "@/lib/supabase/creditRules";
 import { generateReflectionFromEntry } from "@/lib/ai/generateReflection";
 
 export const dynamic = "force-dynamic";
@@ -44,7 +44,6 @@ export async function POST(req: Request) {
 
   /**
    * 🧠 DETERMINE USER PLAN (FREE vs PREMIUM)
-   * Canonical source: user_credits → fallback to FREE
    */
   let plan: "FREE" | "PREMIUM" = "FREE";
 
