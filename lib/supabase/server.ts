@@ -1,7 +1,11 @@
 import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, SupabaseClient } from "@supabase/ssr";
 
-export function createServerSupabase() {
+/**
+ * Per-request Supabase client that works in RSC/SSR contexts.
+ * Automatically manages token rotation through cookies.
+ */
+export const createServerSupabase = (): SupabaseClient => {
   const cookieStore = cookies();
 
   return createServerClient(
@@ -9,10 +13,6 @@ export function createServerSupabase() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        /**
-         * Supabase SSR expects getAll/setAll so it can refresh/rotate auth cookies
-         * during server requests (route handlers, server components, etc.).
-         */
         getAll() {
           return cookieStore.getAll();
         },
@@ -22,14 +22,10 @@ export function createServerSupabase() {
               cookieStore.set(name, value, options);
             });
           } catch {
-            /**
-             * In some server-rendered contexts (e.g., certain Server Components),
-             * Next.js cookie store may be read-only. Middleware already refreshes
-             * cookies broadly, so we safely no-op here to avoid runtime crashes.
-             */
+            // Safe no‑op for read‑only cookie contexts.
           }
         },
       },
     }
   );
-}
+};
