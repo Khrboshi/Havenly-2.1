@@ -1,12 +1,13 @@
 // lib/ai/generateReflection.ts
-import Groq from "groq-sdk";
+// Groq (OpenAI-compatible) reflection generator
+// Uses: https://api.groq.com/openai/v1/chat/completions :contentReference[oaicite:0]{index=0}
 
 export type Reflection = {
   summary: string;
   themes: string[];
   emotions: string[];
   gentle_next_step: string;
-  questions: string[]; // keep exactly 2 for UI consistency
+  questions: string[];
 };
 
 type Input = {
@@ -19,65 +20,38 @@ function safeJsonParse<T>(raw: string): T | null {
   try {
     return JSON.parse(raw) as T;
   } catch {
+    // Try to extract JSON if model wrapped it in text
+    const start = raw.indexOf("{");
+    const end = raw.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      try {
+        return JSON.parse(raw.slice(start, end + 1)) as T;
+      } catch {
+        return null;
+      }
+    }
     return null;
   }
 }
 
-function normalizeArrayStrings(v: unknown, fallback: string[] = []): string[] {
-  if (!Array.isArray(v)) return fallback;
-  return v
-    .map((x) => (typeof x === "string" ? x.trim() : ""))
-    .filter(Boolean)
-    .slice(0, 8);
-}
-
-function normalizeString(v: unknown, fallback = ""): string {
-  return typeof v === "string" ? v.trim() : fallback;
-}
-
-function normalizeQuestions(v: unknown): string[] {
-  const arr = normalizeArrayStrings(v, []);
-  // force exactly 2 questions (your UI says "Two questions")
-  if (arr.length >= 2) return arr.slice(0, 2);
-  if (arr.length === 1)
-    return [arr[0], "What would feel like a small, realistic next step this week?"];
-  return [
-    "What feels most important underneath what you wrote?",
-    "What is one small, realistic step you could take in the next 24 hours?",
-  ];
-}
-
-function buildPrompt({ title, content, plan }: Input) {
-  const depth =
-    plan === "PREMIUM"
-      ? "Go deeper. Name tensions, patterns, and possible needs. Offer nuanced, specific language."
-      : "Be concise but still specific. Avoid generic advice.";
+function normalizeReflection(r: any): Reflection {
+  const summary = typeof r?.summary === "string" ? r.summary.trim() : "";
+  const themes = Array.isArray(r?.themes) ? r.themes.map(String).slice(0, 7) : [];
+  const emotions = Array.isArray(r?.emotions) ? r.emotions.map(String).slice(0, 7) : [];
+  const gentle_next_step =
+    typeof r?.gentle_next_step === "string" ? r.gentle_next_step.trim() : "";
+  const questions = Array.isArray(r?.questions)
+    ? r.questions.map(String).slice(0, 4)
+    : [];
 
   return {
-    system: [
-      "You are Havenly, a calm and insightful journaling companion.",
-      "You must return ONLY valid JSON. No markdown, no extra text.",
-      "Tone: warm, non-clinical, grounded. Avoid therapy disclaimers.",
-      "Never mention model names, pricing, tokens, or providers.",
-      "No diagnoses. No moralizing.",
-      "",
-      "Output JSON schema:",
-      "{",
-      '  "summary": string (1–2 sentences, reflective + specific),',
-      '  "themes": string[] (3–6 items, concrete phrases),',
-      '  "emotions": string[] (3–6 items, plain emotion words),',
-      '  "gentle_next_step": string (1 practical step, small + doable in <15 minutes),',
-      '  "questions": string[] (EXACTLY 2 questions, open-ended, not yes/no)',
-      "}",
-    ].join("\n"),
-    user: [
-      depth,
-      "",
-      "Journal entry:",
-      `Title: ${title?.trim() ? title.trim() : "(none)"}`,
-      "Content:",
-      content,
-    ].join("\n"),
+    summary: summary || "A reflective summary could not be generated.",
+    themes: themes.length ? themes : ["reflection"],
+    emotions: emotions.length ? emotions : ["neutral"],
+    gentle_next_step: gentle_next_step || "Take 2 minutes to write one honest sentence about what you need most right now.",
+    questions: questions.length
+      ? questions
+      : ["What is the smallest next step that would make today feel 1% better?"],
   };
 }
 
@@ -87,44 +61,76 @@ export async function generateReflectionFromEntry(input: Input): Promise<Reflect
     throw new Error("Missing GROQ_API_KEY");
   }
 
-  const groq = new Groq({ apiKey });
+  // ✅ Use a currently supported Groq model (Mixtral 8x7b 32768 is decommissioned)
+  // Groq docs show examples like llama-3.3-70b-versatile. :contentReference[oaicite:1]{index=1}
+  const model = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
 
-  // Updated Groq models (Mixtral is decommissioned)
-  const model =
-    input.plan === "PREMIUM" ? "llama-3.3-70b-versatile" : "llama-3.1-8b-instant";
+  const titleLine = input.title?.trim() ? `Title: ${input.title.trim()}\n` : "";
+  const entryText = `${titleLine}Entry:\n${input.content.trim()}`;
 
-  const { system, user } = buildPrompt(input);
+  // Stronger prompt to avoid shallow/obvious outputs
+  const system = `
+You are Havenly, a careful reflective journaling assistant.
+Goal: help the user understand patterns, name what matters, and suggest a tiny, realistic next step.
 
-  const completion = await groq.chat.completions.create({
-    model,
-    temperature: input.plan === "PREMIUM" ? 0.6 : 0.5,
+Rules:
+- Be compassionate, practical, and specific.
+- Do NOT diagnose. Do NOT mention therapy unless the user asks.
+- Avoid generic phrases (e.g., "practice self-care" without specifics).
+- Extract meaning from the user's exact words and details.
+- Output MUST be valid JSON ONLY (no markdown, no extra text).
 
-    // ✅ Groq SDK expects max_tokens (not max_completion_tokens)
-    max_tokens: input.plan === "PREMIUM" ? 700 : 450,
+Return JSON schema EXACTLY:
+{
+  "summary": "2-4 sentences. Mirror key tensions + what seems important.",
+  "themes": ["3-6 short themes, concrete"],
+  "emotions": ["3-6 emotions, nuanced but plain"],
+  "gentle_next_step": "One small action in <10 minutes, starts today, very specific",
+  "questions": ["2-4 targeted questions that unlock insight (not generic)"]
+}
+`.trim();
 
-    messages: [
-      { role: "system", content: system },
-      { role: "user", content: user },
-    ],
+  const user = `
+User plan: ${input.plan}
+Write a reflection for this journal entry.
+
+${entryText}
+`.trim();
+
+  // Token budget tuned by plan
+  const max_tokens = input.plan === "PREMIUM" ? 800 : 520;
+
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      temperature: input.plan === "PREMIUM" ? 0.6 : 0.5,
+      max_tokens, // ✅ correct field for chat completions (NOT max_completion_tokens)
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+    }),
   });
 
-  const raw = completion.choices?.[0]?.message?.content?.trim() ?? "";
-  const parsed = safeJsonParse<Partial<Reflection>>(raw);
-
-  if (!parsed) {
-    throw new Error(`Model returned non-JSON: ${raw.slice(0, 300)}`);
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Groq request failed (${res.status}): ${text}`);
   }
 
-  const reflection: Reflection = {
-    summary: normalizeString(parsed.summary, "A reflective summary wasn't available this time."),
-    themes: normalizeArrayStrings(parsed.themes, ["reflection", "self-awareness", "daily life"]),
-    emotions: normalizeArrayStrings(parsed.emotions, ["curious", "tired", "uncertain"]),
-    gentle_next_step: normalizeString(
-      parsed.gentle_next_step,
-      "Take 10 minutes to write what you most want right now, without judging it."
-    ),
-    questions: normalizeQuestions(parsed.questions),
-  };
+  const data: any = await res.json();
+  const content: string =
+    data?.choices?.[0]?.message?.content ?? "";
 
-  return reflection;
+  const parsed = safeJsonParse<any>(content);
+  if (!parsed) {
+    // If the model didn't comply, fail loudly so you see it in logs
+    throw new Error(`Model returned non-JSON output: ${content.slice(0, 400)}`);
+  }
+
+  return normalizeReflection(parsed);
 }
