@@ -17,7 +17,7 @@ function safeJson(data: {
       planType: data.planType,
       plan: data.planType, // backward compatibility
       credits: data.credits,
-      renewalDate: data.renewalDate, // null (we reset monthly via updated_at)
+      renewalDate: data.renewalDate,
     },
     { headers: { "Cache-Control": "no-store, max-age=0" } }
   );
@@ -45,7 +45,7 @@ export async function GET() {
 
     const { data, error } = await supabase
       .from("user_credits")
-      .select("plan_type, credits")
+      .select("plan_type, remaining_credits, renewal_date")
       .eq("user_id", user.id)
       .maybeSingle();
 
@@ -53,10 +53,12 @@ export async function GET() {
       return safeJson({ planType: "FREE", credits: 0, renewalDate: null });
     }
 
+    const r: any = data;
+
     return safeJson({
-      planType: normalizePlan((data as any).plan_type),
-      credits: typeof (data as any).credits === "number" ? (data as any).credits : 0,
-      renewalDate: null,
+      planType: normalizePlan(r.plan_type),
+      credits: typeof r.remaining_credits === "number" ? r.remaining_credits : 0,
+      renewalDate: r.renewal_date ?? null,
     });
   } catch (err) {
     console.error("GET /api/user/plan failed:", err);
