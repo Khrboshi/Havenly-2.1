@@ -5,17 +5,11 @@ export const dynamic = "force-dynamic";
 
 /**
  * POST /api/user/credits/use
- * Consumes reflection credits via RPC:
- *   consume_reflection_credit(p_amount int)
+ * Consumes credits atomically via DB function:
+ *   public.consume_reflection_credit(p_amount int) -> returns table(remaining_credits int)
  *
- * Expected RPC return:
- *  - remaining_credits (preferred)
- *  - credits (legacy fallback)
- *
- * Response:
- *  - 200: { ok: true, credits: number }
- *  - 402: { error: "No credits remaining" }
- *  - 401/400/500 as appropriate
+ * Body:
+ *  - amount?: number (default 1)
  */
 export async function POST(req: Request) {
   try {
@@ -38,31 +32,34 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
     }
 
-    // Atomic DB function
     const { data, error } = await supabase.rpc("consume_reflection_credit", {
       p_amount: amount,
     });
 
     if (error) {
-      const msg = String(error.message || "");
-      if (msg.toLowerCase().includes("not_authenticated")) {
+      const msg = String(error.message || "").toLowerCase();
+      if (msg.includes("not_authenticated")) {
         return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+      }
+      if (msg.includes("invalid_amount")) {
+        return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
       }
       console.error("consume_reflection_credit error:", error);
       return NextResponse.json({ error: "Failed to consume credits" }, { status: 500 });
     }
 
+    // Supabase RPC might return:
+    // - [] when no row returned (not enough credits)
+    // - [{ remaining_credits: n }] when success
     const row = Array.isArray(data) ? data[0] : data;
 
     const remaining =
       row && typeof (row as any).remaining_credits === "number"
         ? (row as any).remaining_credits
-        : row && typeof (row as any).credits === "number"
-        ? (row as any).credits
         : null;
 
     if (remaining === null) {
-      return NextResponse.json({ error: "No credits remaining" }, { status: 402 });
+      return NextResponse.json({ error: "Reflection limit reached" }, { status: 402 });
     }
 
     return NextResponse.json({ ok: true, credits: remaining });
