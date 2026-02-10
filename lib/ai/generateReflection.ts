@@ -15,29 +15,20 @@ export async function generateReflectionFromEntry({
   title,
   plan,
 }: ReflectionInput) {
-  const depthInstruction =
-    plan === "PREMIUM"
-      ? `
-Go deeper. Read between the lines.
-Name underlying tensions, values, or conflicts.
-Make the reflection feel personal and specific.
-`
-      : `
-Keep it gentle, supportive, and concise.
-Avoid therapy or diagnostic language.
+  const systemPrompt = `
+You are an emotionally intelligent reflection partner.
+
+You must respond with VALID JSON ONLY.
+Do not include markdown.
+Do not include explanations.
+Do not include text outside JSON.
+
+This is not therapy.
+Do not diagnose.
+Be thoughtful, human, and specific.
 `;
 
-  const prompt = `
-You are a calm, emotionally intelligent reflection partner.
-
-This is NOT therapy.
-Do NOT diagnose.
-Do NOT give advice unless invited.
-
-Your role is to reflect what the writer may not yet see.
-
-${depthInstruction}
-
+  const userPrompt = `
 Journal title:
 "${title || "Untitled"}"
 
@@ -46,7 +37,7 @@ Journal entry:
 ${content}
 """
 
-Return a JSON object with this exact structure:
+Return JSON in this exact shape:
 
 {
   "summary": "2–3 sentences capturing the emotional core",
@@ -54,38 +45,40 @@ Return a JSON object with this exact structure:
   "emotions": ["3–5 nuanced emotions"],
   "gentle_next_step": "One small, realistic step for today",
   "questions": [
-    "A question that invites insight",
-    "A question that invites self-compassion",
-    "A question that explores direction or meaning"
+    "Insightful question",
+    "Self-compassion question",
+    "Direction or meaning question"
   ]
 }
-
-Avoid generic phrases.
-Do not repeat the journal text.
-Sound like a thoughtful human who truly read this.
 `;
 
   const completion = await groq.chat.completions.create({
     model: "mixtral-8x7b-32768",
-    messages: [
-      {
-        role: "user",
-        content: prompt,
-      },
-    ],
     temperature: plan === "PREMIUM" ? 0.8 : 0.6,
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
+    ],
   });
 
   const raw = completion.choices[0]?.message?.content;
 
   if (!raw) {
-    throw new Error("Empty response from Groq");
+    throw new Error("Groq returned empty response");
+  }
+
+  // 🔒 SAFETY: extract JSON even if model adds text
+  const jsonMatch = raw.match(/\{[\s\S]*\}/);
+
+  if (!jsonMatch) {
+    console.error("Groq non-JSON output:", raw);
+    throw new Error("Groq did not return JSON");
   }
 
   try {
-    return JSON.parse(raw);
+    return JSON.parse(jsonMatch[0]);
   } catch (err) {
-    console.error("Failed to parse reflection JSON:", raw);
-    throw new Error("Invalid reflection format returned");
+    console.error("JSON parse failed:", jsonMatch[0]);
+    throw new Error("Invalid JSON from Groq");
   }
 }
