@@ -13,10 +13,82 @@ function normalizePlan(v: unknown): PlanType {
   return p === "PREMIUM" || p === "TRIAL" ? (p as PlanType) : "FREE";
 }
 
-export async function POST(req: Request) {
-  const supabase = createServerSupabase();
+function isParamMismatchError(msg: string) {
+  const m = msg.toLowerCase();
+  return (
+    m.includes("could not find the function") ||
+    m.includes("function") && m.includes("does not exist") ||
+    m.includes("unknown parameter") ||
+    m.includes("invalid input syntax") ||
+    m.includes("no function matches")
+  );
+}
 
-  // ✅ Auth: use getUser() (server-validated) instead of getSession()
+function isNoCreditsError(msg: string) {
+  const m = msg.toLowerCase();
+  return (
+    m.includes("no credits") ||
+    m.includes("insufficient") ||
+    m.includes("limit") ||
+    m.includes("quota") ||
+    m.includes("exceeded") ||
+    m.includes("remaining_credits") && m.includes("0")
+  );
+}
+
+async function consumeOneCredit(
+  supabase: any,
+  userId: string
+): Promise<{ ok: true; remaining: number } | { ok: false; status: number; error: string }> {
+  // Attempt #1 (most common): function expects (p_user_id, p_amount)
+  let rpcData: any = null;
+  let rpcErr: any = null;
+
+  const first = await supabase.rpc("consume_reflection_credit", {
+    p_user_id: userId,
+    p_amount: 1,
+  });
+
+  rpcData = first?.data;
+  rpcErr = first?.error;
+
+  // If function signature doesn’t match, fall back to (p_amount) only.
+  if (rpcErr && isParamMismatchError(String(rpcErr.message || ""))) {
+    const second = await supabase.rpc("consume_reflection_credit", { p_amount: 1 });
+    rpcData = second?.data;
+    rpcErr = second?.error;
+  }
+
+  if (rpcErr) {
+    const msg = String(rpcErr.message || "");
+
+    if (msg.toLowerCase().includes("not_authenticated")) {
+      return { ok: false, status: 401, error: "Unauthorized" };
+    }
+
+    if (isNoCreditsError(msg)) {
+      return { ok: false, status: 402, error: "Reflection limit reached" };
+    }
+
+    return { ok: false, status: 500, error: "Failed to consume credits" };
+  }
+
+  const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
+  const remaining =
+    row && typeof row.remaining_credits === "number" ? (row.remaining_credits as number) : null;
+
+  if (remaining === null) {
+    // Some implementations return null when credits are exhausted
+    return { ok: false, status: 402, error: "Reflection limit reached" };
+  }
+
+  return { ok: true, remaining };
+}
+
+export async function POST(req: Request) {
+  const supabase = await createServerSupabase();
+
+  // ✅ Auth (server-validated)
   const {
     data: { user },
     error: userErr,
@@ -45,10 +117,10 @@ export async function POST(req: Request) {
     );
   }
 
-  // ✅ Ensure monthly reset / row provisioning for FREE users
+  // ✅ Ensure monthly reset / row provisioning
   await ensureCreditsFresh({ supabase, userId });
 
-  // Get plan + credits
+  // Get plan + credits row
   const { data: creditsRow } = await supabase
     .from("user_credits")
     .select("plan_type, remaining_credits")
@@ -58,53 +130,18 @@ export async function POST(req: Request) {
   const planType = normalizePlan((creditsRow as any)?.plan_type);
   const isUnlimited = planType === "PREMIUM" || planType === "TRIAL";
 
-  // We’ll consume credits atomically ONLY for FREE users
-  // and refund (best-effort) if generation fails.
+  // We’ll consume credits atomically ONLY for FREE users.
+  // We refund (best-effort) if generation fails.
   let remainingAfterConsume: number | null = null;
 
   if (!isUnlimited) {
-    const { data: rpcData, error: rpcErr } = await supabase.rpc(
-      "consume_reflection_credit",
-      { p_amount: 1 }
-    );
+    const consumed = await consumeOneCredit(supabase, userId);
 
-    if (rpcErr) {
-      // If your function throws not_authenticated
-      const msg = String(rpcErr.message || "").toLowerCase();
-      if (msg.includes("not_authenticated")) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-
-      // If no credits: treat as 402 (Upgrade modal)
-      // Many implementations return empty result or custom error message
-      if (msg.includes("no credits") || msg.includes("insufficient")) {
-        return NextResponse.json(
-          { error: "Reflection limit reached" },
-          { status: 402 }
-        );
-      }
-
-      return NextResponse.json(
-        { error: "Failed to consume credits" },
-        { status: 500 }
-      );
+    if (!consumed.ok) {
+      return NextResponse.json({ error: consumed.error }, { status: consumed.status });
     }
 
-    const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
-
-    const remaining =
-      row && typeof (row as any).remaining_credits === "number"
-        ? (row as any).remaining_credits
-        : null;
-
-    if (remaining === null) {
-      return NextResponse.json(
-        { error: "Reflection limit reached" },
-        { status: 402 }
-      );
-    }
-
-    remainingAfterConsume = remaining;
+    remainingAfterConsume = consumed.remaining;
   }
 
   // 🧠 AI generation
@@ -112,14 +149,13 @@ export async function POST(req: Request) {
     const reflection = await generateReflectionFromEntry({
       content,
       title,
-      plan: planType === "PREMIUM" ? "PREMIUM" : "FREE",
+      // ✅ TRIAL should behave like PREMIUM quality
+      plan: planType === "PREMIUM" || planType === "TRIAL" ? "PREMIUM" : "FREE",
     });
 
     return NextResponse.json(
       {
         reflection,
-        // Keep the response stable: client can ignore this,
-        // but it helps debugging and future UI.
         remainingCredits: isUnlimited ? null : remainingAfterConsume,
       },
       { headers: { "Cache-Control": "no-store, max-age=0" } }
