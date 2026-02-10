@@ -1,4 +1,3 @@
-// lib/creditRules.ts
 import { SupabaseClient } from "@supabase/supabase-js";
 
 const FREE_MONTHLY_CREDITS = 3;
@@ -22,10 +21,7 @@ function normalizePlan(v: unknown): PlanType {
 
 function isSameUtcMonth(aIso: string, b: Date) {
   const a = new Date(aIso);
-  return (
-    a.getUTCFullYear() === b.getUTCFullYear() &&
-    a.getUTCMonth() === b.getUTCMonth()
-  );
+  return a.getUTCFullYear() === b.getUTCFullYear() && a.getUTCMonth() === b.getUTCMonth();
 }
 
 async function getCreditsRow(params: {
@@ -51,7 +47,7 @@ async function getCreditsRow(params: {
       plan_type: normalizePlan(r.plan_type),
       remaining_credits: typeof r.remaining_credits === "number" ? r.remaining_credits : 0,
       updated_at: typeof r.updated_at === "string" ? r.updated_at : null,
-      renewal_date: r.renewal_date ?? null,
+      renewal_date: typeof r.renewal_date === "string" ? r.renewal_date : null,
     },
     err: null,
   };
@@ -82,9 +78,8 @@ async function ensureCreditRowExists(params: {
 }
 
 /**
- * ✅ Monthly reset using ONLY updated_at (UTC month).
- * - FREE: if updated_at missing or from a previous UTC month => reset to FREE_MONTHLY_CREDITS
- * - TRIAL/PREMIUM: bypass
+ * ✅ Monthly reset (FREE only) using updated_at UTC month.
+ * SAFE to call multiple times.
  */
 export async function ensureCreditsFresh(params: {
   supabase: SupabaseClient;
@@ -100,13 +95,13 @@ export async function ensureCreditsFresh(params: {
   if (row.plan_type === "PREMIUM" || row.plan_type === "TRIAL") return;
 
   const now = new Date();
-
   if (!row.updated_at || !isSameUtcMonth(row.updated_at, now)) {
     await supabase
       .from("user_credits")
       .update({
         remaining_credits: FREE_MONTHLY_CREDITS,
         updated_at: now.toISOString(),
+        renewal_date: null,
       } as any)
       .eq("user_id", userId);
   }
@@ -124,9 +119,7 @@ export async function decrementCreditIfAllowed(params: {
   const { row, err } = await getCreditsRow({ supabase, userId });
   if (err || !row) return { ok: false, reason: "credits_unavailable" };
 
-  if (row.plan_type === "PREMIUM" || row.plan_type === "TRIAL") {
-    return { ok: true };
-  }
+  if (row.plan_type === "PREMIUM" || row.plan_type === "TRIAL") return { ok: true };
 
   if (row.remaining_credits <= 0) return { ok: false, reason: "limit_reached" };
 
@@ -134,10 +127,7 @@ export async function decrementCreditIfAllowed(params: {
 
   await supabase
     .from("user_credits")
-    .update({
-      remaining_credits: remaining,
-      updated_at: new Date().toISOString(),
-    } as any)
+    .update({ remaining_credits: remaining, updated_at: new Date().toISOString() } as any)
     .eq("user_id", userId);
 
   return { ok: true, remaining };
