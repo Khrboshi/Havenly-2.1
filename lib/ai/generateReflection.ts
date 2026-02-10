@@ -39,7 +39,8 @@ function normalizeQuestions(v: unknown): string[] {
   const arr = normalizeArrayStrings(v, []);
   // force exactly 2 questions (your UI says "Two questions")
   if (arr.length >= 2) return arr.slice(0, 2);
-  if (arr.length === 1) return [arr[0], "What would feel like a small, realistic next step this week?"];
+  if (arr.length === 1)
+    return [arr[0], "What would feel like a small, realistic next step this week?"];
   return [
     "What feels most important underneath what you wrote?",
     "What is one small, realistic step you could take in the next 24 hours?",
@@ -88,9 +89,7 @@ export async function generateReflectionFromEntry(input: Input): Promise<Reflect
 
   const groq = new Groq({ apiKey });
 
-  // ✅ Updated models (Mixtral 8x7b 32768 is deprecated/removed)
-  // - FREE: fast/cheap
-  // - PREMIUM: higher quality
+  // Updated Groq models (Mixtral is decommissioned)
   const model =
     input.plan === "PREMIUM" ? "llama-3.3-70b-versatile" : "llama-3.1-8b-instant";
 
@@ -99,7 +98,10 @@ export async function generateReflectionFromEntry(input: Input): Promise<Reflect
   const completion = await groq.chat.completions.create({
     model,
     temperature: input.plan === "PREMIUM" ? 0.6 : 0.5,
-    max_completion_tokens: input.plan === "PREMIUM" ? 700 : 450,
+
+    // ✅ Groq SDK expects max_tokens (not max_completion_tokens)
+    max_tokens: input.plan === "PREMIUM" ? 700 : 450,
+
     messages: [
       { role: "system", content: system },
       { role: "user", content: user },
@@ -109,7 +111,6 @@ export async function generateReflectionFromEntry(input: Input): Promise<Reflect
   const raw = completion.choices?.[0]?.message?.content?.trim() ?? "";
   const parsed = safeJsonParse<Partial<Reflection>>(raw);
 
-  // If the model returns non-JSON for any reason, fail loudly (your route already catches)
   if (!parsed) {
     throw new Error(`Model returned non-JSON: ${raw.slice(0, 300)}`);
   }
