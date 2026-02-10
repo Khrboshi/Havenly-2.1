@@ -9,8 +9,9 @@ export type PlanType = "FREE" | "TRIAL" | "PREMIUM";
 type CreditsRow = {
   user_id: string;
   plan_type: PlanType;
-  credits: number;
+  remaining_credits: number;
   updated_at: string | null;
+  renewal_date: string | null;
 };
 
 function normalizePlan(v: unknown): PlanType {
@@ -35,7 +36,7 @@ async function getCreditsRow(params: {
 
   const { data, error } = await supabase
     .from("user_credits")
-    .select("user_id, plan_type, credits, updated_at")
+    .select("user_id, plan_type, remaining_credits, updated_at, renewal_date")
     .eq("user_id", userId)
     .maybeSingle();
 
@@ -48,8 +49,9 @@ async function getCreditsRow(params: {
     row: {
       user_id: String(r.user_id),
       plan_type: normalizePlan(r.plan_type),
-      credits: typeof r.credits === "number" ? r.credits : 0,
+      remaining_credits: typeof r.remaining_credits === "number" ? r.remaining_credits : 0,
       updated_at: typeof r.updated_at === "string" ? r.updated_at : null,
+      renewal_date: r.renewal_date ?? null,
     },
     err: null,
   };
@@ -62,7 +64,7 @@ async function ensureCreditRowExists(params: {
   const { supabase, userId } = params;
 
   const { row, err } = await getCreditsRow({ supabase, userId });
-  if (err) return; // do not block
+  if (err) return;
   if (row) return;
 
   const nowIso = new Date().toISOString();
@@ -71,8 +73,9 @@ async function ensureCreditRowExists(params: {
     {
       user_id: userId,
       plan_type: "FREE",
-      credits: FREE_MONTHLY_CREDITS,
+      remaining_credits: FREE_MONTHLY_CREDITS,
       updated_at: nowIso,
+      renewal_date: null,
     } as any,
     { onConflict: "user_id" }
   );
@@ -80,10 +83,8 @@ async function ensureCreditRowExists(params: {
 
 /**
  * ✅ Monthly reset using ONLY updated_at (UTC month).
- * - FREE: if updated_at is missing or from a previous UTC month => reset to 3.
- * - TRIAL/PREMIUM: credits are not enforced here.
- *
- * SAFE to call multiple times.
+ * - FREE: if updated_at missing or from a previous UTC month => reset to FREE_MONTHLY_CREDITS
+ * - TRIAL/PREMIUM: bypass
  */
 export async function ensureCreditsFresh(params: {
   supabase: SupabaseClient;
@@ -104,19 +105,13 @@ export async function ensureCreditsFresh(params: {
     await supabase
       .from("user_credits")
       .update({
-        credits: FREE_MONTHLY_CREDITS,
+        remaining_credits: FREE_MONTHLY_CREDITS,
         updated_at: now.toISOString(),
       } as any)
       .eq("user_id", userId);
   }
 }
 
-/**
- * SINGLE SOURCE OF TRUTH:
- * - Ensures monthly reset + row provisioning
- * - Enforces only for FREE users
- * - TRIAL/PREMIUM bypass
- */
 export async function decrementCreditIfAllowed(params: {
   supabase: SupabaseClient;
   userId: string;
@@ -133,22 +128,21 @@ export async function decrementCreditIfAllowed(params: {
     return { ok: true };
   }
 
-  if (row.credits <= 0) return { ok: false, reason: "limit_reached" };
+  if (row.remaining_credits <= 0) return { ok: false, reason: "limit_reached" };
 
-  const remaining = row.credits - 1;
+  const remaining = row.remaining_credits - 1;
 
   await supabase
     .from("user_credits")
-    .update({ credits: remaining, updated_at: new Date().toISOString() } as any)
+    .update({
+      remaining_credits: remaining,
+      updated_at: new Date().toISOString(),
+    } as any)
     .eq("user_id", userId);
 
   return { ok: true, remaining };
 }
 
-/**
- * Helper for plan updates (billing page).
- * Keeps logic centralized and schema-consistent.
- */
 export async function setUserPlan(params: {
   supabase: SupabaseClient;
   userId: string;
@@ -158,7 +152,7 @@ export async function setUserPlan(params: {
 
   const nowIso = new Date().toISOString();
 
-  const credits =
+  const remaining_credits =
     planType === "PREMIUM"
       ? 9999
       : planType === "TRIAL"
@@ -169,8 +163,9 @@ export async function setUserPlan(params: {
     {
       user_id: userId,
       plan_type: planType,
-      credits,
+      remaining_credits,
       updated_at: nowIso,
+      renewal_date: null,
     } as any,
     { onConflict: "user_id" }
   );
