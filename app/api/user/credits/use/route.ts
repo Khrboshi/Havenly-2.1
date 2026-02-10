@@ -24,6 +24,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
     }
 
+    // ✅ Atomic DB function (must return remaining_credits)
     const { data, error } = await supabase.rpc("consume_reflection_credit", {
       p_amount: amount,
     });
@@ -33,25 +34,28 @@ export async function POST(req: Request) {
       if (msg.toLowerCase().includes("not_authenticated")) {
         return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
       }
-
       console.error("consume_reflection_credit error:", error);
-      return NextResponse.json({ error: "Failed to consume credits" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to consume credits" },
+        { status: 500 }
+      );
     }
 
     const row = Array.isArray(data) ? data[0] : data;
 
+    // IMPORTANT: your function should return remaining_credits now
     const remaining =
-      typeof row?.remaining_credits === "number"
-        ? row.remaining_credits
-        : typeof row?.credits === "number"
-        ? row.credits
+      row && typeof (row as any).remaining_credits === "number"
+        ? (row as any).remaining_credits
         : null;
 
     if (remaining === null) {
-      return NextResponse.json({ error: "No credits remaining" }, { status: 402 });
+      return NextResponse.json(
+        { error: "No credits remaining" },
+        { status: 402 }
+      );
     }
 
-    // Keep "credits" in response for the UI
     return NextResponse.json({ ok: true, credits: remaining });
   } catch (err) {
     console.error("credits/use route error:", err);
