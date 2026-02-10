@@ -36,59 +36,19 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
     return "Free";
   }, [planType]);
 
-  const hasCredits = isPremium || loading || (typeof credits === "number" && credits > 0);
-  const disableGenerate = busy || (!isPremium && !loading && (credits ?? 0) <= 0);
-
-  async function consumeOneCreditIfNeeded(): Promise<boolean> {
-    // Premium/Trial: unlimited in your UI logic, so no client consumption needed.
-    if (isPremium || planType === "TRIAL") return true;
-
-    // If UI already knows there are zero credits, short-circuit.
-    if (!loading && (credits ?? 0) <= 0) {
-      setShowUpgrade(true);
-      return false;
-    }
-
-    const res = await fetch("/api/user/credits/use", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: 1 }),
-    });
-
-    if (res.status === 401) {
-      setError("Please log in again.");
-      return false;
-    }
-
-    // Your route returns 402 when no credits remain
-    if (res.status === 402) {
-      setShowUpgrade(true);
-      return false;
-    }
-
-    if (!res.ok) {
-      const j = await res.json().catch(() => ({}));
-      setError(j?.error || "Could not consume a credit. Please try again.");
-      return false;
-    }
-
-    // Refresh UI credit count after consuming
-    await refresh();
-    return true;
-  }
-
   async function generateReflection() {
     if (busy) return;
+
+    // ✅ If Free user has 0 credits, show upgrade modal immediately (no API call)
+    if (!isPremium && !loading && (credits ?? 0) <= 0) {
+      setShowUpgrade(true);
+      return;
+    }
 
     setBusy(true);
     setError(null);
 
     try {
-      // 1) Consume credit first (FREE users)
-      const okToProceed = await consumeOneCreditIfNeeded();
-      if (!okToProceed) return;
-
-      // 2) Generate reflection
       const res = await fetch("/api/ai/reflection", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -99,7 +59,7 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
         }),
       });
 
-      // Keep server-side gate as safety fallback
+      // 🔒 SERVER IS THE ONLY GATE
       if (res.status === 402) {
         setShowUpgrade(true);
         return;
@@ -114,7 +74,7 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
       const j = await res.json();
       setReflection(j?.reflection || null);
 
-      // Final sync (safe even if already refreshed)
+      // sync credits AFTER server consumption
       await refresh();
     } catch {
       setError("We couldn't generate a reflection right now.");
@@ -122,6 +82,9 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
       setBusy(false);
     }
   }
+
+  // ✅ Only disable while generating
+  const disableGenerate = busy;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-6 py-10 text-white">
@@ -155,9 +118,10 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
                   {" "}
                   · Reflections left:{" "}
                   <span className="text-emerald-300">{loading ? "…" : credits}</span>
-
-                  {!loading && (credits ?? 0) === 0 && (
-                    <span className="ml-2 text-xs text-white/50">(resets next month)</span>
+                  {credits === 0 && (
+                    <span className="ml-2 text-xs text-white/50">
+                      (resets next month)
+                    </span>
                   )}
                 </>
               ) : (
@@ -170,7 +134,6 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
             onClick={generateReflection}
             disabled={disableGenerate}
             className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-slate-950 hover:bg-emerald-400 disabled:opacity-60"
-            title={!hasCredits ? "No credits remaining" : undefined}
           >
             {busy ? "Generating…" : "Generate Reflection"}
           </button>
@@ -180,7 +143,8 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
 
         {!reflection ? (
           <p className="mt-4 text-sm text-white/60">
-            When you’re ready, Havenly will reflect back themes, emotions, and a gentle next step.
+            When you’re ready, Havenly will reflect back themes, emotions, and a gentle
+            next step.
           </p>
         ) : (
           <div className="mt-5 space-y-4 text-sm text-white/80">
