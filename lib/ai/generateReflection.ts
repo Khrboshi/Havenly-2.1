@@ -1,11 +1,5 @@
 // lib/ai/generateReflection.ts
 
-import OpenAI from "openai";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
-
 type ReflectionInput = {
   content: string;
   title?: string;
@@ -17,27 +11,25 @@ export async function generateReflectionFromEntry({
   title,
   plan,
 }: ReflectionInput) {
+  const apiKey = process.env.GROQ_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("Missing GROQ_API_KEY");
+  }
+
   const systemPrompt = `
-You are a thoughtful, emotionally intelligent reflection guide.
+You are a calm, emotionally intelligent reflection guide.
 
-Your job is NOT to motivate, fix, or reassure.
-Your job is to help the user *see themselves more clearly*.
+Your role:
+- Reflect patterns, tensions, and emotional signals back to the user
+- Avoid clichés, platitudes, or motivational language
+- Do not "fix" the user
+- Name contradictions gently and clearly
+- Be specific to what is written, not generic
+- Use grounded, human language
 
-Rules:
-- Avoid clichés, platitudes, or generic advice.
-- Do not say things like “be kind to yourself” unless deeply contextualized.
-- Name emotional tensions and contradictions explicitly.
-- Reflect patterns, not just feelings.
-- Be calm, grounded, and precise.
-- Never shame or diagnose.
-
-Tone:
-- Quietly insightful
-- Grounded
-- Human
-- Non-therapeutic (this is reflection, not therapy)
-
-Output MUST follow the exact structure requested.
+Never diagnose. Never shame.
+Return valid JSON only.
 `;
 
   const userPrompt = `
@@ -49,17 +41,7 @@ Journal entry:
 ${content}
 """
 
-Instructions:
-1. Write a concise but *insightful* summary that captures the emotional tension or pattern underneath the words.
-2. Extract 3–5 THEMES that are not obvious synonyms of each other.
-3. Extract 3–5 EMOTIONS (emotional states, not situations).
-4. Write ONE gentle next step that is specific, small, and realistic.
-   - Not advice-heavy
-   - Not motivational
-   - Something the user could try today without pressure
-5. Write exactly TWO reflective questions that help the user notice patterns or choices.
-
-Return valid JSON with this exact shape:
+Return ONLY valid JSON in this exact shape:
 
 {
   "summary": string,
@@ -70,21 +52,41 @@ Return valid JSON with this exact shape:
 }
 `;
 
-  const completion = await openai.chat.completions.create({
-    model: plan === "PREMIUM" ? "gpt-4o" : "gpt-4o-mini",
-    temperature: plan === "PREMIUM" ? 0.55 : 0.7,
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt },
-    ],
-    response_format: { type: "json_object" },
+  const model =
+    plan === "PREMIUM"
+      ? "llama-3.1-70b-versatile"
+      : "llama-3.1-8b-instant";
+
+  const temperature = plan === "PREMIUM" ? 0.45 : 0.6;
+
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      temperature,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      response_format: { type: "json_object" },
+    }),
   });
 
-  const message = completion.choices[0]?.message?.content;
-
-  if (!message) {
-    throw new Error("Empty reflection response");
+  if (!res.ok) {
+    const err = await res.text().catch(() => "");
+    throw new Error(`Groq API error (${res.status}): ${err}`);
   }
 
-  return JSON.parse(message);
+  const data = await res.json();
+  const contentMessage = data?.choices?.[0]?.message?.content;
+
+  if (!contentMessage) {
+    throw new Error("Empty reflection response from Groq");
+  }
+
+  return JSON.parse(contentMessage);
 }
