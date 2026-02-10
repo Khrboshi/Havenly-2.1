@@ -6,8 +6,8 @@ export const dynamic = "force-dynamic";
 
 /**
  * GET /api/user/credits
- * Canonical credit balance: user_credits.credits
- * renewalDate is null because your schema does not include renewal_date.
+ * Canonical credit balance lives in: public.user_credits.remaining_credits
+ * API response keeps "credits" for backward compatibility with the UI.
  */
 export async function GET() {
   const supabase = createServerSupabase();
@@ -16,6 +16,7 @@ export async function GET() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Not logged in
   if (!user) {
     return NextResponse.json(
       { credits: 0, renewalDate: null },
@@ -23,18 +24,31 @@ export async function GET() {
     );
   }
 
+  // Make sure the row exists / renewal logic is applied (your app logic)
   await ensureCreditsFresh({ supabase, userId: user.id });
 
-  const { data } = await supabase
+  // Fetch the canonical data from the updated schema
+  const { data, error } = await supabase
     .from("user_credits")
-    .select("credits")
+    .select("remaining_credits, renewal_date")
     .eq("user_id", user.id)
     .maybeSingle();
 
-  const credits = typeof data?.credits === "number" ? data.credits : 0;
+  if (error) {
+    // Fail safe: do not break the dashboard if DB read fails
+    return NextResponse.json(
+      { credits: 0, renewalDate: null },
+      { headers: { "Cache-Control": "no-store, max-age=0" } }
+    );
+  }
+
+  const credits =
+    typeof data?.remaining_credits === "number" ? data.remaining_credits : 0;
+
+  const renewalDate = data?.renewal_date ?? null;
 
   return NextResponse.json(
-    { credits, renewalDate: null },
+    { credits, renewalDate },
     { headers: { "Cache-Control": "no-store, max-age=0" } }
   );
 }
