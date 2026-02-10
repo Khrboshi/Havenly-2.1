@@ -3,14 +3,6 @@ import { createServerSupabase } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-/**
- * POST /api/user/credits/use
- * Consumes credits atomically via DB function:
- *   public.consume_reflection_credit(p_amount int) -> returns table(remaining_credits int)
- *
- * Body:
- *  - amount?: number (default 1)
- */
 export async function POST(req: Request) {
   try {
     const supabase = createServerSupabase();
@@ -37,20 +29,18 @@ export async function POST(req: Request) {
     });
 
     if (error) {
-      const msg = String(error.message || "").toLowerCase();
-      if (msg.includes("not_authenticated")) {
+      const msg = String(error.message || "");
+      if (msg.toLowerCase().includes("not_authenticated")) {
         return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
       }
-      if (msg.includes("invalid_amount")) {
-        return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
-      }
       console.error("consume_reflection_credit error:", error);
-      return NextResponse.json({ error: "Failed to consume credits" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to consume credits", details: error.message },
+        { status: 500 }
+      );
     }
 
-    // Supabase RPC might return:
-    // - [] when no row returned (not enough credits)
-    // - [{ remaining_credits: n }] when success
+    // data may be: [] | [{remaining_credits: n}] | {remaining_credits:n}
     const row = Array.isArray(data) ? data[0] : data;
 
     const remaining =
@@ -58,11 +48,12 @@ export async function POST(req: Request) {
         ? (row as any).remaining_credits
         : null;
 
+    // If the function returned zero rows => limit reached
     if (remaining === null) {
-      return NextResponse.json({ error: "Reflection limit reached" }, { status: 402 });
+      return NextResponse.json({ error: "No credits remaining" }, { status: 402 });
     }
 
-    return NextResponse.json({ ok: true, credits: remaining });
+    return NextResponse.json({ ok: true, credits: remaining }, { status: 200 });
   } catch (err) {
     console.error("credits/use route error:", err);
     return NextResponse.json({ error: "Unexpected error" }, { status: 500 });
