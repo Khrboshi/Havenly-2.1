@@ -1,4 +1,3 @@
-// app/api/user/plan/route.ts
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { ensureCreditsFresh } from "@/lib/creditRules";
@@ -6,6 +5,11 @@ import { ensureCreditsFresh } from "@/lib/creditRules";
 export const dynamic = "force-dynamic";
 
 type PlanType = "FREE" | "TRIAL" | "PREMIUM";
+
+function normalizePlan(v: unknown): PlanType {
+  const p = String(v ?? "FREE").toUpperCase();
+  return p === "PREMIUM" || p === "TRIAL" ? (p as PlanType) : "FREE";
+}
 
 function safeJson(data: {
   planType: PlanType;
@@ -21,11 +25,6 @@ function safeJson(data: {
     },
     { headers: { "Cache-Control": "no-store, max-age=0" } }
   );
-}
-
-function normalizePlan(v: unknown): PlanType {
-  const p = String(v ?? "FREE").toUpperCase();
-  return p === "PREMIUM" || p === "TRIAL" ? (p as PlanType) : "FREE";
 }
 
 export async function GET() {
@@ -53,12 +52,16 @@ export async function GET() {
       return safeJson({ planType: "FREE", credits: 0, renewalDate: null });
     }
 
-    const r: any = data;
-
     return safeJson({
-      planType: normalizePlan(r.plan_type),
-      credits: typeof r.remaining_credits === "number" ? r.remaining_credits : 0,
-      renewalDate: r.renewal_date ?? null,
+      planType: normalizePlan((data as any).plan_type),
+      credits:
+        typeof (data as any).remaining_credits === "number"
+          ? (data as any).remaining_credits
+          : 0,
+      renewalDate:
+        typeof (data as any).renewal_date === "string"
+          ? (data as any).renewal_date
+          : null,
     });
   } catch (err) {
     console.error("GET /api/user/plan failed:", err);
