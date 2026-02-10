@@ -13,10 +13,13 @@ function normalizePlan(v: unknown): PlanType {
   return p === "PREMIUM" || p === "TRIAL" ? (p as PlanType) : "FREE";
 }
 
-// ✅ Discriminated union (fixes your TS error)
-type ConsumeResult =
-  | { ok: true; remaining: number }
-  | { ok: false; status: number; error: string };
+type ConsumeOk = { ok: true; remaining: number };
+type ConsumeFail = { ok: false; status: number; error: string };
+type ConsumeResult = ConsumeOk | ConsumeFail;
+
+function isConsumeFail(r: ConsumeResult): r is ConsumeFail {
+  return r.ok === false;
+}
 
 function isParamMismatchError(msg: string) {
   const m = msg.toLowerCase();
@@ -142,8 +145,8 @@ export async function POST(req: Request) {
   if (!isUnlimited) {
     const consumed = await consumeOneCredit(supabase, userId);
 
-    // ✅ TS now understands consumed.error only exists when ok=false
-    if (!consumed.ok) {
+    // ✅ Type-guard makes TS 100% happy
+    if (isConsumeFail(consumed)) {
       return NextResponse.json(
         { error: consumed.error },
         { status: consumed.status }
