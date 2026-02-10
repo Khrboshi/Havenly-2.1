@@ -1,5 +1,3 @@
-// lib/ai/generateReflection.ts
-
 type ReflectionInput = {
   content: string;
   title?: string;
@@ -11,82 +9,67 @@ export async function generateReflectionFromEntry({
   title,
   plan,
 }: ReflectionInput) {
-  const apiKey = process.env.GROQ_API_KEY;
-
-  if (!apiKey) {
-    throw new Error("Missing GROQ_API_KEY");
-  }
-
-  const systemPrompt = `
-You are a calm, emotionally intelligent reflection guide.
-
-Your role:
-- Reflect patterns, tensions, and emotional signals back to the user
-- Avoid clichés, platitudes, or motivational language
-- Do not "fix" the user
-- Name contradictions gently and clearly
-- Be specific to what is written, not generic
-- Use grounded, human language
-
-Never diagnose. Never shame.
-Return valid JSON only.
+  const depthInstruction =
+    plan === "PREMIUM"
+      ? `
+Go deeper. Read between the lines.
+Name possible underlying tensions, not just surface feelings.
+Offer insights that feel personal and specific.
+`
+      : `
+Keep it gentle, supportive, and concise.
+Avoid therapy language.
 `;
 
-  const userPrompt = `
+  const prompt = `
+You are a calm, emotionally intelligent reflection partner.
+
+This is NOT therapy.
+Do NOT diagnose.
+Do NOT give advice unless invited.
+
+Your role is to reflect what the writer may not yet see.
+
+${depthInstruction}
+
 Journal title:
-${title || "Untitled"}
+"${title || "Untitled"}"
 
 Journal entry:
 """
 ${content}
 """
 
-Return ONLY valid JSON in this exact shape:
+Return a JSON object with this exact structure:
 
 {
-  "summary": string,
-  "themes": string[],
-  "emotions": string[],
-  "gentle_next_step": string,
-  "questions": string[]
+  "summary": "2–3 sentences capturing the emotional core in human language",
+  "themes": ["3–5 short themes, emotionally meaningful"],
+  "emotions": ["3–5 emotions, nuanced if possible"],
+  "gentle_next_step": "One small, realistic step that feels doable today",
+  "questions": [
+    "A question that invites insight",
+    "A question that invites self-compassion",
+    "A question that explores direction or meaning"
+  ]
 }
+
+Avoid generic phrases.
+Avoid repeating the journal verbatim.
+Sound like a thoughtful human who actually read this.
 `;
 
-  const model =
-    plan === "PREMIUM"
-      ? "llama-3.1-70b-versatile"
-      : "llama-3.1-8b-instant";
+  // ⚠️ Replace this block with YOUR EXISTING Groq call
+  // Example (pseudo):
+  //
+  // const response = await groq.chat.completions.create({
+  //   model: "mixtral-8x7b-32768",
+  //   messages: [{ role: "user", content: prompt }],
+  // });
 
-  const temperature = plan === "PREMIUM" ? 0.45 : 0.6;
+  // return JSON.parse(response.choices[0].message.content);
 
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      temperature,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      response_format: { type: "json_object" },
-    }),
-  });
-
-  if (!res.ok) {
-    const err = await res.text().catch(() => "");
-    throw new Error(`Groq API error (${res.status}): ${err}`);
-  }
-
-  const data = await res.json();
-  const contentMessage = data?.choices?.[0]?.message?.content;
-
-  if (!contentMessage) {
-    throw new Error("Empty reflection response from Groq");
-  }
-
-  return JSON.parse(contentMessage);
+  throw new Error(
+    "Replace this throw with your existing Groq completion call"
+  );
 }
