@@ -1,8 +1,14 @@
+import Groq from "groq-sdk";
+
 type ReflectionInput = {
   content: string;
   title?: string;
   plan: "FREE" | "PREMIUM";
 };
+
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY!,
+});
 
 export async function generateReflectionFromEntry({
   content,
@@ -13,12 +19,12 @@ export async function generateReflectionFromEntry({
     plan === "PREMIUM"
       ? `
 Go deeper. Read between the lines.
-Name possible underlying tensions, not just surface feelings.
-Offer insights that feel personal and specific.
+Name underlying tensions, values, or conflicts.
+Make the reflection feel personal and specific.
 `
       : `
 Keep it gentle, supportive, and concise.
-Avoid therapy language.
+Avoid therapy or diagnostic language.
 `;
 
   const prompt = `
@@ -43,10 +49,10 @@ ${content}
 Return a JSON object with this exact structure:
 
 {
-  "summary": "2–3 sentences capturing the emotional core in human language",
-  "themes": ["3–5 short themes, emotionally meaningful"],
-  "emotions": ["3–5 emotions, nuanced if possible"],
-  "gentle_next_step": "One small, realistic step that feels doable today",
+  "summary": "2–3 sentences capturing the emotional core",
+  "themes": ["3–5 emotionally meaningful themes"],
+  "emotions": ["3–5 nuanced emotions"],
+  "gentle_next_step": "One small, realistic step for today",
   "questions": [
     "A question that invites insight",
     "A question that invites self-compassion",
@@ -55,21 +61,31 @@ Return a JSON object with this exact structure:
 }
 
 Avoid generic phrases.
-Avoid repeating the journal verbatim.
-Sound like a thoughtful human who actually read this.
+Do not repeat the journal text.
+Sound like a thoughtful human who truly read this.
 `;
 
-  // ⚠️ Replace this block with YOUR EXISTING Groq call
-  // Example (pseudo):
-  //
-  // const response = await groq.chat.completions.create({
-  //   model: "mixtral-8x7b-32768",
-  //   messages: [{ role: "user", content: prompt }],
-  // });
+  const completion = await groq.chat.completions.create({
+    model: "mixtral-8x7b-32768",
+    messages: [
+      {
+        role: "user",
+        content: prompt,
+      },
+    ],
+    temperature: plan === "PREMIUM" ? 0.8 : 0.6,
+  });
 
-  // return JSON.parse(response.choices[0].message.content);
+  const raw = completion.choices[0]?.message?.content;
 
-  throw new Error(
-    "Replace this throw with your existing Groq completion call"
-  );
+  if (!raw) {
+    throw new Error("Empty response from Groq");
+  }
+
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    console.error("Failed to parse reflection JSON:", raw);
+    throw new Error("Invalid reflection format returned");
+  }
 }
