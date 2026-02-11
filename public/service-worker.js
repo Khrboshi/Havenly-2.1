@@ -1,56 +1,99 @@
-// public/service-worker.js
+/* public/service-worker.js */
 
-const CACHE_NAME = "havenly-2-1-v1";
+const CACHE_VERSION = "hvn-sw-v1";
+const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
 
-const ASSETS_TO_CACHE = [
-  "/",
-  "/manifest.json",
-  "/icon.svg"
-];
+const CORE_ASSETS = ["/", "/manifest.json", "/icon.svg"];
 
-// Install: pre-cache basic assets
+// Install: cache core assets
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE).catch(() => null);
-    })
-  );
   self.skipWaiting();
+  event.waitUntil(
+    caches.open(RUNTIME_CACHE).then((cache) => cache.addAll(CORE_ASSETS)).catch(() => {})
+  );
 });
 
 // Activate: clean up old caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(
         keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
-      )
-    )
+          .filter((k) => k !== RUNTIME_CACHE)
+          .map((k) => caches.delete(k))
+      );
+      await self.clients.claim();
+    })()
   );
-  self.clients.claim();
 });
 
-// Fetch: cache-first for same-origin GET requests
+// Fetch strategy:
+// - Navigation: network-first, fallback to cached "/" (helps offline open)
+// - Static assets (scripts/styles/images/fonts): stale-while-revalidate
 self.addEventListener("fetch", (event) => {
-  const { request } = event;
+  const req = event.request;
 
-  if (request.method !== "GET" || !request.url.startsWith(self.location.origin)) {
+  // Only handle GET
+  if (req.method !== "GET") return;
+
+  const url = new URL(req.url);
+
+  // Only same-origin
+  if (url.origin !== self.location.origin) return;
+
+  // Navigation requests
+  if (req.mode === "navigate") {
+    event.respondWith(
+      (async () => {
+        try {
+          const fresh = await fetch(req);
+          const cache = await caches.open(RUNTIME_CACHE);
+          cache.put(req, fresh.clone());
+          return fresh;
+        } catch {
+          const cache = await caches.open(RUNTIME_CACHE);
+          return (
+            (await cache.match(req)) ||
+            (await cache.match("/")) ||
+            new Response("Offline", { status: 503, statusText: "Offline" })
+          );
+        }
+      })()
+    );
     return;
   }
 
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached;
+  // Static assets
+  const destination = req.destination; // "script" | "style" | "image" | "font" | ...
+  const isStatic =
+    destination === "script" ||
+    destination === "style" ||
+    destination === "image" ||
+    destination === "font";
 
-      return fetch(request)
-        .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-          return response;
-        })
-        .catch(() => caches.match("/"));
-    })
-  );
+  if (isStatic) {
+    event.respondWith(
+      (async () => {
+        const cache = await caches.open(RUNTIME_CACHE);
+        const cached = await cache.match(req);
+
+        const fetchPromise = fetch(req)
+          .then((fresh) => {
+            cache.put(req, fresh.clone());
+            return fresh;
+          })
+          .catch(() => null);
+
+        // Return cached immediately if available, update in background
+        if (cached) return cached;
+
+        // Else wait for network
+        const fresh = await fetchPromise;
+        if (fresh) return fresh;
+
+        return new Response("", { status: 504, statusText: "Offline" });
+      })()
+    );
+  }
 });
