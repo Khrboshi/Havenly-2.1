@@ -34,6 +34,12 @@ function pickKeyPattern(summary: string): string {
   return candidate.length > 180 ? candidate.slice(0, 177).trim() + "…" : candidate;
 }
 
+function questionsHeading(count: number): string {
+  if (count <= 0) return "Questions";
+  if (count === 1) return "One question";
+  return `${count} questions`;
+}
+
 export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
   const { planType, credits, loading, refresh } = useUserPlan();
 
@@ -54,6 +60,11 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
     if (!reflection?.summary) return "";
     return pickKeyPattern(reflection.summary);
   }, [reflection?.summary]);
+
+  const questionsTitle = useMemo(() => {
+    const n = reflection?.questions?.length ?? 0;
+    return questionsHeading(n);
+  }, [reflection?.questions?.length]);
 
   async function generateReflection() {
     if (busy) return;
@@ -203,7 +214,7 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
 
             <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-white/70">
-                Two questions
+                {questionsTitle}
               </h3>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 {reflection.questions.map((q, i) => (
