@@ -35,10 +35,10 @@ export default function HomePage() {
               </Link>
 
               <Link
-                href="/premium"
+                href="/insights/preview"
                 className="inline-flex items-center justify-center rounded-full border border-slate-600/80 bg-slate-900/70 px-5 py-2.5 text-sm font-medium text-slate-100 hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
               >
-                Explore Premium features
+                See what’s coming
               </Link>
             </div>
 
@@ -55,9 +55,7 @@ export default function HomePage() {
             <div className="mt-2 space-y-1 text-xs text-hvn-text-muted">
               <p>
                 Your journal is meant to stay yours.{" "}
-                <span className="text-hvn-text-secondary">
-                  Private by default.
-                </span>
+                <span className="text-hvn-text-secondary">Private by default.</span>
               </p>
               <p>
                 Want the details?{" "}
@@ -96,9 +94,7 @@ export default function HomePage() {
               </div>
 
               <div className="mt-4 space-y-2 rounded-2xl border border-slate-800 bg-slate-900/50 p-4 text-xs">
-                <p className="font-semibold text-emerald-300">
-                  Today you seem:
-                </p>
+                <p className="font-semibold text-emerald-300">Today you seem:</p>
                 <ul className="list-inside list-disc space-y-1 text-slate-200">
                   <li>Carrying more than you realised.</li>
                   <li>Trying to keep everything steady for others.</li>
@@ -111,18 +107,19 @@ export default function HomePage() {
               </div>
 
               <div className="mt-3 flex items-center justify-between text-[11px] text-hvn-text-muted">
-                <span>20 AI reflections / month on Free</span>
+                <span>Reflections that feel human.</span>
                 <Link
-                  href="/upgrade"
+                  href="/insights/preview"
                   className="font-semibold text-emerald-400 hover:text-emerald-300"
                 >
-                  Unlock Premium →
+                  Insights coming soon →
                 </Link>
               </div>
 
               {/* Added: small “safety” reassurance right where user hesitates */}
               <div className="mt-3 rounded-2xl border border-slate-800 bg-slate-950/60 p-3 text-[11px] text-hvn-text-muted">
-                No pressure. Free stays useful on its own. Premium adds depth when you want it.
+                No pressure. Free stays useful on its own. “Coming soon” features
+                will unlock gradually.
               </div>
             </div>
           </div>
@@ -132,9 +129,7 @@ export default function HomePage() {
       {/* STRIP: WHO IT’S FOR */}
       <section className="border-y border-slate-800/80 bg-slate-950/90">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 text-xs text-hvn-text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p className="font-medium text-hvn-text-secondary">
-            Built for people who are:
-          </p>
+          <p className="font-medium text-hvn-text-secondary">Built for people who are:</p>
           <div className="flex flex-wrap gap-2">
             <span className="rounded-full border border-hvn-subtle bg-slate-900/80 px-3 py-1">
               Always “on”, rarely checked-in with themselves
@@ -167,9 +162,7 @@ export default function HomePage() {
 
           <div className="grid gap-4 md:grid-cols-3">
             <div className="rounded-2xl border border-hvn-card bg-slate-950/80 p-4">
-              <p className="text-xs font-semibold text-emerald-300">
-                1 · Capture
-              </p>
+              <p className="text-xs font-semibold text-emerald-300">1 · Capture</p>
               <h3 className="mt-1 text-sm font-medium text-hvn-text-primary">
                 Write what is really going on
               </h3>
@@ -180,9 +173,7 @@ export default function HomePage() {
             </div>
 
             <div className="rounded-2xl border border-hvn-card bg-slate-950/80 p-4">
-              <p className="text-xs font-semibold text-emerald-300">
-                2 · Reflect
-              </p>
+              <p className="text-xs font-semibold text-emerald-300">2 · Reflect</p>
               <h3 className="mt-1 text-sm font-medium text-hvn-text-primary">
                 Let the AI gently respond
               </h3>
@@ -193,9 +184,7 @@ export default function HomePage() {
             </div>
 
             <div className="rounded-2xl border border-hvn-card bg-slate-950/80 p-4">
-              <p className="text-xs font-semibold text-emerald-300">
-                3 · Notice
-              </p>
+              <p className="text-xs font-semibold text-emerald-300">3 · Notice</p>
               <h3 className="mt-1 text-sm font-medium text-hvn-text-primary">
                 See patterns over time
               </h3>
@@ -217,13 +206,13 @@ export default function HomePage() {
             </h2>
             <p className="mt-2 text-sm text-hvn-text-muted">
               Havenly is designed so the Free plan is genuinely useful on its
-              own. Premium simply gives you more space, more context, and more
+              own. “Coming soon” features will simply add more context and more
               gentle support.
             </p>
 
-            {/* Added: trust line right before pricing comparison */}
             <p className="mt-3 text-xs text-hvn-text-muted">
-              You can explore without pressure. If Premium isn’t right for you, Free still works well.
+              You can explore without pressure. If extras aren’t right for you,
+              Free still works well.
             </p>
           </div>
 
@@ -243,9 +232,9 @@ export default function HomePage() {
 
               <ul className="mt-4 space-y-2 text-xs text-hvn-text-secondary">
                 <li>• Private journaling space</li>
-                <li>• Up to 20 AI reflections per month</li>
+                <li>• AI reflections (with a monthly limit)</li>
                 <li>• Access to core Tools (mood, reflection prompts)</li>
-                <li>• Gentle insights over time</li>
+                <li>• Early Insights as they roll out</li>
               </ul>
 
               <div className="mt-5">
@@ -265,14 +254,14 @@ export default function HomePage() {
             {/* Premium */}
             <div className="relative flex flex-col rounded-2xl border border-emerald-500/50 bg-emerald-500/5 p-5 shadow-[0_18px_60px_rgba(15,23,42,0.75)]">
               <div className="absolute right-4 top-4 rounded-full border border-amber-400/40 bg-amber-400/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-200">
-                For deeper support
+                Coming soon
               </div>
 
               <p className="text-xs font-semibold uppercase tracking-wide text-emerald-300">
-                Premium
+                Premium insights
               </p>
               <p className="mt-1 text-2xl font-semibold text-hvn-text-primary">
-                Coming soon
+                In progress
               </p>
               <p className="mt-2 text-xs text-emerald-100/80">
                 Designed for people who want clearer patterns, weekly reviews,
@@ -288,16 +277,15 @@ export default function HomePage() {
 
               <div className="mt-5">
                 <Link
-                  href="/upgrade"
+                  href="/insights/preview"
                   className="inline-flex w-full items-center justify-center rounded-full bg-hvn-accent-mint px-4 py-2.5 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
                 >
-                  See what Premium adds
+                  Preview insights →
                 </Link>
               </div>
 
               <p className="mt-2 text-[11px] text-emerald-200/80">
-                You will always be able to move back to Free if life or budget
-                changes.
+                No pressure. We’ll launch gently when it’s ready.
               </p>
             </div>
           </div>
@@ -354,13 +342,13 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Added: About/Blog trust bridge (helps users explore) */}
           <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-950/60 p-5 text-xs text-hvn-text-muted">
             <p className="font-medium text-hvn-text-primary">
               Want to understand Havenly before you start?
             </p>
             <p className="mt-2">
-              Learn the intent and values behind the product, or read gentle notes that show how reflection works in real life.
+              Learn the intent and values behind the product, or read gentle notes
+              that show how reflection works in real life.
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
               <Link
@@ -390,7 +378,7 @@ export default function HomePage() {
                 Start journaling in 30 seconds
               </Link>
               <Link
-                href="/premium"
+                href="/about"
                 className="inline-flex items-center justify-center rounded-full border border-slate-600 px-4 py-2 text-xs text-slate-100 hover:bg-slate-900"
               >
                 Learn more about Havenly →
