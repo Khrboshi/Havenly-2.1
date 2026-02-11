@@ -8,31 +8,34 @@ export const dynamic = "force-dynamic";
 type PlanType = "FREE" | "TRIAL" | "PREMIUM";
 
 /**
- * Adjust this function ONLY if your plan is stored in a different table/column.
+ * Adjust ONLY if your plan is stored in a different table/column.
  * Common patterns:
  * - profiles.plan_type
  * - profiles.plan
+ * - profiles.tier
  * - subscriptions.plan_type
  */
 async function getUserPlanType(
   supabase: ReturnType<typeof createServerSupabase>,
   userId: string
 ): Promise<PlanType> {
-  // Try profiles first
-  const { data: profile, error: profileErr } = await supabase
+  const { data: profile, error } = await supabase
     .from("profiles")
     .select("plan_type, plan, tier")
     .eq("id", userId)
     .maybeSingle();
 
-  if (!profileErr && profile) {
-    const raw = (profile.plan_type || profile.plan || profile.tier || "").toString().toUpperCase();
+  if (!error && profile) {
+    const raw = String(profile.plan_type || profile.plan || profile.tier || "")
+      .toUpperCase()
+      .trim();
+
     if (raw === "PREMIUM") return "PREMIUM";
     if (raw === "TRIAL") return "TRIAL";
     return "FREE";
   }
 
-  // Fallback to FREE if not found (safe default)
+  // Safe default
   return "FREE";
 }
 
@@ -46,7 +49,7 @@ export default async function InsightsPage() {
 
   const planType = await getUserPlanType(supabase, session.user.id);
 
-  // ✅ Premium-only gate
+  // Premium-only gate → for now send everyone else to “Coming soon” preview
   if (planType !== "PREMIUM") {
     redirect("/insights/preview");
   }
