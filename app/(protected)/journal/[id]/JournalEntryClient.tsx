@@ -15,24 +15,12 @@ type JournalEntry = {
 
 type Reflection = {
   summary: string;
+  core_pattern: string; // ✅ NEW (Prompt V4)
   themes: string[];
   emotions: string[];
   gentle_next_step: string;
   questions: string[];
 };
-
-function pickKeyPattern(summary: string): string {
-  const s = (summary || "").trim();
-  if (!s) return "";
-
-  // Prefer the first sentence as the "key pattern"
-  const m = s.match(/^(.+?[.!?])(\s|$)/);
-  const firstSentence = m?.[1]?.trim() ?? "";
-  const candidate = firstSentence.length >= 40 ? firstSentence : s;
-
-  // Keep it punchy
-  return candidate.length > 180 ? candidate.slice(0, 177).trim() + "…" : candidate;
-}
 
 function questionsHeading(count: number): string {
   if (count <= 0) return "Questions";
@@ -56,10 +44,13 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
     return "Free";
   }, [planType]);
 
+  // ✅ Use model-provided core pattern (V4), fallback to summary if empty
   const keyPattern = useMemo(() => {
-    if (!reflection?.summary) return "";
-    return pickKeyPattern(reflection.summary);
-  }, [reflection?.summary]);
+    if (!reflection) return "";
+    const cp = (reflection.core_pattern || "").trim();
+    if (cp) return cp;
+    return (reflection.summary || "").trim();
+  }, [reflection]);
 
   const questionsTitle = useMemo(() => {
     const n = reflection?.questions?.length ?? 0;
@@ -171,7 +162,7 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
               <p className="text-white/90">{reflection.summary}</p>
             </div>
 
-            {/* ✅ Step 1: Key Pattern Detected */}
+            {/* ✅ Key Pattern Detected (from core_pattern) */}
             {keyPattern && (
               <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-white/70">
