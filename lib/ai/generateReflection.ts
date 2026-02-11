@@ -1,9 +1,10 @@
 // lib/ai/generateReflection.ts
 // Groq (OpenAI-compatible) reflection generator
-// Uses: https://api.groq.com/openai/v1/chat/completions
+// Endpoint: https://api.groq.com/openai/v1/chat/completions
 
 export type Reflection = {
   summary: string;
+  core_pattern: string; // ✅ NEW (Prompt V4)
   themes: string[];
   emotions: string[];
   gentle_next_step: string;
@@ -20,7 +21,6 @@ function safeJsonParse<T>(raw: string): T | null {
   try {
     return JSON.parse(raw) as T;
   } catch {
-    // Try to extract JSON if model wrapped it in text
     const start = raw.indexOf("{");
     const end = raw.lastIndexOf("}");
     if (start >= 0 && end > start) {
@@ -34,30 +34,51 @@ function safeJsonParse<T>(raw: string): T | null {
   }
 }
 
-function normalizeList(val: any, max: number): string[] {
-  if (!Array.isArray(val)) return [];
-  return val
+function toStringArray(v: unknown, max: number): string[] {
+  if (!Array.isArray(v)) return [];
+  const cleaned = v
     .map((x) => String(x ?? "").trim())
-    .filter(Boolean)
-    .slice(0, max);
+    .filter(Boolean);
+  return cleaned.slice(0, max);
+}
+
+function normalizeCorePattern(s: unknown): string {
+  const v = typeof s === "string" ? s.trim() : "";
+  if (!v) return "";
+  // One sentence max-ish; keep punchy
+  const oneLine = v.replace(/\s+/g, " ").trim();
+  return oneLine.length > 160 ? oneLine.slice(0, 157).trim() + "…" : oneLine;
+}
+
+function normalizeSentence(s: unknown, fallback: string): string {
+  const v = typeof s === "string" ? s.trim() : "";
+  return v || fallback;
 }
 
 function normalizeReflection(r: any): Reflection {
-  const summary = typeof r?.summary === "string" ? r.summary.trim() : "";
-  const themes = normalizeList(r?.themes, 6);
-  const emotions = normalizeList(r?.emotions, 6);
-  const gentle_next_step =
-    typeof r?.gentle_next_step === "string" ? r.gentle_next_step.trim() : "";
-  // ✅ Option A: keep questions at 2–4 (higher quality), and UI label should not hardcode “Two”
-  const questions = normalizeList(r?.questions, 4).slice(0, 4);
+  const summary = normalizeSentence(
+    r?.summary,
+    "A reflective summary could not be generated."
+  );
+
+  const core_pattern = normalizeCorePattern(r?.core_pattern);
+
+  const themes = toStringArray(r?.themes, 6);
+  const emotions = toStringArray(r?.emotions, 6);
+
+  const gentle_next_step = normalizeSentence(
+    r?.gentle_next_step,
+    "Take 2 minutes to write one honest sentence about what you need most right now."
+  );
+
+  const questions = toStringArray(r?.questions, 4);
 
   return {
-    summary: summary || "A reflective summary could not be generated.",
+    summary,
+    core_pattern: core_pattern || summary, // ✅ fallback if model omits it
     themes: themes.length ? themes : ["reflection"],
     emotions: emotions.length ? emotions : ["neutral"],
-    gentle_next_step:
-      gentle_next_step ||
-      "Take 2 minutes to write one honest sentence about what you need most right now.",
+    gentle_next_step,
     questions: questions.length
       ? questions
       : ["What is the smallest next step that would make today feel 1% better?"],
@@ -68,61 +89,56 @@ export async function generateReflectionFromEntry(
   input: Input
 ): Promise<Reflection> {
   const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) {
-    throw new Error("Missing GROQ_API_KEY");
-  }
+  if (!apiKey) throw new Error("Missing GROQ_API_KEY");
 
-  // ✅ Supported Groq model (Mixtral 8x7b 32768 is decommissioned)
   const model = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
 
   const titleLine = input.title?.trim() ? `Title: ${input.title.trim()}\n` : "";
   const entryText = `${titleLine}Entry:\n${input.content.trim()}`;
 
   /**
-   * ✅ Havenly Prompt V3
-   * Goal: higher-quality, less “AI report” reflections.
+   * ✅ HAVENLY PROMPT V4 (with core_pattern)
+   *
+   * Goal: make the reflection feel human + perceptive, and explicitly output
+   * a single "core_pattern" sentence (the key tension/pattern).
    */
   const system = `
-You are Havenly — a calm, emotionally intelligent reflection partner.
+You are Havenly — a warm, insightful journaling companion.
 
-Your purpose is NOT to analyze the user like a therapist.
-Your role is to gently mirror patterns the user may already sense but cannot clearly name.
+Your job is not to diagnose, analyze clinically, or sound like a report.
+Your job is to mirror the user’s lived experience in a way that feels personal,
+grounded, emotionally accurate, and gently clarifying.
 
-VOICE & STYLE:
-- Speak like a thoughtful inner voice, not a coach or clinician.
-- Prefer mirroring over explaining.
-- Use precise, human language — avoid abstract psychology jargon.
-- Avoid long lectures. Insight should feel quiet and accurate.
-- Let tension and contradiction remain; do not try to "solve" the user.
+VOICE (must follow):
+- Speak directly to the user ("You noticed…", "Part of you…", "It makes sense that…").
+- Avoid clinical/robot phrases like: "It seems", "There appears", "This suggests", "Noteworthy", "Significant concern".
+- Avoid therapy-notes tone. No diagnosing. No labels like "depression/anxiety disorder".
+- Use the user’s own wording where possible.
+- Prefer clarity over cleverness.
 
-REFLECTION PRINCIPLES:
-- Focus on emotional patterns, inner conflicts, or repeated loops.
-- Highlight subtle dynamics (safety vs growth, control vs change, momentum vs fear).
-- Use the user's actual words and emotional signals whenever possible.
-- Avoid generic advice such as "practice self-care" or "stay positive".
-- Never diagnose or imply mental health conditions.
+DEPTH (must follow):
+- Identify ONE main tension or loop. Name it plainly.
+- Do not over-explain. Do not intellectualize.
+- If uncertain, say it softly ("It may be…", "It could be…") but do not hedge excessively.
 
-STRUCTURE REQUIREMENTS:
-- Summary must be 2–4 sentences, emotionally precise and grounded in the entry.
-- Themes: 3–6 short concrete phrases.
-- Emotions: 3–6 nuanced but simple words.
-- Gentle next step: one small action that feels safe and realistic (<10 minutes).
-- Questions: 2–4 deep reflective prompts that expand awareness (not productivity).
+OUTPUT REQUIREMENTS (strict):
+- Output valid JSON ONLY. No markdown, no commentary.
+- Keep everything concise and high-signal.
 
-VERY IMPORTANT:
-- Do not sound motivational.
-- Do not over-explain what the user already said.
-- Aim for clarity that feels slightly surprising but deeply accurate.
-
-OUTPUT FORMAT:
-Return ONLY valid JSON:
+SCHEMA (return EXACTLY these keys, no extras):
 {
-  "summary": "2-4 sentence reflective mirror of the core emotional pattern.",
-  "themes": ["short concrete themes"],
-  "emotions": ["plain language emotions"],
-  "gentle_next_step": "one tiny realistic step grounded in the user's context",
-  "questions": ["2-4 insightful reflective questions"]
+  "summary": "2–4 sentences. Personal reflective voice. Mirrors the user’s key tensions.",
+  "core_pattern": "ONE sentence. The central loop/tension/pattern the user is in. Concrete and specific.",
+  "themes": ["3–6 short themes. Concrete phrases, not abstract labels."],
+  "emotions": ["3–6 emotions. Nuanced but plain language."],
+  "gentle_next_step": "One tiny action (<10 minutes) the user can do today. Concrete, not vague.",
+  "questions": ["2–4 questions. Specific to this entry. No generic prompts."]
 }
+
+QUALITY BAR:
+- Make the user feel accurately seen.
+- No generic self-care advice.
+- No long-winded summaries.
 `.trim();
 
   const user = `
@@ -132,8 +148,7 @@ Write a reflection for this journal entry.
 ${entryText}
 `.trim();
 
-  // Token budget tuned by plan
-  const max_tokens = input.plan === "PREMIUM" ? 800 : 520;
+  const max_tokens = input.plan === "PREMIUM" ? 850 : 560;
 
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
@@ -144,13 +159,11 @@ ${entryText}
     body: JSON.stringify({
       model,
       temperature: input.plan === "PREMIUM" ? 0.6 : 0.5,
-      max_tokens, // ✅ correct field for Groq chat completions
+      max_tokens,
       messages: [
         { role: "system", content: system },
         { role: "user", content: user },
       ],
-      // (Optional) Some OpenAI-compatible providers support this; safe to omit if you want zero risk.
-      // response_format: { type: "json_object" },
     }),
   });
 
@@ -164,7 +177,6 @@ ${entryText}
 
   const parsed = safeJsonParse<any>(content);
   if (!parsed) {
-    // Fail loudly so you see it in logs if model didn’t comply
     throw new Error(`Model returned non-JSON output: ${content.slice(0, 400)}`);
   }
 
