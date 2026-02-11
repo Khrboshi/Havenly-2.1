@@ -52,28 +52,24 @@ function cleanStringArray(v: unknown, max: number): string[] {
 }
 
 /**
- * Enforce your UX constraints:
- * - summary: always present
+ * UX constraints:
  * - core_pattern: optional
- * - themes/emotions: target 3–6 (cap 7 as safety)
- * - questions: Option A => keep 2–4 (cap 4)
+ * - questions: Option A => keep 2–4
  */
 function normalizeReflection(r: any): Reflection {
   const summary = cleanString(r?.summary);
-
   const corePattern = cleanString(r?.core_pattern);
+
   const themesRaw = cleanStringArray(r?.themes, 7);
   const emotionsRaw = cleanStringArray(r?.emotions, 7);
   const nextStep = cleanString(r?.gentle_next_step);
   const questionsRaw = cleanStringArray(r?.questions, 4);
 
-  // Prefer 3–6 themes/emotions, but never crash if model returns less
-  const themes =
-    themesRaw.length >= 3 ? themesRaw.slice(0, 6) : themesRaw.slice(0, 6);
-  const emotions =
-    emotionsRaw.length >= 3 ? emotionsRaw.slice(0, 6) : emotionsRaw.slice(0, 6);
+  // Prefer 3–6 for display
+  const themes = themesRaw.length ? themesRaw.slice(0, 6) : [];
+  const emotions = emotionsRaw.length ? emotionsRaw.slice(0, 6) : [];
 
-  // Option A: keep 2–4 questions (fallback to 2)
+  // Option A: keep 2–4 questions
   const questions =
     questionsRaw.length >= 2
       ? questionsRaw.slice(0, 4)
@@ -102,13 +98,11 @@ export async function generateReflectionFromEntry(
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("Missing GROQ_API_KEY");
 
-  // Supported Groq model
   const model = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
 
   const titleLine = input.title?.trim() ? `Title: ${input.title.trim()}\n` : "";
   const entryText = `${titleLine}Entry:\n${(input.content || "").trim()}`;
 
-  // Havenly Prompt V4 (with core_pattern)
   const system = `
 You are Havenly — a warm, emotionally intelligent journaling companion.
 
@@ -143,10 +137,8 @@ Write a Havenly reflection for this journal entry:
 ${entryText}
 `.trim();
 
-  // Token budget tuned by plan
   const max_tokens = input.plan === "PREMIUM" ? 900 : 560;
 
-  // Add a hard timeout so requests don’t hang in production
   const controller = new AbortController();
   const timeoutMs = 25_000;
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
@@ -185,7 +177,6 @@ ${entryText}
 
     return normalizeReflection(parsed);
   } catch (err: any) {
-    // Provide a clearer error message on timeout (helps debugging)
     if (err?.name === "AbortError") {
       throw new Error("Groq request timed out. Please try again.");
     }
