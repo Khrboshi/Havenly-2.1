@@ -1,17 +1,27 @@
 {
   "name": "Havenly",
   "short_name": "Havenly",
+  "description": "A calm, private journaling companion with gentle AI reflections.",
+  "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#020617",
-  "theme_color": "#4CA7A3",
+  "orientation": "portrait",
+  "theme_color": "#000121",
+  "background_color": "#000121",
+  "categories": ["health", "lifestyle", "productivity"],
   "icons": [
     {
       "src": "/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }
