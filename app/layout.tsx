@@ -15,12 +15,12 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
     icon: [{ url: "/pwa/icon-192.png" }],
-    apple: [{ url: "/pwa/apple-touch-icon.png" }],
-  },
+    apple: [{ url: "/pwa/apple-touch-icon.png" }]
+  }
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0F172A",
+  themeColor: "#0F172A"
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
