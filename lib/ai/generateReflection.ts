@@ -1,9 +1,10 @@
 // lib/ai/generateReflection.ts
-// Havenly Prompt V4 – Stable Version (with optional core_pattern support)
+// Havenly Prompt V4 — Stable (with core_pattern)
+// Groq (OpenAI-compatible): https://api.groq.com/openai/v1/chat/completions
 
 export type Reflection = {
   summary: string;
-  core_pattern?: string; // ✅ NEW (optional so nothing crashes)
+  core_pattern?: string; // optional so UI never crashes if missing
   themes: string[];
   emotions: string[];
   gentle_next_step: string;
@@ -20,6 +21,7 @@ function safeJsonParse<T>(raw: string): T | null {
   try {
     return JSON.parse(raw) as T;
   } catch {
+    // Try to extract JSON if the model wrapped it in text
     const start = raw.indexOf("{");
     const end = raw.lastIndexOf("}");
     if (start >= 0 && end > start) {
@@ -33,35 +35,64 @@ function safeJsonParse<T>(raw: string): T | null {
   }
 }
 
+function cleanString(v: unknown): string {
+  return typeof v === "string" ? v.trim() : "";
+}
+
+function cleanStringArray(v: unknown, max: number): string[] {
+  if (!Array.isArray(v)) return [];
+  const out: string[] = [];
+  for (const item of v) {
+    const s = String(item ?? "").trim();
+    if (!s) continue;
+    out.push(s);
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
+/**
+ * Enforce your UX constraints:
+ * - summary: always present
+ * - core_pattern: optional
+ * - themes/emotions: target 3–6 (cap 7 as safety)
+ * - questions: Option A => keep 2–4 (cap 4)
+ */
 function normalizeReflection(r: any): Reflection {
+  const summary = cleanString(r?.summary);
+
+  const corePattern = cleanString(r?.core_pattern);
+  const themesRaw = cleanStringArray(r?.themes, 7);
+  const emotionsRaw = cleanStringArray(r?.emotions, 7);
+  const nextStep = cleanString(r?.gentle_next_step);
+  const questionsRaw = cleanStringArray(r?.questions, 4);
+
+  // Prefer 3–6 themes/emotions, but never crash if model returns less
+  const themes =
+    themesRaw.length >= 3 ? themesRaw.slice(0, 6) : themesRaw.slice(0, 6);
+  const emotions =
+    emotionsRaw.length >= 3 ? emotionsRaw.slice(0, 6) : emotionsRaw.slice(0, 6);
+
+  // Option A: keep 2–4 questions (fallback to 2)
+  const questions =
+    questionsRaw.length >= 2
+      ? questionsRaw.slice(0, 4)
+      : [
+          "What part of today felt the most true, even if it was small?",
+          "If you could be gentle with yourself for 10 minutes, what would you do?",
+        ];
+
   return {
     summary:
-      typeof r?.summary === "string"
-        ? r.summary.trim()
-        : "A reflective summary could not be generated.",
-
-    // ✅ safe optional core_pattern (no crashes if missing)
-    core_pattern:
-      typeof r?.core_pattern === "string"
-        ? r.core_pattern.trim()
-        : undefined,
-
-    themes: Array.isArray(r?.themes)
-      ? r.themes.map(String).slice(0, 7)
-      : ["reflection"],
-
-    emotions: Array.isArray(r?.emotions)
-      ? r.emotions.map(String).slice(0, 7)
-      : ["neutral"],
-
+      summary ||
+      "A reflective summary could not be generated. Try adding a bit more detail about what you felt and what mattered.",
+    core_pattern: corePattern || undefined,
+    themes: themes.length ? themes : ["reflection"],
+    emotions: emotions.length ? emotions : ["neutral"],
     gentle_next_step:
-      typeof r?.gentle_next_step === "string"
-        ? r.gentle_next_step.trim()
-        : "Take 2 minutes to write one honest sentence about what you need most right now.",
-
-    questions: Array.isArray(r?.questions)
-      ? r.questions.map(String).slice(0, 4)
-      : ["What is the smallest next step that would make today feel 1% better?"],
+      nextStep ||
+      "Take 2 minutes to write one honest sentence about what you need most right now.",
+    questions,
   };
 }
 
@@ -69,19 +100,15 @@ export async function generateReflectionFromEntry(
   input: Input
 ): Promise<Reflection> {
   const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) {
-    throw new Error("Missing GROQ_API_KEY");
-  }
+  if (!apiKey) throw new Error("Missing GROQ_API_KEY");
 
+  // Supported Groq model
   const model = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
 
-  const titleLine = input.title?.trim()
-    ? `Title: ${input.title.trim()}\n`
-    : "";
+  const titleLine = input.title?.trim() ? `Title: ${input.title.trim()}\n` : "";
+  const entryText = `${titleLine}Entry:\n${(input.content || "").trim()}`;
 
-  const entryText = `${titleLine}Entry:\n${input.content.trim()}`;
-
-  // ⭐ Havenly Prompt V4 (Core Pattern Enabled)
+  // Havenly Prompt V4 (with core_pattern)
   const system = `
 You are Havenly — a warm, emotionally intelligent journaling companion.
 
@@ -89,20 +116,21 @@ Speak directly to the user in a grounded, human voice.
 
 Rules:
 - Avoid clinical language.
-- Avoid phrases like "it seems that".
+- Avoid phrases like "it seems that" / "there appears to be" / "this suggests".
 - Mirror tensions gently.
 - Focus on ONE core pattern if visible.
 - Do NOT diagnose or sound like therapy notes.
+- Do NOT include extra keys, markdown, or commentary.
 
 Output MUST be valid JSON only.
 
-Return EXACTLY:
+Return EXACTLY this schema:
 {
-  "summary": "2–4 sentence reflection",
-  "core_pattern": "one concise sentence describing the central pattern or tension",
-  "themes": ["3–6 themes"],
-  "emotions": ["3–6 emotions"],
-  "gentle_next_step": "one tiny action under 10 minutes",
+  "summary": "2–4 sentences in Havenly voice",
+  "core_pattern": "one concise sentence describing the central pattern or tension (optional if not clear)",
+  "themes": ["3–6 short themes"],
+  "emotions": ["3–6 nuanced emotions"],
+  "gentle_next_step": "one tiny action under 10 minutes, doable today",
   "questions": ["2–4 thoughtful reflective questions"]
 }
 `.trim();
@@ -115,12 +143,18 @@ Write a Havenly reflection for this journal entry:
 ${entryText}
 `.trim();
 
-  const max_tokens = input.plan === "PREMIUM" ? 800 : 520;
+  // Token budget tuned by plan
+  const max_tokens = input.plan === "PREMIUM" ? 900 : 560;
 
-  const res = await fetch(
-    "https://api.groq.com/openai/v1/chat/completions",
-    {
+  // Add a hard timeout so requests don’t hang in production
+  const controller = new AbortController();
+  const timeoutMs = 25_000;
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
+      signal: controller.signal,
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
@@ -134,21 +168,29 @@ ${entryText}
           { role: "user", content: user },
         ],
       }),
+    });
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(`Groq request failed (${res.status}): ${text}`);
     }
-  );
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Groq request failed (${res.status}): ${text}`);
+    const data: any = await res.json();
+    const raw: string = data?.choices?.[0]?.message?.content ?? "";
+
+    const parsed = safeJsonParse<any>(raw);
+    if (!parsed) {
+      throw new Error(`Model returned non-JSON output: ${raw.slice(0, 400)}`);
+    }
+
+    return normalizeReflection(parsed);
+  } catch (err: any) {
+    // Provide a clearer error message on timeout (helps debugging)
+    if (err?.name === "AbortError") {
+      throw new Error("Groq request timed out. Please try again.");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
   }
-
-  const data: any = await res.json();
-  const content: string = data?.choices?.[0]?.message?.content ?? "";
-
-  const parsed = safeJsonParse<any>(content);
-  if (!parsed) {
-    throw new Error(`Model returned non-JSON output: ${content.slice(0, 400)}`);
-  }
-
-  return normalizeReflection(parsed);
 }
