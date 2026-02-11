@@ -1,24 +1,59 @@
-export default function InsightsPage() {
+// app/(protected)/insights/page.tsx
+import { redirect } from "next/navigation";
+import { createServerSupabase } from "@/lib/supabase/server";
+import InsightsClient from "./InsightsClient";
+
+export const dynamic = "force-dynamic";
+
+type PlanType = "FREE" | "TRIAL" | "PREMIUM";
+
+/**
+ * Adjust this function ONLY if your plan is stored in a different table/column.
+ * Common patterns:
+ * - profiles.plan_type
+ * - profiles.plan
+ * - subscriptions.plan_type
+ */
+async function getUserPlanType(
+  supabase: ReturnType<typeof createServerSupabase>,
+  userId: string
+): Promise<PlanType> {
+  // Try profiles first
+  const { data: profile, error: profileErr } = await supabase
+    .from("profiles")
+    .select("plan_type, plan, tier")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (!profileErr && profile) {
+    const raw = (profile.plan_type || profile.plan || profile.tier || "").toString().toUpperCase();
+    if (raw === "PREMIUM") return "PREMIUM";
+    if (raw === "TRIAL") return "TRIAL";
+    return "FREE";
+  }
+
+  // Fallback to FREE if not found (safe default)
+  return "FREE";
+}
+
+export default async function InsightsPage() {
+  const supabase = createServerSupabase();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.user) redirect("/magic-login");
+
+  const planType = await getUserPlanType(supabase, session.user.id);
+
+  // ✅ Premium-only gate
+  if (planType !== "PREMIUM") {
+    redirect("/insights/preview");
+  }
+
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-semibold text-slate-100">Insights</h1>
-
-      <p className="text-slate-400 text-sm max-w-xl">
-        As you continue journaling and checking in, Havenly will surface gentle
-        timelines, trends, and repeating emotional themes. Think of this as a
-        quiet companion that helps you understand what has been building beneath
-        your week.
-      </p>
-
-      <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-6 text-slate-500 text-sm">
-        Insight visualizations will appear here soon — including:
-        <ul className="mt-3 space-y-1 list-disc list-inside">
-          <li>Mood patterns over time</li>
-          <li>Reflection themes and repeated keywords</li>
-          <li>Emotion frequency breakdown</li>
-          <li>Week-over-week clarity score</li>
-        </ul>
-      </div>
+      <InsightsClient />
     </div>
   );
 }
