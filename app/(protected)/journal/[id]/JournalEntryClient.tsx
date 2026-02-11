@@ -1,3 +1,4 @@
+// app/(protected)/journal/[id]/JournalEntryClient.tsx
 "use client";
 
 import Link from "next/link";
@@ -20,6 +21,19 @@ type Reflection = {
   questions: string[];
 };
 
+function pickKeyPattern(summary: string): string {
+  const s = (summary || "").trim();
+  if (!s) return "";
+
+  // Prefer the first sentence as the "key pattern"
+  const m = s.match(/^(.+?[.!?])(\s|$)/);
+  const firstSentence = m?.[1]?.trim() ?? "";
+  const candidate = firstSentence.length >= 40 ? firstSentence : s;
+
+  // Keep it punchy
+  return candidate.length > 180 ? candidate.slice(0, 177).trim() + "…" : candidate;
+}
+
 export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
   const { planType, credits, loading, refresh } = useUserPlan();
 
@@ -36,14 +50,13 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
     return "Free";
   }, [planType]);
 
+  const keyPattern = useMemo(() => {
+    if (!reflection?.summary) return "";
+    return pickKeyPattern(reflection.summary);
+  }, [reflection?.summary]);
+
   async function generateReflection() {
     if (busy) return;
-
-    // ✅ If Free user has 0 credits, show upgrade modal immediately (no API call)
-    if (!isPremium && !loading && (credits ?? 0) <= 0) {
-      setShowUpgrade(true);
-      return;
-    }
 
     setBusy(true);
     setError(null);
@@ -83,9 +96,6 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
     }
   }
 
-  // ✅ Only disable while generating
-  const disableGenerate = busy;
-
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-6 py-10 text-white">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -112,16 +122,13 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
 
             <p className="mt-1 text-sm text-white/70">
               Plan: <span className="text-emerald-300">{readablePlan}</span>
-
               {!isPremium ? (
                 <>
                   {" "}
                   · Reflections left:{" "}
                   <span className="text-emerald-300">{loading ? "…" : credits}</span>
                   {credits === 0 && (
-                    <span className="ml-2 text-xs text-white/50">
-                      (resets next month)
-                    </span>
+                    <span className="ml-2 text-xs text-white/50">(resets next month)</span>
                   )}
                 </>
               ) : (
@@ -132,7 +139,7 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
 
           <button
             onClick={generateReflection}
-            disabled={disableGenerate}
+            disabled={busy}
             className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-slate-950 hover:bg-emerald-400 disabled:opacity-60"
           >
             {busy ? "Generating…" : "Generate Reflection"}
@@ -148,9 +155,20 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
           </p>
         ) : (
           <div className="mt-5 space-y-4 text-sm text-white/80">
+            {/* Summary */}
             <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
               <p className="text-white/90">{reflection.summary}</p>
             </div>
+
+            {/* ✅ Step 1: Key Pattern Detected */}
+            {keyPattern && (
+              <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-white/70">
+                  Key pattern detected
+                </h3>
+                <p className="mt-2 text-white/90">{keyPattern}</p>
+              </div>
+            )}
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
