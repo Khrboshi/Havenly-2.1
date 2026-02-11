@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { useSupabase } from "@/components/SupabaseSessionProvider";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const router = useRouter();
   const { session, supabase } = useSupabase();
 
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -56,8 +56,17 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#020617]/80 backdrop-blur">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-        <Link href="/" className="text-lg font-semibold text-white">
-          Havenly
+        {/* ✅ Brand: Logo + Text (keeps all existing logic) */}
+        <Link href="/" className="flex items-center gap-2">
+          <Image
+            src="/icon.svg"
+            alt="Havenly"
+            width={26}
+            height={26}
+            priority
+            className="rounded-md"
+          />
+          <span className="text-lg font-semibold text-white">Havenly</span>
         </Link>
 
         {/* Desktop */}
@@ -71,9 +80,7 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`${linkBase} ${
-                  isActive ? activeLink : inactiveLink
-                }`}
+                className={`${linkBase} ${isActive ? activeLink : inactiveLink}`}
               >
                 {link.label}
               </Link>
@@ -121,9 +128,7 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   className={`rounded-md px-2 py-2 text-base ${
-                    isActive
-                      ? "bg-white/5 text-emerald-400"
-                      : "text-slate-300"
+                    isActive ? "bg-white/5 text-emerald-400" : "text-slate-300"
                   }`}
                 >
                   {link.label}
