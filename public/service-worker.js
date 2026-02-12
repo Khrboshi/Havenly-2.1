@@ -1,5 +1,5 @@
 /* public/service-worker.js */
-const CACHE_NAME = "hvn-static-v5";
+const CACHE_NAME = "hvn-static-v6";
 
 /**
  * Precache essentials:
@@ -70,15 +70,37 @@ self.addEventListener("fetch", (event) => {
   // Ignore cross-origin
   if (url.origin !== self.location.origin) return;
 
-  // Ignore Next internals / APIs
+  // Ignore APIs
   if (url.pathname.startsWith("/api")) return;
 
   const isNavigation = req.mode === "navigate";
 
+  // ✅ Next.js App Router RSC requests look like /?_rsc=...
+  const isRSC = url.searchParams.has("_rsc");
+
+  // Treat RSC like navigation for offline purposes
+  if (isRSC) {
+    event.respondWith(
+      (async () => {
+        // If cached, use it
+        const cached = await caches.match(req);
+        if (cached) return cached;
+
+        // Otherwise fallback to cached home shell
+        return (
+          (await caches.match("/")) || new Response("Offline", { status: 503 })
+        );
+      })()
+    );
+    return;
+  }
+
   const isAsset =
     url.pathname.startsWith("/_next/static/") ||
     url.pathname.startsWith("/pwa/") ||
-    ["/manifest.json", "/service-worker.js", "/icon.svg"].includes(url.pathname) ||
+    ["/manifest.json", "/service-worker.js", "/icon.svg"].includes(
+      url.pathname
+    ) ||
     req.destination === "image" ||
     req.destination === "style" ||
     req.destination === "script" ||
@@ -96,9 +118,12 @@ self.addEventListener("fetch", (event) => {
           cache.put(req, fresh.clone());
           return fresh;
         } catch {
-          // Fallback to cached request, then cached home
           const cached = await caches.match(req);
-          return cached || (await caches.match("/")) || new Response("Offline", { status: 503 });
+          return (
+            cached ||
+            (await caches.match("/")) ||
+            new Response("Offline", { status: 503 })
+          );
         }
       })()
     );
@@ -120,9 +145,10 @@ self.addEventListener("fetch", (event) => {
           cache.put(req, fresh.clone());
           return fresh;
         } catch {
-          // If an image is missing offline, try returning the cached app icon.
           if (req.destination === "image") {
-            return (await caches.match("/pwa/icon-192.png")) || Response.error();
+            return (
+              (await caches.match("/pwa/icon-192.png")) || Response.error()
+            );
           }
           return Response.error();
         }
