@@ -1,3 +1,4 @@
+// middleware.ts
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
@@ -8,6 +9,9 @@ import { createServerClient } from "@supabase/ssr";
  * - Enforce redirects ONLY for protected areas
  * - Never interfere with auth callback / magic-link flow
  * - Avoid redirect loops and avoid running on /api
+ *
+ * ✅ PWA hardening added:
+ * - Do NOT run middleware on manifest/service-worker/pwa assets (prevents HTML being served for icons/manifest)
  */
 
 const PUBLIC_PATHS = ["/", "/about", "/blog", "/privacy", "/premium", "/upgrade"];
@@ -27,6 +31,20 @@ export async function middleware(req: NextRequest) {
 
   // Skip API routes explicitly (avoid unexpected behavior + overhead)
   if (pathname.startsWith("/api")) {
+    return NextResponse.next();
+  }
+
+  // ✅ Skip PWA / install + icon assets completely (must not return HTML/redirects)
+  if (
+    pathname === "/manifest.json" ||
+    pathname === "/service-worker.js" ||
+    pathname.startsWith("/pwa/") ||
+    pathname === "/favicon-16.png" ||
+    pathname === "/favicon-32.png" ||
+    pathname === "/apple-touch-icon.png" ||
+    pathname === "/robots.txt" ||
+    pathname === "/sitemap.xml"
+  ) {
     return NextResponse.next();
   }
 
@@ -89,9 +107,9 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Run middleware on all app routes except static assets.
+     * Run middleware on all app routes except static assets + PWA assets.
      * /api is handled inside middleware (explicit early return).
      */
-    "/((?!_next/static|_next/image|favicon.ico|icon.svg).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icon.svg|favicon-16.png|favicon-32.png|apple-touch-icon.png|manifest.json|service-worker.js|pwa/|robots.txt|sitemap.xml).*)",
   ],
 };
