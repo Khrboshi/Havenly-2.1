@@ -11,9 +11,9 @@ const PRECACHE_URLS = [
   "/pwa/icon-512.png",
   "/pwa/icon-512-maskable.png",
 
-  // Screenshots (make sure these exist at these exact paths)
+  // Screenshots
   "/pwa/screenshots/screenshot-1.png",
-  "/pwa/screenshots/screenshot-2.png"
+  "/pwa/screenshots/screenshot-2.png",
 ];
 
 self.addEventListener("install", (event) => {
@@ -54,7 +54,7 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(req.url);
 
-  // Ignore cross-origin
+  // Same-origin only
   if (url.origin !== self.location.origin) return;
 
   // Ignore API routes
@@ -72,36 +72,29 @@ self.addEventListener("fetch", (event) => {
     req.destination === "script" ||
     req.destination === "font";
 
-  // ---- RSC: offline-friendly fallback ----
-  if (isRSC) {
+  // ✅ Pages (including RSC): network-first, fallback to cached "/"
+  if (isNavigation || isRSC) {
     event.respondWith(
       (async () => {
-        const cached = await caches.match(req);
-        return cached || (await caches.match("/")) || new Response("Offline", { status: 503 });
-      })()
-    );
-    return;
-  }
+        const cache = await caches.open(CACHE_NAME);
 
-  // ---- Pages: network-first, fallback to cached page or "/" ----
-  if (isNavigation) {
-    event.respondWith(
-      (async () => {
         try {
           const fresh = await fetch(req);
-          const cache = await caches.open(CACHE_NAME);
-          cache.put(req, fresh.clone());
+
+          // ⭐ IMPORTANT: keep the offline shell always available
+          cache.put("/", fresh.clone());
+
           return fresh;
         } catch {
-          const cached = await caches.match(req);
-          return cached || (await caches.match("/")) || new Response("Offline", { status: 503 });
+          const cachedHome = await caches.match("/");
+          return cachedHome || new Response("Offline", { status: 503 });
         }
       })()
     );
     return;
   }
 
-  // ---- Assets: cache-first ----
+  // ✅ Assets: cache-first
   if (isAsset) {
     event.respondWith(
       (async () => {
@@ -114,7 +107,6 @@ self.addEventListener("fetch", (event) => {
           cache.put(req, fresh.clone());
           return fresh;
         } catch {
-          // If offline and missing, try returning an icon
           if (req.destination === "image") {
             return (await caches.match("/pwa/icon-192.png")) || Response.error();
           }
