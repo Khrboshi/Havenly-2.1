@@ -1,20 +1,22 @@
 /* public/service-worker.js */
-const CACHE_NAME = "hvn-static-v4";
+const CACHE_NAME = "hvn-static-v5";
 
 /**
  * Precache essentials:
+ * - App shell (/) + manifest
+ * - Site icon(s) used in Navbar (fixes “logo broken offline”)
  * - PWA icons + screenshots
- * - offline fallback page
- * - site icon / favicon assets (critical for the "logo broken offline" symptom)
+ *
+ * NOTE:
+ * - We intentionally DO NOT precache /offline unless you truly have that route.
+ *   (Missing /offline is a common reason precache silently skips items.)
  */
 const PRECACHE_URLS = [
   "/",
-  "/offline",
   "/manifest.json",
 
   // ✅ Site icon(s)
   "/icon.svg",
-  "/favicon.ico",
 
   // ✅ PWA icons
   "/pwa/icon-192.png",
@@ -31,10 +33,10 @@ self.addEventListener("install", (event) => {
     (async () => {
       const cache = await caches.open(CACHE_NAME);
 
-      // IMPORTANT: don't let one failed request break the whole install
+      // Use cache: 'reload' so we don’t get stale/HTML-cached responses.
       await Promise.allSettled(
         PRECACHE_URLS.map((url) =>
-          cache.add(url).catch(() => null)
+          cache.add(new Request(url, { cache: "reload" })).catch(() => null)
         )
       );
 
@@ -46,14 +48,12 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
-      // Clean older cache versions
       const keys = await caches.keys();
       await Promise.all(
         keys
           .filter((k) => k.startsWith("hvn-static-") && k !== CACHE_NAME)
           .map((k) => caches.delete(k))
       );
-
       self.clients.claim();
     })()
   );
@@ -75,18 +75,19 @@ self.addEventListener("fetch", (event) => {
 
   const isNavigation = req.mode === "navigate";
 
-  // Treat as "asset" if it's a static file request
   const isAsset =
     url.pathname.startsWith("/_next/static/") ||
     url.pathname.startsWith("/pwa/") ||
-    ["/manifest.json", "/service-worker.js", "/icon.svg", "/favicon.ico"].includes(url.pathname) ||
+    ["/manifest.json", "/service-worker.js", "/icon.svg"].includes(url.pathname) ||
     req.destination === "image" ||
     req.destination === "style" ||
     req.destination === "script" ||
     req.destination === "font";
 
+  // ----------------------------
+  // Pages: network-first, fallback to cached "/" (app shell)
+  // ----------------------------
   if (isNavigation) {
-    // Network-first for pages, fallback to cached page or offline screen
     event.respondWith(
       (async () => {
         try {
@@ -95,16 +96,19 @@ self.addEventListener("fetch", (event) => {
           cache.put(req, fresh.clone());
           return fresh;
         } catch {
+          // Fallback to cached request, then cached home
           const cached = await caches.match(req);
-          return cached || (await caches.match("/offline")) || Response.error();
+          return cached || (await caches.match("/")) || new Response("Offline", { status: 503 });
         }
       })()
     );
     return;
   }
 
+  // ----------------------------
+  // Assets: cache-first
+  // ----------------------------
   if (isAsset) {
-    // Cache-first for assets
     event.respondWith(
       (async () => {
         const cached = await caches.match(req);
@@ -116,7 +120,10 @@ self.addEventListener("fetch", (event) => {
           cache.put(req, fresh.clone());
           return fresh;
         } catch {
-          // If offline and not cached, fail cleanly
+          // If an image is missing offline, try returning the cached app icon.
+          if (req.destination === "image") {
+            return (await caches.match("/pwa/icon-192.png")) || Response.error();
+          }
           return Response.error();
         }
       })()
