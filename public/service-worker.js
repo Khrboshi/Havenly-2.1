@@ -1,31 +1,30 @@
 /* public/service-worker.js */
-const CACHE_NAME = "hvn-static-v7";
+const CACHE_NAME = "hvn-static-v6";
 
 /**
  * Precache essentials:
- * - App shell (/) + manifest
- * - Site icon(s) used in Navbar (fixes “logo broken offline”)
- * - PWA icons + screenshots
- *
- * NOTE:
- * - We intentionally DO NOT precache /offline unless you truly have that route.
- *   (Missing /offline is a common reason precache silently skips items.)
+ * - App shell + offline page
+ * - manifest + icons + screenshots
  */
 const PRECACHE_URLS = [
   "/",
+  "/offline",
   "/manifest.json",
 
-  // ✅ Site icon(s)
+  // Navbar/site icons
   "/icon.svg",
+  "/apple-touch-icon.png",
+  "/favicon.ico",
+  "/favicon-16.png",
 
-  // ✅ PWA icons
+  // PWA icons
   "/pwa/icon-192.png",
   "/pwa/icon-512.png",
   "/pwa/icon-512-maskable.png",
 
-  // ✅ PWA screenshots
-  "/pwa/screenshot-1.png",
-  "/pwa/screenshot-2.png",
+  // PWA screenshots (✅ correct folder)
+  "/pwa/screenshots/screenshot-1.png",
+  "/pwa/screenshots/screenshot-2.png"
 ];
 
 self.addEventListener("install", (event) => {
@@ -33,7 +32,7 @@ self.addEventListener("install", (event) => {
     (async () => {
       const cache = await caches.open(CACHE_NAME);
 
-      // Use cache: 'reload' so we don’t get stale/HTML-cached responses.
+      // cache: 'reload' helps avoid accidentally caching HTML for assets
       await Promise.allSettled(
         PRECACHE_URLS.map((url) =>
           cache.add(new Request(url, { cache: "reload" })).catch(() => null)
@@ -73,42 +72,31 @@ self.addEventListener("fetch", (event) => {
   // Ignore APIs
   if (url.pathname.startsWith("/api")) return;
 
-  const isNavigation = req.mode === "navigate";
-
   // ✅ Next.js App Router RSC requests look like /?_rsc=...
   const isRSC = url.searchParams.has("_rsc");
-
-  // Treat RSC like navigation for offline purposes
   if (isRSC) {
     event.respondWith(
       (async () => {
-        // If cached, use it
         const cached = await caches.match(req);
         if (cached) return cached;
-
-        // Otherwise fallback to cached home shell
-        return (
-          (await caches.match("/")) || new Response("Offline", { status: 503 })
-        );
+        return (await caches.match("/")) || new Response("Offline", { status: 503 });
       })()
     );
     return;
   }
 
+  const isNavigation = req.mode === "navigate";
+
   const isAsset =
     url.pathname.startsWith("/_next/static/") ||
     url.pathname.startsWith("/pwa/") ||
-    ["/manifest.json", "/service-worker.js", "/icon.svg"].includes(
-      url.pathname
-    ) ||
+    ["/manifest.json", "/service-worker.js", "/icon.svg", "/favicon.ico", "/favicon-16.png", "/apple-touch-icon.png"].includes(url.pathname) ||
     req.destination === "image" ||
     req.destination === "style" ||
     req.destination === "script" ||
     req.destination === "font";
 
-  // ----------------------------
-  // Pages: network-first, fallback to cached "/" (app shell)
-  // ----------------------------
+  // Pages: network-first, fallback to cached page or offline screen
   if (isNavigation) {
     event.respondWith(
       (async () => {
@@ -119,20 +107,14 @@ self.addEventListener("fetch", (event) => {
           return fresh;
         } catch {
           const cached = await caches.match(req);
-          return (
-            cached ||
-            (await caches.match("/")) ||
-            new Response("Offline", { status: 503 })
-          );
+          return cached || (await caches.match("/offline")) || (await caches.match("/")) || new Response("Offline", { status: 503 });
         }
       })()
     );
     return;
   }
 
-  // ----------------------------
   // Assets: cache-first
-  // ----------------------------
   if (isAsset) {
     event.respondWith(
       (async () => {
@@ -145,10 +127,9 @@ self.addEventListener("fetch", (event) => {
           cache.put(req, fresh.clone());
           return fresh;
         } catch {
+          // If offline and image missing, fallback to cached app icon
           if (req.destination === "image") {
-            return (
-              (await caches.match("/pwa/icon-192.png")) || Response.error()
-            );
+            return (await caches.match("/pwa/icon-192.png")) || Response.error();
           }
           return Response.error();
         }
