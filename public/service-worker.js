@@ -1,19 +1,18 @@
 /* public/service-worker.js */
-const CACHE_NAME = "hvn-static-v6";
+
+const CACHE_NAME = "hvn-static-v7";
 
 const PRECACHE_URLS = [
   "/",
   "/manifest.json",
   "/icon.svg",
 
-  // PWA icons
   "/pwa/icon-192.png",
   "/pwa/icon-512.png",
   "/pwa/icon-512-maskable.png",
 
-  // Screenshots
   "/pwa/screenshots/screenshot-1.png",
-  "/pwa/screenshots/screenshot-2.png",
+  "/pwa/screenshots/screenshot-2.png"
 ];
 
 self.addEventListener("install", (event) => {
@@ -36,6 +35,7 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
       const keys = await caches.keys();
+
       await Promise.all(
         keys
           .filter((k) => k.startsWith("hvn-static-") && k !== CACHE_NAME)
@@ -54,10 +54,7 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(req.url);
 
-  // Same-origin only
   if (url.origin !== self.location.origin) return;
-
-  // Ignore API routes
   if (url.pathname.startsWith("/api")) return;
 
   const isNavigation = req.mode === "navigate";
@@ -72,8 +69,19 @@ self.addEventListener("fetch", (event) => {
     req.destination === "script" ||
     req.destination === "font";
 
-  // ✅ Pages (including RSC): network-first, fallback to cached "/"
-  if (isNavigation || isRSC) {
+  // ✅ RSC fallback (Next.js App Router)
+  if (isRSC) {
+    event.respondWith(
+      (async () => {
+        const cached = await caches.match(req);
+        return cached || (await caches.match("/")) || new Response("Offline", { status: 503 });
+      })()
+    );
+    return;
+  }
+
+  // ✅ Navigation requests (pages)
+  if (isNavigation) {
     event.respondWith(
       (async () => {
         const cache = await caches.open(CACHE_NAME);
@@ -81,20 +89,22 @@ self.addEventListener("fetch", (event) => {
         try {
           const fresh = await fetch(req);
 
-          // ⭐ IMPORTANT: keep the offline shell always available
+          // ⭐ cache home shell
           cache.put("/", fresh.clone());
 
           return fresh;
         } catch {
           const cachedHome = await caches.match("/");
-          return cachedHome || new Response("Offline", { status: 503 });
+          if (cachedHome) return cachedHome;
+
+          return new Response("Offline", { status: 503 });
         }
       })()
     );
     return;
   }
 
-  // ✅ Assets: cache-first
+  // ✅ Assets
   if (isAsset) {
     event.respondWith(
       (async () => {
