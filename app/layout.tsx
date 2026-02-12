@@ -1,5 +1,6 @@
+// app/layout.tsx
 import type { ReactNode } from "react";
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import "./globals.css";
 
 import Navbar from "./components/Navbar";
@@ -14,19 +15,23 @@ export const metadata: Metadata = {
   description: "A calm, private journaling companion with gentle AI reflections.",
   manifest: "/manifest.json",
   icons: {
-    icon: [{ url: "/pwa/icon-192.png" }],
-    apple: [{ url: "/pwa/apple-touch-icon.png" }]
+    icon: [
+      { url: "/favicon-32.png", type: "image/png", sizes: "32x32" },
+      { url: "/favicon-16.png", type: "image/png", sizes: "16x16" },
+      { url: "/icon.svg", type: "image/svg+xml" }
+    ],
+    apple: [{ url: "/apple-touch-icon.png", type: "image/png", sizes: "180x180" }]
   }
 };
 
-export const viewport: Viewport = {
-  themeColor: "#0F172A"
-};
-
-export default async function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({
+  children
+}: {
+  children: ReactNode;
+}) {
   const supabase = createServerSupabase();
   const {
-    data: { session },
+    data: { session }
   } = await supabase.auth.getSession();
 
   return (
