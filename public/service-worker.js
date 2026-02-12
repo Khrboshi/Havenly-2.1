@@ -1,47 +1,61 @@
 /* public/service-worker.js */
-/* Havenly PWA Service Worker — cache-first for static, network-first for pages */
+const CACHE_NAME = "hvn-static-v4";
 
-const CACHE_NAME = "havenly-pwa-v7";
-
+/**
+ * Precache essentials:
+ * - PWA icons + screenshots
+ * - offline fallback page
+ * - site icon / favicon assets (critical for the "logo broken offline" symptom)
+ */
 const PRECACHE_URLS = [
   "/",
+  "/offline",
   "/manifest.json",
-  "/service-worker.js",
 
-  // Favicons / UI icons (fix offline logo issues)
-  "/favicon.ico",
+  // ✅ Site icon(s)
   "/icon.svg",
-  "/apple-touch-icon.png",
+  "/favicon.ico",
 
-  // PWA icons
+  // ✅ PWA icons
   "/pwa/icon-192.png",
   "/pwa/icon-512.png",
   "/pwa/icon-512-maskable.png",
 
-  // PWA screenshots
+  // ✅ PWA screenshots
   "/pwa/screenshot-1.png",
   "/pwa/screenshot-2.png",
 ];
 
-// Install: precache core files
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => cache.addAll(PRECACHE_URLS))
-      .then(() => self.skipWaiting())
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+
+      // IMPORTANT: don't let one failed request break the whole install
+      await Promise.allSettled(
+        PRECACHE_URLS.map((url) =>
+          cache.add(url).catch(() => null)
+        )
+      );
+
+      self.skipWaiting();
+    })()
   );
 });
 
-// Activate: cleanup old caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches
-      .keys()
-      .then((keys) =>
-        Promise.all(keys.map((k) => (k !== CACHE_NAME ? caches.delete(k) : null)))
-      )
-      .then(() => self.clients.claim())
+    (async () => {
+      // Clean older cache versions
+      const keys = await caches.keys();
+      await Promise.all(
+        keys
+          .filter((k) => k.startsWith("hvn-static-") && k !== CACHE_NAME)
+          .map((k) => caches.delete(k))
+      );
+
+      self.clients.claim();
+    })()
   );
 });
 
@@ -53,79 +67,59 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(req.url);
 
-  // Only same-origin
+  // Ignore cross-origin
   if (url.origin !== self.location.origin) return;
 
-  const pathname = url.pathname;
+  // Ignore Next internals / APIs
+  if (url.pathname.startsWith("/api")) return;
 
-  // ✅ 1) Next.js build assets must be cache-first (fixes hashed chunk offline errors)
-  const isNextStatic =
-    pathname.startsWith("/_next/static/") ||
-    pathname.startsWith("/_next/image");
-
-  if (isNextStatic) {
-    event.respondWith(
-      caches.match(req).then((cached) => {
-        if (cached) return cached;
-        return fetch(req)
-          .then((res) => {
-            const copy = res.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
-            return res;
-          })
-          .catch(() => cached);
-      })
-    );
-    return;
-  }
-
-  // ✅ 2) App assets (icons/images/css/js/json) cache-first
-  const isAsset =
-    pathname.startsWith("/pwa/") ||
-    pathname.endsWith(".png") ||
-    pathname.endsWith(".jpg") ||
-    pathname.endsWith(".jpeg") ||
-    pathname.endsWith(".webp") ||
-    pathname.endsWith(".svg") ||
-    pathname.endsWith(".ico") ||
-    pathname.endsWith(".css") ||
-    pathname.endsWith(".js") ||
-    pathname.endsWith(".json");
-
-  if (isAsset) {
-    event.respondWith(
-      caches.match(req).then((cached) => {
-        if (cached) return cached;
-        return fetch(req)
-          .then((res) => {
-            const copy = res.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
-            return res;
-          })
-          .catch(() => cached);
-      })
-    );
-    return;
-  }
-
-  // ✅ 3) Navigations/pages: network-first, fallback to cache, then "/"
   const isNavigation = req.mode === "navigate";
 
+  // Treat as "asset" if it's a static file request
+  const isAsset =
+    url.pathname.startsWith("/_next/static/") ||
+    url.pathname.startsWith("/pwa/") ||
+    ["/manifest.json", "/service-worker.js", "/icon.svg", "/favicon.ico"].includes(url.pathname) ||
+    req.destination === "image" ||
+    req.destination === "style" ||
+    req.destination === "script" ||
+    req.destination === "font";
+
   if (isNavigation) {
+    // Network-first for pages, fallback to cached page or offline screen
     event.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
-          return res;
-        })
-        .catch(() =>
-          caches.match(req).then((cached) => cached || caches.match("/"))
-        )
+      (async () => {
+        try {
+          const fresh = await fetch(req);
+          const cache = await caches.open(CACHE_NAME);
+          cache.put(req, fresh.clone());
+          return fresh;
+        } catch {
+          const cached = await caches.match(req);
+          return cached || (await caches.match("/offline")) || Response.error();
+        }
+      })()
     );
     return;
   }
 
-  // Default: cache-first fallback
-  event.respondWith(caches.match(req).then((cached) => cached || fetch(req)));
+  if (isAsset) {
+    // Cache-first for assets
+    event.respondWith(
+      (async () => {
+        const cached = await caches.match(req);
+        if (cached) return cached;
+
+        try {
+          const fresh = await fetch(req);
+          const cache = await caches.open(CACHE_NAME);
+          cache.put(req, fresh.clone());
+          return fresh;
+        } catch {
+          // If offline and not cached, fail cleanly
+          return Response.error();
+        }
+      })()
+    );
+  }
 });
