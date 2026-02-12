@@ -5,21 +5,19 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#070A12",
-  "theme_color": "#2fd1a0",
+  "background_color": "#07101a",
+  "theme_color": "#2ad3b2",
   "orientation": "portrait",
   "icons": [
     {
       "src": "/pwa/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/png"
     },
     {
       "src": "/pwa/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/png"
     },
     {
       "src": "/pwa/icon-512-maskable.png",
@@ -30,16 +28,14 @@
   ],
   "screenshots": [
     {
-      "src": "/pwa/screenshot-1.png",
+      "src": "/pwa/screenshots/screenshot-1.png",
       "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide"
+      "type": "image/png"
     },
     {
-      "src": "/pwa/screenshot-2.png",
-      "sizes": "720x1280",
-      "type": "image/png",
-      "form_factor": "narrow"
+      "src": "/pwa/screenshots/screenshot-2.png",
+      "sizes": "1280x720",
+      "type": "image/png"
     }
   ]
 }
