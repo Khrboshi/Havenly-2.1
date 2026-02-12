@@ -1,79 +1,84 @@
-// public/service-worker.js
+/* public/service-worker.js */
+/* Havenly PWA Service Worker (cache-first static, network-first pages) */
 
-const CACHE_NAME = "havenly-2-1-v2";
+const CACHE_NAME = "havenly-pwa-v6"; // ⬅️ bump to force update
 
-const CORE_ASSETS = ["/", "/manifest.json", "/icon.svg"];
+const PRECACHE_URLS = [
+  // Core
+  "/",
+  "/manifest.json",
+  "/service-worker.js",
 
-// Install: cache core assets
+  // Favicons / app icons
+  "/favicon.ico",
+  "/favicon-16.png",
+  "/favicon-32.png",
+  "/apple-touch-icon.png",
+  "/icon.svg", // ✅ IMPORTANT: fixes offline Navbar/logo if it uses /icon.svg
+
+  // PWA icons
+  "/pwa/icon-192.png",
+  "/pwa/icon-512.png",
+  "/pwa/icon-512-maskable.png",
+
+  // PWA screenshots (for install UI)
+  "/pwa/screenshot-1.png",
+  "/pwa/screenshot-2.png",
+];
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(CACHE_NAME)
-      .then((cache) => cache.addAll(CORE_ASSETS))
-      .catch(() => null)
+      .then((cache) => cache.addAll(PRECACHE_URLS))
+      .then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
-// Activate: cleanup old caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys.map((key) => {
+            if (key !== CACHE_NAME) return caches.delete(key);
+          })
+        )
+      )
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
-
-function isHTMLNavigation(request) {
-  return request.mode === "navigate" || (request.headers.get("accept") || "").includes("text/html");
-}
-
-function isStaticAsset(requestUrl) {
-  return (
-    requestUrl.pathname.startsWith("/_next/") ||
-    requestUrl.pathname.endsWith(".css") ||
-    requestUrl.pathname.endsWith(".js") ||
-    requestUrl.pathname.endsWith(".png") ||
-    requestUrl.pathname.endsWith(".jpg") ||
-    requestUrl.pathname.endsWith(".jpeg") ||
-    requestUrl.pathname.endsWith(".webp") ||
-    requestUrl.pathname.endsWith(".svg") ||
-    requestUrl.pathname.endsWith(".ico") ||
-    requestUrl.pathname.endsWith(".woff") ||
-    requestUrl.pathname.endsWith(".woff2")
-  );
-}
 
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // Only same-origin GET
-  if (req.method !== "GET") return;
+  // Only handle same-origin requests
   if (url.origin !== self.location.origin) return;
 
-  // Never cache API routes
-  if (url.pathname.startsWith("/api/")) {
-    return; // let it hit network normally
-  }
+  // Ignore non-GET
+  if (req.method !== "GET") return;
 
-  // Network-first for navigations (avoid stale HTML)
-  if (isHTMLNavigation(req)) {
-    event.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
-          return res;
-        })
-        .catch(() => caches.match(req).then((cached) => cached || caches.match("/")))
-    );
-    return;
-  }
+  const isNextStatic =
+    url.pathname.startsWith("/_next/static") ||
+    url.pathname.startsWith("/_next/image");
 
-  // Cache-first for static assets
-  if (isStaticAsset(url)) {
+  const isAsset =
+    isNextStatic ||
+    url.pathname.startsWith("/pwa/") ||
+    url.pathname.endsWith(".png") ||
+    url.pathname.endsWith(".jpg") ||
+    url.pathname.endsWith(".jpeg") ||
+    url.pathname.endsWith(".svg") ||
+    url.pathname.endsWith(".ico") ||
+    url.pathname.endsWith(".webp") ||
+    url.pathname.endsWith(".css") ||
+    url.pathname.endsWith(".js") ||
+    url.pathname.endsWith(".json");
+
+  // ✅ Cache-first for assets (icons, images, next static, etc.)
+  if (isAsset) {
     event.respondWith(
       caches.match(req).then((cached) => {
         if (cached) return cached;
@@ -89,14 +94,24 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Default: network-first, fallback cache
+  // ✅ Network-first for navigation/pages (keeps auth + fresh pages)
+  const isNavigation = req.mode === "navigate";
+
+  if (isNavigation) {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+          return res;
+        })
+        .catch(() => caches.match(req).then((cached) => cached || caches.match("/")))
+    );
+    return;
+  }
+
+  // Default: try cache then network
   event.respondWith(
-    fetch(req)
-      .then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
-        return res;
-      })
-      .catch(() => caches.match(req))
+    caches.match(req).then((cached) => cached || fetch(req))
   );
 });
