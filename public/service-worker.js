@@ -1,5 +1,5 @@
 /* public/service-worker.js */
-const CACHE_NAME = "hvn-static-v7";
+const CACHE_NAME = "hvn-static-v6";
 
 const PRECACHE_URLS = [
   "/",
@@ -20,13 +20,11 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
-
       await Promise.allSettled(
         PRECACHE_URLS.map((url) =>
           cache.add(new Request(url, { cache: "reload" })).catch(() => null)
         )
       );
-
       self.skipWaiting();
     })()
   );
@@ -41,7 +39,6 @@ self.addEventListener("activate", (event) => {
           .filter((k) => k.startsWith("hvn-static-") && k !== CACHE_NAME)
           .map((k) => caches.delete(k))
       );
-
       self.clients.claim();
     })()
   );
@@ -54,17 +51,14 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(req.url);
 
-  // same-origin only
+  // Ignore cross-origin
   if (url.origin !== self.location.origin) return;
 
-  // ignore APIs
+  // Ignore API routes
   if (url.pathname.startsWith("/api")) return;
 
   const isNavigation = req.mode === "navigate";
   const isRSC = url.searchParams.has("_rsc");
-
-  // Next.js Image optimizer endpoint
-  const isNextImage = url.pathname.startsWith("/_next/image");
 
   const isAsset =
     url.pathname.startsWith("/_next/static/") ||
@@ -75,19 +69,37 @@ self.addEventListener("fetch", (event) => {
     req.destination === "script" ||
     req.destination === "font";
 
-  // ---- RSC: return cached shell when offline ----
+  // RSC: treat like navigation for offline fallback
   if (isRSC) {
     event.respondWith(
       (async () => {
-        const cached = await caches.match(req, { ignoreSearch: true });
-        return cached || (await caches.match("/", { ignoreSearch: true })) || new Response("Offline", { status: 503 });
+        const cached = await caches.match(req);
+        return cached || (await caches.match("/")) || new Response("Offline", { status: 503 });
       })()
     );
     return;
   }
 
-  // ---- Next/Image: if offline, fall back to original image or cached icon ----
-  if (isNextImage) {
+  // Pages: network-first, fallback to cached page or "/"
+  if (isNavigation) {
+    event.respondWith(
+      (async () => {
+        try {
+          const fresh = await fetch(req);
+          const cache = await caches.open(CACHE_NAME);
+          cache.put(req, fresh.clone());
+          return fresh;
+        } catch {
+          const cached = await caches.match(req);
+          return cached || (await caches.match("/")) || new Response("Offline", { status: 503 });
+        }
+      })()
+    );
+    return;
+  }
+
+  // Assets: cache-first
+  if (isAsset) {
     event.respondWith(
       (async () => {
         const cached = await caches.match(req);
@@ -99,58 +111,10 @@ self.addEventListener("fetch", (event) => {
           cache.put(req, fresh.clone());
           return fresh;
         } catch {
-          // try to serve the original image referenced in ?url=
-          const originalPath = url.searchParams.get("url");
-          if (originalPath && originalPath.startsWith("/")) {
-            const originalCached = await caches.match(originalPath, { ignoreSearch: true });
-            if (originalCached) return originalCached;
-          }
-          return (await caches.match("/pwa/icon-192.png", { ignoreSearch: true })) || new Response("Offline", { status: 503 });
-        }
-      })()
-    );
-    return;
-  }
-
-  // ---- Pages: network-first, fallback to cached page or cached "/" ----
-  if (isNavigation) {
-    event.respondWith(
-      (async () => {
-        const cache = await caches.open(CACHE_NAME);
-        try {
-          const fresh = await fetch(req);
-
-          // Keep the app shell fresh for offline fallback
-          cache.put("/", fresh.clone());
-          cache.put(req, fresh.clone());
-
-          return fresh;
-        } catch {
-          const cached = await caches.match(req);
-          return cached || (await caches.match("/", { ignoreSearch: true })) || new Response("Offline", { status: 503 });
-        }
-      })()
-    );
-    return;
-  }
-
-  // ---- Assets: cache-first (ignoreSearch fixes /icon.svg?v=123) ----
-  if (isAsset) {
-    event.respondWith(
-      (async () => {
-        const cached = await caches.match(req, { ignoreSearch: true });
-        if (cached) return cached;
-
-        try {
-          const fresh = await fetch(req);
-          const cache = await caches.open(CACHE_NAME);
-          cache.put(req, fresh.clone());
-          return fresh;
-        } catch {
           if (req.destination === "image") {
-            return (await caches.match("/pwa/icon-192.png", { ignoreSearch: true })) || new Response("", { status: 503 });
+            return (await caches.match("/pwa/icon-192.png")) || Response.error();
           }
-          return new Response("", { status: 503 });
+          return Response.error();
         }
       })()
     );
