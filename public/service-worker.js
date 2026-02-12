@@ -1,5 +1,5 @@
 /* public/service-worker.js */
-const CACHE_NAME = "hvn-static-v6";
+const CACHE_NAME = "hvn-static-v7";
 
 /**
  * Precache essentials:
