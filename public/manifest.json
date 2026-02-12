@@ -8,6 +8,7 @@
   "background_color": "#07101a",
   "theme_color": "#2ad3b2",
   "orientation": "portrait",
+
   "icons": [
     {
       "src": "/pwa/icon-192.png",
@@ -26,16 +27,20 @@
       "purpose": "maskable"
     }
   ],
+
   "screenshots": [
     {
       "src": "/pwa/screenshots/screenshot-1.png",
       "sizes": "1280x720",
-      "type": "image/png"
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Havenly dashboard"
     },
     {
       "src": "/pwa/screenshots/screenshot-2.png",
-      "sizes": "1280x720",
-      "type": "image/png"
+      "sizes": "720x1280",
+      "type": "image/png",
+      "label": "Havenly mobile view"
     }
   ]
 }
