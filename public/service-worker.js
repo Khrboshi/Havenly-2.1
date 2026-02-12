@@ -1,31 +1,29 @@
 /* public/service-worker.js */
-/* Havenly PWA Service Worker (cache-first static, network-first pages) */
+/* Havenly PWA Service Worker — cache-first for static, network-first for pages */
 
-const CACHE_NAME = "havenly-pwa-v6"; // ⬅️ bump to force update
+const CACHE_NAME = "havenly-pwa-v7";
 
 const PRECACHE_URLS = [
-  // Core
   "/",
   "/manifest.json",
   "/service-worker.js",
 
-  // Favicons / app icons
+  // Favicons / UI icons (fix offline logo issues)
   "/favicon.ico",
-  "/favicon-16.png",
-  "/favicon-32.png",
+  "/icon.svg",
   "/apple-touch-icon.png",
-  "/icon.svg", // ✅ IMPORTANT: fixes offline Navbar/logo if it uses /icon.svg
 
   // PWA icons
   "/pwa/icon-192.png",
   "/pwa/icon-512.png",
   "/pwa/icon-512-maskable.png",
 
-  // PWA screenshots (for install UI)
+  // PWA screenshots
   "/pwa/screenshot-1.png",
   "/pwa/screenshot-2.png",
 ];
 
+// Install: precache core files
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
@@ -35,16 +33,13 @@ self.addEventListener("install", (event) => {
   );
 });
 
+// Activate: cleanup old caches
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
       .keys()
       .then((keys) =>
-        Promise.all(
-          keys.map((key) => {
-            if (key !== CACHE_NAME) return caches.delete(key);
-          })
-        )
+        Promise.all(keys.map((k) => (k !== CACHE_NAME ? caches.delete(k) : null)))
       )
       .then(() => self.clients.claim())
   );
@@ -52,32 +47,51 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const req = event.request;
-  const url = new URL(req.url);
 
-  // Only handle same-origin requests
-  if (url.origin !== self.location.origin) return;
-
-  // Ignore non-GET
+  // Only handle GET
   if (req.method !== "GET") return;
 
+  const url = new URL(req.url);
+
+  // Only same-origin
+  if (url.origin !== self.location.origin) return;
+
+  const pathname = url.pathname;
+
+  // ✅ 1) Next.js build assets must be cache-first (fixes hashed chunk offline errors)
   const isNextStatic =
-    url.pathname.startsWith("/_next/static") ||
-    url.pathname.startsWith("/_next/image");
+    pathname.startsWith("/_next/static/") ||
+    pathname.startsWith("/_next/image");
 
+  if (isNextStatic) {
+    event.respondWith(
+      caches.match(req).then((cached) => {
+        if (cached) return cached;
+        return fetch(req)
+          .then((res) => {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+            return res;
+          })
+          .catch(() => cached);
+      })
+    );
+    return;
+  }
+
+  // ✅ 2) App assets (icons/images/css/js/json) cache-first
   const isAsset =
-    isNextStatic ||
-    url.pathname.startsWith("/pwa/") ||
-    url.pathname.endsWith(".png") ||
-    url.pathname.endsWith(".jpg") ||
-    url.pathname.endsWith(".jpeg") ||
-    url.pathname.endsWith(".svg") ||
-    url.pathname.endsWith(".ico") ||
-    url.pathname.endsWith(".webp") ||
-    url.pathname.endsWith(".css") ||
-    url.pathname.endsWith(".js") ||
-    url.pathname.endsWith(".json");
+    pathname.startsWith("/pwa/") ||
+    pathname.endsWith(".png") ||
+    pathname.endsWith(".jpg") ||
+    pathname.endsWith(".jpeg") ||
+    pathname.endsWith(".webp") ||
+    pathname.endsWith(".svg") ||
+    pathname.endsWith(".ico") ||
+    pathname.endsWith(".css") ||
+    pathname.endsWith(".js") ||
+    pathname.endsWith(".json");
 
-  // ✅ Cache-first for assets (icons, images, next static, etc.)
   if (isAsset) {
     event.respondWith(
       caches.match(req).then((cached) => {
@@ -94,7 +108,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // ✅ Network-first for navigation/pages (keeps auth + fresh pages)
+  // ✅ 3) Navigations/pages: network-first, fallback to cache, then "/"
   const isNavigation = req.mode === "navigate";
 
   if (isNavigation) {
@@ -105,13 +119,13 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
           return res;
         })
-        .catch(() => caches.match(req).then((cached) => cached || caches.match("/")))
+        .catch(() =>
+          caches.match(req).then((cached) => cached || caches.match("/"))
+        )
     );
     return;
   }
 
-  // Default: try cache then network
-  event.respondWith(
-    caches.match(req).then((cached) => cached || fetch(req))
-  );
+  // Default: cache-first fallback
+  event.respondWith(caches.match(req).then((cached) => cached || fetch(req)));
 });
