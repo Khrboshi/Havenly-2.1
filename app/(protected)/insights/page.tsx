@@ -29,7 +29,6 @@ export default async function InsightsPage() {
 
   const planType = normalizePlan((data as any)?.plan_type);
 
-  // Premium-only gate → send everyone else to preview
   if (planType !== "PREMIUM") {
     redirect("/insights/preview");
   }
