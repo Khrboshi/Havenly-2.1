@@ -9,7 +9,7 @@ type PlanState = {
 
 let cachedPlan: PlanState | null = null;
 
-export default function useUserPlan() {
+export function useUserPlan() {
   const [state, setState] = useState<PlanState>(
     cachedPlan || { loading: true, plan: "free" }
   );
@@ -27,7 +27,7 @@ export default function useUserPlan() {
 
         const data = await res.json();
 
-        const next = {
+        const next: PlanState = {
           loading: false,
           plan: data?.plan === "premium" ? "premium" : "free",
         };
@@ -36,7 +36,7 @@ export default function useUserPlan() {
 
         if (!cancelled) setState(next);
       } catch {
-        const fallback = { loading: false, plan: "free" };
+        const fallback: PlanState = { loading: false, plan: "free" };
         cachedPlan = fallback;
         if (!cancelled) setState(fallback);
       }
