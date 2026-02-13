@@ -1,55 +1,35 @@
-// app/(protected)/insights/page.tsx
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { ensureCreditsFresh, PlanType } from "@/lib/creditRules";
 import InsightsClient from "./InsightsClient";
 
 export const dynamic = "force-dynamic";
 
-type PlanType = "FREE" | "TRIAL" | "PREMIUM";
-
-/**
- * Adjust ONLY if your plan is stored in a different table/column.
- * Common patterns:
- * - profiles.plan_type
- * - profiles.plan
- * - profiles.tier
- * - subscriptions.plan_type
- */
-async function getUserPlanType(
-  supabase: ReturnType<typeof createServerSupabase>,
-  userId: string
-): Promise<PlanType> {
-  const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("plan_type, plan, tier")
-    .eq("id", userId)
-    .maybeSingle();
-
-  if (!error && profile) {
-    const raw = String(profile.plan_type || profile.plan || profile.tier || "")
-      .toUpperCase()
-      .trim();
-
-    if (raw === "PREMIUM") return "PREMIUM";
-    if (raw === "TRIAL") return "TRIAL";
-    return "FREE";
-  }
-
-  // Safe default
-  return "FREE";
+function normalizePlan(v: unknown): PlanType {
+  const p = String(v ?? "FREE").toUpperCase();
+  return p === "PREMIUM" || p === "TRIAL" ? (p as PlanType) : "FREE";
 }
 
 export default async function InsightsPage() {
   const supabase = createServerSupabase();
+
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
   if (!session?.user) redirect("/magic-login");
 
-  const planType = await getUserPlanType(supabase, session.user.id);
+  await ensureCreditsFresh({ supabase, userId: session.user.id });
 
-  // Premium-only gate → for now send everyone else to “Coming soon” preview
+  const { data } = await supabase
+    .from("user_credits")
+    .select("plan_type")
+    .eq("user_id", session.user.id)
+    .maybeSingle();
+
+  const planType = normalizePlan((data as any)?.plan_type);
+
+  // Premium-only gate → send everyone else to preview
   if (planType !== "PREMIUM") {
     redirect("/insights/preview");
   }
