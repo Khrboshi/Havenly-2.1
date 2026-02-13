@@ -1,18 +1,15 @@
-// public/service-worker.js
-
-const VERSION = "v18"; // bump version to force SW refresh
+const VERSION = "v19";
 const STATIC_CACHE = `hvn-static-${VERSION}`;
 
 const PRECACHE_URLS = [
   "/offline.html",
   "/manifest.json",
   "/icon.svg",
-  "/favicon.ico",
+  "/favicon-32.png",
+  "/favicon-16.png",
   "/pwa/icon-192.png",
   "/pwa/icon-512.png",
   "/pwa/icon-512-maskable.png",
-  "/pwa/screenshots/screenshot-1.png",
-  "/pwa/screenshots/screenshot-2.png",
 ];
 
 self.addEventListener("install", (event) => {
@@ -45,31 +42,18 @@ self.addEventListener("activate", (event) => {
 
 function shouldBypass(reqUrl) {
   const url = new URL(reqUrl);
-
-  // ✅ Never touch Next App Router internals / RSC payloads / runtime chunks
   if (url.searchParams.has("_rsc")) return true;
   if (url.pathname.startsWith("/_next/")) return true;
-
-  // ✅ Never touch API routes
   if (url.pathname.startsWith("/api/")) return true;
-
-  // ✅ Never touch auth callback-like endpoints if you ever add them as non-/api
-  // (keeps magic link flows safe)
   if (url.pathname.startsWith("/auth/")) return true;
-
   return false;
 }
 
 function isCacheableAsset(req) {
-  // Only cache truly static assets, not HTML/RSC
   const url = new URL(req.url);
-
   if (shouldBypass(req.url)) return false;
-
-  // Don’t cache navigations (HTML pages)
   if (req.mode === "navigate") return false;
 
-  // Cache only images/fonts/css/js/icons + your /pwa assets + manifest/offline
   const path = url.pathname;
 
   if (path.startsWith("/pwa/")) return true;
@@ -94,16 +78,13 @@ function isCacheableAsset(req) {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
 
-  // Only handle same-origin GET
   if (req.method !== "GET") return;
 
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
-  // ✅ Hard bypass for Next internals + RSC + api
   if (shouldBypass(req.url)) return;
 
-  // ✅ Offline fallback for navigations ONLY (do NOT cache navigations)
   if (req.mode === "navigate") {
     event.respondWith(
       (async () => {
@@ -127,7 +108,6 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // ✅ Cache-first ONLY for safe static assets
   if (isCacheableAsset(req)) {
     event.respondWith(
       (async () => {
@@ -138,11 +118,9 @@ self.addEventListener("fetch", (event) => {
 
         try {
           const fresh = await fetch(req);
-          // Cache only successful responses
           if (fresh && fresh.ok) await cache.put(req, fresh.clone());
           return fresh;
         } catch {
-          // If asset fetch fails, return empty 200 (prevents hard crashes)
           return new Response("", { status: 200 });
         }
       })()
@@ -150,6 +128,5 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Everything else: network only (no caching)
   return;
 });
