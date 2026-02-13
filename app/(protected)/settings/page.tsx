@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSupabase } from "@/app/components/SupabaseSessionProvider";
+import { useSupabase } from "@/components/SupabaseSessionProvider";
 import { useUserPlan } from "@/app/components/useUserPlan";
 
 export default function SettingsPage() {
@@ -14,67 +14,49 @@ export default function SettingsPage() {
     <div className="mx-auto max-w-3xl px-6 pt-24 pb-20 text-slate-200">
       <h1 className="text-3xl font-semibold tracking-tight mb-2">Settings</h1>
       <p className="text-slate-400 mb-10">
-        Manage your account, preferences, and plan.
+        Manage your account, preferences, and subscription.
       </p>
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 mb-10">
-        <h2 className="text-lg font-semibold text-white mb-3">
-          Account details
-        </h2>
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-6 mb-6">
+        <h2 className="text-lg font-semibold mb-1">Account</h2>
+        <p className="text-slate-400 text-sm mb-4">{userEmail}</p>
 
-        <div className="space-y-3 text-sm text-slate-300">
-          <div className="flex items-center justify-between">
-            <span className="text-slate-400">Email</span>
-            <span className="font-medium">{userEmail}</span>
-          </div>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href="/settings/transactions"
+            className="rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
+          >
+            Transactions
+          </Link>
 
-          <div className="flex items-center justify-between">
-            <span className="text-slate-400">Current plan</span>
-            <span className="font-medium capitalize">{plan ?? "free"}</span>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <span className="text-slate-400">Credits</span>
-            <span className="font-medium">{credits ?? 0}</span>
-          </div>
+          <Link
+            href="/upgrade"
+            className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
+          >
+            Upgrade
+          </Link>
         </div>
-      </section>
+      </div>
 
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 mb-10">
-        <h2 className="text-lg font-semibold text-white mb-3">Preferences</h2>
-        <p className="text-sm text-slate-400 mb-4">
-          Personalization options will be added soon.
-        </p>
-      </section>
-
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 mb-10">
-        <h2 className="text-lg font-semibold text-white mb-3">Billing</h2>
-        <p className="text-sm text-slate-400 mb-4">
-          Manage your subscription and invoices.
-        </p>
-
-        <Link
-          href="/settings/billing"
-          className="inline-block rounded-full bg-emerald-400 px-5 py-2 text-sm font-semibold text-slate-900 hover:bg-emerald-300 transition"
-        >
-          Go to billing
-        </Link>
-      </section>
-
-      <section className="rounded-xl border border-slate-800 bg-slate-900/60 p-6">
-        <h2 className="text-lg font-semibold text-white mb-3">Security</h2>
-
-        <p className="text-sm text-slate-400 mb-5">
-          Havenly uses passwordless authentication via secure magic links.
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <h2 className="text-lg font-semibold mb-2">Plan</h2>
+        <p className="text-slate-400 text-sm mb-4">
+          Current plan: <span className="text-slate-200">{plan ?? "Free"}</span>
+          {typeof credits === "number" ? (
+            <>
+              {" "}
+              — credits: <span className="text-slate-200">{credits}</span>
+            </>
+          ) : null}
         </p>
 
         <Link
-          href="/logout"
-          className="inline-block rounded-full bg-slate-800 px-5 py-2 text-sm hover:bg-slate-700"
+          href="/upgrade"
+          className="text-sm text-emerald-400 hover:text-emerald-300"
         >
-          Log out
+          Manage subscription →
         </Link>
-      </section>
+      </div>
     </div>
   );
 }
