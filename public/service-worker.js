@@ -5,8 +5,7 @@ const PRECACHE_URLS = [
   "/offline.html",
   "/manifest.json",
   "/icon.svg",
-  "/favicon-32.png",
-  "/favicon-16.png",
+  "/favicon.ico",
   "/pwa/icon-192.png",
   "/pwa/icon-512.png",
   "/pwa/icon-512-maskable.png",
@@ -42,10 +41,12 @@ self.addEventListener("activate", (event) => {
 
 function shouldBypass(reqUrl) {
   const url = new URL(reqUrl);
+
   if (url.searchParams.has("_rsc")) return true;
   if (url.pathname.startsWith("/_next/")) return true;
   if (url.pathname.startsWith("/api/")) return true;
   if (url.pathname.startsWith("/auth/")) return true;
+
   return false;
 }
 
@@ -112,7 +113,6 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       (async () => {
         const cache = await caches.open(STATIC_CACHE);
-
         const cached = await cache.match(req, { ignoreSearch: true });
         if (cached) return cached;
 
@@ -127,6 +127,4 @@ self.addEventListener("fetch", (event) => {
     );
     return;
   }
-
-  return;
 });
