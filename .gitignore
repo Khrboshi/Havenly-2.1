@@ -1,6 +1,10 @@
-node_modules
-
 # build artifacts
 .next/
 node_modules/
 .vercel/
+out/
+
+# misc
+.DS_Store
+.env*
+npm-debug.log*
