@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { Session, SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@supabase/supabase-js";
 
@@ -12,15 +12,26 @@ type SupabaseContextType = {
 
 const SupabaseContext = createContext<SupabaseContextType | null>(null);
 
-export function SupabaseSessionProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+// ✅ Singleton client (prevents multiple GoTrueClient instances)
+let supabaseBrowserClient: SupabaseClient | null = null;
+
+function getSupabaseClient() {
+  if (supabaseBrowserClient) return supabaseBrowserClient;
+
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !anon) {
+    throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  }
+
+  supabaseBrowserClient = createClient(url, anon);
+  return supabaseBrowserClient;
+}
+
+export function SupabaseSessionProvider({ children }: { children: React.ReactNode }) {
+  // useMemo so React doesn’t think it changed
+  const supabase = useMemo(() => getSupabaseClient(), []);
 
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,11 +45,9 @@ export function SupabaseSessionProvider({
       setLoading(false);
     });
 
-    const { data } = supabase.auth.onAuthStateChange(
-      (_event, newSession) => {
-        setSession(newSession ?? null);
-      }
-    );
+    const { data } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession ?? null);
+    });
 
     return () => {
       mounted = false;
@@ -47,13 +56,7 @@ export function SupabaseSessionProvider({
   }, [supabase]);
 
   return (
-    <SupabaseContext.Provider
-      value={{
-        supabase,
-        session,
-        loading,
-      }}
-    >
+    <SupabaseContext.Provider value={{ supabase, session, loading }}>
       {children}
     </SupabaseContext.Provider>
   );
@@ -61,8 +64,6 @@ export function SupabaseSessionProvider({
 
 export function useSupabase() {
   const ctx = useContext(SupabaseContext);
-  if (!ctx) {
-    throw new Error("useSupabase must be used within SupabaseSessionProvider");
-  }
+  if (!ctx) throw new Error("useSupabase must be used within SupabaseSessionProvider");
   return ctx;
 }
