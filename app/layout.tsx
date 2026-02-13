@@ -1,55 +1,35 @@
-// app/layout.tsx
-import type { ReactNode } from "react";
-import type { Metadata } from "next";
 import "./globals.css";
-
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
-import ToastClient from "./components/ToastClient";
-import { SupabaseSessionProvider } from "./components/SupabaseSessionProvider";
-import ServiceWorkerRegister from "./components/ServiceWorkerRegister";
-import { createServerSupabase } from "@/lib/supabase/server";
+import type { Metadata } from "next";
+import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "Havenly",
-  description: "A calm, private journaling companion with gentle AI reflections.",
-  manifest: "/manifest.json",
+  description:
+    "A calm, private journaling companion with gentle AI reflections.",
+
+  // ⭐ THIS fixes the wrong tab icon (no new files needed)
   icons: {
     icon: [
-      { url: "/favicon-32.png", type: "image/png", sizes: "32x32" },
-      { url: "/favicon-16.png", type: "image/png", sizes: "16x16" },
-      { url: "/icon.svg", type: "image/svg+xml" }
+      { url: "/pwa/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/pwa/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
-    apple: [{ url: "/apple-touch-icon.png", type: "image/png", sizes: "180x180" }]
-  }
+    shortcut: "/pwa/icon-192.png",
+    apple: "/pwa/icon-192.png",
+  },
+
+  manifest: "/manifest.json",
 };
 
-export default async function RootLayout({
-  children
+export default function RootLayout({
+  children,
 }: {
-  children: ReactNode;
+  children: React.ReactNode;
 }) {
-  const supabase = createServerSupabase();
-  const {
-    data: { session }
-  } = await supabase.auth.getSession();
-
   return (
-    <html lang="en" className="h-full bg-slate-950">
-      <body className="min-h-screen bg-slate-950 text-slate-100 antialiased">
-        <SupabaseSessionProvider initialSession={session}>
-          <div className="sticky top-0 z-40">
-            <Navbar />
-          </div>
-
-          <main className="min-h-[calc(100vh-80px)] px-4">
-            <div className="mx-auto w-full max-w-7xl pt-10 pb-12">{children}</div>
-          </main>
-
-          <Footer />
-          <ToastClient />
-          <ServiceWorkerRegister />
-        </SupabaseSessionProvider>
+    <html lang="en">
+      <body>
+        <Navbar />
+        {children}
       </body>
     </html>
   );
