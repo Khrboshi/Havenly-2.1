@@ -15,11 +15,8 @@ export async function POST() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const userId = session.user.id;
-
-  // NOTE: This is still a simulated upgrade until you wire real payment confirmation.
-  // But it now updates the canonical plan + credits correctly.
-  await setUserPlan({ supabase, userId, planType: "PREMIUM" });
+  // Simulated upgrade until real payments are wired.
+  await setUserPlan({ supabase, userId: session.user.id, planType: "PREMIUM" });
 
   return NextResponse.json({ ok: true });
 }
