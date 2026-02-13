@@ -2,201 +2,141 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { useSupabase } from "@/app/components/SupabaseSessionProvider";
+import { useSupabase } from "@/components/SupabaseSessionProvider";
 import { useUserPlan } from "@/app/components/useUserPlan";
-import UpgradeNudge from "@/app/components/UpgradeNudge";
+
+type DashboardClientProps = {
+  userId: string;
+};
 
 type JournalEntry = {
   id: string;
-  created_at: string;
   title: string | null;
-  content: string | null;
+  created_at: string;
 };
 
-export default function DashboardClient({ userId }: { userId: string }) {
-  const { supabase, session } = useSupabase();
-  const { loading: planLoading, planType, credits } = useUserPlan();
+export default function DashboardClient({ userId }: DashboardClientProps) {
+  const { supabase } = useSupabase();
+  const { planType, credits, loading: planLoading } = useUserPlan();
 
   const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [loadingEntries, setLoadingEntries] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const email = session?.user?.email ?? "";
-  const numericCredits = typeof credits === "number" ? credits : 0;
+  const readablePlan =
+    planType === "PREMIUM"
+      ? "Premium"
+      : planType === "TRIAL"
+      ? "Trial"
+      : "Free";
 
-  const isPremium = planType === "PREMIUM" || planType === "TRIAL";
+  const canCreate =
+    planType === "PREMIUM" ? true : (credits ?? 0) > 0 || planType === "TRIAL";
 
-  useEffect(() => {
-    async function loadEntries() {
-      setLoadingEntries(true);
+  const loadEntries = useMemo(
+    () => async () => {
+      setLoading(true);
 
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("journal_entries")
-        .select("id, created_at, title, content")
+        .select("id,title,created_at")
         .eq("user_id", userId)
         .order("created_at", { ascending: false })
-        .limit(7);
+        .limit(5);
 
-      setEntries(data ?? []);
-      setLoadingEntries(false);
-    }
+      if (!error) {
+        setEntries((data as JournalEntry[]) || []);
+      }
 
+      setLoading(false);
+    },
+    [supabase, userId]
+  );
+
+  useEffect(() => {
     loadEntries();
-  }, [supabase, userId]);
-
-  const latest = entries[0] ?? null;
-
-  const entriesThisWeek = useMemo(() => {
-    const startOfWeek = new Date();
-    startOfWeek.setHours(0, 0, 0, 0);
-    startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-
-    return entries.filter((e) => new Date(e.created_at) >= startOfWeek);
-  }, [entries]);
+  }, [loadEntries]);
 
   return (
-    <div className="mx-auto max-w-5xl px-6 pt-24 pb-24 text-slate-200">
-      {/* HEADER */}
-      <section className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mx-auto max-w-5xl px-6 pt-24 pb-20 text-slate-200">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-10">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight">
-            Welcome back{email ? `, ${email.split("@")[0]}` : ""}
+          <h1 className="text-3xl font-semibold tracking-tight mb-2">
+            Dashboard
           </h1>
-          <p className="mt-1 text-sm text-slate-400">
-            A calm space to notice how things have been unfolding.
+          <p className="text-slate-400">
+            Welcome back. Your plan:{" "}
+            <span className="text-slate-200">{readablePlan}</span>
+            {!planLoading && planType !== "PREMIUM" ? (
+              <>
+                {" "}
+                — credits:{" "}
+                <span className="text-slate-200">{credits ?? 0}</span>
+              </>
+            ) : null}
           </p>
         </div>
 
-        <div className="text-xs text-slate-400">
-          {planLoading
-            ? "Checking plan…"
-            : `${isPremium ? "Premium" : "Free"} plan`}
-          <span className="ml-2 text-slate-300">
-            · Credits: {numericCredits}
-          </span>
-        </div>
-      </section>
-
-      {/* TODAY */}
-      <section className="mb-8 rounded-2xl border border-slate-800 bg-slate-950/60 p-6">
-        <h2 className="text-sm font-semibold text-slate-100">
-          Today’s check-in
-        </h2>
-        <p className="mt-2 text-sm text-slate-400">
-          You don’t need to solve anything. Just write what’s here.
-        </p>
-
-        <div className="mt-4 flex flex-wrap gap-3">
-          {/* Journaling is ALWAYS available */}
-          <Link
-            href="/journal/new"
-            className="rounded-full bg-emerald-400 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-emerald-300"
-          >
-            Start a new reflection
-          </Link>
-
-          {/* Avoid perceived duplication with the global Navbar "Journal" link */}
+        <div className="flex items-center gap-3">
           <Link
             href="/journal"
-            className="rounded-full bg-slate-800 px-5 py-2.5 text-sm text-slate-100 hover:bg-slate-700"
+            className="rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
           >
-            Browse past reflections
+            View Journal
+          </Link>
+
+          <Link
+            href={canCreate ? "/journal/new" : "/upgrade"}
+            className={`rounded-md px-4 py-2 text-sm font-medium ${
+              canCreate
+                ? "bg-emerald-500 text-black hover:bg-emerald-400"
+                : "bg-white/10 text-slate-300 hover:bg-white/15"
+            }`}
+          >
+            New entry
+          </Link>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">Recent entries</h2>
+          <Link
+            href="/journal"
+            className="text-sm text-emerald-400 hover:text-emerald-300"
+          >
+            See all
           </Link>
         </div>
 
-        {/* Gentle note when credits are exhausted */}
-        {!isPremium && numericCredits === 0 && (
-          <p className="mt-3 text-xs text-slate-500">
-            Free journaling is always available. AI reflections are limited on
-            the Free plan.
+        {loading ? (
+          <p className="text-slate-400">Loading your entries…</p>
+        ) : entries.length === 0 ? (
+          <p className="text-slate-400">
+            No entries yet. Create your first one.
           </p>
+        ) : (
+          <ul className="divide-y divide-white/10">
+            {entries.map((e) => (
+              <li key={e.id} className="py-4 flex items-center justify-between">
+                <div>
+                  <p className="font-medium">
+                    {e.title?.trim() ? e.title : "Untitled entry"}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    {new Date(e.created_at).toLocaleString()}
+                  </p>
+                </div>
+                <Link
+                  href={`/journal/${e.id}`}
+                  className="text-sm text-emerald-400 hover:text-emerald-300"
+                >
+                  Open
+                </Link>
+              </li>
+            ))}
+          </ul>
         )}
-      </section>
-
-      {/* THIS WEEK */}
-      <section className="mb-8 grid gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
-          <h3 className="text-sm font-semibold text-slate-100">
-            This week so far
-          </h3>
-
-          <p className="mt-2 text-sm text-slate-400">
-            {entriesThisWeek.length === 0
-              ? "No reflections yet this week."
-              : `You’ve written ${entriesThisWeek.length} reflection${
-                  entriesThisWeek.length > 1 ? "s" : ""
-                } this week.`}
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-5">
-          <h3 className="text-sm font-semibold text-slate-100">
-            Insight preview
-          </h3>
-
-          <p className="mt-2 text-sm text-slate-400">
-            {isPremium
-              ? "Your emotional timelines and themes will appear here."
-              : "Premium reveals patterns across your entries — gently, over time."}
-          </p>
-
-          {!isPremium && (
-            <Link
-              href="/upgrade"
-              className="mt-3 inline-flex rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-400"
-            >
-              Explore Premium
-            </Link>
-          )}
-        </div>
-      </section>
-
-      {/* LATEST ENTRY */}
-      <section className="mb-8">
-        {loadingEntries && (
-          <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-6 text-sm text-slate-400">
-            Loading your reflections…
-          </div>
-        )}
-
-        {!loadingEntries && entries.length === 0 && (
-          <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-6 text-sm text-slate-400">
-            Your space is ready. Your first reflection can be short.
-          </div>
-        )}
-
-        {!loadingEntries && latest && (
-          <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-6">
-            <h3 className="text-sm font-semibold text-slate-100">
-              Most recent reflection
-            </h3>
-
-            <p className="mt-1 text-xs text-slate-500">
-              {new Date(latest.created_at).toLocaleString()}
-            </p>
-
-            <p className="mt-3 whitespace-pre-wrap text-sm text-slate-200">
-              {latest.content && latest.content.length > 300
-                ? latest.content.slice(0, 300) + "…"
-                : latest.content}
-            </p>
-
-            <Link
-              href={`/journal/${latest.id}`}
-              className="mt-3 inline-block text-sm text-emerald-400 hover:underline"
-            >
-              Read full entry →
-            </Link>
-          </div>
-        )}
-      </section>
-
-      {/* UPGRADE NUDGE */}
-      {!isPremium && (
-        <UpgradeNudge
-          credits={numericCredits}
-          variant={numericCredits === 0 ? "credits" : "default"}
-        />
-      )}
+      </div>
     </div>
   );
 }
