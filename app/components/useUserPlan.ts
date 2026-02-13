@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 type PlanType = "FREE" | "PREMIUM" | "TRIAL";
 
@@ -8,66 +8,62 @@ type PlanState = {
   loading: boolean;
   planType: PlanType;
   credits: number;
+  refresh: () => Promise<void>;
 };
 
-let cachedPlan: PlanState | null = null;
+let cachedData: Omit<PlanState, "refresh"> | null = null;
 
-export function useUserPlan() {
-  const [state, setState] = useState<PlanState>(
-    cachedPlan || {
+export function useUserPlan(): PlanState {
+  const [state, setState] = useState<Omit<PlanState, "refresh">>(
+    cachedData || {
       loading: true,
       planType: "FREE",
       credits: 0,
     }
   );
 
-  useEffect(() => {
-    if (cachedPlan) return;
+  const load = useCallback(async () => {
+    try {
+      const res = await fetch("/api/user/plan", {
+        credentials: "include",
+      });
 
-    let cancelled = false;
+      const data = await res.json();
 
-    async function load() {
-      try {
-        const res = await fetch("/api/user/plan", {
-          credentials: "include",
-        });
+      const normalizedPlan: PlanType =
+        data?.plan === "premium"
+          ? "PREMIUM"
+          : data?.plan === "trial"
+          ? "TRIAL"
+          : "FREE";
 
-        const data = await res.json();
+      const next = {
+        loading: false,
+        planType: normalizedPlan,
+        credits: typeof data?.credits === "number" ? data.credits : 0,
+      };
 
-        const normalizedPlan: PlanType =
-          data?.plan === "premium"
-            ? "PREMIUM"
-            : data?.plan === "trial"
-            ? "TRIAL"
-            : "FREE";
+      cachedData = next;
+      setState(next);
+    } catch {
+      const fallback = {
+        loading: false,
+        planType: "FREE" as PlanType,
+        credits: 0,
+      };
 
-        const next: PlanState = {
-          loading: false,
-          planType: normalizedPlan,
-          credits: typeof data?.credits === "number" ? data.credits : 0,
-        };
-
-        cachedPlan = next;
-
-        if (!cancelled) setState(next);
-      } catch {
-        const fallback: PlanState = {
-          loading: false,
-          planType: "FREE",
-          credits: 0,
-        };
-
-        cachedPlan = fallback;
-        if (!cancelled) setState(fallback);
-      }
+      cachedData = fallback;
+      setState(fallback);
     }
-
-    load();
-
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
-  return state;
+  useEffect(() => {
+    if (cachedData) return;
+    load();
+  }, [load]);
+
+  return {
+    ...state,
+    refresh: load,
+  };
 }
