@@ -8,6 +8,7 @@ type PlanStateInternal = {
   loading: boolean;
   planType: PlanType;
   credits: number;
+  renewalDate: string | null;
 };
 
 type PlanState = PlanStateInternal & {
@@ -23,6 +24,7 @@ export function useUserPlan(): PlanState {
       loading: true,
       planType: "FREE",
       credits: 0,
+      renewalDate: null,
     }
   );
 
@@ -45,6 +47,7 @@ export function useUserPlan(): PlanState {
         loading: false,
         planType: normalizedPlan,
         credits: typeof data?.credits === "number" ? data.credits : 0,
+        renewalDate: data?.renewalDate || null,
       };
 
       cachedData = next;
@@ -54,6 +57,7 @@ export function useUserPlan(): PlanState {
         loading: false,
         planType: "FREE",
         credits: 0,
+        renewalDate: null,
       };
 
       cachedData = fallback;
