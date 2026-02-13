@@ -19,7 +19,8 @@ export default function Navbar() {
     setMobileOpen(false);
   }, [pathname]);
 
-  const linkBase = "text-sm font-medium transition-colors hover:text-emerald-400";
+  const linkBase =
+    "text-sm font-medium transition-colors hover:text-emerald-400";
   const activeLink = "text-emerald-400";
   const inactiveLink = "text-slate-300";
 
@@ -39,11 +40,8 @@ export default function Navbar() {
 
   async function handleLogout() {
     try {
-      // 1) Clear client session
       await supabase.auth.signOut();
-      // 2) Clear server cookies
       await fetch("/logout", { method: "GET" });
-      // 3) Hard reset
       window.location.href = "/magic-login?logged_out=1";
     } catch (err) {
       console.error("Logout failed:", err);
