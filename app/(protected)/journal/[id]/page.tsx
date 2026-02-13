@@ -7,5 +7,5 @@ export default function Page({
 }: {
   params: { id: string };
 }) {
-  return <JournalEntryClient id={params.id} />;
+  return <JournalEntryClient entry={{ id: params.id } as any} />;
 }
