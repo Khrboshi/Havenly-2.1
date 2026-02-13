@@ -5,17 +5,14 @@ import { createServerClient } from "@supabase/ssr";
 
 /**
  * Middleware responsibilities (Hardened):
- * - Refresh Supabase auth cookies on ALL non-static PAGE routes (public + protected)
+ * - Never run on static assets (anything with a file extension)
+ * - Never run on /api
+ * - Refresh Supabase cookies for page routes
  * - Enforce redirects ONLY for protected areas
- * - Never interfere with auth callback / magic-link flow
- * - Avoid redirect loops and avoid running on /api
- *
- * ✅ PWA hardening added:
- * - Do NOT run middleware on manifest/service-worker/pwa assets (prevents HTML being served for icons/manifest)
+ * - Do not interfere with auth callback / magic-link flow
  */
 
 const PUBLIC_PATHS = ["/", "/about", "/blog", "/privacy", "/premium", "/upgrade"];
-
 const AUTH_PATHS = ["/magic-login", "/auth/callback", "/logout"];
 
 const PROTECTED_PREFIXES = [
@@ -26,75 +23,78 @@ const PROTECTED_PREFIXES = [
   "/settings",
 ];
 
+function isPublicPath(pathname: string) {
+  return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+}
+
+function isAuthPath(pathname: string) {
+  return AUTH_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+}
+
+function isProtectedPath(pathname: string) {
+  return PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+}
+
+function isStaticFile(pathname: string) {
+  // Any URL ending with ".ext" (png, svg, webmanifest, txt, xml, css, js, etc.)
+  return /\.[^/]+$/.test(pathname);
+}
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Skip API routes explicitly (avoid unexpected behavior + overhead)
-  if (pathname.startsWith("/api")) {
-    return NextResponse.next();
-  }
+  // 1) Hard skips
+  if (pathname.startsWith("/api")) return NextResponse.next();
+  if (pathname.startsWith("/_next")) return NextResponse.next();
 
-  // ✅ Skip PWA / install + icon assets completely (must not return HTML/redirects)
+  // Skip ALL static files (this covers /pwa/*.png, /manifest.* , /offline.html, etc.)
+  if (isStaticFile(pathname)) return NextResponse.next();
+
+  // Also skip common PWA install paths that sometimes don't have a "dot"
   if (
-    pathname === "/manifest.json" ||
-    pathname === "/service-worker.js" ||
+    pathname === "/pwa" ||
     pathname.startsWith("/pwa/") ||
-    pathname === "/favicon-16.png" ||
-    pathname === "/favicon-32.png" ||
-    pathname === "/apple-touch-icon.png" ||
-    pathname === "/robots.txt" ||
-    pathname === "/sitemap.xml"
+    pathname === "/manifest" ||
+    pathname === "/service-worker"
   ) {
     return NextResponse.next();
   }
 
+  // 2) Create response + Supabase client
   const res = NextResponse.next();
 
-  // Create Supabase server client with cookie passthrough (critical for refresh)
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => req.cookies.getAll(),
-        setAll: (cookies) => {
-          cookies.forEach(({ name, value, options }) => {
-            res.cookies.set(name, value, options);
-          });
-        },
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  // Fail safely: if env vars are missing, do not crash every page request
+  if (!supabaseUrl || !supabaseAnon) return res;
+
+  const supabase = createServerClient(supabaseUrl, supabaseAnon, {
+    cookies: {
+      getAll: () => req.cookies.getAll(),
+      setAll: (cookies) => {
+        cookies.forEach(({ name, value, options }) => {
+          res.cookies.set(name, value, options);
+        });
       },
-    }
-  );
+    },
+  });
 
-  /**
-   * Always call getSession() once to:
-   * - refresh cookies if needed
-   * - keep server-rendered UI (Navbar, layouts) consistent without manual refresh
-   *
-   * This is safe as long as we do NOT redirect for public/auth routes.
-   */
+  // Refresh cookies (do not trust session.user for auth decisions)
+  await supabase.auth.getSession();
+
+  // Never redirect on public/auth routes
+  if (isPublicPath(pathname) || isAuthPath(pathname)) return res;
+
+  // Only enforce protection for protected routes
+  if (!isProtectedPath(pathname)) return res;
+
+  // ✅ Authenticate by contacting Supabase Auth (removes the warning)
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  // Never redirect on explicit public paths
-  if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
-    return res;
-  }
-
-  // Never redirect on auth-related paths (magic link + callback must be uninterrupted)
-  if (AUTH_PATHS.some((p) => pathname.startsWith(p))) {
-    return res;
-  }
-
-  // Enforce protection only for known protected areas
-  const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
-  if (!isProtected) {
-    return res;
-  }
-
-  // Redirect unauthenticated users away from protected pages
-  if (!session) {
+  if (!user) {
     const redirectUrl = req.nextUrl.clone();
     redirectUrl.pathname = "/magic-login";
     redirectUrl.searchParams.set("redirected", "1");
@@ -106,10 +106,10 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Run middleware on all app routes except static assets + PWA assets.
-     * /api is handled inside middleware (explicit early return).
-     */
-    "/((?!_next/static|_next/image|favicon.ico|icon.svg|favicon-16.png|favicon-32.png|apple-touch-icon.png|manifest.json|service-worker.js|pwa/|robots.txt|sitemap.xml).*)",
+    // Apply to all routes except:
+    // - /api
+    // - /_next
+    // - any path containing a dot-file extension (static files)
+    "/((?!api|_next|.*\\..*).*)",
   ],
 };
