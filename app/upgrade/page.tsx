@@ -13,7 +13,6 @@ function Tracker() {
 export default function UpgradePage() {
   return (
     <main className="mx-auto flex max-w-4xl flex-col gap-10 px-6 py-20 text-slate-200">
-      {/* Track that the user opened the upgrade page (client-only) */}
       <Suspense fallback={null}>
         <Tracker />
       </Suspense>
