@@ -4,17 +4,21 @@ import { useEffect, useState, useCallback } from "react";
 
 type PlanType = "FREE" | "PREMIUM" | "TRIAL";
 
-type PlanState = {
+type PlanStateInternal = {
   loading: boolean;
   planType: PlanType;
   credits: number;
+};
+
+type PlanState = PlanStateInternal & {
+  plan: "free" | "premium" | "trial";
   refresh: () => Promise<void>;
 };
 
-let cachedData: Omit<PlanState, "refresh"> | null = null;
+let cachedData: PlanStateInternal | null = null;
 
 export function useUserPlan(): PlanState {
-  const [state, setState] = useState<Omit<PlanState, "refresh">>(
+  const [state, setState] = useState<PlanStateInternal>(
     cachedData || {
       loading: true,
       planType: "FREE",
@@ -37,7 +41,7 @@ export function useUserPlan(): PlanState {
           ? "TRIAL"
           : "FREE";
 
-      const next = {
+      const next: PlanStateInternal = {
         loading: false,
         planType: normalizedPlan,
         credits: typeof data?.credits === "number" ? data.credits : 0,
@@ -46,9 +50,9 @@ export function useUserPlan(): PlanState {
       cachedData = next;
       setState(next);
     } catch {
-      const fallback = {
+      const fallback: PlanStateInternal = {
         loading: false,
-        planType: "FREE" as PlanType,
+        planType: "FREE",
         credits: 0,
       };
 
@@ -62,8 +66,16 @@ export function useUserPlan(): PlanState {
     load();
   }, [load]);
 
+  const lowercasePlan =
+    state.planType === "PREMIUM"
+      ? "premium"
+      : state.planType === "TRIAL"
+      ? "trial"
+      : "free";
+
   return {
     ...state,
+    plan: lowercasePlan,
     refresh: load,
   };
 }
