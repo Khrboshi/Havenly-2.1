@@ -1,13 +1,11 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
+import Providers from "./providers";
 
 export const metadata: Metadata = {
   title: "Havenly",
-  description:
-    "A calm, private journaling companion with gentle AI reflections.",
-
-  // ⭐ THIS fixes the wrong tab icon (no new files needed)
+  description: "A calm, private journaling companion with gentle AI reflections.",
   icons: {
     icon: [
       { url: "/pwa/icon-192.png", sizes: "192x192", type: "image/png" },
@@ -16,7 +14,6 @@ export const metadata: Metadata = {
     shortcut: "/pwa/icon-192.png",
     apple: "/pwa/icon-192.png",
   },
-
   manifest: "/manifest.json",
 };
 
@@ -28,8 +25,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Navbar />
-        {children}
+        <Providers>
+          <Navbar />
+          {children}
+        </Providers>
       </body>
     </html>
   );
