@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
+import UpgradeIntentTracker from "@/app/components/UpgradeIntentTracker";
 
 export default async function PremiumInsightPreviewPage() {
   const supabase = createServerSupabase();
@@ -10,12 +11,13 @@ export default async function PremiumInsightPreviewPage() {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session?.user) {
-    redirect("/magic-login");
-  }
+  if (!session?.user) redirect("/magic-login");
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-20 text-slate-200">
+      {/* Track that the user reached the premium teaser */}
+      <UpgradeIntentTracker source="insights-preview" />
+
       <header className="mb-10">
         <h1 className="text-2xl font-semibold text-white">
           A glimpse of your patterns
@@ -26,7 +28,6 @@ export default async function PremiumInsightPreviewPage() {
         </p>
       </header>
 
-      {/* BLURRED / TEASER INSIGHT */}
       <section className="mb-10 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6">
         <h2 className="mb-3 text-sm font-semibold text-emerald-300">
           Example insight (Premium)
@@ -61,7 +62,6 @@ export default async function PremiumInsightPreviewPage() {
         </p>
       </section>
 
-      {/* VALUE FRAMING */}
       <section className="mb-12 rounded-2xl border border-slate-800 bg-slate-950/60 p-6">
         <h3 className="mb-2 text-sm font-semibold text-slate-100">
           What Premium adds
@@ -74,19 +74,15 @@ export default async function PremiumInsightPreviewPage() {
         </ul>
       </section>
 
-      {/* CTA */}
       <div className="flex flex-wrap items-center gap-4">
         <Link
-          href="/upgrade"
+          href="/upgrade?from=insights-preview"
           className="rounded-full bg-emerald-500 px-6 py-3 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
         >
           Unlock Premium insights
         </Link>
 
-        <Link
-          href="/dashboard"
-          className="text-sm text-slate-400 hover:underline"
-        >
+        <Link href="/dashboard" className="text-sm text-slate-400 hover:underline">
           Back to dashboard
         </Link>
       </div>
