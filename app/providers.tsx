@@ -1,4 +1,3 @@
-// app/providers.tsx
 "use client";
 
 import React from "react";
@@ -8,8 +7,8 @@ import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SupabaseSessionProvider>
-      <ServiceWorkerRegister />
       {children}
+      <ServiceWorkerRegister />
     </SupabaseSessionProvider>
   );
 }
