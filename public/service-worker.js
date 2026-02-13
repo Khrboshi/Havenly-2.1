@@ -1,9 +1,16 @@
 /* public/service-worker.js */
 
-const CACHE_NAME = "hvn-static-v13";
+/**
+ * Fixes:
+ * - Prevent cached RSC payloads from being served as HTML during offline navigations.
+ * - Offline navigations ALWAYS return /offline.html (never raw RSC payload, never dinosaur).
+ * - App Router RSC requests get cached in a separate cache (no key collisions with pages).
+ */
 
-// Minimal, deterministic precache for offline UX.
-// Everything else is runtime-cached.
+const VERSION = "v14";
+const STATIC_CACHE = `hvn-static-${VERSION}`; // pages + assets + offline.html
+const RSC_CACHE = `hvn-rsc-${VERSION}`; // ONLY RSC payloads
+
 const PRECACHE_URLS = [
   "/",
   "/offline.html",
@@ -22,7 +29,7 @@ const PRECACHE_URLS = [
 ];
 
 async function precache() {
-  const cache = await caches.open(CACHE_NAME);
+  const cache = await caches.open(STATIC_CACHE);
   await Promise.allSettled(
     PRECACHE_URLS.map((url) =>
       cache.add(new Request(url, { cache: "reload" })).catch(() => null)
@@ -45,7 +52,11 @@ self.addEventListener("activate", (event) => {
       const keys = await caches.keys();
       await Promise.all(
         keys
-          .filter((k) => k.startsWith("hvn-static-") && k !== CACHE_NAME)
+          .filter(
+            (k) =>
+              (k.startsWith("hvn-static-") && k !== STATIC_CACHE) ||
+              (k.startsWith("hvn-rsc-") && k !== RSC_CACHE)
+          )
           .map((k) => caches.delete(k))
       );
       await self.clients.claim();
@@ -88,35 +99,35 @@ function isAssetRequest(req, url) {
 }
 
 function isRSCRequest(req, url) {
-  // Next.js App Router RSC payloads usually have ?_rsc=...
   if (url.searchParams.has("_rsc")) return true;
-
-  // Some environments rely on the Accept header
   const accept = req.headers.get("accept") || "";
   if (accept.includes("text/x-component")) return true;
-
+  // Next internal router headers often exist; accept-based + _rsc covers most cases.
   return false;
 }
 
-function normalizedRscKey(url) {
-  // Make a stable cache key by stripping the _rsc query param (it changes per navigation)
+function normalizeRscKey(url) {
+  // Stable cache key for RSC without colliding with document URLs:
+  // add a marker param __rsc=1
   const u = new URL(url.toString());
   u.searchParams.delete("_rsc");
-  // Keep other search params (if any) stable
-  // Normalize empty search to no "?"
-  if ([...u.searchParams.keys()].length === 0) {
-    u.search = "";
-  }
+  u.searchParams.set("__rsc", "1");
   return u.toString();
 }
 
-async function cachePut(key, response) {
-  const cache = await caches.open(CACHE_NAME);
+async function putIn(cacheName, key, response) {
+  const cache = await caches.open(cacheName);
   await cache.put(key, response);
 }
 
-async function cacheMatch(reqOrKey, opts) {
-  return caches.match(reqOrKey, opts);
+async function matchIn(cacheName, key, opts) {
+  const cache = await caches.open(cacheName);
+  return cache.match(key, opts);
+}
+
+function isHtmlResponse(res) {
+  const ct = res?.headers?.get?.("content-type") || "";
+  return ct.includes("text/html");
 }
 
 self.addEventListener("fetch", (event) => {
@@ -124,30 +135,29 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET") return;
 
   const url = new URL(req.url);
-
   const sameOrigin = url.origin === self.location.origin;
   const supabase = !sameOrigin && isSupabaseRequest(url);
 
   // Only handle: same-origin + Supabase
   if (!sameOrigin && !supabase) return;
 
-  // Never try to offline-cache arbitrary API routes (except /api/user/plan)
+  // Never offline-cache arbitrary API routes (except /api/user/plan)
   if (sameOrigin && isApi(url) && !isPlanApi(url)) return;
 
   const isNavigation = req.mode === "navigate";
-  const isRSC = sameOrigin && isRSCRequest(req, url);
-  const isAsset = sameOrigin && isAssetRequest(req, url);
+  const rsc = sameOrigin && isRSCRequest(req, url);
+  const asset = sameOrigin && isAssetRequest(req, url);
 
-  // ---- /api/user/plan: network-first, offline fallback JSON (prevents noisy errors) ----
+  // ---- /api/user/plan: network-first, offline fallback JSON ----
   if (sameOrigin && isPlanApi(url)) {
     event.respondWith(
       (async () => {
         try {
           const fresh = await fetch(req);
-          await cachePut(req, fresh.clone());
+          await putIn(STATIC_CACHE, req, fresh.clone());
           return fresh;
         } catch {
-          const cached = await cacheMatch(req);
+          const cached = await matchIn(STATIC_CACHE, req);
           if (cached) return cached;
 
           return new Response(
@@ -175,12 +185,12 @@ self.addEventListener("fetch", (event) => {
   if (supabase) {
     event.respondWith(
       (async () => {
-        const cached = await cacheMatch(req);
+        const cached = await caches.match(req);
         if (cached) return cached;
 
         try {
           const fresh = await fetch(req);
-          await cachePut(req, fresh.clone());
+          await caches.open(STATIC_CACHE).then((c) => c.put(req, fresh.clone()));
           return fresh;
         } catch {
           return new Response(JSON.stringify({ error: "offline" }), {
@@ -193,26 +203,24 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // ---- RSC payloads: cache-first with stable key (eliminates most offline red errors) ----
-  if (isRSC) {
+  // ---- RSC payloads: cache-first in RSC_CACHE (never STATIC_CACHE) ----
+  if (rsc) {
     event.respondWith(
       (async () => {
-        const stableKey = normalizedRscKey(url);
-        const cacheKey = new Request(stableKey, { method: "GET" });
+        const key = new Request(normalizeRscKey(url), { method: "GET" });
 
         const cached =
-          (await cacheMatch(cacheKey)) ||
-          (await cacheMatch(req, { ignoreSearch: true }));
+          (await matchIn(RSC_CACHE, key)) ||
+          (await matchIn(RSC_CACHE, req, { ignoreSearch: true }));
 
         if (cached) return cached;
 
         try {
           const fresh = await fetch(req);
-          // Store under stable key so future offline RSC requests hit cache
-          await cachePut(cacheKey, fresh.clone());
+          await putIn(RSC_CACHE, key, fresh.clone());
           return fresh;
         } catch {
-          // Safe empty response (prevents runtime crashes in RSC)
+          // Return empty RSC so the app doesn't hard-crash; navigations will still go to offline.html.
           return new Response("", {
             status: 200,
             headers: { "Content-Type": "text/x-component; charset=utf-8" },
@@ -223,58 +231,72 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // ---- Navigations: network-first, then cached page, then offline.html ----
+  // ---- Navigations: ALWAYS return HTML; if offline => /offline.html ----
   if (isNavigation) {
     event.respondWith(
       (async () => {
         try {
           const fresh = await fetch(req);
-          await cachePut(req, fresh.clone());
+          await putIn(STATIC_CACHE, req, fresh.clone());
 
-          // Keep "/" updated as a reliable cached shell
+          // Keep "/" updated
           if (url.pathname === "/" || url.pathname === "") {
-            await cachePut(new Request("/"), fresh.clone());
+            await putIn(STATIC_CACHE, new Request("/"), fresh.clone());
           }
 
           return fresh;
         } catch {
-          const cachedPage = await cacheMatch(req);
-          if (cachedPage) return cachedPage;
+          // Only return cached page if it's actually HTML
+          const cachedPage = await matchIn(STATIC_CACHE, req);
+          if (cachedPage && isHtmlResponse(cachedPage)) return cachedPage;
 
-          const offline = await cacheMatch("/offline.html", { ignoreSearch: true });
+          const offline = await matchIn(
+            STATIC_CACHE,
+            new Request("/offline.html"),
+            { ignoreSearch: true }
+          );
           if (offline) return offline;
 
-          const cachedHome = await cacheMatch("/", { ignoreSearch: true });
-          if (cachedHome) return cachedHome;
+          const cachedHome = await matchIn(
+            STATIC_CACHE,
+            new Request("/"),
+            { ignoreSearch: true }
+          );
+          if (cachedHome && isHtmlResponse(cachedHome)) return cachedHome;
 
-          return new Response("Offline", { status: 503 });
+          return new Response("Offline", {
+            status: 503,
+            headers: { "Content-Type": "text/plain; charset=utf-8" },
+          });
         }
       })()
     );
     return;
   }
 
-  // ---- Assets: cache-first (ignoreSearch for robustness) ----
-  if (isAsset) {
+  // ---- Assets: cache-first in STATIC_CACHE ----
+  if (asset) {
     event.respondWith(
       (async () => {
         const cached =
-          (await cacheMatch(req)) || (await cacheMatch(req, { ignoreSearch: true }));
+          (await matchIn(STATIC_CACHE, req)) ||
+          (await matchIn(STATIC_CACHE, req, { ignoreSearch: true }));
         if (cached) return cached;
 
         try {
           const fresh = await fetch(req);
-          await cachePut(req, fresh.clone());
+          await putIn(STATIC_CACHE, req, fresh.clone());
           return fresh;
         } catch {
-          // If offline and missing, attempt a fallback icon for images
           if (req.destination === "image") {
             return (
-              (await cacheMatch("/pwa/icon-192.png", { ignoreSearch: true })) ||
-              new Response("", { status: 404 })
+              (await matchIn(
+                STATIC_CACHE,
+                new Request("/pwa/icon-192.png"),
+                { ignoreSearch: true }
+              )) || new Response("", { status: 404 })
             );
           }
-          // For other assets, return a non-error response to reduce noisy failures
           return new Response("", { status: 200 });
         }
       })()
@@ -282,23 +304,27 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // ---- Catch-all same-origin GET: cache-first, then network, then offline-friendly empty ----
-  // This reduces "failed net::ERR_INTERNET_DISCONNECTED" spam for miscellaneous GETs.
+  // ---- Catch-all same-origin GET: cache-first, then network ----
   event.respondWith(
     (async () => {
       const cached =
-        (await cacheMatch(req)) || (await cacheMatch(req, { ignoreSearch: true }));
+        (await matchIn(STATIC_CACHE, req)) ||
+        (await matchIn(STATIC_CACHE, req, { ignoreSearch: true }));
       if (cached) return cached;
 
       try {
         const fresh = await fetch(req);
-        await cachePut(req, fresh.clone());
+        await putIn(STATIC_CACHE, req, fresh.clone());
         return fresh;
       } catch {
-        // Prefer offline.html if the request looks like a document
+        // If it looks like a document fetch, still serve offline.html
         const accept = req.headers.get("accept") || "";
         if (accept.includes("text/html")) {
-          const offline = await cacheMatch("/offline.html", { ignoreSearch: true });
+          const offline = await matchIn(
+            STATIC_CACHE,
+            new Request("/offline.html"),
+            { ignoreSearch: true }
+          );
           if (offline) return offline;
         }
         return new Response("", { status: 200 });
