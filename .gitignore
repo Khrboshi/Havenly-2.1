@@ -1,1 +1,6 @@
 node_modules
+
+# build artifacts
+.next/
+node_modules/
+.vercel/
