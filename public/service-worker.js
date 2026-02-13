@@ -202,4 +202,107 @@ self.addEventListener("fetch", (event) => {
 
         const cached =
           (await cacheMatch(cacheKey)) ||
-          (await cacheMatch(req,
+          (await cacheMatch(req, { ignoreSearch: true }));
+
+        if (cached) return cached;
+
+        try {
+          const fresh = await fetch(req);
+          // Store under stable key so future offline RSC requests hit cache
+          await cachePut(cacheKey, fresh.clone());
+          return fresh;
+        } catch {
+          // Safe empty response (prevents runtime crashes in RSC)
+          return new Response("", {
+            status: 200,
+            headers: { "Content-Type": "text/x-component; charset=utf-8" },
+          });
+        }
+      })()
+    );
+    return;
+  }
+
+  // ---- Navigations: network-first, then cached page, then offline.html ----
+  if (isNavigation) {
+    event.respondWith(
+      (async () => {
+        try {
+          const fresh = await fetch(req);
+          await cachePut(req, fresh.clone());
+
+          // Keep "/" updated as a reliable cached shell
+          if (url.pathname === "/" || url.pathname === "") {
+            await cachePut(new Request("/"), fresh.clone());
+          }
+
+          return fresh;
+        } catch {
+          const cachedPage = await cacheMatch(req);
+          if (cachedPage) return cachedPage;
+
+          const offline = await cacheMatch("/offline.html", { ignoreSearch: true });
+          if (offline) return offline;
+
+          const cachedHome = await cacheMatch("/", { ignoreSearch: true });
+          if (cachedHome) return cachedHome;
+
+          return new Response("Offline", { status: 503 });
+        }
+      })()
+    );
+    return;
+  }
+
+  // ---- Assets: cache-first (ignoreSearch for robustness) ----
+  if (isAsset) {
+    event.respondWith(
+      (async () => {
+        const cached =
+          (await cacheMatch(req)) || (await cacheMatch(req, { ignoreSearch: true }));
+        if (cached) return cached;
+
+        try {
+          const fresh = await fetch(req);
+          await cachePut(req, fresh.clone());
+          return fresh;
+        } catch {
+          // If offline and missing, attempt a fallback icon for images
+          if (req.destination === "image") {
+            return (
+              (await cacheMatch("/pwa/icon-192.png", { ignoreSearch: true })) ||
+              new Response("", { status: 404 })
+            );
+          }
+          // For other assets, return a non-error response to reduce noisy failures
+          return new Response("", { status: 200 });
+        }
+      })()
+    );
+    return;
+  }
+
+  // ---- Catch-all same-origin GET: cache-first, then network, then offline-friendly empty ----
+  // This reduces "failed net::ERR_INTERNET_DISCONNECTED" spam for miscellaneous GETs.
+  event.respondWith(
+    (async () => {
+      const cached =
+        (await cacheMatch(req)) || (await cacheMatch(req, { ignoreSearch: true }));
+      if (cached) return cached;
+
+      try {
+        const fresh = await fetch(req);
+        await cachePut(req, fresh.clone());
+        return fresh;
+      } catch {
+        // Prefer offline.html if the request looks like a document
+        const accept = req.headers.get("accept") || "";
+        if (accept.includes("text/html")) {
+          const offline = await cacheMatch("/offline.html", { ignoreSearch: true });
+          if (offline) return offline;
+        }
+        return new Response("", { status: 200 });
+      }
+    })()
+  );
+});
