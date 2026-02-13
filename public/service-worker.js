@@ -1,6 +1,7 @@
-const VERSION = "v17";
+// public/service-worker.js
+
+const VERSION = "v18"; // bump version to force SW refresh
 const STATIC_CACHE = `hvn-static-${VERSION}`;
-const RSC_CACHE = `hvn-rsc-${VERSION}`;
 
 const PRECACHE_URLS = [
   "/offline.html",
@@ -34,11 +35,7 @@ self.addEventListener("activate", (event) => {
       const keys = await caches.keys();
       await Promise.all(
         keys
-          .filter(
-            (k) =>
-              (k.startsWith("hvn-static-") && k !== STATIC_CACHE) ||
-              (k.startsWith("hvn-rsc-") && k !== RSC_CACHE)
-          )
+          .filter((k) => k.startsWith("hvn-static-") && k !== STATIC_CACHE)
           .map((k) => caches.delete(k))
       );
       await self.clients.claim();
@@ -46,97 +43,113 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-function isRSC(req, url) {
+function shouldBypass(reqUrl) {
+  const url = new URL(reqUrl);
+
+  // ✅ Never touch Next App Router internals / RSC payloads / runtime chunks
   if (url.searchParams.has("_rsc")) return true;
-  const accept = req.headers.get("accept") || "";
-  return accept.includes("text/x-component");
+  if (url.pathname.startsWith("/_next/")) return true;
+
+  // ✅ Never touch API routes
+  if (url.pathname.startsWith("/api/")) return true;
+
+  // ✅ Never touch auth callback-like endpoints if you ever add them as non-/api
+  // (keeps magic link flows safe)
+  if (url.pathname.startsWith("/auth/")) return true;
+
+  return false;
 }
 
-function normalizeRscKey(url) {
-  const u = new URL(url.toString());
-  u.searchParams.delete("_rsc");
-  u.searchParams.set("__rsc", "1");
-  return u.toString();
+function isCacheableAsset(req) {
+  // Only cache truly static assets, not HTML/RSC
+  const url = new URL(req.url);
+
+  if (shouldBypass(req.url)) return false;
+
+  // Don’t cache navigations (HTML pages)
+  if (req.mode === "navigate") return false;
+
+  // Cache only images/fonts/css/js/icons + your /pwa assets + manifest/offline
+  const path = url.pathname;
+
+  if (path.startsWith("/pwa/")) return true;
+  if (path === "/manifest.json") return true;
+  if (path === "/offline.html") return true;
+
+  return (
+    path.endsWith(".png") ||
+    path.endsWith(".jpg") ||
+    path.endsWith(".jpeg") ||
+    path.endsWith(".webp") ||
+    path.endsWith(".svg") ||
+    path.endsWith(".ico") ||
+    path.endsWith(".css") ||
+    path.endsWith(".js") ||
+    path.endsWith(".woff") ||
+    path.endsWith(".woff2") ||
+    path.endsWith(".ttf")
+  );
 }
 
 self.addEventListener("fetch", (event) => {
   const req = event.request;
+
+  // Only handle same-origin GET
   if (req.method !== "GET") return;
 
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
-  // NEVER cache API responses (prevents cache poisoning / stale auth)
-  if (url.pathname.startsWith("/api/")) {
-    return;
-  }
+  // ✅ Hard bypass for Next internals + RSC + api
+  if (shouldBypass(req.url)) return;
 
-  // 1) RSC payloads: separate cache
-  if (isRSC(req, url)) {
-    event.respondWith(
-      (async () => {
-        const key = new Request(normalizeRscKey(url), { method: "GET" });
-        const cache = await caches.open(RSC_CACHE);
-
-        const cached = await cache.match(key);
-        if (cached) return cached;
-
-        try {
-          const fresh = await fetch(req);
-          await cache.put(key, fresh.clone());
-          return fresh;
-        } catch {
-          return new Response("", {
-            status: 200,
-            headers: { "Content-Type": "text/x-component; charset=utf-8" },
-          });
-        }
-      })()
-    );
-    return;
-  }
-
-  // 2) Navigations: if offline => ALWAYS offline.html (never home, never other cached page)
+  // ✅ Offline fallback for navigations ONLY (do NOT cache navigations)
   if (req.mode === "navigate") {
     event.respondWith(
       (async () => {
         try {
-          const fresh = await fetch(req);
-          const cache = await caches.open(STATIC_CACHE);
-          await cache.put(req, fresh.clone());
-          return fresh;
+          return await fetch(req);
         } catch {
           const cache = await caches.open(STATIC_CACHE);
           const offline = await cache.match("/offline.html", {
             ignoreSearch: true,
           });
-
-          if (offline) return offline;
-
-          return new Response("Offline", {
-            status: 503,
-            headers: { "Content-Type": "text/plain; charset=utf-8" },
-          });
+          return (
+            offline ||
+            new Response("Offline", {
+              status: 503,
+              headers: { "Content-Type": "text/plain; charset=utf-8" },
+            })
+          );
         }
       })()
     );
     return;
   }
 
-  // 3) Assets: cache-first
-  event.respondWith(
-    (async () => {
-      const cache = await caches.open(STATIC_CACHE);
-      const cached = await cache.match(req, { ignoreSearch: true });
-      if (cached) return cached;
+  // ✅ Cache-first ONLY for safe static assets
+  if (isCacheableAsset(req)) {
+    event.respondWith(
+      (async () => {
+        const cache = await caches.open(STATIC_CACHE);
 
-      try {
-        const fresh = await fetch(req);
-        await cache.put(req, fresh.clone());
-        return fresh;
-      } catch {
-        return new Response("", { status: 200 });
-      }
-    })()
-  );
+        const cached = await cache.match(req, { ignoreSearch: true });
+        if (cached) return cached;
+
+        try {
+          const fresh = await fetch(req);
+          // Cache only successful responses
+          if (fresh && fresh.ok) await cache.put(req, fresh.clone());
+          return fresh;
+        } catch {
+          // If asset fetch fails, return empty 200 (prevents hard crashes)
+          return new Response("", { status: 200 });
+        }
+      })()
+    );
+    return;
+  }
+
+  // Everything else: network only (no caching)
+  return;
 });
