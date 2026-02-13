@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { setUserPlan } from "@/lib/creditRules";
 
 export const dynamic = "force-dynamic";
 
@@ -16,24 +17,9 @@ export async function POST() {
 
   const userId = session.user.id;
 
-  // ⚠️ TEMPORARY: Simulated successful upgrade
-  // Replace with Stripe webhook confirmation later
-  const { error } = await supabase
-    .from("user_credits")
-    .update({
-      plan_type: "PREMIUM",
-      reflections_remaining: null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("user_id", userId);
-
-  if (error) {
-    console.error("Upgrade failed:", error);
-    return NextResponse.json(
-      { error: "Failed to upgrade plan" },
-      { status: 500 }
-    );
-  }
+  // NOTE: This is still a simulated upgrade until you wire real payment confirmation.
+  // But it now updates the canonical plan + credits correctly.
+  await setUserPlan({ supabase, userId, planType: "PREMIUM" });
 
   return NextResponse.json({ ok: true });
 }
