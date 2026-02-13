@@ -5,9 +5,10 @@ import { createServerClient } from "@supabase/ssr";
 
 /**
  * Middleware responsibilities (Hardened):
- * - Never run on static assets (anything with a file extension)
  * - Never run on /api
- * - Refresh Supabase cookies for page routes
+ * - Never run on Next static/runtime assets
+ * - Never run on any static file request (anything with a file extension)
+ * - Refresh Supabase auth cookies for page routes
  * - Enforce redirects ONLY for protected areas
  * - Do not interfere with auth callback / magic-link flow
  */
@@ -24,7 +25,9 @@ const PROTECTED_PREFIXES = [
 ];
 
 function isPublicPath(pathname: string) {
-  return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  return PUBLIC_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`)
+  );
 }
 
 function isAuthPath(pathname: string) {
@@ -32,11 +35,13 @@ function isAuthPath(pathname: string) {
 }
 
 function isProtectedPath(pathname: string) {
-  return PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  return PROTECTED_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`)
+  );
 }
 
 function isStaticFile(pathname: string) {
-  // Any URL ending with ".ext" (png, svg, webmanifest, txt, xml, css, js, etc.)
+  // Any URL ending with ".ext" (png, svg, webmanifest/json, txt, xml, css, js, etc.)
   return /\.[^/]+$/.test(pathname);
 }
 
@@ -47,18 +52,8 @@ export async function middleware(req: NextRequest) {
   if (pathname.startsWith("/api")) return NextResponse.next();
   if (pathname.startsWith("/_next")) return NextResponse.next();
 
-  // Skip ALL static files (this covers /pwa/*.png, /manifest.* , /offline.html, etc.)
+  // Skip ALL static files (covers /pwa/*.png, /manifest.json, /offline.html, etc.)
   if (isStaticFile(pathname)) return NextResponse.next();
-
-  // Also skip common PWA install paths that sometimes don't have a "dot"
-  if (
-    pathname === "/pwa" ||
-    pathname.startsWith("/pwa/") ||
-    pathname === "/manifest" ||
-    pathname === "/service-worker"
-  ) {
-    return NextResponse.next();
-  }
 
   // 2) Create response + Supabase client
   const res = NextResponse.next();
@@ -89,7 +84,7 @@ export async function middleware(req: NextRequest) {
   // Only enforce protection for protected routes
   if (!isProtectedPath(pathname)) return res;
 
-  // ✅ Authenticate by contacting Supabase Auth (removes the warning)
+  // ✅ Verified auth decision (contacts Supabase Auth)
   const {
     data: { user },
   } = await supabase.auth.getUser();
