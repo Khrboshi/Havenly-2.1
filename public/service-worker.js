@@ -1,7 +1,7 @@
 /* public/service-worker.js */
 
 // Bump this string to force an update.
-const CACHE_NAME = "hvn-static-v8";
+const CACHE_NAME = "hvn-static-v9";
 
 const PRECACHE_URLS = [
   "/",
@@ -51,6 +51,11 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+// Helper: match cache while ignoring query strings
+async function matchIgnoreSearch(request) {
+  return caches.match(request, { ignoreSearch: true });
+}
+
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
@@ -80,19 +85,14 @@ self.addEventListener("fetch", (event) => {
     req.destination === "script" ||
     req.destination === "font";
 
-  // Helper: match cache while ignoring query strings
-  async function matchIgnoreSearch(request) {
-    return caches.match(request, { ignoreSearch: true });
-  }
-
-  // ---- RSC: don't let it throw TypeError offline ----
+  // ---- RSC: prevent offline TypeError ----
   if (isRSC) {
     event.respondWith(
       (async () => {
-        // If we ever have it cached, return it; otherwise return an empty 200 response.
         const cached = await caches.match(req);
         if (cached) return cached;
 
+        // Return an empty RSC response so React/Next doesn't crash hard offline
         return new Response("", {
           status: 200,
           headers: { "Content-Type": "text/x-component; charset=utf-8" },
@@ -102,22 +102,35 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // ---- Pages: network-first, fallback to cached "/" then offline page ----
+  // ---- Pages (navigations): network-first, fallback to cached page, then offline page ----
   if (isNavigation) {
     event.respondWith(
       (async () => {
         const cache = await caches.open(CACHE_NAME);
+
         try {
           const fresh = await fetch(req);
-          // Keep the latest home shell cached for offline navigation.
+
+          // Cache the actual visited path so offline navigation can load it later
+          cache.put(req, fresh.clone());
+
+          // Also keep "/" always fresh as a safe shell
           if (url.pathname === "/" || url.pathname === "") {
             cache.put("/", fresh.clone());
           }
+
           return fresh;
         } catch {
+          // 1) If this exact page was cached before, use it
+          const cachedPage =
+            (await caches.match(req)) || (await matchIgnoreSearch(req));
+          if (cachedPage) return cachedPage;
+
+          // 2) Fallback to cached "/" shell (optional)
           const cachedHome = await caches.match("/");
           if (cachedHome) return cachedHome;
 
+          // 3) Final fallback: offline page
           const offline = await caches.match("/offline.html");
           if (offline) return offline;
 
@@ -142,7 +155,7 @@ self.addEventListener("fetch", (event) => {
           cache.put(req, fresh.clone());
           return fresh;
         } catch {
-          // If offline and missing, try returning an icon
+          // If offline and missing, try returning an icon for images
           if (req.destination === "image") {
             return (
               (await caches.match("/pwa/icon-192.png")) ||
