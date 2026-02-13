@@ -1,7 +1,7 @@
 /* public/service-worker.js */
 
 // Bump this string to force an update.
-const CACHE_NAME = "hvn-static-v9";
+const CACHE_NAME = "hvn-static-v10";
 
 const PRECACHE_URLS = [
   "/",
@@ -85,18 +85,25 @@ self.addEventListener("fetch", (event) => {
     req.destination === "script" ||
     req.destination === "font";
 
-  // ---- RSC: prevent offline TypeError ----
+  // ---- RSC: cache-first, then safe empty response offline ----
   if (isRSC) {
     event.respondWith(
       (async () => {
         const cached = await caches.match(req);
         if (cached) return cached;
 
-        // Return an empty RSC response so React/Next doesn't crash hard offline
-        return new Response("", {
-          status: 200,
-          headers: { "Content-Type": "text/x-component; charset=utf-8" },
-        });
+        try {
+          const fresh = await fetch(req);
+          const cache = await caches.open(CACHE_NAME);
+          cache.put(req, fresh.clone());
+          return fresh;
+        } catch {
+          // Return an empty RSC response so React/Next doesn't crash hard offline
+          return new Response("", {
+            status: 200,
+            headers: { "Content-Type": "text/x-component; charset=utf-8" },
+          });
+        }
       })()
     );
     return;
@@ -126,13 +133,13 @@ self.addEventListener("fetch", (event) => {
             (await caches.match(req)) || (await matchIgnoreSearch(req));
           if (cachedPage) return cachedPage;
 
-          // 2) Fallback to cached "/" shell (optional)
-          const cachedHome = await caches.match("/");
-          if (cachedHome) return cachedHome;
-
-          // 3) Final fallback: offline page
+          // 2) Final fallback: offline page (prevents Chrome dinosaur)
           const offline = await caches.match("/offline.html");
           if (offline) return offline;
+
+          // 3) As a last resort, try cached "/" shell (may still error offline, but better than dinosaur)
+          const cachedHome = await caches.match("/");
+          if (cachedHome) return cachedHome;
 
           return new Response("Offline", { status: 503 });
         }
