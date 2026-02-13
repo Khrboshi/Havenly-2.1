@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
 
 type Props = {
   source?: string;
@@ -10,12 +9,8 @@ type Props = {
 const SESSION_KEY = "hvn_upgrade_intent_sent_v1";
 
 export default function UpgradeIntentTracker({ source }: Props) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
   useEffect(() => {
-    const from = searchParams?.get("from") || source || "unknown";
-    const key = `${SESSION_KEY}:${from}:${pathname}`;
+    const key = `${SESSION_KEY}:${source || "unknown"}`;
 
     try {
       if (typeof window !== "undefined" && sessionStorage.getItem(key)) return;
@@ -25,7 +20,7 @@ export default function UpgradeIntentTracker({ source }: Props) {
     }
 
     fetch("/api/telemetry/upgrade-intent", { method: "POST" }).catch(() => {});
-  }, [pathname, searchParams, source]);
+  }, [source]);
 
   return null;
 }
