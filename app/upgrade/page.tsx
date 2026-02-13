@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Suspense } from "react";
 import UpgradeIntentTracker from "@/app/components/UpgradeIntentTracker";
 
 export const metadata = {
@@ -13,13 +12,12 @@ function Tracker() {
 export default function UpgradePage() {
   return (
     <main className="mx-auto flex max-w-4xl flex-col gap-10 px-6 py-20 text-slate-200">
-      <Suspense fallback={null}>
-        <Tracker />
-      </Suspense>
+      {/* Track that the user opened the upgrade page (client-only) */}
+      <Tracker />
 
       <header className="space-y-3">
         <h1 className="text-3xl font-semibold text-white">Premium</h1>
-        <p className="text-sm text-slate-400 max-w-2xl">
+        <p className="max-w-2xl text-sm text-slate-400">
           Premium is coming soon. For now, we’re focusing on stability and quality so the
           experience feels solid before we turn on payments.
         </p>
@@ -73,7 +71,7 @@ export default function UpgradePage() {
           <div className="mt-6 flex flex-wrap gap-3">
             <button
               disabled
-              className="inline-flex items-center justify-center rounded-full bg-emerald-500/60 px-5 py-2.5 text-sm font-semibold text-slate-950 opacity-60 cursor-not-allowed"
+              className="inline-flex cursor-not-allowed items-center justify-center rounded-full bg-emerald-500/60 px-5 py-2.5 text-sm font-semibold text-slate-950 opacity-60"
             >
               Premium (coming soon)
             </button>
