@@ -1,7 +1,7 @@
 /* public/service-worker.js */
 
 // Bump this string to force an update.
-const CACHE_NAME = "hvn-static-v10";
+const CACHE_NAME = "hvn-static-v11";
 
 const PRECACHE_URLS = [
   "/",
@@ -56,22 +56,38 @@ async function matchIgnoreSearch(request) {
   return caches.match(request, { ignoreSearch: true });
 }
 
+function isSupabaseRequest(url) {
+  // Handles typical Supabase endpoints:
+  // https://<project-ref>.supabase.co/rest/v1/...
+  // https://<project-ref>.supabase.co/auth/v1/...
+  // https://<project-ref>.supabase.co/storage/v1/...
+  return (
+    typeof url?.hostname === "string" &&
+    url.hostname.endsWith(".supabase.co") &&
+    (url.pathname.startsWith("/rest/") ||
+      url.pathname.startsWith("/auth/") ||
+      url.pathname.startsWith("/storage/"))
+  );
+}
+
+function isPlanApi(url) {
+  return url.origin === self.location.origin && url.pathname === "/api/user/plan";
+}
+
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
 
   const url = new URL(req.url);
 
-  // Ignore cross-origin
-  if (url.origin !== self.location.origin) return;
-
-  // Ignore API routes
-  if (url.pathname.startsWith("/api")) return;
-
   const isNavigation = req.mode === "navigate";
-
-  // Next.js App Router RSC payloads have ?_rsc=...
   const isRSC = url.searchParams.has("_rsc");
+
+  const sameOrigin = url.origin === self.location.origin;
+  const supabase = !sameOrigin && isSupabaseRequest(url);
+
+  // For cross-origin requests, only handle Supabase. Everything else: let browser handle.
+  if (!sameOrigin && !supabase) return;
 
   const isAsset =
     url.pathname.startsWith("/_next/static/") ||
@@ -84,6 +100,70 @@ self.addEventListener("fetch", (event) => {
     req.destination === "style" ||
     req.destination === "script" ||
     req.destination === "font";
+
+  // ---- Special: /api/user/plan (prevent offline console spam + allow cached plan) ----
+  if (isPlanApi(url)) {
+    event.respondWith(
+      (async () => {
+        const cache = await caches.open(CACHE_NAME);
+
+        try {
+          const fresh = await fetch(req);
+          // Cache even if no-store is set (SW cache is independent)
+          cache.put(req, fresh.clone());
+          return fresh;
+        } catch {
+          const cached = await caches.match(req);
+          if (cached) return cached;
+
+          // Deterministic offline fallback
+          return new Response(
+            JSON.stringify({
+              planType: "FREE",
+              plan: "FREE",
+              credits: 0,
+              renewalDate: null,
+            }),
+            {
+              status: 200,
+              headers: {
+                "Content-Type": "application/json; charset=utf-8",
+                "Cache-Control": "no-store, max-age=0",
+              },
+            }
+          );
+        }
+      })()
+    );
+    return;
+  }
+
+  // ---- Supabase GETs: cache-first (offline safe) ----
+  if (supabase) {
+    event.respondWith(
+      (async () => {
+        const cached = await caches.match(req);
+        if (cached) return cached;
+
+        try {
+          const fresh = await fetch(req);
+          const cache = await caches.open(CACHE_NAME);
+          cache.put(req, fresh.clone());
+          return fresh;
+        } catch {
+          // No cache available
+          return new Response(
+            JSON.stringify({ error: "offline" }),
+            {
+              status: 503,
+              headers: { "Content-Type": "application/json; charset=utf-8" },
+            }
+          );
+        }
+      })()
+    );
+    return;
+  }
 
   // ---- RSC: cache-first, then safe empty response offline ----
   if (isRSC) {
@@ -137,7 +217,7 @@ self.addEventListener("fetch", (event) => {
           const offline = await caches.match("/offline.html");
           if (offline) return offline;
 
-          // 3) As a last resort, try cached "/" shell (may still error offline, but better than dinosaur)
+          // 3) As a last resort, try cached "/" shell
           const cachedHome = await caches.match("/");
           if (cachedHome) return cachedHome;
 
@@ -162,7 +242,6 @@ self.addEventListener("fetch", (event) => {
           cache.put(req, fresh.clone());
           return fresh;
         } catch {
-          // If offline and missing, try returning an icon for images
           if (req.destination === "image") {
             return (
               (await caches.match("/pwa/icon-192.png")) ||
