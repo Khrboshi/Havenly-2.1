@@ -2,76 +2,63 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
-import { useSupabase } from "@/app/components/SupabaseSessionProvider";
+import { useSupabase } from "@/components/SupabaseSessionProvider";
 
 interface UpgradeTriggerModalProps {
   open: boolean;
   onClose: () => void;
   title?: string;
-  message?: string;
-  source?: string;
-  ctaHref?: string;
-  ctaLabel?: string;
+  description?: string;
+  cta?: string;
 }
 
 export default function UpgradeTriggerModal({
   open,
   onClose,
-  title = "You’ve used your free AI reflections",
-  message = "The Free plan includes 3 AI reflections per month. Premium unlocks unlimited reflections and deeper insights.",
-  source = "unknown",
-  ctaHref = "/upgrade",
-  ctaLabel = "Unlock Premium",
+  title = "Upgrade to continue",
+  description = "You’ve reached your limit. Upgrade to unlock more entries and reflections.",
+  cta = "Upgrade now",
 }: UpgradeTriggerModalProps) {
-  const { supabase, session } = useSupabase();
+  const { session } = useSupabase();
 
   useEffect(() => {
     if (!open) return;
 
-    // Type-safe runtime insert without requiring regenerated Supabase types
-    (supabase.from("analytics_events") as unknown as any).insert({
-      user_id: session?.user?.id ?? null,
-      event: "upgrade_modal_shown",
-      source,
-      created_at: new Date().toISOString(),
-    });
-  }, [open, supabase, session, source]);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-      <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-6 text-slate-200 shadow-xl">
-        <h2 className="text-lg font-semibold">{title}</h2>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4">
+      <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#020617] p-6 text-slate-200 shadow-2xl">
+        <div className="mb-4">
+          <h3 className="text-xl font-semibold">{title}</h3>
+          <p className="mt-1 text-sm text-slate-400">{description}</p>
+          {session?.user?.email ? (
+            <p className="mt-3 text-xs text-slate-500">
+              Signed in as {session.user.email}
+            </p>
+          ) : null}
+        </div>
 
-        <p className="mt-3 text-sm text-slate-400">{message}</p>
-
-        <p className="mt-3 text-sm text-slate-400">
-          You can continue journaling freely. AI reflections resume immediately
-          with Premium.
-        </p>
-
-        <div className="mt-6 flex gap-3">
+        <div className="flex gap-3">
           <Link
-            href={ctaHref}
-            onClick={() => {
-              (supabase.from("analytics_events") as unknown as any).insert({
-                user_id: session?.user?.id ?? null,
-                event: "upgrade_clicked",
-                source,
-                created_at: new Date().toISOString(),
-              });
-            }}
-            className="flex-1 rounded-full bg-emerald-400 px-5 py-2.5 text-center text-sm font-semibold text-slate-900 hover:bg-emerald-300"
+            href="/upgrade"
+            className="flex-1 rounded-md bg-emerald-500 px-4 py-2 text-center text-sm font-medium text-black hover:bg-emerald-400"
           >
-            {ctaLabel}
+            {cta}
           </Link>
-
           <button
             onClick={onClose}
-            className="flex-1 rounded-full border border-slate-700 px-5 py-2.5 text-sm text-slate-300 hover:bg-slate-800"
+            className="flex-1 rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
           >
-            Maybe later
+            Not now
           </button>
         </div>
       </div>
