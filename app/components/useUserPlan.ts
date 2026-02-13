@@ -4,14 +4,19 @@ import { useEffect, useState } from "react";
 
 type PlanState = {
   loading: boolean;
-  plan: "free" | "premium";
+  planType: "free" | "premium";
+  credits: number;
 };
 
 let cachedPlan: PlanState | null = null;
 
 export function useUserPlan() {
   const [state, setState] = useState<PlanState>(
-    cachedPlan || { loading: true, plan: "free" }
+    cachedPlan || {
+      loading: true,
+      planType: "free",
+      credits: 0,
+    }
   );
 
   useEffect(() => {
@@ -29,14 +34,20 @@ export function useUserPlan() {
 
         const next: PlanState = {
           loading: false,
-          plan: data?.plan === "premium" ? "premium" : "free",
+          planType: data?.plan === "premium" ? "premium" : "free",
+          credits: typeof data?.credits === "number" ? data.credits : 0,
         };
 
         cachedPlan = next;
 
         if (!cancelled) setState(next);
       } catch {
-        const fallback: PlanState = { loading: false, plan: "free" };
+        const fallback: PlanState = {
+          loading: false,
+          planType: "free",
+          credits: 0,
+        };
+
         cachedPlan = fallback;
         if (!cancelled) setState(fallback);
       }
