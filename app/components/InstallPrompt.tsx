@@ -1,152 +1,145 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
 
+const STATE_KEY = "havenly_install_prompt_v1";
+const INSTALLED_KEY = "havenly_installed_v1";
+const SNOOZE_DAYS = 5;
+
+function addDays(days: number) {
+  return Date.now() + days * 24 * 60 * 60 * 1000;
+}
+
 function isStandalone() {
-  // iOS Safari: navigator.standalone
-  // Other: display-mode: standalone
+  if (typeof window === "undefined") return false;
   return (
-    (typeof window !== "undefined" &&
-      (window.matchMedia?.("(display-mode: standalone)")?.matches ?? false)) ||
-    // @ts-expect-error - iOS Safari only
-    (typeof navigator !== "undefined" && navigator.standalone === true)
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (window.navigator as any).standalone === true
   );
 }
 
-function isIOS() {
-  if (typeof navigator === "undefined") return false;
-  const ua = navigator.userAgent.toLowerCase();
-  return /iphone|ipad|ipod/.test(ua);
+function readJSON(key: string) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
 }
 
-function isSafari() {
-  if (typeof navigator === "undefined") return false;
-  const ua = navigator.userAgent.toLowerCase();
-  // "safari" present but not chrome/android
-  return ua.includes("safari") && !ua.includes("chrome") && !ua.includes("crios") && !ua.includes("android");
+function writeJSON(key: string, value: any) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {}
 }
-
-const DISMISS_KEY = "havenly_install_prompt_dismissed_v1";
 
 export default function InstallPrompt() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [show, setShow] = useState(false);
-
-  const platform = useMemo(() => {
-    const ios = isIOS();
-    if (ios && isSafari()) return "ios_safari";
-    if (ios) return "ios_other";
-    return "other";
-  }, []);
+  const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    // Don’t show if already installed
-    if (isStandalone()) return;
+    if (typeof window === "undefined") return;
 
-    // Don’t show if user dismissed before
-    if (localStorage.getItem(DISMISS_KEY) === "1") return;
+    // If app is installed → never show
+    if (isStandalone()) {
+      const prev = readJSON(INSTALLED_KEY) ?? {
+        installedAt: Date.now(),
+      };
+      writeJSON(INSTALLED_KEY, {
+        ...prev,
+        lastSeenStandaloneAt: Date.now(),
+      });
+      return;
+    }
 
-    // Android/desktop: capture the install prompt
-    const onBeforeInstallPrompt = (e: Event) => {
+    const ua = window.navigator.userAgent.toLowerCase();
+    setIsIOS(/iphone|ipad|ipod/.test(ua));
+
+    const state = readJSON(STATE_KEY);
+
+    if (state?.dismissedUntil && Date.now() < state.dismissedUntil) {
+      return;
+    }
+
+    const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       setShow(true);
     };
 
-    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+    window.addEventListener("beforeinstallprompt", handler);
 
-    // iOS Safari: no beforeinstallprompt — show an instructional prompt
-    if (platform === "ios_safari") {
-      // Small delay so it doesn’t pop instantly on first paint
-      const t = window.setTimeout(() => setShow(true), 1200);
-      return () => {
-        window.clearTimeout(t);
-        window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
-      };
+    // iOS has no event — show gentle instruction banner
+    if (/iphone|ipad|ipod/.test(ua)) {
+      setShow(true);
     }
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+      window.removeEventListener("beforeinstallprompt", handler);
     };
-  }, [platform]);
-
-  const dismiss = () => {
-    localStorage.setItem(DISMISS_KEY, "1");
-    setShow(false);
-  };
+  }, []);
 
   const install = async () => {
     if (!deferredPrompt) return;
+
     await deferredPrompt.prompt();
     const choice = await deferredPrompt.userChoice;
-    // Hide after user acts
+
     setShow(false);
     setDeferredPrompt(null);
 
-    // If dismissed, don’t annoy them again
-    if (choice.outcome === "dismissed") {
-      localStorage.setItem(DISMISS_KEY, "1");
+    if (choice.outcome === "accepted") {
+      writeJSON(INSTALLED_KEY, {
+        installedAt: Date.now(),
+        lastSeenStandaloneAt: Date.now(),
+      });
+      return;
     }
+
+    writeJSON(STATE_KEY, { dismissedUntil: addDays(SNOOZE_DAYS) });
+  };
+
+  const dismiss = () => {
+    writeJSON(STATE_KEY, { dismissedUntil: addDays(SNOOZE_DAYS) });
+    setShow(false);
   };
 
   if (!show) return null;
 
-  // If iOS Safari, show instructions (no programmatic prompt exists)
-  if (platform === "ios_safari") {
-    return (
-      <div className="fixed bottom-4 left-1/2 z-50 w-[min(520px,calc(100%-24px))] -translate-x-1/2">
-        <div className="rounded-2xl border border-slate-800 bg-slate-950/90 p-4 text-slate-200 shadow-xl backdrop-blur">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="text-sm font-semibold text-white">Install Havenly</div>
-              <div className="mt-1 text-sm text-slate-300">
-                To install on iPhone: tap <span className="font-semibold text-slate-100">Share</span> →{" "}
-                <span className="font-semibold text-slate-100">Add to Home Screen</span>.
-              </div>
-            </div>
-            <button
-              onClick={dismiss}
-              className="rounded-full border border-slate-700 bg-slate-900/40 px-3 py-1 text-xs text-slate-200 hover:bg-slate-900/70"
-            >
-              Dismiss
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Android/desktop prompt
   return (
-    <div className="fixed bottom-4 left-1/2 z-50 w-[min(520px,calc(100%-24px))] -translate-x-1/2">
-      <div className="rounded-2xl border border-slate-800 bg-slate-950/90 p-4 text-slate-200 shadow-xl backdrop-blur">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="text-sm font-semibold text-white">Install Havenly</div>
-            <div className="mt-1 text-sm text-slate-300">
-              Add Havenly to your home screen for a faster, full-screen experience.
-            </div>
-          </div>
+    <div className="fixed bottom-4 left-4 right-4 z-50 rounded-2xl border border-slate-800 bg-slate-950/95 p-4 shadow-xl backdrop-blur">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <p className="text-sm text-slate-200">
+          Install Havenly for a faster, full-screen experience.
+        </p>
 
-          <div className="flex gap-2">
-            <button
-              onClick={dismiss}
-              className="rounded-full border border-slate-700 bg-slate-900/40 px-4 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-900/70"
-            >
-              Not now
-            </button>
+        <div className="flex gap-2">
+          {isIOS ? (
+            <span className="text-xs text-slate-400">
+              Tap Share → Add to Home Screen
+            </span>
+          ) : (
             <button
               onClick={install}
-              className="rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:opacity-90"
+              className="rounded-full bg-emerald-500 px-4 py-1.5 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
             >
               Install
             </button>
-          </div>
+          )}
+
+          <button
+            onClick={dismiss}
+            className="rounded-full border border-slate-700 px-4 py-1.5 text-sm text-slate-300 hover:bg-slate-900"
+          >
+            Not now
+          </button>
         </div>
       </div>
     </div>
