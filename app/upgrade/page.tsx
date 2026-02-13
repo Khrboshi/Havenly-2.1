@@ -1,4 +1,5 @@
 import Link from "next/link";
+import UpgradeIntentTracker from "@/app/components/UpgradeIntentTracker";
 
 export const metadata = {
   title: "Premium — Coming Soon | Havenly",
@@ -7,6 +8,9 @@ export const metadata = {
 export default function UpgradePage() {
   return (
     <main className="mx-auto flex max-w-4xl flex-col gap-10 px-6 py-20 text-slate-200">
+      {/* Track that the user opened the upgrade page */}
+      <UpgradeIntentTracker source="upgrade-page" />
+
       <header className="space-y-3">
         <h1 className="text-3xl font-semibold text-white">Premium</h1>
         <p className="text-sm text-slate-400 max-w-2xl">
@@ -16,7 +20,6 @@ export default function UpgradePage() {
       </header>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Free */}
         <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-6">
           <h2 className="text-lg font-semibold text-white">Free</h2>
           <p className="mt-1 text-sm text-slate-400">
@@ -40,7 +43,6 @@ export default function UpgradePage() {
           </div>
         </div>
 
-        {/* Premium Coming Soon */}
         <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -71,7 +73,7 @@ export default function UpgradePage() {
             </button>
 
             <Link
-              href="/insights/preview"
+              href="/insights/preview?from=upgrade"
               className="inline-flex items-center justify-center rounded-full border border-slate-700 bg-slate-950/40 px-5 py-2.5 text-sm font-semibold text-slate-200 hover:bg-slate-900/60"
             >
               Preview Premium insights
@@ -85,8 +87,8 @@ export default function UpgradePage() {
       </div>
 
       <div className="text-xs text-slate-500">
-        If you’d like, keep the <span className="text-slate-300">Insights</span> preview
-        as the main “upgrade teaser” while checkout is disabled.
+        Keep the <span className="text-slate-300">Insights</span> preview as the main
+        “upgrade teaser” while checkout is disabled.
       </div>
     </main>
   );
