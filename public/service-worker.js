@@ -66,6 +66,11 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
+  // NEVER cache API responses (prevents cache poisoning / stale auth)
+  if (url.pathname.startsWith("/api/")) {
+    return;
+  }
+
   // 1) RSC payloads: separate cache
   if (isRSC(req, url)) {
     event.respondWith(
@@ -102,7 +107,9 @@ self.addEventListener("fetch", (event) => {
           return fresh;
         } catch {
           const cache = await caches.open(STATIC_CACHE);
-          const offline = await cache.match("/offline.html", { ignoreSearch: true });
+          const offline = await cache.match("/offline.html", {
+            ignoreSearch: true,
+          });
 
           if (offline) return offline;
 
