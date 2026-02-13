@@ -4,13 +4,15 @@ import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
 /**
- * Middleware responsibilities (Hardened):
+ * FINAL AUTH-SAFE MIDDLEWARE
+ *
+ * Responsibilities:
  * - Never run on /api
  * - Never run on Next static/runtime assets
- * - Never run on any static file request (anything with a file extension)
- * - Refresh Supabase auth cookies for page routes
- * - Enforce redirects ONLY for protected areas
- * - Do not interfere with auth callback / magic-link flow
+ * - Never run on static files
+ * - Refresh Supabase cookies silently
+ * - Enforce auth ONLY on protected routes
+ * - Never interfere with auth callback or magic login
  */
 
 const PUBLIC_PATHS = ["/", "/about", "/blog", "/privacy", "/premium", "/upgrade"];
@@ -31,7 +33,9 @@ function isPublicPath(pathname: string) {
 }
 
 function isAuthPath(pathname: string) {
-  return AUTH_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  return AUTH_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`)
+  );
 }
 
 function isProtectedPath(pathname: string) {
@@ -41,27 +45,23 @@ function isProtectedPath(pathname: string) {
 }
 
 function isStaticFile(pathname: string) {
-  // Any URL ending with ".ext" (png, svg, webmanifest/json, txt, xml, css, js, etc.)
   return /\.[^/]+$/.test(pathname);
 }
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // 1) Hard skips
+  // HARD SKIPS
   if (pathname.startsWith("/api")) return NextResponse.next();
   if (pathname.startsWith("/_next")) return NextResponse.next();
-
-  // Skip ALL static files (covers /pwa/*.png, /manifest.json, /offline.html, etc.)
   if (isStaticFile(pathname)) return NextResponse.next();
 
-  // 2) Create response + Supabase client
   const res = NextResponse.next();
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  // Fail safely: if env vars are missing, do not crash every page request
+  // Fail safe if env missing
   if (!supabaseUrl || !supabaseAnon) return res;
 
   const supabase = createServerClient(supabaseUrl, supabaseAnon, {
@@ -75,16 +75,17 @@ export async function middleware(req: NextRequest) {
     },
   });
 
-  // Refresh cookies (do not trust session.user for auth decisions)
+  // IMPORTANT:
+  // Refresh auth cookies but NEVER rely on session.user
   await supabase.auth.getSession();
 
-  // Never redirect on public/auth routes
+  // Never redirect on public or auth routes
   if (isPublicPath(pathname) || isAuthPath(pathname)) return res;
 
-  // Only enforce protection for protected routes
+  // Only protect specific prefixes
   if (!isProtectedPath(pathname)) return res;
 
-  // ✅ Verified auth decision (contacts Supabase Auth)
+  // VERIFIED auth decision
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -92,7 +93,12 @@ export async function middleware(req: NextRequest) {
   if (!user) {
     const redirectUrl = req.nextUrl.clone();
     redirectUrl.pathname = "/magic-login";
-    redirectUrl.searchParams.set("redirected", "1");
+
+    // Prevent redirect loops
+    if (!redirectUrl.searchParams.has("redirected")) {
+      redirectUrl.searchParams.set("redirected", "1");
+    }
+
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -101,10 +107,6 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    // Apply to all routes except:
-    // - /api
-    // - /_next
-    // - any path containing a dot-file extension (static files)
     "/((?!api|_next|.*\\..*).*)",
   ],
 };
