@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 
+type PlanType = "FREE" | "PREMIUM" | "TRIAL";
+
 type PlanState = {
   loading: boolean;
-  planType: "free" | "premium";
+  planType: PlanType;
   credits: number;
 };
 
@@ -14,7 +16,7 @@ export function useUserPlan() {
   const [state, setState] = useState<PlanState>(
     cachedPlan || {
       loading: true,
-      planType: "free",
+      planType: "FREE",
       credits: 0,
     }
   );
@@ -32,9 +34,16 @@ export function useUserPlan() {
 
         const data = await res.json();
 
+        const normalizedPlan: PlanType =
+          data?.plan === "premium"
+            ? "PREMIUM"
+            : data?.plan === "trial"
+            ? "TRIAL"
+            : "FREE";
+
         const next: PlanState = {
           loading: false,
-          planType: data?.plan === "premium" ? "premium" : "free",
+          planType: normalizedPlan,
           credits: typeof data?.credits === "number" ? data.credits : 0,
         };
 
@@ -44,7 +53,7 @@ export function useUserPlan() {
       } catch {
         const fallback: PlanState = {
           loading: false,
-          planType: "free",
+          planType: "FREE",
           credits: 0,
         };
 
