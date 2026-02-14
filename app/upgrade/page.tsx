@@ -1,19 +1,16 @@
 import Link from "next/link";
-import UpgradeIntentTracker from "@/app/components/UpgradeIntentTracker";
 import PreviewInsightsLink from "./PreviewInsightsLink";
+import UpgradeClient from "./UpgradeClient";
 
 export const metadata = {
   title: "Premium — Coming Soon | Havenly",
 };
 
-function Tracker() {
-  return <UpgradeIntentTracker source="upgrade-page" />;
-}
-
 export default function UpgradePage() {
   return (
     <main className="mx-auto flex max-w-4xl flex-col gap-10 px-6 py-20 text-slate-200">
-      <Tracker />
+      {/* Client-only tracker */}
+      <UpgradeClient />
 
       <header className="space-y-3">
         <h1 className="text-3xl font-semibold text-white">Premium</h1>
