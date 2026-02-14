@@ -1,47 +1,35 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 
-// If your project uses Supabase, keep these imports consistent with your repo.
-// Adjust the import path ONLY if your project already uses a different helper.
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import type { Database } from "@/types/supabase"; // if you don't have this file, remove Database typing
+export const runtime = "nodejs"; // safe default
 
 export async function POST(req: Request) {
   try {
-    const supabase = createRouteHandlerClient<Database>({ cookies });
-
-    // ✅ Optional auth (do NOT fail if not logged in)
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    // ✅ Optional body
+    // Best-effort parse (never fail)
     let body: any = {};
     try {
       body = await req.json();
     } catch {
-      // ignore empty/invalid JSON
+      body = {};
     }
 
     const source = typeof body?.source === "string" ? body.source : "upgrade-page";
 
-    // ✅ Best-effort insert (never block UX)
-    // Update table name/columns if your repo uses a different schema.
-    await supabase.from("telemetry_events").insert({
-      event: "upgrade_intent",
+    // Online-verifiable telemetry for now (Vercel Runtime Logs)
+    console.log("[telemetry] upgrade_intent", {
       source,
-      user_id: user?.id ?? null,
-      created_at: new Date().toISOString(),
+      ts: new Date().toISOString(),
+      ua: req.headers.get("user-agent") || null,
+      referer: req.headers.get("referer") || null,
     });
 
     return new NextResponse(null, { status: 204 });
   } catch {
-    // Never break the page because telemetry failed
+    // Never break the app because telemetry failed
     return new NextResponse(null, { status: 204 });
   }
 }
 
-// (Optional) prevent GET from being used in browser address bar
+// Make GET explicit (so typing the URL in the browser doesn't look "broken")
 export async function GET() {
   return NextResponse.json({ ok: true, note: "Use POST" }, { status: 200 });
 }
