@@ -1,13 +1,10 @@
-export async function trackUpgradeIntent(source: string) {
+export function track(event: string, data?: Record<string, any>) {
   try {
-    await fetch("/api/telemetry/upgrade-intent", {
+    fetch("/api/telemetry/upgrade-intent", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ source }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ event, data }),
+      keepalive: true,
     });
-  } catch {
-    // Never block UI
-  }
+  } catch {}
 }
