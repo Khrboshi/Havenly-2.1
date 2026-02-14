@@ -1,36 +1,20 @@
 "use client";
 
 import { useEffect } from "react";
+import { track } from "@/app/components/telemetry";
 
-type Props = {
-  source?: string;
-};
-
-const SESSION_KEY = "hvn_upgrade_intent_sent_v2";
-
-export default function UpgradeIntentTracker({ source }: Props) {
+export default function UpgradeIntentTracker({ source }: { source: string }) {
   useEffect(() => {
-    const src = source || "unknown";
-    const path =
-      typeof window !== "undefined"
-        ? `${window.location.pathname}${window.location.search}`
-        : "";
-
-    const key = `${SESSION_KEY}:${src}:${path}`;
-
-    try {
-      if (typeof window !== "undefined" && sessionStorage.getItem(key)) return;
-      if (typeof window !== "undefined") sessionStorage.setItem(key, "1");
-    } catch {
-      // ignore storage failures
-    }
-
-    fetch("/api/telemetry/upgrade-intent", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ source: src, path }),
-    }).catch(() => {});
+    // Fires once on page mount
+    track("upgrade_page_viewed", { source });
   }, [source]);
 
-  return null;
+  // DOM marker so we can confirm it mounted via Elements search
+  return (
+    <span
+      data-telemetry="upgrade-page"
+      data-source={source}
+      style={{ display: "none" }}
+    />
+  );
 }
