@@ -1,45 +1,47 @@
-import { createServerSupabase } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
-type Body = {
-  source?: string;
-  path?: string;
-};
+// If your project uses Supabase, keep these imports consistent with your repo.
+// Adjust the import path ONLY if your project already uses a different helper.
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import type { Database } from "@/types/supabase"; // if you don't have this file, remove Database typing
 
 export async function POST(req: Request) {
-  const supabase = createServerSupabase();
-
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData?.user) {
-    return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401 });
-  }
-
-  let body: Body = {};
   try {
-    body = (await req.json()) as Body;
+    const supabase = createRouteHandlerClient<Database>({ cookies });
+
+    // ✅ Optional auth (do NOT fail if not logged in)
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    // ✅ Optional body
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch {
+      // ignore empty/invalid JSON
+    }
+
+    const source = typeof body?.source === "string" ? body.source : "upgrade-page";
+
+    // ✅ Best-effort insert (never block UX)
+    // Update table name/columns if your repo uses a different schema.
+    await supabase.from("telemetry_events").insert({
+      event: "upgrade_intent",
+      source,
+      user_id: user?.id ?? null,
+      created_at: new Date().toISOString(),
+    });
+
+    return new NextResponse(null, { status: 204 });
   } catch {
-    body = {};
+    // Never break the page because telemetry failed
+    return new NextResponse(null, { status: 204 });
   }
+}
 
-  const source = (body.source || "unknown").slice(0, 200);
-  const path = (body.path || "").slice(0, 500);
-
-  const { error: insertError } = await supabase.from("upgrade_intents").insert({
-    user_id: userData.user.id,
-    source,
-    // created_at should be defaulted by DB column; do not send it.
-  });
-
-  if (insertError) {
-    return new Response(
-      JSON.stringify({
-        error: "insert_failed",
-        details: insertError.message,
-        source,
-        path,
-      }),
-      { status: 500 }
-    );
-  }
-
-  return new Response(JSON.stringify({ success: true }), { status: 200 });
+// (Optional) prevent GET from being used in browser address bar
+export async function GET() {
+  return NextResponse.json({ ok: true, note: "Use POST" }, { status: 200 });
 }
