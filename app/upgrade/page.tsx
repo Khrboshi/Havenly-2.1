@@ -1,6 +1,6 @@
 import Link from "next/link";
 import UpgradeIntentTracker from "@/app/components/UpgradeIntentTracker";
-import { track } from "@/app/components/telemetry";
+import PreviewInsightsLink from "./PreviewInsightsLink";
 
 export const metadata = {
   title: "Premium — Coming Soon | Havenly",
@@ -76,13 +76,7 @@ export default function UpgradePage() {
               Premium (coming soon)
             </button>
 
-            <Link
-              href="/insights/preview"
-              onClick={() => track("upgrade_preview_clicked")}
-              className="inline-flex items-center justify-center rounded-full border border-slate-700 bg-slate-950/40 px-5 py-2.5 text-sm font-semibold text-slate-200 hover:bg-slate-900/60"
-            >
-              Preview Premium insights
-            </Link>
+            <PreviewInsightsLink />
           </div>
 
           <p className="mt-4 text-xs text-slate-400">
