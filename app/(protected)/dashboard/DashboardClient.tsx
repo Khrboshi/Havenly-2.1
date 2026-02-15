@@ -42,6 +42,12 @@ function friendlyNameFromUser(user: any): string | null {
   return cleaned || null;
 }
 
+function buildNewEntryHref(prompt: string) {
+  const qs = new URLSearchParams();
+  qs.set("prompt", prompt);
+  return `/journal/new?${qs.toString()}`;
+}
+
 export default function DashboardClient({ userId }: DashboardClientProps) {
   const { supabase } = useSupabase();
   const { planType, credits, loading: planLoading } = useUserPlan();
@@ -55,7 +61,6 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   const readablePlan =
     planType === "PREMIUM" ? "Premium" : planType === "TRIAL" ? "Trial" : "Free";
 
-  // Keep existing behavior
   const canCreate =
     planType === "PREMIUM"
       ? true
@@ -65,7 +70,6 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
   const latestEntry = useMemo(() => entries[0] ?? null, [entries]);
 
-  // First-time logic: no entries yet
   const isFirstTime = !loadingEntries && entries.length === 0;
 
   const welcomeTitle = useMemo(() => {
@@ -74,13 +78,19 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     return isFirstTime ? `Welcome to Havenly${name}` : `Welcome back${name}`;
   }, [displayName, isFirstTime, loadingEntries, loadingName]);
 
-  // Warm, reflection-first microcopy (single prompt)
+  const promptText = useMemo(
+    () => "Take a moment — what feels present for you right now?",
+    []
+  );
+
   const welcomeSubtitle = useMemo(() => {
     if (loadingEntries) return null;
-    return "Take a moment — what feels present for you right now?";
-  }, [loadingEntries]);
+    return promptText;
+  }, [loadingEntries, promptText]);
 
-  const primaryHref = canCreate ? "/journal/new" : "/upgrade";
+  const newEntryHref = useMemo(() => buildNewEntryHref(promptText), [promptText]);
+
+  const primaryHref = canCreate ? newEntryHref : "/upgrade";
   const primaryLabel = canCreate
     ? isFirstTime
       ? "Start your first entry"
