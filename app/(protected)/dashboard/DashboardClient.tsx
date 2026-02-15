@@ -25,6 +25,21 @@ function titleOrUntitled(title: string | null) {
   return title?.trim() ? title : "Untitled entry";
 }
 
+function toNiceFirstName(input: string) {
+  const raw = (input || "").trim();
+  if (!raw) return "";
+  const first = raw.split(/\s+/)[0] || "";
+  const cleaned = first.replace(/[^a-zA-ZÀ-ž'-]/g, "");
+  if (!cleaned) return "";
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1).toLowerCase();
+}
+
+function nameFromEmail(email: string) {
+  const local = (email || "").split("@")[0] || "";
+  const token = local.split(/[._-]/)[0] || local;
+  return toNiceFirstName(token);
+}
+
 export default function DashboardClient({ userId }: DashboardClientProps) {
   const { supabase } = useSupabase();
   const { planType, credits, loading: planLoading } = useUserPlan();
@@ -32,10 +47,12 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loadingEntries, setLoadingEntries] = useState(true);
 
+  // ✅ User display name (best-effort, no new tables)
+  const [displayName, setDisplayName] = useState<string>("");
+
   const readablePlan =
     planType === "PREMIUM" ? "Premium" : planType === "TRIAL" ? "Trial" : "Free";
 
-  // Keep existing behavior:
   const canCreate =
     planType === "PREMIUM"
       ? true
@@ -45,10 +62,13 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
   const latestEntry = useMemo(() => entries[0] ?? null, [entries]);
 
-  // First-time logic (safe, no new tables): first time = no entries yet
   const isFirstTime = !loadingEntries && entries.length === 0;
 
-  const welcomeTitle = isFirstTime ? "Welcome to Havenly." : "Welcome back.";
+  const welcomeTitle = useMemo(() => {
+    const suffix = displayName ? `, ${displayName}` : "";
+    return isFirstTime ? `Welcome to Havenly${suffix}.` : `Welcome back${suffix}.`;
+  }, [displayName, isFirstTime]);
+
   const welcomeSubtitle = isFirstTime
     ? "Take a breath — what’s on your mind right now?"
     : "How are you feeling today?";
@@ -61,11 +81,9 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     : "Upgrade";
 
   const showCreditsChip = planType !== "PREMIUM";
-
   const showCreditsResetHint =
     planType !== "PREMIUM" && !planLoading && (credits ?? 0) === 0;
 
-  // Banner shown only when credits are 0 (and not premium)
   const showZeroCreditsBanner =
     !planLoading && planType !== "PREMIUM" && (credits ?? 0) === 0;
 
@@ -83,9 +101,36 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     setLoadingEntries(false);
   }, [supabase, userId]);
 
+  const loadDisplayName = useCallback(async () => {
+    const { data, error } = await supabase.auth.getUser();
+    if (error) return;
+
+    const user = data?.user;
+    if (!user) return;
+
+    const meta: any = user.user_metadata || {};
+    const full =
+      typeof meta.full_name === "string"
+        ? meta.full_name
+        : typeof meta.name === "string"
+        ? meta.name
+        : "";
+
+    const fromMeta = toNiceFirstName(full);
+    if (fromMeta) {
+      setDisplayName(fromMeta);
+      return;
+    }
+
+    const email = typeof user.email === "string" ? user.email : "";
+    const fromEmail = nameFromEmail(email);
+    if (fromEmail) setDisplayName(fromEmail);
+  }, [supabase]);
+
   useEffect(() => {
     loadEntries();
-  }, [loadEntries]);
+    loadDisplayName();
+  }, [loadEntries, loadDisplayName]);
 
   return (
     <div className="mx-auto max-w-6xl px-6 pt-24 pb-20 text-slate-200">
@@ -132,7 +177,6 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {/* Only show resume when we actually have an entry */}
           {latestEntry && (
             <Link
               href={`/journal/${latestEntry.id}`}
