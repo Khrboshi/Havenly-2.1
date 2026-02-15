@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSupabase } from "@/components/SupabaseSessionProvider";
 import { useUserPlan } from "@/app/components/useUserPlan";
 
@@ -21,20 +21,15 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
 
-  const readablePlan = useMemo(() => {
-    if (planType === "PREMIUM") return "Premium";
-    if (planType === "TRIAL") return "Trial";
-    return "Free";
-  }, [planType]);
+  const readablePlan =
+    planType === "PREMIUM" ? "Premium" : planType === "TRIAL" ? "Trial" : "Free";
 
   const canCreate =
     planType === "PREMIUM" ? true : (credits ?? 0) > 0 || planType === "TRIAL";
 
   const loadEntries = useCallback(async () => {
     setLoading(true);
-    setLoadError(null);
 
     const { data, error } = await supabase
       .from("journal_entries")
@@ -43,14 +38,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
       .order("created_at", { ascending: false })
       .limit(5);
 
-    if (error) {
-      setEntries([]);
-      setLoadError(error.message);
-      setLoading(false);
-      return;
-    }
-
-    setEntries((data as JournalEntry[]) || []);
+    if (!error) setEntries((data as JournalEntry[]) || []);
     setLoading(false);
   }, [supabase, userId]);
 
@@ -60,30 +48,21 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
   return (
     <div className="mx-auto max-w-5xl px-6 pt-24 pb-20 text-slate-200">
-      {/* Top section */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-10">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-10">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight mb-2">
             Dashboard
           </h1>
-
           <p className="text-slate-400">
             Welcome back. Your plan:{" "}
             <span className="text-slate-200">{readablePlan}</span>
             {!planLoading && planType !== "PREMIUM" ? (
               <>
                 {" "}
-                — credits:{" "}
-                <span className="text-slate-200">{credits ?? 0}</span>
+                — credits: <span className="text-slate-200">{credits ?? 0}</span>
               </>
             ) : null}
           </p>
-
-          {!planLoading && !canCreate ? (
-            <p className="text-sm text-amber-300/90 mt-2">
-              You’re out of credits. Upgrade to keep generating reflections.
-            </p>
-          ) : null}
         </div>
 
         <div className="flex items-center gap-3">
@@ -107,7 +86,6 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         </div>
       </div>
 
-      {/* Recent entries */}
       <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">Recent entries</h2>
@@ -121,18 +99,20 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
         {loading ? (
           <p className="text-slate-400">Loading your entries…</p>
-        ) : loadError ? (
-          <div className="text-slate-300">
-            <p className="text-rose-300">Couldn’t load entries: {loadError}</p>
-            <button
-              onClick={loadEntries}
-              className="mt-3 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm hover:bg-white/10"
-            >
-              Retry
-            </button>
-          </div>
         ) : entries.length === 0 ? (
-          <p className="text-slate-400">No entries yet. Create your first one.</p>
+          <div className="text-slate-400">
+            <p className="mb-3">No entries yet. Create your first one.</p>
+            <Link
+              href={canCreate ? "/journal/new" : "/upgrade"}
+              className={`inline-flex rounded-md px-4 py-2 text-sm font-medium ${
+                canCreate
+                  ? "bg-emerald-500 text-black hover:bg-emerald-400"
+                  : "bg-white/10 text-slate-300 hover:bg-white/15"
+              }`}
+            >
+              {canCreate ? "Create entry" : "Upgrade to create"}
+            </Link>
+          </div>
         ) : (
           <ul className="divide-y divide-white/10">
             {entries.map((e) => (
@@ -142,12 +122,9 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                     {e.title?.trim() ? e.title : "Untitled entry"}
                   </p>
                   <p className="text-xs text-slate-400">
-                    {e.created_at
-                      ? new Date(e.created_at).toLocaleString()
-                      : "—"}
+                    {new Date(e.created_at).toLocaleString()}
                   </p>
                 </div>
-
                 <Link
                   href={`/journal/${e.id}`}
                   className="text-sm text-emerald-400 hover:text-emerald-300"
