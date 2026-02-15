@@ -27,29 +27,42 @@ export default function JournalForm(_props: Props) {
   // Only prefill once (prevents overwriting user typing on re-renders)
   const didPrefillRef = useRef(false);
 
+  const qpPrompt = useMemo(
+    () => safeSlice(searchParams.get("prompt") ?? "", 2000),
+    [searchParams]
+  );
+
+  const qpTitle = useMemo(
+    () => safeSlice(searchParams.get("title") ?? "", 120),
+    [searchParams]
+  );
+
+  const qpMood = useMemo(
+    () => safeSlice(searchParams.get("mood") ?? "", 32),
+    [searchParams]
+  );
+
+  // Use prompt as placeholder when provided (and content is empty)
+  const contentPlaceholder = useMemo(() => {
+    if (qpPrompt) return qpPrompt;
+    return "How are you feeling today?";
+  }, [qpPrompt]);
+
   useEffect(() => {
     if (didPrefillRef.current) return;
 
-    const qpTitle = safeSlice(searchParams.get("title") ?? "", 120);
-    const qpPrompt = safeSlice(searchParams.get("prompt") ?? "", 2000);
-    const qpMood = safeSlice(searchParams.get("mood") ?? "", 32);
-
-    // Build sensible defaults
-    const nextTitle =
-      qpTitle || (qpMood ? `Mood: ${qpMood}` : "");
+    const nextTitle = qpTitle || (qpMood ? `Mood: ${qpMood}` : "");
 
     const nextContent =
       qpPrompt ||
-      (qpMood
-        ? `Right now I’m feeling ${qpMood}.\n\n`
-        : "");
+      (qpMood ? `Right now I’m feeling ${qpMood}.\n\n` : "");
 
     // Only set if user hasn't typed yet (extra-safe)
     setTitle((prev) => (prev.trim() ? prev : nextTitle));
     setContent((prev) => (prev.trim() ? prev : nextContent));
 
     didPrefillRef.current = true;
-  }, [searchParams]);
+  }, [qpTitle, qpPrompt, qpMood]);
 
   const canSave = useMemo(
     () => content.trim().length > 0 && status !== "saving",
@@ -72,9 +85,7 @@ export default function JournalForm(_props: Props) {
     try {
       const res = await fetch("/api/journal/create", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: title.trim() || null,
           content: contentTrimmed,
@@ -130,7 +141,7 @@ export default function JournalForm(_props: Props) {
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="How are you feeling today?"
+            placeholder={contentPlaceholder}
             className="mt-3 w-full min-h-[180px] rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/40 outline-none focus:border-white/20 focus:bg-white/[0.07]"
           />
         </div>
