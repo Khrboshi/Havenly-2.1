@@ -1,60 +1,40 @@
-// app/(protected)/journal/[id]/page.tsx
-import { redirect } from "next/navigation";
-import JournalEntryClient from "./JournalEntryClient";
 import { createServerSupabase } from "@/lib/supabase/server";
+import JournalEntryClient from "./JournalEntryClient";
 
-export const dynamic = "force-dynamic";
-
-type JournalEntryRow = {
-  id: string;
-  title: string | null;
-  content: string;
-  created_at: string;
-  ai_response: string | null;
-};
-
-export default async function Page({ params }: { params: { id: string } }) {
+export default async function Page({
+  params,
+}: {
+  params: { id: string };
+}) {
   const supabase = await createServerSupabase();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user?.id) redirect("/login");
-
-  const { data, error } = await supabase
+  const { data: entry } = await supabase
     .from("journal_entries")
     .select("id,title,content,created_at,ai_response")
     .eq("id", params.id)
-    .eq("user_id", user.id)
-    .maybeSingle<JournalEntryRow>();
+    .maybeSingle();
 
-  if (error) {
-    // Keep it simple; you can replace with a nicer error UI later
-    throw new Error("Failed to load entry");
+  if (!entry) {
+    return (
+      <div className="p-10 text-white">
+        Entry not found
+      </div>
+    );
   }
 
-  if (!data?.id) {
-    redirect("/journal");
-  }
+  let initialReflection = null;
 
-  let initialReflection: any = null;
-  if (data.ai_response) {
-    try {
-      initialReflection = JSON.parse(data.ai_response);
-    } catch {
-      initialReflection = null;
-    }
+  try {
+    initialReflection = entry.ai_response
+      ? JSON.parse(entry.ai_response)
+      : null;
+  } catch {
+    initialReflection = null;
   }
 
   return (
     <JournalEntryClient
-      entry={{
-        id: data.id,
-        title: data.title,
-        content: data.content,
-        created_at: data.created_at,
-      }}
+      entry={entry}
       initialReflection={initialReflection}
     />
   );
