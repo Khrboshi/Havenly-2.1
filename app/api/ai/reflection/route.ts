@@ -43,10 +43,7 @@ function isNoCreditsError(msg: string) {
   );
 }
 
-async function consumeOneCredit(
-  supabase: any,
-  userId: string
-): Promise<ConsumeResult> {
+async function consumeOneCredit(supabase: any, userId: string): Promise<ConsumeResult> {
   let rpcData: any = null;
   let rpcErr: any = null;
 
@@ -82,9 +79,7 @@ async function consumeOneCredit(
 
   const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
   const remaining =
-    row && typeof row.remaining_credits === "number"
-      ? (row.remaining_credits as number)
-      : null;
+    row && typeof row.remaining_credits === "number" ? (row.remaining_credits as number) : null;
 
   if (remaining === null) {
     return { ok: false, status: 402, error: "Reflection limit reached" };
@@ -96,7 +91,6 @@ async function consumeOneCredit(
 export async function POST(req: Request) {
   const supabase = await createServerSupabase();
 
-  // Auth
   const {
     data: { user },
     error: userErr,
@@ -108,7 +102,6 @@ export async function POST(req: Request) {
 
   const userId = user.id;
 
-  // Body
   const body = await req.json().catch(() => ({}));
 
   const entryId = typeof body?.entryId === "string" ? body.entryId.trim() : "";
@@ -130,22 +123,8 @@ export async function POST(req: Request) {
     );
   }
 
-  // Ensure the entry belongs to this user (RLS-safe check)
-  const { data: entryRow, error: entryErr } = await supabase
-    .from("journal_entries")
-    .select("id")
-    .eq("id", entryId)
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (entryErr || !entryRow) {
-    return NextResponse.json({ error: "Entry not found" }, { status: 404 });
-  }
-
-  // Ensure monthly reset / row provisioning
   await ensureCreditsFresh({ supabase, userId });
 
-  // Plan
   const { data: creditsRow } = await supabase
     .from("user_credits")
     .select("plan_type")
@@ -155,23 +134,16 @@ export async function POST(req: Request) {
   const planType = normalizePlan((creditsRow as any)?.plan_type);
   const isUnlimited = planType === "PREMIUM" || planType === "TRIAL";
 
-  // Consume ONLY for FREE
   let remainingAfterConsume: number | null = null;
 
   if (!isUnlimited) {
     const consumed = await consumeOneCredit(supabase, userId);
-
     if (isConsumeFail(consumed)) {
-      return NextResponse.json(
-        { error: consumed.error },
-        { status: consumed.status }
-      );
+      return NextResponse.json({ error: consumed.error }, { status: consumed.status });
     }
-
     remainingAfterConsume = consumed.remaining;
   }
 
-  // Generate + SAVE into journal_entries.ai_response
   try {
     const reflection = await generateReflectionFromEntry({
       content,
@@ -179,26 +151,15 @@ export async function POST(req: Request) {
       plan: planType === "PREMIUM" || planType === "TRIAL" ? "PREMIUM" : "FREE",
     });
 
-    const { error: saveErr } = await supabase
+    // ✅ Optional but recommended: persist reflection on the entry
+    await supabase
       .from("journal_entries")
-      .update({
-        ai_response: JSON.stringify(reflection),
-      } as any)
+      .update({ ai_response: JSON.stringify(reflection) })
       .eq("id", entryId)
       .eq("user_id", userId);
 
-    if (saveErr) {
-      return NextResponse.json(
-        { error: "Generated reflection but failed to save." },
-        { status: 500 }
-      );
-    }
-
     return NextResponse.json(
-      {
-        reflection,
-        remainingCredits: isUnlimited ? null : remainingAfterConsume,
-      },
+      { reflection, remainingCredits: isUnlimited ? null : remainingAfterConsume },
       { headers: { "Cache-Control": "no-store, max-age=0" } }
     );
   } catch (err) {
@@ -219,9 +180,6 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json(
-      { error: "Failed to generate reflection" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to generate reflection" }, { status: 500 });
   }
 }
