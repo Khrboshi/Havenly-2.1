@@ -57,23 +57,27 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [loadingName, setLoadingName] = useState(true);
 
+  // Writing is always allowed for an authenticated user.
+  const canWrite = true;
+
+  // AI reflections are gated by plan/credits.
+  const canReflect =
+    planType === "PREMIUM" || planType === "TRIAL" || (credits ?? 0) > 0;
+
+  const showUpgrade =
+    !planLoading && planType !== "PREMIUM" && !canReflect;
+
   const readablePlan =
     planType === "PREMIUM" ? "Premium" : planType === "TRIAL" ? "Trial" : "Free";
 
-  // Writing is always allowed (your UI says “You can still journal anytime”).
-  const canWrite = true;
-
-  // Reflect/AI credits gating (premium/trial/until credits > 0)
-  const canReflect =
-    planType === "PREMIUM" ? true : planType === "TRIAL" ? true : (credits ?? 0) > 0;
-
-  const isFirstTime = !loadingEntries && entries.length === 0;
   const latestEntry = useMemo(() => entries[0] ?? null, [entries]);
+  const isFirstTime = !loadingEntries && entries.length === 0;
 
-  const promptText = useMemo(
-    () => "Take a moment — what feels present for you right now?",
-    []
-  );
+  const promptText = useMemo(() => {
+    return isFirstTime
+      ? "In one sentence, what brought you here today?"
+      : "Take a moment — what feels present for you right now?";
+  }, [isFirstTime]);
 
   const newEntryHref = useMemo(() => buildNewEntryHref(promptText), [promptText]);
 
@@ -83,16 +87,12 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     return isFirstTime ? `Welcome to Havenly${name}` : `Welcome back${name}`;
   }, [displayName, isFirstTime, loadingEntries, loadingName]);
 
-  const welcomeSubtitle = useMemo(() => {
-    if (loadingEntries) return null;
-    return promptText;
-  }, [loadingEntries, promptText]);
-
   const showCreditsChip = planType !== "PREMIUM";
-  const showCreditsResetHint =
-    planType !== "PREMIUM" && !planLoading && !canReflect;
 
-  const isReflectionsPaused = !planLoading && planType !== "PREMIUM" && !canReflect;
+  const showCreditsResetHint =
+    planType !== "PREMIUM" &&
+    !planLoading &&
+    (credits ?? 0) === 0;
 
   const loadEntries = useCallback(async () => {
     setLoadingEntries(true);
@@ -126,9 +126,6 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     loadDisplayName();
   }, [loadDisplayName]);
 
-  const showOpenLastEntry = !!latestEntry;
-  const showViewJournal = !loadingEntries && entries.length > 0;
-
   return (
     <div className="mx-auto max-w-6xl px-6 pt-24 pb-20 text-slate-200">
       {/* Header */}
@@ -136,21 +133,16 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         <div className="space-y-2">
           <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
 
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-sm text-slate-400">
+          <div className="text-sm text-slate-400">
             <span className="text-slate-100">{welcomeTitle}</span>
           </div>
 
-          {welcomeSubtitle && (
-            <p className="text-sm text-slate-400">{welcomeSubtitle}</p>
-          )}
+          <p className="text-sm text-slate-400">{promptText}</p>
 
           <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-sm text-slate-400">
-            <Link
-              href={planType === "PREMIUM" ? "/dashboard" : "/upgrade"}
-              className="rounded-full border border-white/10 bg-white/5 px-3 py-1 hover:bg-white/10"
-            >
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
               Plan: <span className="text-slate-200">{readablePlan}</span>
-            </Link>
+            </span>
 
             {showCreditsChip && (
               <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
@@ -173,8 +165,9 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           )}
         </div>
 
+        {/* Minimal, non-duplicated CTAs */}
         <div className="flex flex-wrap items-center gap-3">
-          {showOpenLastEntry && latestEntry && (
+          {latestEntry && (
             <Link
               href={`/journal/${latestEntry.id}`}
               className="rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
@@ -183,29 +176,17 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             </Link>
           )}
 
-          {showViewJournal && (
-            <Link
-              href="/journal"
-              className="rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
-            >
-              View Journal
-            </Link>
-          )}
-
-          {/* Primary action (single) */}
-          {canWrite && (
-            <Link
-              href={newEntryHref}
-              className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
-            >
-              Start writing
-            </Link>
-          )}
+          <Link
+            href={newEntryHref}
+            className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
+          >
+            Start writing
+          </Link>
         </div>
       </div>
 
-      {/* Reflections paused banner (single Upgrade location) */}
-      {isReflectionsPaused && (
+      {/* One upgrade surface (only here) */}
+      {showUpgrade && (
         <div className="mb-8 flex flex-col gap-3 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-medium text-amber-200">
@@ -228,15 +209,21 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
       {/* Cards */}
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-400">Entries shown</p>
+          <p className="text-xs uppercase tracking-wide text-slate-400">
+            Entries shown
+          </p>
           <p className="mt-2 text-2xl font-semibold text-slate-100">
             {loadingEntries ? "…" : `${entries.length} / 5`}
           </p>
-          <p className="mt-1 text-sm text-slate-400">Latest entries on your account</p>
+          <p className="mt-1 text-sm text-slate-400">
+            Latest entries on your account
+          </p>
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-400">Last entry</p>
+          <p className="text-xs uppercase tracking-wide text-slate-400">
+            Last entry
+          </p>
           <p className="mt-2 text-base font-semibold text-slate-100">
             {loadingEntries
               ? "Loading…"
@@ -254,33 +241,18 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-400">Next step</p>
-
+          <p className="text-xs uppercase tracking-wide text-slate-400">
+            Next step
+          </p>
           <p className="mt-2 text-base font-semibold text-slate-100">
-            {canWrite ? "Write a new entry" : "—"}
+            Write a new entry
           </p>
           <p className="mt-1 text-sm text-slate-400">
-            {canWrite
-              ? "A short check-in is enough."
-              : ""}
+            A short check-in is enough.
+            {!canReflect ? " AI reflections are paused until credits reset." : ""}
           </p>
 
-          {canWrite && (
-            <div className="mt-3">
-              <Link
-                href={newEntryHref}
-                className="inline-flex rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
-              >
-                Start writing
-              </Link>
-            </div>
-          )}
-
-          {!canReflect && (
-            <p className="mt-3 text-xs text-slate-500">
-              AI reflections are paused until credits reset or you upgrade.
-            </p>
-          )}
+          {/* No duplicate button here (header already has primary CTA) */}
         </div>
       </div>
 
@@ -309,19 +281,12 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
               Create your first entry to start building momentum.
             </p>
 
-            <div className="mt-4 flex flex-wrap gap-3">
+            <div className="mt-4">
               <Link
                 href={newEntryHref}
                 className="inline-flex rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
               >
                 Start writing
-              </Link>
-
-              <Link
-                href="/journal"
-                className="inline-flex rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
-              >
-                Browse journal
               </Link>
             </div>
           </div>
