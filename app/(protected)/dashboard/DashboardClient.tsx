@@ -38,7 +38,6 @@ function friendlyNameFromUser(user: any): string | null {
   const raw = candidates[0] ? String(candidates[0]).trim() : "";
   if (!raw) return null;
 
-  // Keep it short and safe for UI
   const cleaned = raw.replace(/\s+/g, " ").slice(0, 24);
   return cleaned || null;
 }
@@ -58,11 +57,15 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
   // Keep existing behavior
   const canCreate =
-    planType === "PREMIUM" ? true : planType === "TRIAL" ? true : (credits ?? 0) > 0;
+    planType === "PREMIUM"
+      ? true
+      : planType === "TRIAL"
+      ? true
+      : (credits ?? 0) > 0;
 
   const latestEntry = useMemo(() => entries[0] ?? null, [entries]);
 
-  // First-time logic: first time = no entries yet (no new tables)
+  // First-time logic: no entries yet
   const isFirstTime = !loadingEntries && entries.length === 0;
 
   const welcomeTitle = useMemo(() => {
@@ -71,21 +74,23 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     return isFirstTime ? `Welcome to Havenly${name}` : `Welcome back${name}`;
   }, [displayName, isFirstTime, loadingEntries, loadingName]);
 
-  // Warm, reflection-first microcopy (quick prompt increases activation)
+  // Warm, reflection-first microcopy (single prompt)
   const welcomeSubtitle = useMemo(() => {
     if (loadingEntries) return null;
-    if (isFirstTime) return "Take a breath — what’s on your mind right now?";
-    return "How are you feeling today?";
-  }, [isFirstTime, loadingEntries]);
+    return "Take a moment — what feels present for you right now?";
+  }, [loadingEntries]);
 
   const primaryHref = canCreate ? "/journal/new" : "/upgrade";
-  const primaryLabel = canCreate ? (isFirstTime ? "Start your first entry" : "New entry") : "Upgrade";
+  const primaryLabel = canCreate
+    ? isFirstTime
+      ? "Start your first entry"
+      : "New entry"
+    : "Upgrade";
 
   const showCreditsChip = planType !== "PREMIUM";
   const showCreditsResetHint =
     planType !== "PREMIUM" && !planLoading && (credits ?? 0) === 0;
 
-  // Banner shown only when credits are 0 (and not premium)
   const showZeroCreditsBanner =
     !planLoading && planType !== "PREMIUM" && (credits ?? 0) === 0;
 
@@ -132,10 +137,12 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
 
           <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-sm text-slate-400">
-            <span>{welcomeTitle}</span>
+            <span className="text-slate-100">{welcomeTitle}</span>
           </div>
 
-          {welcomeSubtitle && <p className="text-sm text-slate-400">{welcomeSubtitle}</p>}
+          {welcomeSubtitle && (
+            <p className="text-sm text-slate-400">{welcomeSubtitle}</p>
+          )}
 
           <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-sm text-slate-400">
             <Link
@@ -223,15 +230,21 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
       {/* Stats */}
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-400">Entries shown</p>
+          <p className="text-xs uppercase tracking-wide text-slate-400">
+            Entries shown
+          </p>
           <p className="mt-2 text-2xl font-semibold text-slate-100">
             {loadingEntries ? "…" : `${entries.length} / 5`}
           </p>
-          <p className="mt-1 text-sm text-slate-400">Latest entries on your account</p>
+          <p className="mt-1 text-sm text-slate-400">
+            Latest entries on your account
+          </p>
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-400">Last entry</p>
+          <p className="text-xs uppercase tracking-wide text-slate-400">
+            Last entry
+          </p>
           <p className="mt-2 text-base font-semibold text-slate-100">
             {loadingEntries
               ? "Loading…"
@@ -249,13 +262,19 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-400">Next step</p>
+          <p className="text-xs uppercase tracking-wide text-slate-400">
+            Next step
+          </p>
+
           <p className="mt-2 text-base font-semibold text-slate-100">
-            {canCreate ? "Write a quick check-in" : "Unlock more reflections"}
+            {canCreate ? "Continue your journal" : "Upgrade available"}
           </p>
           <p className="mt-1 text-sm text-slate-400">
-            {canCreate ? "Keep momentum with a short entry." : "Upgrade for unlimited use and insights."}
+            {canCreate
+              ? "Pick up where you left off."
+              : "Unlock unlimited reflections and insights."}
           </p>
+
           <div className="mt-3">
             <Link
               href={primaryHref}
