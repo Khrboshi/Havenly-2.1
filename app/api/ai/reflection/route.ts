@@ -112,8 +112,14 @@ export async function POST(req: Request) {
 
   // Parse body safely
   const body = await req.json().catch(() => ({}));
+
+  const entryId = typeof body?.entryId === "string" ? body.entryId.trim() : "";
   const content = typeof body?.content === "string" ? body.content.trim() : "";
   const title = typeof body?.title === "string" ? body.title.trim() : "";
+
+  if (!entryId) {
+    return NextResponse.json({ error: "Missing entryId" }, { status: 400 });
+  }
 
   if (!content) {
     return NextResponse.json({ error: "Missing content" }, { status: 400 });
@@ -124,6 +130,22 @@ export async function POST(req: Request) {
       { error: "Entry too long. Please shorten it a bit." },
       { status: 413 }
     );
+  }
+
+  // ✅ Verify entry belongs to this user
+  const { data: entryRow, error: entryErr } = await supabase
+    .from("journal_entries")
+    .select("id")
+    .eq("id", entryId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (entryErr) {
+    return NextResponse.json({ error: "Failed to load entry" }, { status: 500 });
+  }
+
+  if (!entryRow?.id) {
+    return NextResponse.json({ error: "Entry not found" }, { status: 404 });
   }
 
   // ✅ Ensure monthly reset / row provisioning
@@ -145,7 +167,6 @@ export async function POST(req: Request) {
   if (!isUnlimited) {
     const consumed = await consumeOneCredit(supabase, userId);
 
-    // ✅ Type-guard makes TS 100% happy
     if (isConsumeFail(consumed)) {
       return NextResponse.json(
         { error: consumed.error },
@@ -161,9 +182,26 @@ export async function POST(req: Request) {
     const reflection = await generateReflectionFromEntry({
       content,
       title,
-      // TRIAL behaves like PREMIUM quality
       plan: planType === "PREMIUM" || planType === "TRIAL" ? "PREMIUM" : "FREE",
     });
+
+    // ✅ Persist reflection to Supabase
+    const { error: saveErr } = await supabase
+      .from("journal_entries")
+      .update({
+        ai_response: JSON.stringify(reflection),
+        updated_at: new Date().toISOString(),
+      } as any)
+      .eq("id", entryId)
+      .eq("user_id", userId);
+
+    if (saveErr) {
+      console.error("Failed to save reflection:", saveErr);
+      return NextResponse.json(
+        { error: "Reflection generated but failed to save" },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(
       {
