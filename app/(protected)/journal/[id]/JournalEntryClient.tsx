@@ -1,4 +1,3 @@
-// app/(protected)/journal/[id]/JournalEntryClient.tsx
 "use client";
 
 import Link from "next/link";
@@ -15,7 +14,7 @@ type JournalEntry = {
 
 type Reflection = {
   summary: string;
-  core_pattern?: string; // ✅ NEW
+  core_pattern?: string;
   themes: string[];
   emotions: string[];
   gentle_next_step: string;
@@ -26,12 +25,10 @@ function pickKeyPatternFromSummary(summary: string): string {
   const s = (summary || "").trim();
   if (!s) return "";
 
-  // Prefer the first sentence as the "key pattern"
   const m = s.match(/^(.+?[.!?])(\s|$)/);
   const firstSentence = m?.[1]?.trim() ?? "";
   const candidate = firstSentence.length >= 40 ? firstSentence : s;
 
-  // Keep it punchy
   return candidate.length > 180 ? candidate.slice(0, 177).trim() + "…" : candidate;
 }
 
@@ -41,12 +38,23 @@ function questionsHeading(count: number): string {
   return `${count} questions`;
 }
 
-export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
+export default function JournalEntryClient({
+  entry,
+  initialReflection,
+}: {
+  entry: JournalEntry;
+  initialReflection?: Reflection | null;
+}) {
   const { planType, credits, loading, refresh } = useUserPlan();
   const isPremium = planType === "PREMIUM";
 
   const [busy, setBusy] = useState(false);
-  const [reflection, setReflection] = useState<Reflection | null>(null);
+
+  // ✅ initialize from server-provided reflection (persist on refresh)
+  const [reflection, setReflection] = useState<Reflection | null>(
+    initialReflection ?? null
+  );
+
   const [error, setError] = useState<string | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
 
@@ -56,7 +64,6 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
     return "Free";
   }, [planType]);
 
-  // ✅ Prefer core_pattern (from model). Fallback to summary-based extraction.
   const keyPattern = useMemo(() => {
     const core = (reflection?.core_pattern || "").trim();
     if (core) return core;
@@ -86,7 +93,6 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
         }),
       });
 
-      // 🔒 SERVER IS THE ONLY GATE
       if (res.status === 402) {
         setShowUpgrade(true);
         return;
@@ -101,7 +107,6 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
       const j = await res.json();
       setReflection(j?.reflection || null);
 
-      // sync credits AFTER server consumption
       await refresh();
     } catch {
       setError("We couldn't generate a reflection right now.");
@@ -169,12 +174,10 @@ export default function JournalEntryClient({ entry }: { entry: JournalEntry }) {
           </p>
         ) : (
           <div className="mt-5 space-y-4 text-sm text-white/80">
-            {/* Summary */}
             <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
               <p className="text-white/90">{reflection.summary}</p>
             </div>
 
-            {/* Key Pattern Detected */}
             {keyPattern && (
               <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-white/70">
