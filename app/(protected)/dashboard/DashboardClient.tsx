@@ -60,7 +60,13 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   const readablePlan =
     planType === "PREMIUM" ? "Premium" : planType === "TRIAL" ? "Trial" : "Free";
 
-  const canCreate =
+  // ✅ Recommended model:
+  // - Writing entries is ALWAYS allowed (even when credits = 0)
+  // - Credits gate ONLY AI reflections (elsewhere in the app)
+  const canWrite = true;
+
+  // Reflections availability (credits-based)
+  const canReflect =
     planType === "PREMIUM"
       ? true
       : planType === "TRIAL"
@@ -68,7 +74,6 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
       : (credits ?? 0) > 0;
 
   const latestEntry = useMemo(() => entries[0] ?? null, [entries]);
-
   const isFirstTime = !loadingEntries && entries.length === 0;
 
   const promptText = useMemo(
@@ -76,7 +81,10 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     []
   );
 
-  const newEntryHref = useMemo(() => buildNewEntryHref(promptText), [promptText]);
+  const newEntryHref = useMemo(
+    () => buildNewEntryHref(promptText),
+    [promptText]
+  );
 
   const welcomeTitle = useMemo(() => {
     if (loadingEntries || loadingName) return "Welcome";
@@ -130,8 +138,10 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
   // Header CTAs (avoid duplication)
   const showOpenLastEntry = !!latestEntry;
-  const showViewJournal = entries.length > 0; // show only when it’s useful
-  const showUpgrade = !canCreate && planType !== "PREMIUM"; // one place only
+  const showViewJournal = entries.length > 0; // only when useful
+
+  // Show Upgrade in ONE place only (header) and only when reflections are locked
+  const showUpgrade = !canReflect && planType !== "PREMIUM";
 
   return (
     <div className="mx-auto max-w-6xl px-6 pt-24 pb-20 text-slate-200">
@@ -199,33 +209,36 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             </Link>
           )}
 
-          {/* Single primary action */}
-          {canCreate ? (
+          {/* ✅ Primary action: always visible */}
+          {canWrite && (
             <Link
               href={newEntryHref}
               className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
             >
               Start writing
             </Link>
-          ) : showUpgrade ? (
+          )}
+
+          {/* ✅ Upgrade shown once (only when reflections locked) */}
+          {showUpgrade && (
             <Link
               href="/upgrade"
               className="rounded-md bg-amber-400 px-4 py-2 text-sm font-semibold text-black hover:bg-amber-300"
             >
               Upgrade
             </Link>
-          ) : null}
+          )}
         </div>
       </div>
 
-      {/* Zero credits info (no button, avoids duplication) */}
+      {/* Zero credits info (no button to avoid duplication) */}
       {isZeroCredits && (
         <div className="mb-8 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4">
           <p className="text-sm font-medium text-amber-200">
-            You’ve used your reflections for now.
+            You’ve used your AI reflections for now.
           </p>
           <p className="text-xs text-amber-300/80">
-            Credits reset next month.
+            You can still journal anytime. Credits reset next month.
           </p>
         </div>
       )}
@@ -239,11 +252,15 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           <p className="mt-2 text-2xl font-semibold text-slate-100">
             {loadingEntries ? "…" : `${entries.length} / 5`}
           </p>
-          <p className="mt-1 text-sm text-slate-400">Latest entries on your account</p>
+          <p className="mt-1 text-sm text-slate-400">
+            Latest entries on your account
+          </p>
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-400">Last entry</p>
+          <p className="text-xs uppercase tracking-wide text-slate-400">
+            Last entry
+          </p>
           <p className="mt-2 text-base font-semibold text-slate-100">
             {loadingEntries
               ? "Loading…"
@@ -261,26 +278,30 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-400">Next step</p>
+          <p className="text-xs uppercase tracking-wide text-slate-400">
+            Next step
+          </p>
 
           <p className="mt-2 text-base font-semibold text-slate-100">
-            {canCreate ? "Write a new entry" : "Credits used for now"}
+            Write a new entry
           </p>
           <p className="mt-1 text-sm text-slate-400">
-            {canCreate
-              ? "A short check-in is enough."
-              : "You can still read past entries. Credits reset next month."}
+            A short check-in is enough.
           </p>
 
-          {canCreate && (
-            <div className="mt-3">
-              <Link
-                href={newEntryHref}
-                className="inline-flex rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
-              >
-                Start writing
-              </Link>
-            </div>
+          <div className="mt-3">
+            <Link
+              href={newEntryHref}
+              className="inline-flex rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
+            >
+              Start writing
+            </Link>
+          </div>
+
+          {!canReflect && planType !== "PREMIUM" && (
+            <p className="mt-3 text-xs text-slate-500">
+              AI reflections are paused until credits reset or you upgrade.
+            </p>
           )}
         </div>
       </div>
@@ -289,7 +310,10 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
       <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Recent entries</h2>
-          <Link href="/journal" className="text-sm text-emerald-400 hover:text-emerald-300">
+          <Link
+            href="/journal"
+            className="text-sm text-emerald-400 hover:text-emerald-300"
+          >
             See all
           </Link>
         </div>
@@ -308,21 +332,12 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             </p>
 
             <div className="mt-4 flex flex-wrap gap-3">
-              {canCreate ? (
-                <Link
-                  href={newEntryHref}
-                  className="inline-flex rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
-                >
-                  Start writing
-                </Link>
-              ) : (
-                <Link
-                  href="/upgrade"
-                  className="inline-flex rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
-                >
-                  Upgrade to write
-                </Link>
-              )}
+              <Link
+                href={newEntryHref}
+                className="inline-flex rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
+              >
+                Start writing
+              </Link>
 
               <Link
                 href="/journal"
