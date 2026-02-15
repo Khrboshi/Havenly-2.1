@@ -1,3 +1,4 @@
+// app/(protected)/journal/[id]/JournalEntryClient.tsx
 "use client";
 
 import Link from "next/link";
@@ -24,11 +25,9 @@ type Reflection = {
 function pickKeyPatternFromSummary(summary: string): string {
   const s = (summary || "").trim();
   if (!s) return "";
-
   const m = s.match(/^(.+?[.!?])(\s|$)/);
   const firstSentence = m?.[1]?.trim() ?? "";
   const candidate = firstSentence.length >= 40 ? firstSentence : s;
-
   return candidate.length > 180 ? candidate.slice(0, 177).trim() + "…" : candidate;
 }
 
@@ -49,9 +48,12 @@ export default function JournalEntryClient({
   const isPremium = planType === "PREMIUM";
 
   const [busy, setBusy] = useState(false);
+
+  // ✅ Persist on refresh by initializing from server-provided reflection
   const [reflection, setReflection] = useState<Reflection | null>(
     initialReflection ?? null
   );
+
   const [error, setError] = useState<string | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
 
@@ -84,7 +86,7 @@ export default function JournalEntryClient({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          entryId: entry.id,
+          entryId: entry.id, // ✅ keep this
           content: entry.content,
           title: entry.title || "",
         }),
@@ -104,6 +106,7 @@ export default function JournalEntryClient({
       const j = await res.json();
       setReflection(j?.reflection || null);
 
+      // sync credits AFTER server consumption
       await refresh();
     } catch {
       setError("We couldn't generate a reflection right now.");
@@ -117,7 +120,7 @@ export default function JournalEntryClient({
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{entry.title || "Untitled"}</h1>
-          <p className="mt-1 text-xs text-white/50" suppressHydrationWarning>
+          <p className="mt-1 text-xs text-white/50">
             {new Date(entry.created_at).toLocaleString()}
           </p>
         </div>
@@ -166,8 +169,8 @@ export default function JournalEntryClient({
 
         {!reflection ? (
           <p className="mt-4 text-sm text-white/60">
-            When you’re ready, Havenly will reflect back themes, emotions, and a gentle
-            next step.
+            When you’re ready, Havenly will reflect back themes, emotions, and a gentle next
+            step.
           </p>
         ) : (
           <div className="mt-5 space-y-4 text-sm text-white/80">
