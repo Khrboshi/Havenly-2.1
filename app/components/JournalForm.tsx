@@ -1,14 +1,21 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type Props = {
   userId?: string; // kept for compatibility with your current import usage
 };
 
+function safeSlice(value: string, max: number) {
+  const s = (value || "").trim();
+  if (!s) return "";
+  return s.length > max ? s.slice(0, max) : s;
+}
+
 export default function JournalForm(_props: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -17,10 +24,37 @@ export default function JournalForm(_props: Props) {
   );
   const [error, setError] = useState<string>("");
 
-  const canSave = useMemo(() => content.trim().length > 0 && status !== "saving", [
-    content,
-    status,
-  ]);
+  // Only prefill once (prevents overwriting user typing on re-renders)
+  const didPrefillRef = useRef(false);
+
+  useEffect(() => {
+    if (didPrefillRef.current) return;
+
+    const qpTitle = safeSlice(searchParams.get("title") ?? "", 120);
+    const qpPrompt = safeSlice(searchParams.get("prompt") ?? "", 2000);
+    const qpMood = safeSlice(searchParams.get("mood") ?? "", 32);
+
+    // Build sensible defaults
+    const nextTitle =
+      qpTitle || (qpMood ? `Mood: ${qpMood}` : "");
+
+    const nextContent =
+      qpPrompt ||
+      (qpMood
+        ? `Right now I’m feeling ${qpMood}.\n\n`
+        : "");
+
+    // Only set if user hasn't typed yet (extra-safe)
+    setTitle((prev) => (prev.trim() ? prev : nextTitle));
+    setContent((prev) => (prev.trim() ? prev : nextContent));
+
+    didPrefillRef.current = true;
+  }, [searchParams]);
+
+  const canSave = useMemo(
+    () => content.trim().length > 0 && status !== "saving",
+    [content, status]
+  );
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -62,7 +96,6 @@ export default function JournalForm(_props: Props) {
 
       setStatus("success");
 
-      // If API returns an id, send user to the new entry (better “reward loop”)
       const id = json?.id;
       if (id) {
         router.push(`/journal/${id}`);
@@ -70,7 +103,6 @@ export default function JournalForm(_props: Props) {
         return;
       }
 
-      // Fallback: go back to list
       router.push("/journal");
       router.refresh();
     } catch (err: any) {
