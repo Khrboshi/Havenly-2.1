@@ -41,14 +41,21 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
   const latestEntry = useMemo(() => entries[0] ?? null, [entries]);
 
+  // First-time logic (safe, no new tables): first time = no entries yet
+  const isFirstTime = !loadingEntries && entries.length === 0;
+  const welcomeTitle = isFirstTime ? "Welcome to Havenly" : "Welcome back.";
+  const welcomeSubtitle = isFirstTime
+    ? "Start your first entry to build momentum in under 2 minutes."
+    : null;
+
   const primaryHref = canCreate ? "/journal/new" : "/upgrade";
-  const primaryLabel = canCreate ? "New entry" : "Upgrade";
+  const primaryLabel = canCreate ? (isFirstTime ? "Start your first entry" : "New entry") : "Upgrade";
 
   const showCreditsChip = planType !== "PREMIUM";
   const showCreditsResetHint =
     planType !== "PREMIUM" && !planLoading && (credits ?? 0) === 0;
 
-  // ✅ Banner shown only when credits are 0 (and not premium)
+  // Banner shown only when credits are 0 (and not premium)
   const showZeroCreditsBanner =
     !planLoading && planType !== "PREMIUM" && (credits ?? 0) === 0;
 
@@ -78,8 +85,12 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
 
           <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-sm text-slate-400">
-            <span>Welcome back.</span>
+            <span>{welcomeTitle}</span>
+          </div>
 
+          {welcomeSubtitle && <p className="text-sm text-slate-400">{welcomeSubtitle}</p>}
+
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-sm text-slate-400">
             <Link
               href={planType === "PREMIUM" ? "/dashboard" : "/upgrade"}
               className="rounded-full border border-white/10 bg-white/5 px-3 py-1 hover:bg-white/10"
@@ -112,6 +123,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
+          {/* Only show resume when we actually have an entry */}
           {latestEntry && (
             <Link
               href={`/journal/${latestEntry.id}`}
@@ -141,11 +153,11 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         </div>
       </div>
 
-      {/* ✅ Zero Credits Banner */}
+      {/* Zero Credits Banner */}
       {showZeroCreditsBanner && (
-        <div className="mb-8 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="mb-8 flex flex-col gap-3 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm text-amber-200 font-medium">
+            <p className="text-sm font-medium text-amber-200">
               You’ve used your reflections for now.
             </p>
             <p className="text-xs text-amber-300/80">
@@ -196,9 +208,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             {canCreate ? "Write a quick check-in" : "Unlock more reflections"}
           </p>
           <p className="mt-1 text-sm text-slate-400">
-            {canCreate
-              ? "Keep momentum with a short entry."
-              : "Upgrade for unlimited use and insights."}
+            {canCreate ? "Keep momentum with a short entry." : "Upgrade for unlimited use and insights."}
           </p>
           <div className="mt-3">
             <Link
