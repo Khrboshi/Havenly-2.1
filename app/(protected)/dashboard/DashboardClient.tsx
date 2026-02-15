@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSupabase } from "@/components/SupabaseSessionProvider";
 import { useUserPlan } from "@/app/components/useUserPlan";
 
@@ -15,21 +15,37 @@ type JournalEntry = {
   created_at: string;
 };
 
+function formatLocalDateTime(value: string) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleString();
+}
+
+function titleOrUntitled(title: string | null) {
+  return title?.trim() ? title : "Untitled entry";
+}
+
 export default function DashboardClient({ userId }: DashboardClientProps) {
   const { supabase } = useSupabase();
   const { planType, credits, loading: planLoading } = useUserPlan();
 
   const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingEntries, setLoadingEntries] = useState(true);
 
   const readablePlan =
     planType === "PREMIUM" ? "Premium" : planType === "TRIAL" ? "Trial" : "Free";
 
+  // Keep your behavior: PREMIUM/TRIAL can create; FREE requires credits > 0
   const canCreate =
-    planType === "PREMIUM" ? true : (credits ?? 0) > 0 || planType === "TRIAL";
+    planType === "PREMIUM" ? true : planType === "TRIAL" ? true : (credits ?? 0) > 0;
+
+  const ctaHref = canCreate ? "/journal/new" : "/upgrade";
+  const ctaLabel = canCreate ? "New entry" : "Upgrade";
+
+  const latestEntry = useMemo(() => entries[0] ?? null, [entries]);
 
   const loadEntries = useCallback(async () => {
-    setLoading(true);
+    setLoadingEntries(true);
 
     const { data, error } = await supabase
       .from("journal_entries")
@@ -39,7 +55,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
       .limit(5);
 
     if (!error) setEntries((data as JournalEntry[]) || []);
-    setLoading(false);
+    setLoadingEntries(false);
   }, [supabase, userId]);
 
   useEffect(() => {
@@ -47,25 +63,46 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   }, [loadEntries]);
 
   return (
-    <div className="mx-auto max-w-5xl px-6 pt-24 pb-20 text-slate-200">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between mb-10">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight mb-2">
-            Dashboard
-          </h1>
-          <p className="text-slate-400">
-            Welcome back. Your plan:{" "}
-            <span className="text-slate-200">{readablePlan}</span>
-            {!planLoading && planType !== "PREMIUM" ? (
-              <>
-                {" "}
-                — credits: <span className="text-slate-200">{credits ?? 0}</span>
-              </>
-            ) : null}
-          </p>
+    <div className="mx-auto max-w-6xl px-6 pt-24 pb-20 text-slate-200">
+      {/* Header */}
+      <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
+
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-sm text-slate-400">
+            <span>Welcome back.</span>
+
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
+              Plan: <span className="text-slate-200">{readablePlan}</span>
+            </span>
+
+            {planType !== "PREMIUM" && (
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                Credits:{" "}
+                <span className="text-slate-200">
+                  {planLoading ? "…" : credits ?? 0}
+                </span>
+              </span>
+            )}
+
+            {planType === "PREMIUM" && (
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                Unlimited credits
+              </span>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {latestEntry && (
+            <Link
+              href={`/journal/${latestEntry.id}`}
+              className="rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
+            >
+              Resume last entry
+            </Link>
+          )}
+
           <Link
             href="/journal"
             className="rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
@@ -74,63 +111,136 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           </Link>
 
           <Link
-            href={canCreate ? "/journal/new" : "/upgrade"}
+            href={ctaHref}
             className={`rounded-md px-4 py-2 text-sm font-medium ${
               canCreate
                 ? "bg-emerald-500 text-black hover:bg-emerald-400"
-                : "bg-white/10 text-slate-300 hover:bg-white/15"
+                : "bg-white/10 text-slate-200 hover:bg-white/15"
             }`}
           >
-            New entry
+            {ctaLabel}
           </Link>
         </div>
       </div>
 
+      {/* Stats */}
+      <div className="mb-8 grid gap-4 sm:grid-cols-3">
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+          <p className="text-xs uppercase tracking-wide text-slate-400">Recent entries</p>
+          <p className="mt-2 text-2xl font-semibold text-slate-100">
+            {loadingEntries ? "…" : entries.length}
+          </p>
+          <p className="mt-1 text-sm text-slate-400">
+            Showing your latest 5 entries
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+          <p className="text-xs uppercase tracking-wide text-slate-400">Last entry</p>
+          <p className="mt-2 text-base font-semibold text-slate-100">
+            {loadingEntries
+              ? "Loading…"
+              : latestEntry
+              ? titleOrUntitled(latestEntry.title)
+              : "No entries yet"}
+          </p>
+          <p className="mt-1 text-sm text-slate-400">
+            {loadingEntries
+              ? ""
+              : latestEntry
+              ? formatLocalDateTime(latestEntry.created_at)
+              : "Create your first entry to get started"}
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+          <p className="text-xs uppercase tracking-wide text-slate-400">Next step</p>
+          <p className="mt-2 text-base font-semibold text-slate-100">
+            {canCreate ? "Write a quick check-in" : "Unlock more reflections"}
+          </p>
+          <p className="mt-1 text-sm text-slate-400">
+            {canCreate
+              ? "Keep momentum with a short entry."
+              : "Upgrade for unlimited use and insights."}
+          </p>
+          <div className="mt-3">
+            <Link
+              href={ctaHref}
+              className={`inline-flex rounded-md px-4 py-2 text-sm font-medium ${
+                canCreate
+                  ? "bg-emerald-500 text-black hover:bg-emerald-400"
+                  : "bg-white/10 text-slate-200 hover:bg-white/15"
+              }`}
+            >
+              {canCreate ? "Start writing" : "Upgrade"}
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent list */}
       <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Recent entries</h2>
-          <Link
-            href="/journal"
-            className="text-sm text-emerald-400 hover:text-emerald-300"
-          >
+          <Link href="/journal" className="text-sm text-emerald-400 hover:text-emerald-300">
             See all
           </Link>
         </div>
 
-        {loading ? (
-          <p className="text-slate-400">Loading your entries…</p>
+        {loadingEntries ? (
+          <div className="space-y-3">
+            <div className="h-14 rounded-xl border border-white/10 bg-white/5" />
+            <div className="h-14 rounded-xl border border-white/10 bg-white/5" />
+            <div className="h-14 rounded-xl border border-white/10 bg-white/5" />
+          </div>
         ) : entries.length === 0 ? (
-          <div className="text-slate-400">
-            <p className="mb-3">No entries yet. Create your first one.</p>
-            <Link
-              href={canCreate ? "/journal/new" : "/upgrade"}
-              className={`inline-flex rounded-md px-4 py-2 text-sm font-medium ${
-                canCreate
-                  ? "bg-emerald-500 text-black hover:bg-emerald-400"
-                  : "bg-white/10 text-slate-300 hover:bg-white/15"
-              }`}
-            >
-              {canCreate ? "Create entry" : "Upgrade to create"}
-            </Link>
+          <div className="rounded-xl border border-white/10 bg-black/10 p-5 text-slate-300">
+            <p className="font-medium">No entries yet</p>
+            <p className="mt-1 text-sm text-slate-400">
+              Create your first entry to start building momentum.
+            </p>
+
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Link
+                href={ctaHref}
+                className={`inline-flex rounded-md px-4 py-2 text-sm font-medium ${
+                  canCreate
+                    ? "bg-emerald-500 text-black hover:bg-emerald-400"
+                    : "bg-white/10 text-slate-200 hover:bg-white/15"
+                }`}
+              >
+                {canCreate ? "Create entry" : "Upgrade to create"}
+              </Link>
+
+              <Link
+                href="/journal"
+                className="inline-flex rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
+              >
+                Browse journal
+              </Link>
+            </div>
           </div>
         ) : (
           <ul className="divide-y divide-white/10">
             {entries.map((e) => (
-              <li key={e.id} className="py-4 flex items-center justify-between">
-                <div>
-                  <p className="font-medium">
-                    {e.title?.trim() ? e.title : "Untitled entry"}
-                  </p>
-                  <p className="text-xs text-slate-400">
-                    {new Date(e.created_at).toLocaleString()}
-                  </p>
+              <li key={e.id} className="py-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="truncate font-medium text-slate-100">
+                      {titleOrUntitled(e.title)}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400">
+                      {formatLocalDateTime(e.created_at)}
+                    </p>
+                  </div>
+
+                  <Link
+                    href={`/journal/${e.id}`}
+                    className="shrink-0 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-200 hover:bg-emerald-500/15"
+                  >
+                    Open
+                  </Link>
                 </div>
-                <Link
-                  href={`/journal/${e.id}`}
-                  className="text-sm text-emerald-400 hover:text-emerald-300"
-                >
-                  Open
-                </Link>
               </li>
             ))}
           </ul>
