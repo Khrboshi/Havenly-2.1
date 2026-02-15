@@ -1,4 +1,3 @@
-// app/(protected)/journal/[id]/JournalEntryClient.tsx
 "use client";
 
 import Link from "next/link";
@@ -118,7 +117,7 @@ export default function JournalEntryClient({
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{entry.title || "Untitled"}</h1>
-          <p className="mt-1 text-xs text-white/50">
+          <p className="mt-1 text-xs text-white/50" suppressHydrationWarning>
             {new Date(entry.created_at).toLocaleString()}
           </p>
         </div>
