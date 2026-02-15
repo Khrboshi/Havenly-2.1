@@ -24,28 +24,30 @@ export default function JournalForm(_props: Props) {
   );
   const [error, setError] = useState<string>("");
 
-  const didInitRef = useRef(false);
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-
-  const promptText = useMemo(() => {
-    return safeSlice(searchParams.get("prompt") ?? "", 240);
-  }, [searchParams]);
+  // Only prefill once (prevents overwriting user typing)
+  const didPrefillRef = useRef(false);
 
   useEffect(() => {
-    if (didInitRef.current) return;
+    if (didPrefillRef.current) return;
 
     const qpTitle = safeSlice(searchParams.get("title") ?? "", 120);
+    const qpPrompt = safeSlice(searchParams.get("prompt") ?? "", 2000);
     const qpMood = safeSlice(searchParams.get("mood") ?? "", 32);
 
     const nextTitle = qpTitle || (qpMood ? `Mood: ${qpMood}` : "");
 
+    // Prefill content with the prompt (once), then a blank line so user can continue.
+    const nextContent =
+      qpPrompt
+        ? `${qpPrompt}\n\n`
+        : qpMood
+        ? `Right now I’m feeling ${qpMood}.\n\n`
+        : "";
+
     setTitle((prev) => (prev.trim() ? prev : nextTitle));
-    // IMPORTANT: do NOT prefill content with prompt (avoid saving prompt-only entries)
+    setContent((prev) => (prev.trim() ? prev : nextContent));
 
-    didInitRef.current = true;
-
-    // Focus the textarea for immediate writing
-    setTimeout(() => textareaRef.current?.focus(), 0);
+    didPrefillRef.current = true;
   }, [searchParams]);
 
   const canSave = useMemo(
@@ -122,19 +124,11 @@ export default function JournalForm(_props: Props) {
             maxLength={120}
           />
 
-          {promptText ? (
-            <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200">
-              <span className="text-slate-400">Prompt: </span>
-              {promptText}
-            </div>
-          ) : null}
-
           <textarea
-            ref={textareaRef}
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder={promptText || "How are you feeling today?"}
-            className="mt-3 w-full min-h-[180px] rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/40 outline-none focus:border-white/20 focus:bg-white/[0.07]"
+            placeholder="Start here…"
+            className="mt-3 w-full min-h-[220px] rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/40 outline-none focus:border-white/20 focus:bg-white/[0.07]"
           />
         </div>
 
