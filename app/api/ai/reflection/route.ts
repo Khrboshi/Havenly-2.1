@@ -47,7 +47,6 @@ async function consumeOneCredit(
   supabase: any,
   userId: string
 ): Promise<ConsumeResult> {
-  // Attempt #1: function expects (p_user_id, p_amount)
   let rpcData: any = null;
   let rpcErr: any = null;
 
@@ -59,7 +58,6 @@ async function consumeOneCredit(
   rpcData = first?.data;
   rpcErr = first?.error;
 
-  // Fallback: function expects (p_amount) only
   if (rpcErr && isParamMismatchError(String(rpcErr.message || ""))) {
     const second = await supabase.rpc("consume_reflection_credit", {
       p_amount: 1,
@@ -98,7 +96,7 @@ async function consumeOneCredit(
 export async function POST(req: Request) {
   const supabase = await createServerSupabase();
 
-  // ✅ Auth (server-validated)
+  // Auth
   const {
     data: { user },
     error: userErr,
@@ -110,7 +108,7 @@ export async function POST(req: Request) {
 
   const userId = user.id;
 
-  // Parse body safely
+  // Body
   const body = await req.json().catch(() => ({}));
 
   const entryId = typeof body?.entryId === "string" ? body.entryId.trim() : "";
@@ -132,7 +130,7 @@ export async function POST(req: Request) {
     );
   }
 
-  // ✅ Verify entry belongs to this user
+  // Ensure the entry belongs to this user (RLS-safe check)
   const { data: entryRow, error: entryErr } = await supabase
     .from("journal_entries")
     .select("id")
@@ -140,15 +138,11 @@ export async function POST(req: Request) {
     .eq("user_id", userId)
     .maybeSingle();
 
-  if (entryErr) {
-    return NextResponse.json({ error: "Failed to load entry" }, { status: 500 });
-  }
-
-  if (!entryRow?.id) {
+  if (entryErr || !entryRow) {
     return NextResponse.json({ error: "Entry not found" }, { status: 404 });
   }
 
-  // ✅ Ensure monthly reset / row provisioning
+  // Ensure monthly reset / row provisioning
   await ensureCreditsFresh({ supabase, userId });
 
   // Plan
@@ -177,7 +171,7 @@ export async function POST(req: Request) {
     remainingAfterConsume = consumed.remaining;
   }
 
-  // 🧠 AI generation
+  // Generate + SAVE into journal_entries.ai_response
   try {
     const reflection = await generateReflectionFromEntry({
       content,
@@ -185,20 +179,17 @@ export async function POST(req: Request) {
       plan: planType === "PREMIUM" || planType === "TRIAL" ? "PREMIUM" : "FREE",
     });
 
-    // ✅ Persist reflection to Supabase
     const { error: saveErr } = await supabase
       .from("journal_entries")
       .update({
         ai_response: JSON.stringify(reflection),
-        updated_at: new Date().toISOString(),
       } as any)
       .eq("id", entryId)
       .eq("user_id", userId);
 
     if (saveErr) {
-      console.error("Failed to save reflection:", saveErr);
       return NextResponse.json(
-        { error: "Reflection generated but failed to save" },
+        { error: "Generated reflection but failed to save." },
         { status: 500 }
       );
     }
