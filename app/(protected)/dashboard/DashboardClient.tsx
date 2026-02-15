@@ -48,6 +48,10 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   const showCreditsResetHint =
     planType !== "PREMIUM" && !planLoading && (credits ?? 0) === 0;
 
+  // ✅ Banner shown only when credits are 0 (and not premium)
+  const showZeroCreditsBanner =
+    !planLoading && planType !== "PREMIUM" && (credits ?? 0) === 0;
+
   const loadEntries = useCallback(async () => {
     setLoadingEntries(true);
 
@@ -108,7 +112,6 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {/* Only show resume when we actually have an entry */}
           {latestEntry && (
             <Link
               href={`/journal/${latestEntry.id}`}
@@ -137,6 +140,27 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           </Link>
         </div>
       </div>
+
+      {/* ✅ Zero Credits Banner */}
+      {showZeroCreditsBanner && (
+        <div className="mb-8 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <p className="text-sm text-amber-200 font-medium">
+              You’ve used your reflections for now.
+            </p>
+            <p className="text-xs text-amber-300/80">
+              Credits reset next month — or upgrade for unlimited insights.
+            </p>
+          </div>
+
+          <Link
+            href="/upgrade"
+            className="inline-flex items-center justify-center rounded-md bg-amber-400 px-4 py-2 text-sm font-semibold text-black hover:bg-amber-300"
+          >
+            Upgrade
+          </Link>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
