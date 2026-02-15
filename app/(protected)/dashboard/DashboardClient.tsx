@@ -37,21 +37,31 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
   // Keep existing behavior:
   const canCreate =
-    planType === "PREMIUM" ? true : planType === "TRIAL" ? true : (credits ?? 0) > 0;
+    planType === "PREMIUM"
+      ? true
+      : planType === "TRIAL"
+      ? true
+      : (credits ?? 0) > 0;
 
   const latestEntry = useMemo(() => entries[0] ?? null, [entries]);
 
   // First-time logic (safe, no new tables): first time = no entries yet
   const isFirstTime = !loadingEntries && entries.length === 0;
-  const welcomeTitle = isFirstTime ? "Welcome to Havenly" : "Welcome back.";
+
+  const welcomeTitle = isFirstTime ? "Welcome to Havenly." : "Welcome back.";
   const welcomeSubtitle = isFirstTime
-    ? "Start your first entry to build momentum in under 2 minutes."
-    : null;
+    ? "Take a breath — what’s on your mind right now?"
+    : "How are you feeling today?";
 
   const primaryHref = canCreate ? "/journal/new" : "/upgrade";
-  const primaryLabel = canCreate ? (isFirstTime ? "Start your first entry" : "New entry") : "Upgrade";
+  const primaryLabel = canCreate
+    ? isFirstTime
+      ? "Start your first entry"
+      : "New entry"
+    : "Upgrade";
 
   const showCreditsChip = planType !== "PREMIUM";
+
   const showCreditsResetHint =
     planType !== "PREMIUM" && !planLoading && (credits ?? 0) === 0;
 
@@ -84,11 +94,10 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         <div className="space-y-2">
           <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
 
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-sm text-slate-400">
+          <div className="flex flex-col gap-1 text-sm text-slate-400">
             <span>{welcomeTitle}</span>
+            <span className="text-slate-400">{welcomeSubtitle}</span>
           </div>
-
-          {welcomeSubtitle && <p className="text-sm text-slate-400">{welcomeSubtitle}</p>}
 
           <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-sm text-slate-400">
             <Link
@@ -177,15 +186,21 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
       {/* Stats */}
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-400">Entries shown</p>
+          <p className="text-xs uppercase tracking-wide text-slate-400">
+            Entries shown
+          </p>
           <p className="mt-2 text-2xl font-semibold text-slate-100">
             {loadingEntries ? "…" : `${entries.length} / 5`}
           </p>
-          <p className="mt-1 text-sm text-slate-400">Latest entries on your account</p>
+          <p className="mt-1 text-sm text-slate-400">
+            Latest entries on your account
+          </p>
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-400">Last entry</p>
+          <p className="text-xs uppercase tracking-wide text-slate-400">
+            Last entry
+          </p>
           <p className="mt-2 text-base font-semibold text-slate-100">
             {loadingEntries
               ? "Loading…"
@@ -203,12 +218,16 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-400">Next step</p>
+          <p className="text-xs uppercase tracking-wide text-slate-400">
+            Next step
+          </p>
           <p className="mt-2 text-base font-semibold text-slate-100">
             {canCreate ? "Write a quick check-in" : "Unlock more reflections"}
           </p>
           <p className="mt-1 text-sm text-slate-400">
-            {canCreate ? "Keep momentum with a short entry." : "Upgrade for unlimited use and insights."}
+            {canCreate
+              ? "Keep momentum with a short entry."
+              : "Upgrade for unlimited use and insights."}
           </p>
           <div className="mt-3">
             <Link
@@ -229,7 +248,10 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
       <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Recent entries</h2>
-          <Link href="/journal" className="text-sm text-emerald-400 hover:text-emerald-300">
+          <Link
+            href="/journal"
+            className="text-sm text-emerald-400 hover:text-emerald-300"
+          >
             See all
           </Link>
         </div>
