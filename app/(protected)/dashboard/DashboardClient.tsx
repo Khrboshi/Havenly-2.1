@@ -25,19 +25,22 @@ function titleOrUntitled(title: string | null) {
   return title?.trim() ? title : "Untitled entry";
 }
 
-function toNiceFirstName(input: string) {
-  const raw = (input || "").trim();
-  if (!raw) return "";
-  const first = raw.split(/\s+/)[0] || "";
-  const cleaned = first.replace(/[^a-zA-ZÀ-ž'-]/g, "");
-  if (!cleaned) return "";
-  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1).toLowerCase();
-}
+function friendlyNameFromUser(user: any): string | null {
+  const md = user?.user_metadata ?? {};
+  const candidates = [
+    md.full_name,
+    md.name,
+    md.display_name,
+    md.username,
+    user?.email ? String(user.email).split("@")[0] : null,
+  ].filter(Boolean);
 
-function nameFromEmail(email: string) {
-  const local = (email || "").split("@")[0] || "";
-  const token = local.split(/[._-]/)[0] || local;
-  return toNiceFirstName(token);
+  const raw = candidates[0] ? String(candidates[0]).trim() : "";
+  if (!raw) return null;
+
+  // Keep it short and safe for UI
+  const cleaned = raw.replace(/\s+/g, " ").slice(0, 24);
+  return cleaned || null;
 }
 
 export default function DashboardClient({ userId }: DashboardClientProps) {
@@ -47,43 +50,42 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [loadingEntries, setLoadingEntries] = useState(true);
 
-  // ✅ User display name (best-effort, no new tables)
-  const [displayName, setDisplayName] = useState<string>("");
+  const [displayName, setDisplayName] = useState<string | null>(null);
+  const [loadingName, setLoadingName] = useState(true);
 
   const readablePlan =
     planType === "PREMIUM" ? "Premium" : planType === "TRIAL" ? "Trial" : "Free";
 
+  // Keep existing behavior
   const canCreate =
-    planType === "PREMIUM"
-      ? true
-      : planType === "TRIAL"
-      ? true
-      : (credits ?? 0) > 0;
+    planType === "PREMIUM" ? true : planType === "TRIAL" ? true : (credits ?? 0) > 0;
 
   const latestEntry = useMemo(() => entries[0] ?? null, [entries]);
 
+  // First-time logic: first time = no entries yet (no new tables)
   const isFirstTime = !loadingEntries && entries.length === 0;
 
   const welcomeTitle = useMemo(() => {
-    const suffix = displayName ? `, ${displayName}` : "";
-    return isFirstTime ? `Welcome to Havenly${suffix}.` : `Welcome back${suffix}.`;
-  }, [displayName, isFirstTime]);
+    if (loadingEntries || loadingName) return "Welcome";
+    const name = displayName ? `, ${displayName}` : "";
+    return isFirstTime ? `Welcome to Havenly${name}` : `Welcome back${name}`;
+  }, [displayName, isFirstTime, loadingEntries, loadingName]);
 
-  const welcomeSubtitle = isFirstTime
-    ? "Take a breath — what’s on your mind right now?"
-    : "How are you feeling today?";
+  // Warm, reflection-first microcopy (quick prompt increases activation)
+  const welcomeSubtitle = useMemo(() => {
+    if (loadingEntries) return null;
+    if (isFirstTime) return "Take a breath — what’s on your mind right now?";
+    return "How are you feeling today?";
+  }, [isFirstTime, loadingEntries]);
 
   const primaryHref = canCreate ? "/journal/new" : "/upgrade";
-  const primaryLabel = canCreate
-    ? isFirstTime
-      ? "Start your first entry"
-      : "New entry"
-    : "Upgrade";
+  const primaryLabel = canCreate ? (isFirstTime ? "Start your first entry" : "New entry") : "Upgrade";
 
   const showCreditsChip = planType !== "PREMIUM";
   const showCreditsResetHint =
     planType !== "PREMIUM" && !planLoading && (credits ?? 0) === 0;
 
+  // Banner shown only when credits are 0 (and not premium)
   const showZeroCreditsBanner =
     !planLoading && planType !== "PREMIUM" && (credits ?? 0) === 0;
 
@@ -102,35 +104,25 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   }, [supabase, userId]);
 
   const loadDisplayName = useCallback(async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error) return;
-
-    const user = data?.user;
-    if (!user) return;
-
-    const meta: any = user.user_metadata || {};
-    const full =
-      typeof meta.full_name === "string"
-        ? meta.full_name
-        : typeof meta.name === "string"
-        ? meta.name
-        : "";
-
-    const fromMeta = toNiceFirstName(full);
-    if (fromMeta) {
-      setDisplayName(fromMeta);
-      return;
+    setLoadingName(true);
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      if (!error) {
+        const name = friendlyNameFromUser(data?.user);
+        setDisplayName(name);
+      }
+    } finally {
+      setLoadingName(false);
     }
-
-    const email = typeof user.email === "string" ? user.email : "";
-    const fromEmail = nameFromEmail(email);
-    if (fromEmail) setDisplayName(fromEmail);
   }, [supabase]);
 
   useEffect(() => {
     loadEntries();
+  }, [loadEntries]);
+
+  useEffect(() => {
     loadDisplayName();
-  }, [loadEntries, loadDisplayName]);
+  }, [loadDisplayName]);
 
   return (
     <div className="mx-auto max-w-6xl px-6 pt-24 pb-20 text-slate-200">
@@ -139,10 +131,11 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         <div className="space-y-2">
           <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
 
-          <div className="flex flex-col gap-1 text-sm text-slate-400">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-sm text-slate-400">
             <span>{welcomeTitle}</span>
-            <span className="text-slate-400">{welcomeSubtitle}</span>
           </div>
+
+          {welcomeSubtitle && <p className="text-sm text-slate-400">{welcomeSubtitle}</p>}
 
           <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-sm text-slate-400">
             <Link
@@ -230,21 +223,15 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
       {/* Stats */}
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-400">
-            Entries shown
-          </p>
+          <p className="text-xs uppercase tracking-wide text-slate-400">Entries shown</p>
           <p className="mt-2 text-2xl font-semibold text-slate-100">
             {loadingEntries ? "…" : `${entries.length} / 5`}
           </p>
-          <p className="mt-1 text-sm text-slate-400">
-            Latest entries on your account
-          </p>
+          <p className="mt-1 text-sm text-slate-400">Latest entries on your account</p>
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-400">
-            Last entry
-          </p>
+          <p className="text-xs uppercase tracking-wide text-slate-400">Last entry</p>
           <p className="mt-2 text-base font-semibold text-slate-100">
             {loadingEntries
               ? "Loading…"
@@ -262,16 +249,12 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-400">
-            Next step
-          </p>
+          <p className="text-xs uppercase tracking-wide text-slate-400">Next step</p>
           <p className="mt-2 text-base font-semibold text-slate-100">
             {canCreate ? "Write a quick check-in" : "Unlock more reflections"}
           </p>
           <p className="mt-1 text-sm text-slate-400">
-            {canCreate
-              ? "Keep momentum with a short entry."
-              : "Upgrade for unlimited use and insights."}
+            {canCreate ? "Keep momentum with a short entry." : "Upgrade for unlimited use and insights."}
           </p>
           <div className="mt-3">
             <Link
