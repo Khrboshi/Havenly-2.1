@@ -1,3 +1,4 @@
+// app/(protected)/journal/[id]/JournalEntryClient.tsx
 "use client";
 
 import Link from "next/link";
@@ -49,12 +50,9 @@ export default function JournalEntryClient({
   const isPremium = planType === "PREMIUM";
 
   const [busy, setBusy] = useState(false);
-
-  // ✅ initialize from server-provided reflection (persist on refresh)
   const [reflection, setReflection] = useState<Reflection | null>(
     initialReflection ?? null
   );
-
   const [error, setError] = useState<string | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
 
