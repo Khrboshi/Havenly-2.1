@@ -16,7 +16,7 @@ export default async function NewJournalPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4">
+    <div className="mx-auto max-w-3xl px-4">
       <JournalForm />
     </div>
   );
