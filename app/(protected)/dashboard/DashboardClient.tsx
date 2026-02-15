@@ -60,31 +60,22 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   const readablePlan =
     planType === "PREMIUM" ? "Premium" : planType === "TRIAL" ? "Trial" : "Free";
 
-  // ✅ Recommended model:
-  // - Writing entries is ALWAYS allowed (even when credits = 0)
-  // - Credits gate ONLY AI reflections (elsewhere in the app)
+  // Writing is always allowed (your UI says “You can still journal anytime”).
   const canWrite = true;
 
-  // Reflections availability (credits-based)
+  // Reflect/AI credits gating (premium/trial/until credits > 0)
   const canReflect =
-    planType === "PREMIUM"
-      ? true
-      : planType === "TRIAL"
-      ? true
-      : (credits ?? 0) > 0;
+    planType === "PREMIUM" ? true : planType === "TRIAL" ? true : (credits ?? 0) > 0;
 
-  const latestEntry = useMemo(() => entries[0] ?? null, [entries]);
   const isFirstTime = !loadingEntries && entries.length === 0;
+  const latestEntry = useMemo(() => entries[0] ?? null, [entries]);
 
   const promptText = useMemo(
     () => "Take a moment — what feels present for you right now?",
     []
   );
 
-  const newEntryHref = useMemo(
-    () => buildNewEntryHref(promptText),
-    [promptText]
-  );
+  const newEntryHref = useMemo(() => buildNewEntryHref(promptText), [promptText]);
 
   const welcomeTitle = useMemo(() => {
     if (loadingEntries || loadingName) return "Welcome";
@@ -99,10 +90,9 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
   const showCreditsChip = planType !== "PREMIUM";
   const showCreditsResetHint =
-    planType !== "PREMIUM" && !planLoading && (credits ?? 0) === 0;
+    planType !== "PREMIUM" && !planLoading && !canReflect;
 
-  const isZeroCredits =
-    !planLoading && planType !== "PREMIUM" && (credits ?? 0) === 0;
+  const isReflectionsPaused = !planLoading && planType !== "PREMIUM" && !canReflect;
 
   const loadEntries = useCallback(async () => {
     setLoadingEntries(true);
@@ -136,17 +126,13 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     loadDisplayName();
   }, [loadDisplayName]);
 
-  // Header CTAs (avoid duplication)
   const showOpenLastEntry = !!latestEntry;
-  const showViewJournal = entries.length > 0; // only when useful
-
-  // Show Upgrade in ONE place only (header) and only when reflections are locked
-  const showUpgrade = !canReflect && planType !== "PREMIUM";
+  const showViewJournal = !loadingEntries && entries.length > 0;
 
   return (
     <div className="mx-auto max-w-6xl px-6 pt-24 pb-20 text-slate-200">
       {/* Header */}
-      <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-2">
           <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
 
@@ -167,15 +153,12 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             </Link>
 
             {showCreditsChip && (
-              <Link
-                href="/upgrade"
-                className="rounded-full border border-white/10 bg-white/5 px-3 py-1 hover:bg-white/10"
-              >
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
                 Credits:{" "}
                 <span className="text-slate-200">
                   {planLoading ? "…" : credits ?? 0}
                 </span>
-              </Link>
+              </span>
             )}
 
             {planType === "PREMIUM" && (
@@ -209,7 +192,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             </Link>
           )}
 
-          {/* ✅ Primary action: always visible */}
+          {/* Primary action (single) */}
           {canWrite && (
             <Link
               href={newEntryHref}
@@ -218,49 +201,42 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
               Start writing
             </Link>
           )}
-
-          {/* ✅ Upgrade shown once (only when reflections locked) */}
-          {showUpgrade && (
-            <Link
-              href="/upgrade"
-              className="rounded-md bg-amber-400 px-4 py-2 text-sm font-semibold text-black hover:bg-amber-300"
-            >
-              Upgrade
-            </Link>
-          )}
         </div>
       </div>
 
-      {/* Zero credits info (no button to avoid duplication) */}
-      {isZeroCredits && (
-        <div className="mb-8 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4">
-          <p className="text-sm font-medium text-amber-200">
-            You’ve used your AI reflections for now.
-          </p>
-          <p className="text-xs text-amber-300/80">
-            You can still journal anytime. Credits reset next month.
-          </p>
+      {/* Reflections paused banner (single Upgrade location) */}
+      {isReflectionsPaused && (
+        <div className="mb-8 flex flex-col gap-3 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-medium text-amber-200">
+              You’ve used your AI reflections for now.
+            </p>
+            <p className="text-xs text-amber-300/80">
+              You can still journal anytime. Credits reset next month.
+            </p>
+          </div>
+
+          <Link
+            href="/upgrade"
+            className="inline-flex items-center justify-center rounded-md bg-amber-400 px-4 py-2 text-sm font-semibold text-black hover:bg-amber-300"
+          >
+            Upgrade
+          </Link>
         </div>
       )}
 
       {/* Cards */}
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-400">
-            Entries shown
-          </p>
+          <p className="text-xs uppercase tracking-wide text-slate-400">Entries shown</p>
           <p className="mt-2 text-2xl font-semibold text-slate-100">
             {loadingEntries ? "…" : `${entries.length} / 5`}
           </p>
-          <p className="mt-1 text-sm text-slate-400">
-            Latest entries on your account
-          </p>
+          <p className="mt-1 text-sm text-slate-400">Latest entries on your account</p>
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-400">
-            Last entry
-          </p>
+          <p className="text-xs uppercase tracking-wide text-slate-400">Last entry</p>
           <p className="mt-2 text-base font-semibold text-slate-100">
             {loadingEntries
               ? "Loading…"
@@ -278,27 +254,29 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-400">
-            Next step
-          </p>
+          <p className="text-xs uppercase tracking-wide text-slate-400">Next step</p>
 
           <p className="mt-2 text-base font-semibold text-slate-100">
-            Write a new entry
+            {canWrite ? "Write a new entry" : "—"}
           </p>
           <p className="mt-1 text-sm text-slate-400">
-            A short check-in is enough.
+            {canWrite
+              ? "A short check-in is enough."
+              : ""}
           </p>
 
-          <div className="mt-3">
-            <Link
-              href={newEntryHref}
-              className="inline-flex rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
-            >
-              Start writing
-            </Link>
-          </div>
+          {canWrite && (
+            <div className="mt-3">
+              <Link
+                href={newEntryHref}
+                className="inline-flex rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
+              >
+                Start writing
+              </Link>
+            </div>
+          )}
 
-          {!canReflect && planType !== "PREMIUM" && (
+          {!canReflect && (
             <p className="mt-3 text-xs text-slate-500">
               AI reflections are paused until credits reset or you upgrade.
             </p>
