@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 type Props = {
-  userId?: string; // kept for compatibility with your current import usage
+  userId?: string;
 };
 
 function safeSlice(value: string, max: number) {
@@ -24,45 +24,29 @@ export default function JournalForm(_props: Props) {
   );
   const [error, setError] = useState<string>("");
 
-  // Only prefill once (prevents overwriting user typing on re-renders)
-  const didPrefillRef = useRef(false);
+  const didInitRef = useRef(false);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const qpPrompt = useMemo(
-    () => safeSlice(searchParams.get("prompt") ?? "", 2000),
-    [searchParams]
-  );
-
-  const qpTitle = useMemo(
-    () => safeSlice(searchParams.get("title") ?? "", 120),
-    [searchParams]
-  );
-
-  const qpMood = useMemo(
-    () => safeSlice(searchParams.get("mood") ?? "", 32),
-    [searchParams]
-  );
-
-  // Use prompt as placeholder when provided (and content is empty)
-  const contentPlaceholder = useMemo(() => {
-    if (qpPrompt) return qpPrompt;
-    return "How are you feeling today?";
-  }, [qpPrompt]);
+  const promptText = useMemo(() => {
+    return safeSlice(searchParams.get("prompt") ?? "", 240);
+  }, [searchParams]);
 
   useEffect(() => {
-    if (didPrefillRef.current) return;
+    if (didInitRef.current) return;
+
+    const qpTitle = safeSlice(searchParams.get("title") ?? "", 120);
+    const qpMood = safeSlice(searchParams.get("mood") ?? "", 32);
 
     const nextTitle = qpTitle || (qpMood ? `Mood: ${qpMood}` : "");
 
-    const nextContent =
-      qpPrompt ||
-      (qpMood ? `Right now I’m feeling ${qpMood}.\n\n` : "");
-
-    // Only set if user hasn't typed yet (extra-safe)
     setTitle((prev) => (prev.trim() ? prev : nextTitle));
-    setContent((prev) => (prev.trim() ? prev : nextContent));
+    // IMPORTANT: do NOT prefill content with prompt (avoid saving prompt-only entries)
 
-    didPrefillRef.current = true;
-  }, [qpTitle, qpPrompt, qpMood]);
+    didInitRef.current = true;
+
+    // Focus the textarea for immediate writing
+    setTimeout(() => textareaRef.current?.focus(), 0);
+  }, [searchParams]);
 
   const canSave = useMemo(
     () => content.trim().length > 0 && status !== "saving",
@@ -138,17 +122,23 @@ export default function JournalForm(_props: Props) {
             maxLength={120}
           />
 
+          {promptText ? (
+            <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-200">
+              <span className="text-slate-400">Prompt: </span>
+              {promptText}
+            </div>
+          ) : null}
+
           <textarea
+            ref={textareaRef}
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder={contentPlaceholder}
+            placeholder={promptText || "How are you feeling today?"}
             className="mt-3 w-full min-h-[180px] rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/40 outline-none focus:border-white/20 focus:bg-white/[0.07]"
           />
         </div>
 
-        {status === "error" && (
-          <div className="text-sm text-red-400">{error}</div>
-        )}
+        {status === "error" && <div className="text-sm text-red-400">{error}</div>}
 
         <button
           type="submit"
