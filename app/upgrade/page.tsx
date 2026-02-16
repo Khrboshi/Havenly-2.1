@@ -1,6 +1,7 @@
 import Link from "next/link";
 import PreviewInsightsLink from "./PreviewInsightsLink";
 import UpgradeClient from "./UpgradeClient";
+import PersonalizedTeaser from "./PersonalizedTeaser";
 
 export const metadata = {
   title: "Premium | Havenly",
@@ -31,10 +32,7 @@ export default function UpgradePage() {
               </h3>
             </div>
 
-            <p className="max-w-xl text-sm text-slate-400">
-              Based on your recent check-ins, Havenly may begin noticing
-              recurring emotional themes — gently, without judgment.
-            </p>
+            <PersonalizedTeaser />
           </div>
 
           <PreviewInsightsLink />
