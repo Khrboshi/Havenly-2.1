@@ -13,12 +13,6 @@ type JournalEntry = {
   created_at: string;
 };
 
-function formatLocalDateTime(value: string) {
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return value;
-  return d.toLocaleString();
-}
-
 function titleOrUntitled(title: string | null) {
   return title?.trim() ? title : "Untitled entry";
 }
@@ -49,7 +43,7 @@ function startOfNextMonth(d = new Date()) {
 }
 
 function formatResetLabel(date: Date) {
-  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" }); // "Mar 1"
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 function isWithinLastDays(iso: string, days: number) {
@@ -76,15 +70,22 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [loadingName, setLoadingName] = useState(true);
 
-  const latestEntry = useMemo(() => entries[0] ?? null, [entries]);
-  const isFirstTime = !loadingEntries && entries.length === 0;
+  // ✅ Show insight preview ONLY when armed by a successful save
+  const [insightArmed, setInsightArmed] = useState(false);
 
+  useEffect(() => {
+    try {
+      const v = sessionStorage.getItem("havenly:show_insight_preview");
+      if (v) {
+        setInsightArmed(true);
+        sessionStorage.removeItem("havenly:show_insight_preview");
+      }
+    } catch {}
+  }, []);
+
+  const latestEntry = useMemo(() => entries[0] ?? null, [entries]);
   const isPremium = planType === "PREMIUM";
 
-  // Writing is always allowed for an authenticated user.
-  const canWrite = true;
-
-  // AI reflections are gated by plan/credits.
   const canReflect =
     isPremium || planType === "TRIAL" || (credits ?? 0) > 0;
 
@@ -117,14 +118,11 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     []
   );
 
-  const headerSubtitle = useMemo(() => "Choose a gentle prompt to begin.", []);
-
   const greetingLine = useMemo(() => {
     const who = displayName ? `, ${displayName}` : "";
     return `${greetingByLocalTime()}${who}`;
   }, [displayName]);
 
-  // Weekly activity
   const thisWeekCount = useMemo(() => {
     if (loadingEntries) return 0;
     return entries.filter((e) => isWithinLastDays(e.created_at, 7)).length;
@@ -136,12 +134,13 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     return Array.from({ length: total }, (_, i) => i < filled);
   }, [thisWeekCount]);
 
-  // Pattern/upsell logic
+  // ✅ Insight card only after save + only if paused
+  const showInsightArea = insightArmed && reflectionsPaused;
   const hasEnoughForPattern = entries.length >= 3;
-  const showWeeklyPatternCard = reflectionsPaused && hasEnoughForPattern;
-  const showFirstInsightCard = reflectionsPaused && !hasEnoughForPattern;
 
-  // Thread hook prompt based on last entry title
+  const showWeeklyPatternCard = showInsightArea && hasEnoughForPattern;
+  const showFirstInsightCard = showInsightArea && !hasEnoughForPattern;
+
   const threadPrompt = useMemo(() => {
     if (!latestEntry) return "Take a moment — what feels present for you right now?";
     const t = titleOrUntitled(latestEntry.title);
@@ -193,7 +192,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             </span>
           </div>
 
-          <p className="text-sm text-slate-400">{headerSubtitle}</p>
+          <p className="text-sm text-slate-400">Choose a gentle prompt to begin.</p>
 
           <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-sm text-slate-400">
             <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
@@ -208,8 +207,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
               <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
                 Reflections:{" "}
                 <span className="text-slate-200">
-                  paused{" "}
-                  <span className="text-slate-400">(resets {resetLabel})</span>
+                  paused <span className="text-slate-400">(resets {resetLabel})</span>
                 </span>
               </span>
             ) : (
@@ -229,11 +227,11 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           )}
         </div>
 
-        {/* No header CTA to avoid duplication with prompt cards */}
+        {/* No header CTA (avoid duplication with prompt cards) */}
         <div />
       </div>
 
-      {/* Upsell / Insight Area */}
+      {/* Insight Area (ONLY after save) */}
       {(showWeeklyPatternCard || showFirstInsightCard) && (
         <div className="mb-8 rounded-2xl border border-white/10 bg-white/5 p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -241,16 +239,13 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
               <div className="flex items-center gap-2">
                 <span className="text-lg">✨</span>
                 <h3 className="font-medium text-slate-100">
-                  {showWeeklyPatternCard
-                    ? "Weekly pattern detected"
-                    : "Your first insight is waiting"}
+                  {showWeeklyPatternCard ? "Weekly pattern detected" : "Your first insight is waiting"}
                 </h3>
               </div>
 
               {showWeeklyPatternCard ? (
                 <p className="max-w-2xl text-sm text-slate-400">
-                  We noticed a shift in your tone compared to last week. A recurring
-                  theme around{" "}
+                  We noticed a shift in your tone compared to last week. A recurring theme around{" "}
                   <span className="blur-sm bg-white/10 px-1 rounded text-transparent select-none">
                     energy drains
                   </span>{" "}
@@ -258,8 +253,8 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
                 </p>
               ) : (
                 <p className="max-w-2xl text-sm text-slate-400">
-                  After <span className="text-slate-200">3 check-ins</span>, Havenly
-                  can start spotting gentle patterns to help you find clarity.{" "}
+                  After <span className="text-slate-200">3 check-ins</span>, Havenly can start spotting gentle
+                  patterns to help you find clarity.{" "}
                   <span className="text-slate-500">(Resets {resetLabel}.)</span>
                 </p>
               )}
@@ -281,16 +276,11 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
       {/* Gentle Prompts */}
       <div className="mb-8">
-        <p className="mb-3 text-xs uppercase tracking-wide text-slate-500">
-          Gentle prompts
-        </p>
+        <p className="mb-3 text-xs uppercase tracking-wide text-slate-500">Gentle prompts</p>
 
         <div className="grid gap-3 sm:grid-cols-3">
           {promptCards.map((c) => (
-            <div
-              key={c.title}
-              className="rounded-2xl border border-white/10 bg-white/5 p-4"
-            >
+            <div key={c.title} className="rounded-2xl border border-white/10 bg-white/5 p-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <p className="font-medium text-slate-100">{c.title}</p>
@@ -311,7 +301,6 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
       {/* Snapshot cards */}
       <div className="grid gap-4 sm:grid-cols-3">
-        {/* This week (gamified) */}
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
           <p className="text-xs uppercase tracking-wide text-slate-400">This week</p>
           <p className="mt-2 text-2xl font-semibold text-slate-100">
@@ -322,9 +311,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             {weekDots.map((on, i) => (
               <span
                 key={i}
-                className={`h-2.5 w-2.5 rounded-full ${
-                  on ? "bg-emerald-400/90" : "bg-white/10"
-                }`}
+                className={`h-2.5 w-2.5 rounded-full ${on ? "bg-emerald-400/90" : "bg-white/10"}`}
               />
             ))}
           </div>
@@ -338,7 +325,6 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           </p>
         </div>
 
-        {/* Thread hook instead of a passive “Last check-in” */}
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
           <p className="text-xs uppercase tracking-wide text-slate-400">Pick up the thread</p>
 
@@ -373,7 +359,6 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           </div>
         </div>
 
-        {/* Your Space */}
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
           <p className="text-xs uppercase tracking-wide text-slate-400">Your space</p>
           <p className="mt-2 text-base font-semibold text-slate-100">Private by default</p>
