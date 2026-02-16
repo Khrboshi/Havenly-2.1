@@ -37,7 +37,6 @@ function friendlyNameFromUser(user: any): string | null {
 
   const raw = candidates[0] ? String(candidates[0]).trim() : "";
   if (!raw) return null;
-
   return raw.replace(/\s+/g, " ").slice(0, 24) || null;
 }
 
@@ -45,6 +44,13 @@ function buildNewEntryHref(prompt: string) {
   const qs = new URLSearchParams();
   qs.set("prompt", prompt);
   return `/journal/new?${qs.toString()}`;
+}
+
+function isWithinLastDays(iso: string, days: number) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return false;
+  const ms = Date.now() - d.getTime();
+  return ms <= days * 24 * 60 * 60 * 1000;
 }
 
 export default function DashboardClient({ userId }: DashboardClientProps) {
@@ -91,6 +97,11 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
   const showCreditsResetHint =
     planType !== "PREMIUM" && !planLoading && (credits ?? 0) === 0;
+
+  const thisWeekCount = useMemo(() => {
+    if (loadingEntries) return null;
+    return entries.filter((e) => isWithinLastDays(e.created_at, 7)).length;
+  }, [entries, loadingEntries]);
 
   const loadEntries = useCallback(async () => {
     setLoadingEntries(true);
@@ -163,7 +174,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           )}
         </div>
 
-        {/* Minimal CTAs (no duplication) */}
+        {/* Minimal CTAs */}
         <div className="flex flex-wrap items-center gap-3">
           {latestEntry && (
             <Link
@@ -174,12 +185,15 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             </Link>
           )}
 
-          <Link
-            href={newEntryHref}
-            className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
-          >
-            Start writing
-          </Link>
+          {/* Always available */}
+          {canWrite && (
+            <Link
+              href={newEntryHref}
+              className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
+            >
+              Start writing
+            </Link>
+          )}
         </div>
       </div>
 
@@ -204,24 +218,19 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         </div>
       )}
 
-      {/* Cards (keep dashboard short + focused) */}
+      {/* Cards */}
       <div className="grid gap-4 sm:grid-cols-3">
+        {/* Replaces “Entries shown 4/5” */}
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-400">
-            Entries shown
-          </p>
+          <p className="text-xs uppercase tracking-wide text-slate-400">This week</p>
           <p className="mt-2 text-2xl font-semibold text-slate-100">
-            {loadingEntries ? "…" : `${entries.length} / 5`}
+            {loadingEntries ? "…" : `${thisWeekCount ?? 0} entries`}
           </p>
-          <p className="mt-1 text-sm text-slate-400">
-            Quick snapshot of recent activity
-          </p>
+          <p className="mt-1 text-sm text-slate-400">A gentle measure of consistency</p>
         </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-400">
-            Last entry
-          </p>
+          <p className="text-xs uppercase tracking-wide text-slate-400">Last entry</p>
           <p className="mt-2 text-base font-semibold text-slate-100">
             {loadingEntries
               ? "Loading…"
@@ -238,18 +247,37 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           </p>
         </div>
 
+        {/* Make Next Step actionable */}
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-          <p className="text-xs uppercase tracking-wide text-slate-400">
-            Next step
-          </p>
+          <p className="text-xs uppercase tracking-wide text-slate-400">Next step</p>
+
           <p className="mt-2 text-base font-semibold text-slate-100">
-            Write a new entry
+            {isFirstTime ? "Write your first entry" : "Write a new entry"}
           </p>
+
           <p className="mt-1 text-sm text-slate-400">
-            A short check-in is enough.
-            {!canReflect ? " AI reflections are paused until credits reset." : ""}
+            {canReflect
+              ? "Two minutes is enough. Start with one honest sentence."
+              : "Journal freely — AI reflections will resume when credits reset."}
           </p>
-          {/* No extra button here to avoid duplication (header has primary CTA). */}
+
+          <div className="mt-4 flex items-center gap-3">
+            <Link
+              href={newEntryHref}
+              className="inline-flex rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
+            >
+              Start writing
+            </Link>
+
+            {!canReflect && planType !== "PREMIUM" && (
+              <Link
+                href="/upgrade"
+                className="inline-flex rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
+              >
+                Upgrade
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </div>
