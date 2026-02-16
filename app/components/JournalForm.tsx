@@ -86,9 +86,20 @@ export default function JournalForm(_props: Props) {
 
       setStatus("success");
 
-      // Arm dashboard insight preview ONCE after a successful save
+      // ✅ Phase-2: arm Dashboard insight once + evolve stage + store safe upgrade seed
       try {
         sessionStorage.setItem("havenly:show_insight_preview", "1");
+
+        const prev = Number(sessionStorage.getItem("havenly:insight_stage") || "0");
+        const next = Math.min(3, prev + 1);
+        sessionStorage.setItem("havenly:insight_stage", String(next));
+
+        const seedTitle = (title || "").trim();
+        const seedPrompt = safeSlice(searchParams.get("prompt") ?? "", 180);
+        const seedMood = safeSlice(searchParams.get("mood") ?? "", 32);
+
+        const seed = seedTitle || seedPrompt || (seedMood ? `Mood: ${seedMood}` : "");
+        if (seed) sessionStorage.setItem("havenly:last_seed", seed.slice(0, 180));
       } catch {}
 
       const id = json?.id;
