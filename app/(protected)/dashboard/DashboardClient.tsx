@@ -106,7 +106,7 @@ function GentlePromptCard({
   );
 }
 
-function HiddenPatternCard() {
+function HiddenPatternCard({ resetHint }: { resetHint?: string }) {
   return (
     <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5">
       <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-emerald-500/10 blur-3xl" />
@@ -129,7 +129,10 @@ function HiddenPatternCard() {
             </p>
           </div>
 
-          <p className="text-xs text-slate-500">(Preview only. Unlock to reveal the full insight.)</p>
+          <p className="text-xs text-slate-500">
+            (Preview only. Unlock to reveal the full insight.)
+            {resetHint ? <span className="ml-2">{resetHint}</span> : null}
+          </p>
         </div>
 
         <Link
@@ -143,7 +146,7 @@ function HiddenPatternCard() {
   );
 }
 
-function ReflectionsRestingCard() {
+function ReflectionsRestingCard({ resetHint }: { resetHint?: string }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -152,6 +155,7 @@ function ReflectionsRestingCard() {
           <p className="text-sm text-slate-400">
             You can write freely anytime. Premium unlocks deeper reflections when you want them.
           </p>
+          {resetHint ? <p className="text-xs text-slate-500">{resetHint}</p> : null}
         </div>
 
         <Link
@@ -165,7 +169,13 @@ function ReflectionsRestingCard() {
   );
 }
 
-function LastCheckInCard({ latestEntry, loadingEntries }: { latestEntry: JournalEntry | null; loadingEntries: boolean }) {
+function LastCheckInCard({
+  latestEntry,
+  loadingEntries,
+}: {
+  latestEntry: JournalEntry | null;
+  loadingEntries: boolean;
+}) {
   const label = useMemo(() => {
     if (loadingEntries) return "…";
     return lastCheckInLabel(latestEntry?.created_at ?? null);
@@ -228,6 +238,9 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   const reflectionsPaused =
     !planLoading && planType !== "PREMIUM" && planType !== "TRIAL" && !canReflect;
 
+  // Safe hint (doesn't require new data fields)
+  const resetHint = reflectionsPaused ? "Resets next month." : undefined;
+
   const showHiddenPattern = reflectionsPaused && !isFirstTime;
   const showRestingCard = reflectionsPaused && isFirstTime;
 
@@ -242,7 +255,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     if (planType === "TRIAL") return "Reflections: unlimited";
     if (planLoading) return "Reflections: …";
     if (canReflect) return `Reflections: ${credits ?? 0}`;
-    return "Reflections: paused";
+    return "Reflections: paused (resets next month)";
   }, [planLoading, planType, canReflect, credits]);
 
   const thisWeekCount = useMemo(() => {
@@ -311,7 +324,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
   return (
     <div className="mx-auto max-w-6xl px-6 pt-24 pb-20 text-slate-200">
-      {/* Header (clean: no Open last entry, no Start writing) */}
+      {/* Header */}
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-2">
           <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
@@ -331,17 +344,23 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
               <span className="text-slate-200">{reflectionsLabel}</span>
             </span>
           </div>
+
+          {reflectionsPaused && (
+            <p className="text-xs text-slate-500">
+              You can keep journaling anytime. {resetHint}
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Upsell area (managed by user state) */}
+      {/* Upsell (state-based) */}
       {(showHiddenPattern || showRestingCard) && (
         <div className="mb-8">
-          {showHiddenPattern ? <HiddenPatternCard /> : <ReflectionsRestingCard />}
+          {showHiddenPattern ? <HiddenPatternCard resetHint={resetHint} /> : <ReflectionsRestingCard resetHint={resetHint} />}
         </div>
       )}
 
-      {/* Gentle prompts (primary actions) */}
+      {/* Gentle prompts */}
       <div className="mb-8">
         <p className="mb-3 text-xs uppercase tracking-wide text-slate-400">Gentle prompts</p>
         <div className="grid gap-3 sm:grid-cols-3">
@@ -351,7 +370,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         </div>
       </div>
 
-      {/* Status cards (functional + reassuring) */}
+      {/* Status cards */}
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
           <p className="text-xs uppercase tracking-wide text-slate-400">This week</p>
@@ -363,7 +382,6 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
         <LastCheckInCard latestEntry={latestEntry} loadingEntries={loadingEntries} />
 
-        {/* Replace NEXT STEP with reassurance (helps free-plan satisfaction) */}
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
           <p className="text-xs uppercase tracking-wide text-slate-400">Your space</p>
           <p className="mt-2 text-base font-semibold text-slate-100">Private by default</p>
