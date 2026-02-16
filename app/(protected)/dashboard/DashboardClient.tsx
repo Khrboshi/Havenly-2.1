@@ -90,9 +90,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   const showCreditsChip = planType !== "PREMIUM";
 
   const showCreditsResetHint =
-    planType !== "PREMIUM" &&
-    !planLoading &&
-    (credits ?? 0) === 0;
+    planType !== "PREMIUM" && !planLoading && (credits ?? 0) === 0;
 
   const loadEntries = useCallback(async () => {
     setLoadingEntries(true);
@@ -165,7 +163,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           )}
         </div>
 
-        {/* Minimal, non-duplicated CTAs */}
+        {/* Minimal CTAs (no duplication) */}
         <div className="flex flex-wrap items-center gap-3">
           {latestEntry && (
             <Link
@@ -185,7 +183,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         </div>
       </div>
 
-      {/* One upgrade surface (only here) */}
+      {/* Upgrade banner (only place it appears) */}
       {showUpgrade && (
         <div className="mb-8 flex flex-col gap-3 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -206,8 +204,8 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         </div>
       )}
 
-      {/* Cards */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-3">
+      {/* Cards (keep dashboard short + focused) */}
+      <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
           <p className="text-xs uppercase tracking-wide text-slate-400">
             Entries shown
@@ -216,7 +214,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             {loadingEntries ? "…" : `${entries.length} / 5`}
           </p>
           <p className="mt-1 text-sm text-slate-400">
-            Latest entries on your account
+            Quick snapshot of recent activity
           </p>
         </div>
 
@@ -236,7 +234,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
               ? ""
               : latestEntry
               ? formatLocalDateTime(latestEntry.created_at)
-              : "Create your first entry to get started"}
+              : "Start your first entry to begin"}
           </p>
         </div>
 
@@ -251,70 +249,8 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             A short check-in is enough.
             {!canReflect ? " AI reflections are paused until credits reset." : ""}
           </p>
-
-          {/* No duplicate button here (header already has primary CTA) */}
+          {/* No extra button here to avoid duplication (header has primary CTA). */}
         </div>
-      </div>
-
-      {/* Recent list */}
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Recent entries</h2>
-          <Link
-            href="/journal"
-            className="text-sm text-emerald-400 hover:text-emerald-300"
-          >
-            See all
-          </Link>
-        </div>
-
-        {loadingEntries ? (
-          <div className="space-y-3">
-            <div className="h-14 rounded-xl border border-white/10 bg-white/5" />
-            <div className="h-14 rounded-xl border border-white/10 bg-white/5" />
-            <div className="h-14 rounded-xl border border-white/10 bg-white/5" />
-          </div>
-        ) : entries.length === 0 ? (
-          <div className="rounded-xl border border-white/10 bg-black/10 p-5 text-slate-300">
-            <p className="font-medium">No entries yet</p>
-            <p className="mt-1 text-sm text-slate-400">
-              Create your first entry to start building momentum.
-            </p>
-
-            <div className="mt-4">
-              <Link
-                href={newEntryHref}
-                className="inline-flex rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
-              >
-                Start writing
-              </Link>
-            </div>
-          </div>
-        ) : (
-          <ul className="divide-y divide-white/10">
-            {entries.map((e) => (
-              <li key={e.id} className="py-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <p className="truncate font-medium text-slate-100">
-                      {titleOrUntitled(e.title)}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-400">
-                      {formatLocalDateTime(e.created_at)}
-                    </p>
-                  </div>
-
-                  <Link
-                    href={`/journal/${e.id}`}
-                    className="shrink-0 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-200 hover:bg-emerald-500/15"
-                  >
-                    Open
-                  </Link>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
       </div>
     </div>
   );
