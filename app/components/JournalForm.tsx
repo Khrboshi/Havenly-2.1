@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 type Props = {
-  userId?: string;
+  userId?: string; // kept for compatibility with your current import usage
 };
 
 function safeSlice(value: string, max: number) {
@@ -24,7 +24,7 @@ export default function JournalForm(_props: Props) {
   );
   const [error, setError] = useState<string>("");
 
-  // Only prefill once (prevents overwriting user typing)
+  // Only prefill once (prevents overwriting user typing on re-renders)
   const didPrefillRef = useRef(false);
 
   useEffect(() => {
@@ -36,13 +36,8 @@ export default function JournalForm(_props: Props) {
 
     const nextTitle = qpTitle || (qpMood ? `Mood: ${qpMood}` : "");
 
-    // Prefill content with the prompt (once), then a blank line so user can continue.
     const nextContent =
-      qpPrompt
-        ? `${qpPrompt}\n\n`
-        : qpMood
-        ? `Right now I’m feeling ${qpMood}.\n\n`
-        : "";
+      qpPrompt || (qpMood ? `Right now I’m feeling ${qpMood}.\n\n` : "");
 
     setTitle((prev) => (prev.trim() ? prev : nextTitle));
     setContent((prev) => (prev.trim() ? prev : nextContent));
@@ -93,6 +88,11 @@ export default function JournalForm(_props: Props) {
 
       setStatus("success");
 
+      // ✅ Arm the “Curiosity Gap” insight card to show ONCE on Dashboard
+      try {
+        sessionStorage.setItem("havenly:show_insight_preview", "1");
+      } catch {}
+
       const id = json?.id;
       if (id) {
         router.push(`/journal/${id}`);
@@ -127,8 +127,8 @@ export default function JournalForm(_props: Props) {
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Start here…"
-            className="mt-3 w-full min-h-[220px] rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/40 outline-none focus:border-white/20 focus:bg-white/[0.07]"
+            placeholder="How are you feeling today?"
+            className="mt-3 w-full min-h-[180px] rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/40 outline-none focus:border-white/20 focus:bg-white/[0.07]"
           />
         </div>
 
