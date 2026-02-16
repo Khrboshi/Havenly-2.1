@@ -63,18 +63,25 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [loadingName, setLoadingName] = useState(true);
 
+  // Normalize planType to string to avoid TS union mismatch
+  const plan = useMemo(() => String(planType ?? ""), [planType]);
+  const isPremium = plan === "PREMIUM";
+  const isTrial = plan === "TRIAL";
+
   // Writing is always allowed for an authenticated user.
   const canWrite = true;
 
   // AI reflections are gated by plan/credits.
-  const canReflect =
-    planType === "PREMIUM" || planType === "TRIAL" || (credits ?? 0) > 0;
+  const canReflect = isPremium || isTrial || (credits ?? 0) > 0;
 
-  const showUpgrade =
-    !planLoading && planType !== "PREMIUM" && !canReflect;
+  // Show Upgrade only in ONE place (banner)
+  const showUpgrade = !planLoading && !isPremium && !canReflect;
 
-  const readablePlan =
-    planType === "PREMIUM" ? "Premium" : planType === "TRIAL" ? "Trial" : "Free";
+  const readablePlan = useMemo(() => {
+    if (isPremium) return "Premium";
+    if (isTrial) return "Trial";
+    return "Free";
+  }, [isPremium, isTrial]);
 
   const latestEntry = useMemo(() => entries[0] ?? null, [entries]);
   const isFirstTime = !loadingEntries && entries.length === 0;
@@ -93,11 +100,11 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     return isFirstTime ? `Welcome to Havenly${name}` : `Welcome back${name}`;
   }, [displayName, isFirstTime, loadingEntries, loadingName]);
 
-  const showCreditsChip = planType !== "PREMIUM";
+  const showCreditsChip = !isPremium;
+  const showCreditsResetHint = !isPremium && !planLoading && (credits ?? 0) === 0;
 
-  const showCreditsResetHint =
-    planType !== "PREMIUM" && !planLoading && (credits ?? 0) === 0;
-
+  // NOTE: This is based on the last 5 entries you load. If you want true weekly count,
+  // we should query a count endpoint or fetch more.
   const thisWeekCount = useMemo(() => {
     if (loadingEntries) return null;
     return entries.filter((e) => isWithinLastDays(e.created_at, 7)).length;
@@ -162,7 +169,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
               </span>
             )}
 
-            {planType === "PREMIUM" && (
+            {isPremium && (
               <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
                 Unlimited credits
               </span>
@@ -185,7 +192,6 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             </Link>
           )}
 
-          {/* Always available */}
           {canWrite && (
             <Link
               href={newEntryHref}
@@ -197,7 +203,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         </div>
       </div>
 
-      {/* Upgrade banner (only place it appears) */}
+      {/* Upgrade banner (only place Upgrade appears) */}
       {showUpgrade && (
         <div className="mb-8 flex flex-col gap-3 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -220,7 +226,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
 
       {/* Cards */}
       <div className="grid gap-4 sm:grid-cols-3">
-        {/* Replaces “Entries shown 4/5” */}
+        {/* Meaningful replacement for “Entries shown 4/5” */}
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
           <p className="text-xs uppercase tracking-wide text-slate-400">This week</p>
           <p className="mt-2 text-2xl font-semibold text-slate-100">
@@ -247,7 +253,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           </p>
         </div>
 
-        {/* Make Next Step actionable */}
+        {/* Next step: always actionable */}
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
           <p className="text-xs uppercase tracking-wide text-slate-400">Next step</p>
 
@@ -261,22 +267,13 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
               : "Journal freely — AI reflections will resume when credits reset."}
           </p>
 
-          <div className="mt-4 flex items-center gap-3">
+          <div className="mt-4">
             <Link
               href={newEntryHref}
               className="inline-flex rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
             >
               Start writing
             </Link>
-
-            {!canReflect && planType !== "PREMIUM" && (
-              <Link
-                href="/upgrade"
-                className="inline-flex rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
-              >
-                Upgrade
-              </Link>
-            )}
           </div>
         </div>
       </div>
