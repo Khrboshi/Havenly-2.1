@@ -12,16 +12,14 @@ export default function UpgradePage() {
     <main className="mx-auto flex max-w-4xl flex-col gap-10 px-6 py-20 text-slate-200">
       <UpgradeClient />
 
-      {/* Header */}
       <header className="space-y-3">
         <h1 className="text-3xl font-semibold text-white">Premium</h1>
         <p className="max-w-2xl text-sm text-slate-400">
-          Havenly stays calm and private. Premium adds gentle clarity across
-          time — helping you understand what repeats, what shifts, and what helps.
+          Havenly stays calm and private. Premium adds gentle clarity across time — helping you
+          understand what repeats, what shifts, and what helps.
         </p>
       </header>
 
-      {/* Curiosity Insight Card */}
       <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
@@ -39,9 +37,7 @@ export default function UpgradePage() {
         </div>
       </div>
 
-      {/* Plan comparison */}
       <div className="grid gap-6 md:grid-cols-2">
-        {/* FREE */}
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-lg font-semibold text-white">Free</h2>
           <p className="mt-1 text-sm text-slate-400">
@@ -65,7 +61,6 @@ export default function UpgradePage() {
           </div>
         </div>
 
-        {/* PREMIUM */}
         <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-6">
           <div className="flex items-start justify-between">
             <h2 className="text-lg font-semibold text-white">Premium</h2>
