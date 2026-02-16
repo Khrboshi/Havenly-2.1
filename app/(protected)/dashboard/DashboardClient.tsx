@@ -15,6 +15,12 @@ type JournalEntry = {
   created_at: string;
 };
 
+function formatLocalDateTime(value: string) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return d.toLocaleString();
+}
+
 function titleOrUntitled(title: string | null) {
   return title?.trim() ? title : "Untitled entry";
 }
@@ -34,13 +40,19 @@ function friendlyNameFromUser(user: any): string | null {
   return raw.replace(/\s+/g, " ").slice(0, 24) || null;
 }
 
-function buildNewEntryHref(params: { prompt?: string; title?: string; mood?: string }) {
+function buildNewEntryHref(prompt: string) {
   const qs = new URLSearchParams();
-  if (params.prompt) qs.set("prompt", params.prompt);
-  if (params.title) qs.set("title", params.title);
-  if (params.mood) qs.set("mood", params.mood);
-  const s = qs.toString();
-  return s ? `/journal/new?${s}` : "/journal/new";
+  qs.set("prompt", prompt);
+  return `/journal/new?${qs.toString()}`;
+}
+
+function startOfNextMonth(d = new Date()) {
+  return new Date(d.getFullYear(), d.getMonth() + 1, 1, 0, 0, 0, 0);
+}
+
+function formatResetLabel(date: Date) {
+  // e.g. "Mar 1"
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 function isWithinLastDays(iso: string, days: number) {
@@ -50,170 +62,11 @@ function isWithinLastDays(iso: string, days: number) {
   return ms <= days * 24 * 60 * 60 * 1000;
 }
 
-function startOfDay(d: Date) {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  return x;
-}
-
-function diffDays(a: Date, b: Date) {
-  const ms = startOfDay(a).getTime() - startOfDay(b).getTime();
-  return Math.round(ms / (24 * 60 * 60 * 1000));
-}
-
-function timeOfDayGreeting() {
+function greetingByLocalTime() {
   const h = new Date().getHours();
-  if (h < 5) return "Good night";
   if (h < 12) return "Good morning";
   if (h < 18) return "Good afternoon";
   return "Good evening";
-}
-
-function lastCheckInLabel(latestIso?: string | null) {
-  if (!latestIso) return "No check-ins yet";
-  const d = new Date(latestIso);
-  if (Number.isNaN(d.getTime())) return "Last check-in: recently";
-  const daysAgo = diffDays(new Date(), d);
-  if (daysAgo === 0) return "Last check-in: today";
-  if (daysAgo === 1) return "Last check-in: yesterday";
-  return `Last check-in: ${d.toLocaleDateString(undefined, { weekday: "long" })}`;
-}
-
-function GentlePromptCard({
-  title,
-  subtitle,
-  href,
-}: {
-  title: string;
-  subtitle?: string;
-  href: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group block rounded-2xl border border-white/10 bg-white/5 p-4 hover:bg-white/10 transition"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-slate-100">{title}</p>
-          {subtitle ? <p className="mt-1 text-xs text-slate-400">{subtitle}</p> : null}
-        </div>
-        <div className="shrink-0 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-slate-300 group-hover:bg-white/10">
-          Start
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-function HiddenPatternCard({ resetHint }: { resetHint?: string }) {
-  return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5">
-      <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-emerald-500/10 blur-3xl" />
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-emerald-200">
-            <span className="text-lg" aria-hidden>
-              ✨
-            </span>
-            <h3 className="font-medium">Weekly pattern detected</h3>
-          </div>
-
-          <div className="max-w-xl text-sm text-slate-400">
-            <p>
-              We noticed a shift in your tone compared to last week. A recurring theme around{" "}
-              <span className="inline-block rounded bg-white/10 px-1 blur-sm text-transparent select-none">
-                energy drain
-              </span>{" "}
-              may be quietly affecting you.
-            </p>
-          </div>
-
-          <p className="text-xs text-slate-500">
-            (Preview only. Unlock to reveal the full insight.)
-            {resetHint ? <span className="ml-2">{resetHint}</span> : null}
-          </p>
-        </div>
-
-        <Link
-          href="/upgrade"
-          className="shrink-0 rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-black hover:bg-emerald-400 text-center"
-        >
-          Unlock insight
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-function ReflectionsRestingCard({ resetHint }: { resetHint?: string }) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <p className="text-sm font-semibold text-slate-100">Reflections are resting for now</p>
-          <p className="text-sm text-slate-400">
-            You can write freely anytime. Premium unlocks deeper reflections when you want them.
-          </p>
-          {resetHint ? <p className="text-xs text-slate-500">{resetHint}</p> : null}
-        </div>
-
-        <Link
-          href="/upgrade"
-          className="shrink-0 rounded-lg border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-slate-100 hover:bg-white/10 text-center"
-        >
-          View Premium
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-function LastCheckInCard({
-  latestEntry,
-  loadingEntries,
-}: {
-  latestEntry: JournalEntry | null;
-  loadingEntries: boolean;
-}) {
-  const label = useMemo(() => {
-    if (loadingEntries) return "…";
-    return lastCheckInLabel(latestEntry?.created_at ?? null);
-  }, [loadingEntries, latestEntry?.created_at]);
-
-  if (loadingEntries) {
-    return (
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-        <p className="text-xs uppercase tracking-wide text-slate-400">Last check-in</p>
-        <p className="mt-2 text-base font-semibold text-slate-100">…</p>
-        <p className="mt-1 text-sm text-slate-400" />
-      </div>
-    );
-  }
-
-  if (!latestEntry) {
-    return (
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-        <p className="text-xs uppercase tracking-wide text-slate-400">Last check-in</p>
-        <p className="mt-2 text-base font-semibold text-slate-100">{label}</p>
-        <p className="mt-1 text-sm text-slate-400">Start whenever you’re ready.</p>
-      </div>
-    );
-  }
-
-  return (
-    <Link
-      href={`/journal/${latestEntry.id}`}
-      className="block rounded-2xl border border-white/10 bg-white/5 p-5 hover:bg-white/10 transition"
-    >
-      <p className="text-xs uppercase tracking-wide text-slate-400">Last check-in</p>
-      <p className="mt-2 text-base font-semibold text-slate-100">{label}</p>
-      <p className="mt-1 text-sm text-slate-400">“{titleOrUntitled(latestEntry.title)}”</p>
-      <div className="mt-4 inline-flex rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-sm font-medium text-slate-200 hover:bg-white/10">
-        Open
-      </div>
-    </Link>
-  );
 }
 
 export default function DashboardClient({ userId }: DashboardClientProps) {
@@ -229,76 +82,70 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   const latestEntry = useMemo(() => entries[0] ?? null, [entries]);
   const isFirstTime = !loadingEntries && entries.length === 0;
 
+  // Writing is always allowed for an authenticated user.
+  const canWrite = true;
+
+  // AI reflections are gated by plan/credits.
   const canReflect =
     planType === "PREMIUM" || planType === "TRIAL" || (credits ?? 0) > 0;
+
+  const reflectionsPaused = !planLoading && !canReflect;
+
+  // Exact reset date label (client-side)
+  const resetDate = useMemo(() => startOfNextMonth(new Date()), []);
+  const resetLabel = useMemo(() => formatResetLabel(resetDate), [resetDate]);
 
   const readablePlan =
     planType === "PREMIUM" ? "Premium" : planType === "TRIAL" ? "Trial" : "Free";
 
-  const reflectionsPaused =
-    !planLoading && planType !== "PREMIUM" && planType !== "TRIAL" && !canReflect;
+  const promptCards = useMemo(() => {
+    return [
+      {
+        title: "How is your body feeling right now?",
+        sub: "Tension, calm, tired, restless — anything you notice.",
+        prompt: "How is your body feeling right now?",
+      },
+      {
+        title: "What is one thing occupying your mind?",
+        sub: "One sentence is enough.",
+        prompt: "What is one thing occupying your mind right now?",
+      },
+      {
+        title: "Just free write",
+        sub: "No structure. No rules. Start anywhere.",
+        prompt: "Just free write. Start anywhere.",
+      },
+    ];
+  }, []);
 
-  // Safe hint (doesn't require new data fields)
-  const resetHint = reflectionsPaused ? "Resets next month." : undefined;
-
-  const showHiddenPattern = reflectionsPaused && !isFirstTime;
-  const showRestingCard = reflectionsPaused && isFirstTime;
-
-  const greeting = useMemo(() => {
-    const base = timeOfDayGreeting();
-    if (loadingName) return base;
-    return displayName ? `${base}, ${displayName}` : base;
-  }, [displayName, loadingName]);
-
-  const reflectionsLabel = useMemo(() => {
-    if (planType === "PREMIUM") return "Reflections: unlimited";
-    if (planType === "TRIAL") return "Reflections: unlimited";
-    if (planLoading) return "Reflections: …";
-    if (canReflect) return `Reflections: ${credits ?? 0}`;
-    return "Reflections: paused (resets next month)";
-  }, [planLoading, planType, canReflect, credits]);
+  const headerSubtitle = useMemo(() => {
+    return "Choose a gentle prompt to begin.";
+  }, []);
 
   const thisWeekCount = useMemo(() => {
     if (loadingEntries) return null;
     return entries.filter((e) => isWithinLastDays(e.created_at, 7)).length;
   }, [entries, loadingEntries]);
 
-  const promptCards = useMemo(() => {
-    return [
-      {
-        title: "How is your body feeling right now?",
-        subtitle: "Tension, calm, tired, restless — anything you notice.",
-        href: buildNewEntryHref({
-          prompt: "How is my body feeling right now?\n\nI notice…",
-          title: "Body check-in",
-        }),
-      },
-      {
-        title: isFirstTime ? "What brought you here today?" : "What is one thing occupying your mind?",
-        subtitle: "One sentence is enough.",
-        href: buildNewEntryHref({
-          prompt: isFirstTime
-            ? "What brought me here today?\n\n"
-            : "One thing occupying my mind right now is…\n\nBecause…",
-          title: isFirstTime ? "First check-in" : "Mind check-in",
-        }),
-      },
-      {
-        title: "Just free write",
-        subtitle: "No structure. No rules. Start anywhere.",
-        href: buildNewEntryHref({}),
-      },
-    ];
-  }, [isFirstTime]);
+  // Pattern/upsell logic:
+  // Only show “Weekly pattern detected” when it’s credible:
+  // - reflections paused (free user w/ 0 credits)
+  // - user has enough entries to plausibly detect a pattern (>= 3)
+  const hasEnoughForPattern = entries.length >= 3;
+  const showWeeklyPatternCard = reflectionsPaused && hasEnoughForPattern;
+
+  // If not enough data, show a gentle “first insight” card instead (still an upsell).
+  const showFirstInsightCard = reflectionsPaused && !hasEnoughForPattern;
 
   const loadEntries = useCallback(async () => {
     setLoadingEntries(true);
+
     const { data, error } = await supabase
       .from("journal_entries")
       .select("id,title,created_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
-      .limit(20);
+      .limit(8);
 
     if (!error) setEntries((data as JournalEntry[]) || []);
     setLoadingEntries(false);
@@ -322,6 +169,11 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     loadDisplayName();
   }, [loadDisplayName]);
 
+  const greetingLine = useMemo(() => {
+    const who = displayName ? `, ${displayName}` : "";
+    return `${greetingByLocalTime()}${who}`;
+  }, [displayName]);
+
   return (
     <div className="mx-auto max-w-6xl px-6 pt-24 pb-20 text-slate-200">
       {/* Header */}
@@ -329,48 +181,133 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         <div className="space-y-2">
           <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
 
-          <div className="text-sm text-slate-400">
-            <span className="text-slate-100">{greeting}</span>
+          <div className="text-sm text-slate-300">
+            <span className="text-slate-100">{greetingLine}</span>
           </div>
 
-          <p className="text-sm text-slate-400">Choose a gentle prompt to begin.</p>
+          <p className="text-sm text-slate-400">{headerSubtitle}</p>
 
           <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-sm text-slate-400">
             <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
               Plan: <span className="text-slate-200">{readablePlan}</span>
             </span>
 
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-              <span className="text-slate-200">{reflectionsLabel}</span>
-            </span>
+            {planType === "PREMIUM" ? (
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                Reflections: <span className="text-slate-200">unlimited</span>
+              </span>
+            ) : reflectionsPaused ? (
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                Reflections:{" "}
+                <span className="text-slate-200">
+                  paused <span className="text-slate-400">(resets {resetLabel})</span>
+                </span>
+              </span>
+            ) : (
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                Reflections:{" "}
+                <span className="text-slate-200">
+                  {planLoading ? "…" : credits ?? 0}
+                </span>
+              </span>
+            )}
           </div>
 
           {reflectionsPaused && (
             <p className="text-xs text-slate-500">
-              You can keep journaling anytime. {resetHint}
+              You can keep journaling anytime. Resets {resetLabel}.
             </p>
+          )}
+        </div>
+
+        {/* Keep header CTAs minimal: no “Open last entry” here to avoid duplication */}
+        <div className="flex flex-wrap items-center gap-3">
+          {canWrite && (
+            <Link
+              href={buildNewEntryHref("Just free write. Start anywhere.")}
+              className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
+            >
+              Free write
+            </Link>
           )}
         </div>
       </div>
 
-      {/* Upsell (state-based) */}
-      {(showHiddenPattern || showRestingCard) && (
-        <div className="mb-8">
-          {showHiddenPattern ? <HiddenPatternCard resetHint={resetHint} /> : <ReflectionsRestingCard resetHint={resetHint} />}
+      {/* Upsell / Insight Area */}
+      {(showWeeklyPatternCard || showFirstInsightCard) && (
+        <div className="mb-8 rounded-2xl border border-white/10 bg-white/5 p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">✨</span>
+                <h3 className="font-medium text-slate-100">
+                  {showWeeklyPatternCard ? "Weekly pattern detected" : "Your first insight is waiting"}
+                </h3>
+              </div>
+
+              {showWeeklyPatternCard ? (
+                <p className="max-w-2xl text-sm text-slate-400">
+                  We noticed a shift in your tone compared to last week. A recurring theme around{" "}
+                  <span className="blur-sm bg-white/10 px-1 rounded text-transparent select-none">
+                    energy drains
+                  </span>{" "}
+                  may be quietly affecting you.
+                </p>
+              ) : (
+                <p className="max-w-2xl text-sm text-slate-400">
+                  After{" "}
+                  <span className="text-slate-200">3 check-ins</span>, Havenly can start spotting gentle patterns
+                  to help you find clarity.{" "}
+                  <span className="text-slate-500">(Reflections reset {resetLabel}.)</span>
+                </p>
+              )}
+
+              <p className="text-xs text-slate-500">
+                Preview only. Unlock to reveal the full insight{reflectionsPaused ? ` — resets ${resetLabel}.` : "."}
+              </p>
+            </div>
+
+            <Link
+              href="/upgrade"
+              className="shrink-0 inline-flex items-center justify-center rounded-md bg-emerald-500 px-5 py-2.5 text-sm font-medium text-black hover:bg-emerald-400"
+            >
+              Unlock insight
+            </Link>
+          </div>
         </div>
       )}
 
-      {/* Gentle prompts */}
+      {/* Gentle Prompts */}
       <div className="mb-8">
-        <p className="mb-3 text-xs uppercase tracking-wide text-slate-400">Gentle prompts</p>
+        <p className="mb-3 text-xs uppercase tracking-wide text-slate-500">
+          Gentle prompts
+        </p>
+
         <div className="grid gap-3 sm:grid-cols-3">
           {promptCards.map((c) => (
-            <GentlePromptCard key={c.title} title={c.title} subtitle={c.subtitle} href={c.href} />
+            <div
+              key={c.title}
+              className="rounded-2xl border border-white/10 bg-white/5 p-4"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="font-medium text-slate-100">{c.title}</p>
+                  <p className="mt-1 text-sm text-slate-400">{c.sub}</p>
+                </div>
+
+                <Link
+                  href={buildNewEntryHref(c.prompt)}
+                  className="shrink-0 rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-slate-200 hover:bg-white/10"
+                >
+                  Start
+                </Link>
+              </div>
+            </div>
           ))}
         </div>
       </div>
 
-      {/* Status cards */}
+      {/* Snapshot cards */}
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
           <p className="text-xs uppercase tracking-wide text-slate-400">This week</p>
@@ -380,7 +317,34 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           <p className="mt-1 text-sm text-slate-400">A gentle measure of consistency</p>
         </div>
 
-        <LastCheckInCard latestEntry={latestEntry} loadingEntries={loadingEntries} />
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+          <p className="text-xs uppercase tracking-wide text-slate-400">Last check-in</p>
+          <p className="mt-2 text-base font-semibold text-slate-100">
+            {loadingEntries
+              ? "Loading…"
+              : latestEntry
+              ? titleOrUntitled(latestEntry.title)
+              : "No entries yet"}
+          </p>
+          <p className="mt-1 text-sm text-slate-400">
+            {loadingEntries
+              ? ""
+              : latestEntry
+              ? formatLocalDateTime(latestEntry.created_at)
+              : "Start your first entry to begin"}
+          </p>
+
+          {latestEntry && (
+            <div className="mt-4">
+              <Link
+                href={`/journal/${latestEntry.id}`}
+                className="inline-flex rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
+              >
+                Open
+              </Link>
+            </div>
+          )}
+        </div>
 
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
           <p className="text-xs uppercase tracking-wide text-slate-400">Your space</p>
@@ -388,6 +352,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           <p className="mt-1 text-sm text-slate-400">
             Write freely. When you’re ready, Premium helps you notice patterns and find clarity.
           </p>
+
           <div className="mt-4">
             <Link
               href="/upgrade"
