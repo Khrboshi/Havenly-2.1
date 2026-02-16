@@ -27,8 +27,14 @@ export default function PersonalizedTeaser() {
     let seed = "";
     try {
       seed = sessionStorage.getItem("havenly:last_seed") || "";
+      if (!seed) {
+        const url = new URL(window.location.href);
+        seed = url.searchParams.get("prompt") || "";
+      }
     } catch {}
+
     const cleaned = seed.trim();
+
     return {
       hasSeed: Boolean(cleaned),
       theme: inferTheme(cleaned || "energy"),
@@ -47,9 +53,7 @@ export default function PersonalizedTeaser() {
           without judgment.
         </>
       ) : (
-        <>
-          Premium helps you notice what repeats over time — gently, without pressure.
-        </>
+        <>Premium helps you notice what repeats over time — gently, without pressure.</>
       )}
     </p>
   );
