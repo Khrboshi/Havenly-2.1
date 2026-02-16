@@ -73,6 +73,9 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   // Show insight preview once after save
   const [insightArmed, setInsightArmed] = useState(false);
 
+  // Insight “stage” (1→3) to evolve messaging
+  const [insightStage, setInsightStage] = useState<number>(0);
+
   useEffect(() => {
     try {
       const v = sessionStorage.getItem("havenly:show_insight_preview");
@@ -80,6 +83,9 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         setInsightArmed(true);
         sessionStorage.removeItem("havenly:show_insight_preview");
       }
+
+      const stage = Number(sessionStorage.getItem("havenly:insight_stage") || "0");
+      setInsightStage(Number.isFinite(stage) ? stage : 0);
     } catch {}
   }, []);
 
@@ -132,13 +138,36 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     return Array.from({ length: total }, (_, i) => i < filled);
   }, [thisWeekCount]);
 
-  // --- Insight visibility rules (the important part) ---
+  // --- Insight visibility rules ---
   // Show insight if reflections are paused AND (just saved OR enough history)
   const hasEnoughForPattern = entries.length >= 3;
   const showInsightArea = reflectionsPaused && (insightArmed || hasEnoughForPattern);
 
   const showWeeklyPatternCard = showInsightArea && hasEnoughForPattern;
   const showFirstInsightCard = showInsightArea && !hasEnoughForPattern;
+
+  // Evolving copy (stage-based)
+  const evolvingInsight = useMemo(() => {
+    if (insightStage <= 1) {
+      return {
+        title: "A gentle pattern is forming",
+        body:
+          "Keep writing as you are. After a few check-ins, Havenly can start spotting what repeats — softly.",
+      };
+    }
+    if (insightStage === 2) {
+      return {
+        title: "A pattern is starting to repeat",
+        body:
+          "A small thread may be showing up more than once. Premium helps you see it clearly — without pressure.",
+      };
+    }
+    return {
+      title: "Weekly pattern detected",
+      body:
+        "We noticed a subtle shift compared to last week. There may be a recurring theme quietly affecting your energy.",
+    };
+  }, [insightStage]);
 
   const threadPrompt = useMemo(() => {
     if (!latestEntry) return "Take a moment — what feels present for you right now?";
@@ -238,15 +267,13 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
               <div className="flex items-center gap-2">
                 <span className="text-lg">✨</span>
                 <h3 className="font-medium text-slate-100">
-                  {showWeeklyPatternCard
-                    ? "Weekly pattern detected"
-                    : "Your first insight is waiting"}
+                  {showWeeklyPatternCard ? evolvingInsight.title : "Your first insight is waiting"}
                 </h3>
               </div>
 
               {showWeeklyPatternCard ? (
                 <p className="max-w-2xl text-sm text-slate-400">
-                  We noticed a shift in your tone compared to last week. A recurring theme around{" "}
+                  {evolvingInsight.body} A recurring theme around{" "}
                   <span className="blur-sm bg-white/10 px-1 rounded text-transparent select-none">
                     energy drains
                   </span>{" "}
@@ -312,7 +339,9 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             {weekDots.map((on, i) => (
               <span
                 key={i}
-                className={`h-2.5 w-2.5 rounded-full ${on ? "bg-emerald-400/90" : "bg-white/10"}`}
+                className={`h-2.5 w-2.5 rounded-full ${
+                  on ? "bg-emerald-400/90" : "bg-white/10"
+                }`}
               />
             ))}
           </div>
