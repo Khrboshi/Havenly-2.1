@@ -24,7 +24,6 @@ export default function JournalForm(_props: Props) {
   );
   const [error, setError] = useState<string>("");
 
-  // Only prefill once (prevents overwriting user typing on re-renders)
   const didPrefillRef = useRef(false);
 
   useEffect(() => {
@@ -35,7 +34,6 @@ export default function JournalForm(_props: Props) {
     const qpMood = safeSlice(searchParams.get("mood") ?? "", 32);
 
     const nextTitle = qpTitle || (qpMood ? `Mood: ${qpMood}` : "");
-
     const nextContent =
       qpPrompt || (qpMood ? `Right now I’m feeling ${qpMood}.\n\n` : "");
 
@@ -88,7 +86,7 @@ export default function JournalForm(_props: Props) {
 
       setStatus("success");
 
-      // ✅ Arm the “Curiosity Gap” insight card to show ONCE on Dashboard
+      // Arm dashboard insight preview ONCE after a successful save
       try {
         sessionStorage.setItem("havenly:show_insight_preview", "1");
       } catch {}
