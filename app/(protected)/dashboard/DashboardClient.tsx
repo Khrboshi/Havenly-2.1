@@ -82,7 +82,6 @@ function lastCheckInLabel(latestIso?: string | null) {
   const daysAgo = diffDays(new Date(), d);
   if (daysAgo === 0) return "Last check-in: today";
   if (daysAgo === 1) return "Last check-in: yesterday";
-  // e.g., "Last check-in: Tuesday"
   return `Last check-in: ${d.toLocaleDateString(undefined, { weekday: "long" })}`;
 }
 
@@ -103,15 +102,52 @@ function GentlePromptCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-semibold text-slate-100">{title}</p>
-          {subtitle ? (
-            <p className="mt-1 text-xs text-slate-400">{subtitle}</p>
-          ) : null}
+          {subtitle ? <p className="mt-1 text-xs text-slate-400">{subtitle}</p> : null}
         </div>
         <div className="shrink-0 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-slate-300 group-hover:bg-white/10">
           Start
         </div>
       </div>
     </Link>
+  );
+}
+
+function HiddenPatternCard({ onUnlock }: { onUnlock: () => void }) {
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5">
+      <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-emerald-500/10 blur-3xl" />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-emerald-200">
+            <span className="text-lg" aria-hidden>
+              ✨
+            </span>
+            <h3 className="font-medium">Weekly pattern detected</h3>
+          </div>
+
+          <div className="max-w-xl text-sm text-slate-400">
+            <p>
+              We noticed a shift in your tone compared to last week. A recurring theme around{" "}
+              <span className="inline-block rounded bg-white/10 px-1 blur-sm text-transparent select-none">
+                energy drain
+              </span>{" "}
+              may be quietly affecting you.
+            </p>
+          </div>
+
+          <p className="text-xs text-slate-500">
+            (Preview only. Unlock to reveal the full insight.)
+          </p>
+        </div>
+
+        <button
+          onClick={onUnlock}
+          className="shrink-0 rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-black hover:bg-emerald-400"
+        >
+          Unlock insight
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -128,9 +164,12 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   // Writing is always allowed.
   const canWrite = true;
 
-  // AI reflections gated.
+  // Reflections are gated by plan/credits.
   const canReflect =
     planType === "PREMIUM" || planType === "TRIAL" || (credits ?? 0) > 0;
+
+  // When paused, show the “curiosity gap” card (instead of a warning bar)
+  const showHiddenPattern = !planLoading && planType !== "PREMIUM" && !canReflect;
 
   const readablePlan =
     planType === "PREMIUM" ? "Premium" : planType === "TRIAL" ? "Trial" : "Free";
@@ -138,83 +177,54 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
   const latestEntry = useMemo(() => entries[0] ?? null, [entries]);
   const isFirstTime = !loadingEntries && entries.length === 0;
 
-  // Gentle inquiry: primary “tone line” + cards
-  const gentleLine = useMemo(() => {
+  const promptText = useMemo(() => {
     return isFirstTime
       ? "There’s no pressure here. Start with one honest sentence."
       : "Take a moment — what feels present for you right now?";
   }, [isFirstTime]);
 
   const primaryStartHref = useMemo(() => {
-    // Default prompt for the big CTA (keeps it easy)
     const prompt = isFirstTime
-      ? "In one sentence, what brought you here today?"
-      : "Take a moment — what feels present for you right now?";
+      ? "In one sentence, what brought you here today?\n\n"
+      : "Take a moment — what feels present for you right now?\n\n";
     return buildNewEntryHref({ prompt });
   }, [isFirstTime]);
 
   const promptCards = useMemo(() => {
-    // Cards should be specific, low-effort, and emotionally safe.
-    // They link into /journal/new using your query param prefill.
-    const cards = [
+    const base = [
       {
         title: "How is your body feeling right now?",
         subtitle: "Tension, calm, tired, restless — anything you notice.",
         href: buildNewEntryHref({
-          prompt:
-            "How is my body feeling right now?\n\nI notice…",
+          prompt: "How is my body feeling right now?\n\nI notice…",
           title: "Body check-in",
         }),
       },
       {
-        title: "What is one thing occupying your mind?",
-        subtitle: "A thought, a worry, a hope — just one.",
+        title: isFirstTime ? "What brought you here today?" : "What is one thing occupying your mind?",
+        subtitle: "One sentence is enough.",
         href: buildNewEntryHref({
-          prompt:
-            "One thing occupying my mind right now is…\n\nBecause…",
-          title: "Mind check-in",
+          prompt: isFirstTime
+            ? "What brought me here today?\n\n"
+            : "One thing occupying my mind right now is…\n\nBecause…",
+          title: isFirstTime ? "First check-in" : "Mind check-in",
         }),
       },
       {
         title: "Just free write",
         subtitle: "No structure. No rules. Start anywhere.",
-        href: buildNewEntryHref({
-          prompt: "",
-          title: "",
-        }),
+        href: buildNewEntryHref({}),
       },
     ];
-
-    // First time: make the first card even easier.
-    if (isFirstTime) {
-      cards[1] = {
-        title: "What brought you here today?",
-        subtitle: "One sentence is enough.",
-        href: buildNewEntryHref({
-          prompt: "What brought me here today?\n\n",
-          title: "First check-in",
-        }),
-      };
-    }
-
-    return cards;
+    return base;
   }, [isFirstTime]);
 
-  // “Reflections” label (avoid “Credits: 0” anxiety)
   const reflectionsLabel = useMemo(() => {
     if (planType === "PREMIUM") return "Reflections: unlimited";
     if (planLoading) return "Reflections: …";
     if (canReflect) return `Reflections: ${credits ?? 0}`;
     return "Reflections: paused";
   }, [planLoading, planType, canReflect, credits]);
-
-  const showReflectionsChip = planType !== "PREMIUM";
-  const showReflectionsResetHint =
-    planType !== "PREMIUM" && !planLoading && !canReflect;
-
-  // Only one gentle “info” block when reflections are paused (NOT a warning bar)
-  const showGentlePauseInfo =
-    !planLoading && planType !== "PREMIUM" && !canReflect;
 
   const thisWeekCount = useMemo(() => {
     if (loadingEntries) return null;
@@ -226,15 +236,20 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     return lastCheckInLabel(latestEntry?.created_at ?? null);
   }, [loadingEntries, latestEntry?.created_at]);
 
+  const greeting = useMemo(() => {
+    const base = timeOfDayGreeting();
+    if (loadingName) return base;
+    return displayName ? `${base}, ${displayName}` : base;
+  }, [displayName, loadingName]);
+
   const loadEntries = useCallback(async () => {
     setLoadingEntries(true);
-
     const { data, error } = await supabase
       .from("journal_entries")
       .select("id,title,created_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
-      .limit(5);
+      .limit(20);
 
     if (!error) setEntries((data as JournalEntry[]) || []);
     setLoadingEntries(false);
@@ -258,11 +273,20 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
     loadDisplayName();
   }, [loadDisplayName]);
 
-  const greeting = useMemo(() => {
-    const base = timeOfDayGreeting();
-    if (loadingName) return base;
-    return displayName ? `${base}, ${displayName}` : base;
-  }, [displayName, loadingName]);
+  // Header CTAs: keep minimal & non-duplicated
+  const showOpenLastEntry = !!latestEntry;
+
+  // Next-step card becomes “View journal / open last entry” (not a second Start writing)
+  const nextStepTitle = useMemo(() => {
+    if (isFirstTime) return "Start gently";
+    return "Pick up the thread";
+  }, [isFirstTime]);
+
+  const nextStepBody = useMemo(() => {
+    if (isFirstTime) return "Your first check-in can be just one sentence.";
+    if (latestEntry) return "Open your last entry, then write a small update.";
+    return "Open your journal and continue when you’re ready.";
+  }, [isFirstTime, latestEntry]);
 
   return (
     <div className="mx-auto max-w-6xl px-6 pt-24 pb-20 text-slate-200">
@@ -275,36 +299,28 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
             <span className="text-slate-100">{greeting}</span>
           </div>
 
-          <p className="text-sm text-slate-400">{gentleLine}</p>
+          <p className="text-sm text-slate-400">{promptText}</p>
 
           <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-sm text-slate-400">
             <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
               Plan: <span className="text-slate-200">{readablePlan}</span>
             </span>
 
-            {showReflectionsChip && (
+            {planType === "PREMIUM" ? (
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                Reflections: unlimited
+              </span>
+            ) : (
               <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
                 <span className="text-slate-200">{reflectionsLabel}</span>
               </span>
             )}
-
-            {planType === "PREMIUM" && (
-              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1">
-                Reflections: unlimited
-              </span>
-            )}
           </div>
-
-          {showReflectionsResetHint && (
-            <p className="text-xs text-slate-500">
-              Reflections are resting for now. You can keep journaling freely.
-            </p>
-          )}
         </div>
 
         {/* Minimal CTAs */}
         <div className="flex flex-wrap items-center gap-3">
-          {latestEntry && (
+          {showOpenLastEntry && latestEntry && (
             <Link
               href={`/journal/${latestEntry.id}`}
               className="rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
@@ -316,7 +332,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
           {canWrite && (
             <Link
               href={primaryStartHref}
-              className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
+              className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-semibold text-black hover:bg-emerald-400"
             >
               Start writing
             </Link>
@@ -324,24 +340,10 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         </div>
       </div>
 
-      {/* Gentle pause info (neutral, no “warning bar” vibe) */}
-      {showGentlePauseInfo && (
-        <div className="mb-8 rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p className="text-sm font-medium text-slate-100">
-            AI reflections are resting for now.
-          </p>
-          <p className="mt-1 text-xs text-slate-400">
-            You can still journal anytime. If you’d like reflections back immediately, you can upgrade.
-          </p>
-
-          <div className="mt-3">
-            <Link
-              href="/upgrade"
-              className="inline-flex items-center justify-center rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
-            >
-              View Premium
-            </Link>
-          </div>
+      {/* Curiosity gap upgrade (only when reflections paused) */}
+      {showHiddenPattern && (
+        <div className="mb-8">
+          <HiddenPatternCard onUnlock={() => (window.location.href = "/upgrade")} />
         </div>
       )}
 
@@ -352,12 +354,7 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         </p>
         <div className="grid gap-3 sm:grid-cols-3">
           {promptCards.map((c) => (
-            <GentlePromptCard
-              key={c.title}
-              title={c.title}
-              subtitle={c.subtitle}
-              href={c.href}
-            />
+            <GentlePromptCard key={c.title} title={c.title} subtitle={c.subtitle} href={c.href} />
           ))}
         </div>
       </div>
@@ -387,21 +384,27 @@ export default function DashboardClient({ userId }: DashboardClientProps) {
         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
           <p className="text-xs uppercase tracking-wide text-slate-400">Next step</p>
 
-          <p className="mt-2 text-base font-semibold text-slate-100">
-            {isFirstTime ? "Begin gently" : "Continue gently"}
-          </p>
+          <p className="mt-2 text-base font-semibold text-slate-100">{nextStepTitle}</p>
+          <p className="mt-1 text-sm text-slate-400">{nextStepBody}</p>
 
-          <p className="mt-1 text-sm text-slate-400">
-            Start with one sentence. You can always stop, save, or come back later.
-          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            {latestEntry ? (
+              <Link
+                href={`/journal/${latestEntry.id}`}
+                className="inline-flex rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
+              >
+                Open last entry
+              </Link>
+            ) : (
+              <Link
+                href="/journal"
+                className="inline-flex rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
+              >
+                View journal
+              </Link>
+            )}
 
-          <div className="mt-4">
-            <Link
-              href={primaryStartHref}
-              className="inline-flex rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
-            >
-              Start writing
-            </Link>
+            {/* Only ONE “Start writing” button exists (top-right). */}
           </div>
         </div>
       </div>
