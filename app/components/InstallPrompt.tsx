@@ -8,9 +8,15 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
 
-const STATE_KEY = "havenly_install_prompt_v3";
+const STATE_KEY = "havenly_install_prompt_state_v4"; // bump when behavior changes
 const INSTALLED_KEY = "havenly_installed_v1";
+
+// Smart timing knobs
 const SNOOZE_DAYS = 5;
+const MIN_SECONDS_ON_SITE = 25;          // require time-on-site
+const MIN_PAGE_VIEWS = 2;                // require a bit of exploration
+const MIN_SECONDS_SINCE_FIRST_SEEN = 10; // don't pop instantly on first view
+const COOLDOWN_AFTER_ACCEPT_DAYS = 365;  // never re-prompt for a long time after accept
 
 function addDays(days: number) {
   return Date.now() + days * 24 * 60 * 60 * 1000;
@@ -122,85 +128,183 @@ function SparkleIcon(props: { className?: string }) {
   );
 }
 
+type PromptState = {
+  dismissedUntil?: number;
+  firstSeenAt?: number;
+  pageViews?: number;
+  totalSeconds?: number;
+  lastTickAt?: number;
+  acceptedAt?: number;
+};
+
+function shouldNeverPromptOnPath(path: string) {
+  // Keep install UX clean: do not interrupt these routes
+  return (
+    path.startsWith("/auth") ||
+    path.startsWith("/magic-login") ||
+    path.startsWith("/logout") ||
+    path.startsWith("/install")
+  );
+}
+
 export default function InstallPrompt() {
   const pathname = usePathname();
-
-  // Don’t show the modal on pages that already guide the user.
-  const blocked =
-    pathname === "/install" ||
-    pathname.startsWith("/auth") ||
-    pathname === "/magic-login";
 
   const isIOS = useIsIOS();
   const isSafariIOS = useIsSafariIOS(isIOS);
 
-  const [deferredPrompt, setDeferredPrompt] =
-    useState<BeforeInstallPromptEvent | null>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [show, setShow] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
+  // Engagement tracking (page views + time on site)
+  useEffect(() => {
+    if (!mounted) return;
+    if (typeof window === "undefined") return;
+
+    // Never show inside installed app
+    if (isStandalone()) {
+      const prev = readJSON<{ installedAt?: number }>(INSTALLED_KEY);
+      writeJSON(INSTALLED_KEY, { installedAt: prev?.installedAt ?? Date.now(), lastSeenStandaloneAt: Date.now() });
+      setShow(false);
+      return;
+    }
+
+    // Initialize/update state
+    const state = (readJSON<PromptState>(STATE_KEY) ?? {}) as PromptState;
+
+    if (!state.firstSeenAt) state.firstSeenAt = Date.now();
+    state.pageViews = (state.pageViews ?? 0) + 1;
+
+    // Timer accumulation
+    state.lastTickAt = state.lastTickAt ?? Date.now();
+    writeJSON(STATE_KEY, state);
+
+    const interval = window.setInterval(() => {
+      const s = (readJSON<PromptState>(STATE_KEY) ?? {}) as PromptState;
+      const now = Date.now();
+      const last = s.lastTickAt ?? now;
+      const deltaSec = Math.max(0, Math.round((now - last) / 1000));
+      s.totalSeconds = (s.totalSeconds ?? 0) + deltaSec;
+      s.lastTickAt = now;
+      writeJSON(STATE_KEY, s);
+    }, 3000);
+
+    return () => window.clearInterval(interval);
+  }, [mounted, pathname]);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (blocked) {
+    if (!mounted) return;
+
+    // Hard guards
+    if (shouldNeverPromptOnPath(pathname)) {
       setShow(false);
-      setDeferredPrompt(null);
       return;
     }
 
-    const installedState = readJSON<{ installedAt?: number; lastSeenStandaloneAt?: number }>(
-      INSTALLED_KEY
-    );
-
+    // If currently running as installed app: record + never show prompt.
     if (isStandalone()) {
-      writeJSON(INSTALLED_KEY, {
-        installedAt: installedState?.installedAt ?? Date.now(),
-        lastSeenStandaloneAt: Date.now(),
-      });
       setShow(false);
       setDeferredPrompt(null);
       return;
     }
 
-    // If user uninstalled, allow prompting again.
-    if (installedState?.installedAt) {
-      removeKey(INSTALLED_KEY);
-      removeKey(STATE_KEY);
+    // If we previously accepted, cool down for a long time
+    const state = readJSON<PromptState>(STATE_KEY);
+    if (state?.acceptedAt && Date.now() < (state.acceptedAt + COOLDOWN_AFTER_ACCEPT_DAYS * 86400000)) {
+      setShow(false);
+      return;
     }
 
-    const state = readJSON<{ dismissedUntil?: number }>(STATE_KEY);
-    if (state?.dismissedUntil && Date.now() < state.dismissedUntil) return;
+    // Snooze window
+    if (state?.dismissedUntil && Date.now() < state.dismissedUntil) {
+      setShow(false);
+      return;
+    }
 
+    // Don’t pop instantly on first sight
+    if (state?.firstSeenAt && Date.now() - state.firstSeenAt < MIN_SECONDS_SINCE_FIRST_SEEN * 1000) {
+      setShow(false);
+      return;
+    }
+
+    // Listen for install eligibility (Chrome/Edge)
     const handler = (e: Event) => {
+      // We capture the event so we can trigger it from our UI button
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setShow(true);
+      // do NOT setShow(true) here — we decide based on engagement gates
     };
 
     window.addEventListener("beforeinstallprompt", handler);
 
-    if (isSafariIOS) setShow(true);
-
     const onInstalled = () => {
-      writeJSON(INSTALLED_KEY, {
-        installedAt: Date.now(),
-        lastSeenStandaloneAt: Date.now(),
-      });
+      writeJSON(INSTALLED_KEY, { installedAt: Date.now(), lastSeenStandaloneAt: Date.now() });
+      // mark accepted so we don't re-prompt
+      const s = (readJSON<PromptState>(STATE_KEY) ?? {}) as PromptState;
+      s.acceptedAt = Date.now();
+      writeJSON(STATE_KEY, s);
+
       setShow(false);
       setDeferredPrompt(null);
     };
-
     window.addEventListener("appinstalled", onInstalled);
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handler);
       window.removeEventListener("appinstalled", onInstalled);
     };
-  }, [blocked, isSafariIOS]);
+  }, [mounted, pathname]);
+
+  // Decide whether to show (smart timing)
+  useEffect(() => {
+    if (!mounted) return;
+    if (typeof window === "undefined") return;
+
+    if (shouldNeverPromptOnPath(pathname)) {
+      setShow(false);
+      return;
+    }
+
+    if (isStandalone()) {
+      setShow(false);
+      return;
+    }
+
+    const state = (readJSON<PromptState>(STATE_KEY) ?? {}) as PromptState;
+
+    // iOS: eligible only on Safari iOS
+    const eligibleIOS = isIOS && isSafariIOS;
+
+    // Non-iOS: eligible only if we actually captured beforeinstallprompt
+    const eligibleDesktop = !isIOS && !!deferredPrompt;
+
+    const eligible = eligibleIOS || eligibleDesktop;
+    if (!eligible) {
+      setShow(false);
+      return;
+    }
+
+    // Engagement gates
+    const pv = state.pageViews ?? 0;
+    const sec = state.totalSeconds ?? 0;
+
+    const meetsEngagement = pv >= MIN_PAGE_VIEWS || sec >= MIN_SECONDS_ON_SITE;
+
+    // Extra guard: don’t show on very first hit
+    const notInstant = !state.firstSeenAt || (Date.now() - state.firstSeenAt >= MIN_SECONDS_SINCE_FIRST_SEEN * 1000);
+
+    if (meetsEngagement && notInstant) setShow(true);
+    else setShow(false);
+  }, [mounted, pathname, deferredPrompt, isIOS, isSafariIOS]);
 
   const dismiss = () => {
-    writeJSON(STATE_KEY, { dismissedUntil: addDays(SNOOZE_DAYS) });
+    const s = (readJSON<PromptState>(STATE_KEY) ?? {}) as PromptState;
+    s.dismissedUntil = addDays(SNOOZE_DAYS);
+    writeJSON(STATE_KEY, s);
     setShow(false);
   };
 
@@ -213,24 +317,27 @@ export default function InstallPrompt() {
     setShow(false);
     setDeferredPrompt(null);
 
+    const s = (readJSON<PromptState>(STATE_KEY) ?? {}) as PromptState;
+
     if (choice.outcome === "accepted") {
-      writeJSON(INSTALLED_KEY, {
-        installedAt: Date.now(),
-        lastSeenStandaloneAt: Date.now(),
-      });
+      s.acceptedAt = Date.now();
+      writeJSON(STATE_KEY, s);
+      writeJSON(INSTALLED_KEY, { installedAt: Date.now(), lastSeenStandaloneAt: Date.now() });
       return;
     }
 
-    writeJSON(STATE_KEY, { dismissedUntil: addDays(SNOOZE_DAYS) });
+    s.dismissedUntil = addDays(SNOOZE_DAYS);
+    writeJSON(STATE_KEY, s);
   };
 
   if (!mounted) return null;
   if (!show) return null;
-  if (blocked) return null;
 
-  // Non-iOS: only show if eligible event exists
-  if (!isIOS && !deferredPrompt) return null;
+  // iOS: only Safari iOS (avoid in-app webviews)
   if (isIOS && !isSafariIOS) return null;
+
+  // Non-iOS: only show if we actually have the event
+  if (!isIOS && !deferredPrompt) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
@@ -263,14 +370,18 @@ export default function InstallPrompt() {
             <div className="flex-1">
               <p className="text-sm font-semibold text-white">Install Havenly</p>
               <p className="mt-1 text-xs leading-relaxed text-slate-300">
-                Faster, full-screen journaling—like a native app. Keeps your last opened screens available
-                even when you’re offline.
+                Faster, full-screen journaling—like a native app. Keeps your last opened screens available even when
+                you’re offline.
               </p>
             </div>
 
             <button
               onClick={dismiss}
-              className="rounded-full border border-slate-700/60 bg-slate-900/30 px-3 py-1 text-xs text-slate-200 hover:bg-slate-900/60"
+              className={[
+                "rounded-full border border-slate-700/60 bg-slate-900/30",
+                "px-3 py-1 text-xs text-slate-200 hover:bg-slate-900/60",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/40",
+              ].join(" ")}
             >
               Not now
             </button>
@@ -318,14 +429,25 @@ export default function InstallPrompt() {
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button
                     onClick={install}
-                    className="inline-flex flex-1 items-center justify-center rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-300"
+                    className={[
+                      "inline-flex flex-1 items-center justify-center rounded-full",
+                      "bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950",
+                      "hover:bg-emerald-300",
+                      "shadow-[0_0_0_1px_rgba(16,185,129,.25),0_10px_30px_rgba(16,185,129,.15)]",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/60",
+                    ].join(" ")}
                   >
                     Install
                   </button>
 
                   <button
                     onClick={dismiss}
-                    className="inline-flex items-center justify-center rounded-full border border-slate-700/60 bg-slate-900/30 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-900/60"
+                    className={[
+                      "inline-flex items-center justify-center rounded-full",
+                      "border border-slate-700/60 bg-slate-900/30 px-4 py-2",
+                      "text-sm font-semibold text-slate-200 hover:bg-slate-900/60",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/40",
+                    ].join(" ")}
                   >
                     Later
                   </button>
@@ -335,8 +457,7 @@ export default function InstallPrompt() {
           </div>
 
           <div className="mt-4 text-[0.72rem] text-slate-400">
-            This won’t show inside the installed app. If you dismiss, we’ll remind you again in{" "}
-            {SNOOZE_DAYS} days.
+            This won’t show inside the installed app. If you dismiss, we’ll remind you again in {SNOOZE_DAYS} days.
           </div>
         </div>
       </div>
