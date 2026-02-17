@@ -1,15 +1,17 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
 
+  // If no code exists, do nothing — just go to login cleanly
   if (!code) {
-    return NextResponse.redirect(`${origin}/magic-login?error=1`);
+    return NextResponse.redirect(`${origin}/magic-login`);
   }
 
-  const response = NextResponse.redirect(`${origin}/dashboard`);
+  const cookieStore = cookies();
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,23 +19,13 @@ export async function GET(request: NextRequest) {
     {
       cookies: {
         get(name) {
-          return request.cookies.get(name)?.value;
+          return cookieStore.get(name)?.value;
         },
         set(name, value, options) {
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-            path: "/", // REQUIRED
-          });
+          cookieStore.set({ name, value, ...options, path: "/" });
         },
         remove(name, options) {
-          response.cookies.set({
-            name,
-            value: "",
-            ...options,
-            path: "/", // REQUIRED
-          });
+          cookieStore.set({ name, value: "", ...options, path: "/" });
         },
       },
     }
@@ -42,9 +34,8 @@ export async function GET(request: NextRequest) {
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    console.error("Auth callback error:", error.message);
-    return NextResponse.redirect(`${origin}/magic-login?error=1`);
+    return NextResponse.redirect(`${origin}/magic-login`);
   }
 
-  return response;
+  return NextResponse.redirect(`${origin}/dashboard`);
 }
