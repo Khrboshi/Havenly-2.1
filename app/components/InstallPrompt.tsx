@@ -1,4 +1,3 @@
-// app/components/InstallPrompt.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -9,7 +8,7 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
 
-const STATE_KEY = "havenly_install_prompt_v3"; // bump version if you change behavior/UI
+const STATE_KEY = "havenly_install_prompt_v3";
 const INSTALLED_KEY = "havenly_installed_v1";
 const SNOOZE_DAYS = 5;
 
@@ -59,7 +58,6 @@ function useIsSafariIOS(isIOS: boolean) {
     if (typeof window === "undefined") return false;
     if (!isIOS) return false;
     const ua = window.navigator.userAgent.toLowerCase();
-    // iOS browsers are Safari underneath; this tries to avoid showing on in-app webviews
     const isWebView = /(fbav|instagram|line|wv)/.test(ua);
     return !isWebView;
   }, [isIOS]);
@@ -127,13 +125,17 @@ function SparkleIcon(props: { className?: string }) {
 export default function InstallPrompt() {
   const pathname = usePathname();
 
-  // Avoid duplicate messaging: user is already on the install instructions page
-  if (pathname === "/install") return null;
+  // Don’t show the modal on pages that already guide the user.
+  const blocked =
+    pathname === "/install" ||
+    pathname.startsWith("/auth") ||
+    pathname === "/magic-login";
 
   const isIOS = useIsIOS();
   const isSafariIOS = useIsSafariIOS(isIOS);
 
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [show, setShow] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -141,12 +143,16 @@ export default function InstallPrompt() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (blocked) {
+      setShow(false);
+      setDeferredPrompt(null);
+      return;
+    }
 
     const installedState = readJSON<{ installedAt?: number; lastSeenStandaloneAt?: number }>(
       INSTALLED_KEY
     );
 
-    // If currently running as installed app: record + never show prompt.
     if (isStandalone()) {
       writeJSON(INSTALLED_KEY, {
         installedAt: installedState?.installedAt ?? Date.now(),
@@ -157,8 +163,7 @@ export default function InstallPrompt() {
       return;
     }
 
-    // If we *previously* saw the app installed, but now we're not standalone anymore,
-    // user likely uninstalled => allow prompting again by clearing snooze state.
+    // If user uninstalled, allow prompting again.
     if (installedState?.installedAt) {
       removeKey(INSTALLED_KEY);
       removeKey(STATE_KEY);
@@ -175,7 +180,6 @@ export default function InstallPrompt() {
 
     window.addEventListener("beforeinstallprompt", handler);
 
-    // iOS: no beforeinstallprompt. Only show for Safari iOS (avoid in-app webviews).
     if (isSafariIOS) setShow(true);
 
     const onInstalled = () => {
@@ -186,13 +190,14 @@ export default function InstallPrompt() {
       setShow(false);
       setDeferredPrompt(null);
     };
+
     window.addEventListener("appinstalled", onInstalled);
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handler);
       window.removeEventListener("appinstalled", onInstalled);
     };
-  }, [isSafariIOS]);
+  }, [blocked, isSafariIOS]);
 
   const dismiss = () => {
     writeJSON(STATE_KEY, { dismissedUntil: addDays(SNOOZE_DAYS) });
@@ -219,22 +224,22 @@ export default function InstallPrompt() {
     writeJSON(STATE_KEY, { dismissedUntil: addDays(SNOOZE_DAYS) });
   };
 
-  // Non-iOS: only show if we actually have the event (prevents showing to ineligible browsers)
   if (!mounted) return null;
   if (!show) return null;
+  if (blocked) return null;
+
+  // Non-iOS: only show if eligible event exists
   if (!isIOS && !deferredPrompt) return null;
   if (isIOS && !isSafariIOS) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
-      {/* overlay */}
       <button
         aria-label="Close install prompt overlay"
         onClick={dismiss}
         className="absolute inset-0 bg-black/55 backdrop-blur-md"
       />
 
-      {/* card */}
       <div
         className={[
           "relative w-full max-w-xl overflow-hidden rounded-3xl",
@@ -245,10 +250,7 @@ export default function InstallPrompt() {
         role="dialog"
         aria-modal="true"
       >
-        {/* top brand strip */}
         <div className="h-[2px] w-full bg-gradient-to-r from-emerald-400/70 via-cyan-400/40 to-transparent" />
-
-        {/* soft glows */}
         <div className="pointer-events-none absolute -top-24 left-1/2 h-56 w-80 -translate-x-1/2 rounded-full bg-emerald-400/12 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-28 right-8 h-56 w-80 rounded-full bg-sky-500/10 blur-3xl" />
 
@@ -268,18 +270,13 @@ export default function InstallPrompt() {
 
             <button
               onClick={dismiss}
-              className={[
-                "rounded-full border border-slate-700/60 bg-slate-900/30",
-                "px-3 py-1 text-xs text-slate-200 hover:bg-slate-900/60",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/40",
-              ].join(" ")}
+              className="rounded-full border border-slate-700/60 bg-slate-900/30 px-3 py-1 text-xs text-slate-200 hover:bg-slate-900/60"
             >
               Not now
             </button>
           </div>
 
           <div className="mt-4 grid gap-3 md:grid-cols-2">
-            {/* benefits */}
             <div className="rounded-2xl border border-slate-800/70 bg-slate-950/35 p-4">
               <p className="text-xs font-semibold text-slate-200">What you get</p>
               <ul className="mt-2 space-y-2 text-xs text-slate-300">
@@ -298,7 +295,6 @@ export default function InstallPrompt() {
               </ul>
             </div>
 
-            {/* actions / iOS instructions */}
             <div className="rounded-2xl border border-slate-800/70 bg-slate-950/35 p-4">
               <p className="text-xs font-semibold text-slate-200">
                 {isIOS ? "Install on iPhone/iPad" : "Install in one tap"}
@@ -322,25 +318,14 @@ export default function InstallPrompt() {
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button
                     onClick={install}
-                    className={[
-                      "inline-flex flex-1 items-center justify-center rounded-full",
-                      "bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950",
-                      "hover:bg-emerald-300",
-                      "shadow-[0_0_0_1px_rgba(16,185,129,.25),0_10px_30px_rgba(16,185,129,.15)]",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/60",
-                    ].join(" ")}
+                    className="inline-flex flex-1 items-center justify-center rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-300"
                   >
                     Install
                   </button>
 
                   <button
                     onClick={dismiss}
-                    className={[
-                      "inline-flex items-center justify-center rounded-full",
-                      "border border-slate-700/60 bg-slate-900/30 px-4 py-2",
-                      "text-sm font-semibold text-slate-200 hover:bg-slate-900/60",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/40",
-                    ].join(" ")}
+                    className="inline-flex items-center justify-center rounded-full border border-slate-700/60 bg-slate-900/30 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-900/60"
                   >
                     Later
                   </button>
