@@ -3,12 +3,12 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
 
-  // If no code exists, do nothing — just go to login cleanly
+  // If no code exists, go to login cleanly (no error state)
   if (!code) {
-    return NextResponse.redirect(`${origin}/magic-login`);
+    return NextResponse.redirect(new URL("/magic-login", request.url));
   }
 
   const cookieStore = cookies();
@@ -34,8 +34,8 @@ export async function GET(request: Request) {
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    return NextResponse.redirect(`${origin}/magic-login`);
+    return NextResponse.redirect(new URL("/magic-login", request.url));
   }
 
-  return NextResponse.redirect(`${origin}/dashboard`);
+  return NextResponse.redirect(new URL("/dashboard", request.url));
 }
