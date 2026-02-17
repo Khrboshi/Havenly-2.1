@@ -1,4 +1,3 @@
-// app/components/Navbar.tsx
 "use client";
 
 import Link from "next/link";
@@ -28,6 +27,7 @@ export default function Navbar() {
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
     { href: "/blog", label: "Blog" },
+    { href: "/install", label: "Install" }, // ✅ added
     { href: "/magic-login", label: "Log in" },
   ];
 
@@ -36,6 +36,7 @@ export default function Navbar() {
     { href: "/journal", label: "Journal" },
     { href: "/tools", label: "Tools" },
     { href: "/insights", label: "Insights" },
+    { href: "/install", label: "Install" }, // ✅ added
   ];
 
   async function handleLogout() {
@@ -52,7 +53,10 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#020617]/80 backdrop-blur">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-        <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-white">
+        <Link
+          href="/"
+          className="flex items-center gap-2 text-lg font-semibold text-white"
+        >
           <Image
             src="/pwa/icon-192.png"
             alt="Havenly"
