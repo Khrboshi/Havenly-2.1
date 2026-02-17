@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Providers from "./providers";
 import DeepLinkBootstrap from "./components/DeepLinkBootstrap";
+import InstallPrompt from "./components/InstallPrompt";
 
 export const metadata: Metadata = {
   title: "Havenly",
@@ -18,18 +19,15 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <DeepLinkBootstrap />
         <Providers>
+          <DeepLinkBootstrap />
           <Navbar />
           {children}
+          <InstallPrompt />
         </Providers>
       </body>
     </html>
