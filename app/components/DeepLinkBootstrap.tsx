@@ -4,10 +4,12 @@ import { useEffect } from "react";
 
 export default function DeepLinkBootstrap() {
   useEffect(() => {
-    // If the app was opened via a deep link, this event can be used later
-    // (especially when adding Capacitor/App Links).
-    if (window.location.pathname.startsWith("/auth/callback")) {
-      window.dispatchEvent(new Event("deep-link-opened"));
+    const path = window.location.pathname;
+
+    // If user opens via deep link, prevent visual flash
+    if (path.startsWith("/auth/callback")) {
+      document.documentElement.style.background = "#020617";
+      document.body.style.opacity = "0.98";
     }
   }, []);
 
