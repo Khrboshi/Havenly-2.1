@@ -3,7 +3,7 @@
     "apps": [],
     "details": [
       {
-        "appID": "TEAMID.BUNDLEID",
+        "appID": "TEAMID.com.khrboshi.havenly",
         "paths": [ "/auth/*" ]
       }
     ]
