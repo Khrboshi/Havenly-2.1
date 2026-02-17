@@ -4,11 +4,9 @@ import { useEffect } from "react";
 
 export default function DeepLinkBootstrap() {
   useEffect(() => {
-    // Handle deep links when app opens from external URL
-    const current = window.location.href;
-
-    if (current.includes("/auth/callback")) {
-      // Let Next.js handle normally — this ensures PWA resumes correctly
+    // If the app was opened via a deep link, this event can be used later
+    // (especially when adding Capacitor/App Links).
+    if (window.location.pathname.startsWith("/auth/callback")) {
       window.dispatchEvent(new Event("deep-link-opened"));
     }
   }, []);
