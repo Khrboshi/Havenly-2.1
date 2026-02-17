@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -124,6 +125,11 @@ function SparkleIcon(props: { className?: string }) {
 }
 
 export default function InstallPrompt() {
+  const pathname = usePathname();
+
+  // Avoid duplicate messaging: user is already on the install instructions page
+  if (pathname === "/install") return null;
+
   const isIOS = useIsIOS();
   const isSafariIOS = useIsSafariIOS(isIOS);
 
