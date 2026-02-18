@@ -18,8 +18,7 @@ export default function Navbar() {
     setMobileOpen(false);
   }, [pathname]);
 
-  const linkBase =
-    "text-sm font-medium transition-colors hover:text-emerald-400";
+  const linkBase = "text-sm font-medium transition-colors hover:text-emerald-400";
   const activeLink = "text-emerald-400";
   const inactiveLink = "text-slate-300";
 
@@ -27,7 +26,7 @@ export default function Navbar() {
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
     { href: "/blog", label: "Blog" },
-    { href: "/install", label: "Install" }, // ✅ added
+    { href: "/install", label: "Install" },
     { href: "/magic-login", label: "Log in" },
   ];
 
@@ -36,7 +35,7 @@ export default function Navbar() {
     { href: "/journal", label: "Journal" },
     { href: "/tools", label: "Tools" },
     { href: "/insights", label: "Insights" },
-    { href: "/install", label: "Install" }, // ✅ added
+    { href: "/install", label: "Install" },
   ];
 
   async function handleLogout() {
@@ -50,75 +49,31 @@ export default function Navbar() {
     }
   }
 
+  const links = isLoggedIn ? authLinks : publicLinks;
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-[#020617]/80 backdrop-blur">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-        <Link
-          href="/"
-          className="flex items-center gap-2 text-lg font-semibold text-white"
-        >
-          <Image
-            src="/pwa/icon-192.png"
-            alt="Havenly"
-            width={24}
-            height={24}
-            className="rounded-md"
-            priority
-            unoptimized
-          />
-          <span>Havenly</span>
-        </Link>
+    <>
+      {/* Desktop: sticky */}
+      <header className="hidden md:block sticky top-0 z-50 w-full border-b border-white/10 bg-[#020617]/80 backdrop-blur">
+        <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-lg font-semibold text-white"
+          >
+            <Image
+              src="/pwa/icon-192.png"
+              alt="Havenly"
+              width={24}
+              height={24}
+              className="rounded-md"
+              priority
+              unoptimized
+            />
+            <span>Havenly</span>
+          </Link>
 
-        {/* Desktop */}
-        <div className="hidden items-center gap-6 md:flex">
-          {(isLoggedIn ? authLinks : publicLinks).map((link) => {
-            const isActive =
-              pathname === link.href ||
-              (link.href !== "/" && pathname.startsWith(link.href));
-
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`${linkBase} ${isActive ? activeLink : inactiveLink}`}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-
-          {!isLoggedIn ? (
-            <Link
-              href="/magic-login"
-              className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
-            >
-              Start free journal
-            </Link>
-          ) : (
-            <button
-              onClick={handleLogout}
-              className="text-sm font-medium text-red-400 hover:text-red-300"
-            >
-              Logout
-            </button>
-          )}
-        </div>
-
-        {/* Mobile toggle */}
-        <button
-          className="md:hidden text-slate-200"
-          onClick={() => setMobileOpen((v) => !v)}
-          aria-label="Toggle menu"
-        >
-          {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
-      </nav>
-
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="md:hidden border-t border-white/10 bg-[#020617] px-4 pb-4 pt-2">
-          <div className="flex flex-col gap-4">
-            {(isLoggedIn ? authLinks : publicLinks).map((link) => {
+          <div className="flex items-center gap-6">
+            {links.map((link) => {
               const isActive =
                 pathname === link.href ||
                 (link.href !== "/" && pathname.startsWith(link.href));
@@ -127,9 +82,7 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`rounded-md px-2 py-2 text-base ${
-                    isActive ? "bg-white/5 text-emerald-400" : "text-slate-300"
-                  }`}
+                  className={`${linkBase} ${isActive ? activeLink : inactiveLink}`}
                 >
                   {link.label}
                 </Link>
@@ -139,21 +92,90 @@ export default function Navbar() {
             {!isLoggedIn ? (
               <Link
                 href="/magic-login"
-                className="mt-2 rounded-md bg-emerald-500 px-4 py-3 text-center text-sm font-medium text-black"
+                className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
               >
                 Start free journal
               </Link>
             ) : (
               <button
                 onClick={handleLogout}
-                className="mt-2 rounded-md bg-red-500/10 px-4 py-3 text-sm font-medium text-red-400"
+                className="text-sm font-medium text-red-400 hover:text-red-300"
               >
                 Logout
               </button>
             )}
           </div>
-        </div>
-      )}
-    </header>
+        </nav>
+      </header>
+
+      {/* Mobile: NOT sticky (kept separate) */}
+      <header className="md:hidden w-full border-b border-white/10 bg-[#020617]/80 backdrop-blur">
+        <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-lg font-semibold text-white"
+          >
+            <Image
+              src="/pwa/icon-192.png"
+              alt="Havenly"
+              width={24}
+              height={24}
+              className="rounded-md"
+              priority
+              unoptimized
+            />
+            <span>Havenly</span>
+          </Link>
+
+          <button
+            className="text-slate-200"
+            onClick={() => setMobileOpen((v) => !v)}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </nav>
+
+        {mobileOpen && (
+          <div className="border-t border-white/10 bg-[#020617] px-4 pb-4 pt-2">
+            <div className="flex flex-col gap-4">
+              {links.map((link) => {
+                const isActive =
+                  pathname === link.href ||
+                  (link.href !== "/" && pathname.startsWith(link.href));
+
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`rounded-md px-2 py-2 text-base ${
+                      isActive ? "bg-white/5 text-emerald-400" : "text-slate-300"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+
+              {!isLoggedIn ? (
+                <Link
+                  href="/magic-login"
+                  className="mt-2 rounded-md bg-emerald-500 px-4 py-3 text-center text-sm font-medium text-black"
+                >
+                  Start free journal
+                </Link>
+              ) : (
+                <button
+                  onClick={handleLogout}
+                  className="mt-2 rounded-md bg-red-500/10 px-4 py-3 text-sm font-medium text-red-400"
+                >
+                  Logout
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </header>
+    </>
   );
 }
