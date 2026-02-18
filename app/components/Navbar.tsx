@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { useSupabase } from "@/components/SupabaseSessionProvider";
-import { useInstallAvailability } from "@/app/components/useInstallAvailability";
+import { useInstallAvailability } from "@/app/hooks/useInstallAvailability";
 
 type NavLink = { href: string; label: string };
 
@@ -16,7 +16,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const isLoggedIn = !!session;
 
-  const { showInstall } = useInstallAvailability();
+  const { shouldShowInstall } = useInstallAvailability();
 
   useEffect(() => {
     setMobileOpen(false);
@@ -34,7 +34,8 @@ export default function Navbar() {
     };
   }, [mobileOpen]);
 
-  const linkBase = "text-sm font-medium transition-colors hover:text-emerald-400";
+  const linkBase =
+    "text-sm font-medium transition-colors hover:text-emerald-400";
   const activeLink = "text-emerald-400";
   const inactiveLink = "text-slate-300";
 
@@ -56,9 +57,8 @@ export default function Navbar() {
 
   const links = useMemo(() => {
     const base = isLoggedIn ? authLinks : publicLinks;
-    if (showInstall) return base;
-    return base.filter((l) => l.href !== "/install");
-  }, [isLoggedIn, showInstall]);
+    return base.filter((l) => (l.href === "/install" ? shouldShowInstall : true));
+  }, [isLoggedIn, shouldShowInstall]);
 
   async function handleLogout() {
     try {
@@ -73,7 +73,10 @@ export default function Navbar() {
 
   const HeaderInner = ({ mode }: { mode: "desktop" | "mobile" }) => (
     <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-      <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-white">
+      <Link
+        href="/"
+        className="flex items-center gap-2 text-lg font-semibold text-white"
+      >
         <Image
           src="/pwa/icon-192.png"
           alt="Havenly"
@@ -157,7 +160,9 @@ export default function Navbar() {
                     href={link.href}
                     onClick={() => setMobileOpen(false)}
                     className={`rounded-md px-2 py-2 text-base ${
-                      isActive ? "bg-white/5 text-emerald-400" : "text-slate-300"
+                      isActive
+                        ? "bg-white/5 text-emerald-400"
+                        : "text-slate-300"
                     }`}
                   >
                     {link.label}
