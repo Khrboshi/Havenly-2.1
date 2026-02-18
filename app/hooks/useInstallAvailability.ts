@@ -11,6 +11,7 @@ function readStandaloneNow(): boolean {
   if (typeof window === "undefined") return false;
 
   const navStandalone = (window.navigator as any).standalone === true; // iOS Safari
+
   const modes = [
     "(display-mode: standalone)",
     "(display-mode: minimal-ui)",
@@ -42,7 +43,7 @@ export function useInstallAvailability() {
     return !isWebView;
   }, [isIOS]);
 
-  // keep standalone state reactive
+  // Keep standalone state reactive
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -57,7 +58,6 @@ export function useInstallAvailability() {
     ].map((q) => window.matchMedia(q));
 
     queries.forEach((mq) => {
-      // older safari support
       if (mq.addEventListener) mq.addEventListener("change", update);
       else mq.addListener(update);
     });
@@ -73,7 +73,7 @@ export function useInstallAvailability() {
     };
   }, []);
 
-  // capture BIP event (desktop only)
+  // Capture install prompt event (Chrome/Edge/desktop)
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -87,7 +87,8 @@ export function useInstallAvailability() {
   }, []);
 
   const canPromptNative = !isIOS && !!deferredPrompt && !isStandalone;
-  const shouldShowInstall = !isStandalone && (canPromptNative || (isIOS && isSafariIOS));
+  const shouldShowInstall =
+    !isStandalone && (canPromptNative || (isIOS && isSafariIOS));
 
   return {
     isStandalone,
@@ -98,7 +99,6 @@ export function useInstallAvailability() {
     shouldShowInstall,
     async promptInstall() {
       if (!deferredPrompt) return { outcome: "dismissed" as const };
-
       await deferredPrompt.prompt();
       const choice = await deferredPrompt.userChoice;
       setDeferredPrompt(null);
