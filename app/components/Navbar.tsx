@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { useSupabase } from "@/components/SupabaseSessionProvider";
 
@@ -11,12 +11,39 @@ export default function Navbar() {
   const pathname = usePathname();
   const { session, supabase } = useSupabase();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
 
   const isLoggedIn = !!session;
 
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
+
+  // Detect installed PWA (standalone)
+  useEffect(() => {
+    const checkInstalled = () => {
+      const standalone =
+        window.matchMedia?.("(display-mode: standalone)")?.matches === true ||
+        // iOS Safari
+        (window.navigator as any)?.standalone === true;
+
+      setIsInstalled(standalone);
+    };
+
+    checkInstalled();
+
+    // Some browsers update display-mode after install/open; listen for changes
+    const mq = window.matchMedia?.("(display-mode: standalone)");
+    const onChange = () => checkInstalled();
+
+    mq?.addEventListener?.("change", onChange);
+    window.addEventListener("resize", onChange);
+
+    return () => {
+      mq?.removeEventListener?.("change", onChange);
+      window.removeEventListener("resize", onChange);
+    };
+  }, []);
 
   // Prevent background scroll when mobile menu is open
   useEffect(() => {
@@ -34,21 +61,40 @@ export default function Navbar() {
   const activeLink = "text-emerald-400";
   const inactiveLink = "text-slate-300";
 
-  const publicLinks = [
-    { href: "/", label: "Home" },
-    { href: "/about", label: "About" },
-    { href: "/blog", label: "Blog" },
-    { href: "/install", label: "Install" },
-    { href: "/magic-login", label: "Log in" },
-  ];
+  const publicLinksBase = useMemo(
+    () => [
+      { href: "/", label: "Home" },
+      { href: "/about", label: "About" },
+      { href: "/blog", label: "Blog" },
+      { href: "/magic-login", label: "Log in" },
+    ],
+    []
+  );
 
-  const authLinks = [
-    { href: "/dashboard", label: "Dashboard" },
-    { href: "/journal", label: "Journal" },
-    { href: "/tools", label: "Tools" },
-    { href: "/insights", label: "Insights" },
-    { href: "/install", label: "Install" },
-  ];
+  const authLinksBase = useMemo(
+    () => [
+      { href: "/dashboard", label: "Dashboard" },
+      { href: "/journal", label: "Journal" },
+      { href: "/tools", label: "Tools" },
+      { href: "/insights", label: "Insights" },
+    ],
+    []
+  );
+
+  const installLink = useMemo(
+    () => (!isInstalled ? [{ href: "/install", label: "Install" }] : []),
+    [isInstalled]
+  );
+
+  const publicLinks = useMemo(
+    () => [...publicLinksBase, ...installLink],
+    [publicLinksBase, installLink]
+  );
+
+  const authLinks = useMemo(
+    () => [...authLinksBase, ...installLink],
+    [authLinksBase, installLink]
+  );
 
   const links = isLoggedIn ? authLinks : publicLinks;
 
@@ -117,7 +163,7 @@ export default function Navbar() {
         </nav>
       </header>
 
-      {/* Mobile Navbar (also fixed) */}
+      {/* Mobile Navbar (fixed) */}
       <header className="md:hidden fixed top-0 left-0 right-0 z-50 w-full border-b border-white/10 bg-[#020617]/80 backdrop-blur">
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
           <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-white">
