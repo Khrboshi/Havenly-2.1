@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
 import Providers from "./providers";
 import DeepLinkBootstrap from "./components/DeepLinkBootstrap";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: "Havenly",
@@ -21,12 +22,13 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
+      <body suppressHydrationWarning>
         <DeepLinkBootstrap />
         <Providers>
           <Navbar />
           {children}
         </Providers>
+        <SpeedInsights />
       </body>
     </html>
   );
