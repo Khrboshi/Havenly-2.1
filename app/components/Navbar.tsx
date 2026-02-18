@@ -18,6 +18,18 @@ export default function Navbar() {
     setMobileOpen(false);
   }, [pathname]);
 
+  // Prevent background scroll when mobile menu is open
+  useEffect(() => {
+    if (!mobileOpen) {
+      document.body.style.overflow = "";
+      return;
+    }
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
   const linkBase = "text-sm font-medium transition-colors hover:text-emerald-400";
   const activeLink = "text-emerald-400";
   const inactiveLink = "text-slate-300";
@@ -38,6 +50,8 @@ export default function Navbar() {
     { href: "/install", label: "Install" },
   ];
 
+  const links = isLoggedIn ? authLinks : publicLinks;
+
   async function handleLogout() {
     try {
       await supabase.auth.signOut();
@@ -49,11 +63,9 @@ export default function Navbar() {
     }
   }
 
-  const links = isLoggedIn ? authLinks : publicLinks;
-
   return (
     <>
-      {/* Desktop: fixed (will never disappear) */}
+      {/* Desktop Navbar (fixed) */}
       <header className="hidden md:block fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-[#020617]/80 backdrop-blur">
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
           <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-white">
@@ -105,8 +117,8 @@ export default function Navbar() {
         </nav>
       </header>
 
-      {/* Mobile: keep as sticky */}
-      <header className="md:hidden sticky top-0 z-50 w-full border-b border-white/10 bg-[#020617]/80 backdrop-blur">
+      {/* Mobile Navbar (also fixed) */}
+      <header className="md:hidden fixed top-0 left-0 right-0 z-50 w-full border-b border-white/10 bg-[#020617]/80 backdrop-blur">
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
           <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-white">
             <Image
@@ -170,6 +182,9 @@ export default function Navbar() {
           </div>
         )}
       </header>
+
+      {/* Spacer so content doesn't go under the fixed headers */}
+      <div className="h-[72px]" />
     </>
   );
 }
