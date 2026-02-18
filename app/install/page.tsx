@@ -2,105 +2,134 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-type BeforeInstallPromptEvent = Event & {
+type BIPEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
 };
 
 export default function InstallPage() {
-  const [deferredPrompt, setDeferredPrompt] =
-    useState<BeforeInstallPromptEvent | null>(null);
-
-  const ua = useMemo(() => {
-    if (typeof navigator === "undefined") return "";
-    return navigator.userAgent || "";
-  }, []);
-
-  const isIOS = useMemo(() => /iPad|iPhone|iPod/.test(ua), [ua]);
-  const isAndroid = useMemo(() => /Android/.test(ua), [ua]);
-  const isSafari = useMemo(
-    () => /^((?!chrome|android).)*safari/i.test(ua),
-    [ua]
-  );
+  const [deferredPrompt, setDeferredPrompt] = useState<BIPEvent | null>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [platformHint, setPlatformHint] = useState<"ios" | "other">("other");
 
   useEffect(() => {
-    const handler = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    const ua = navigator.userAgent.toLowerCase();
+    const isiOS = /iphone|ipad|ipod/.test(ua);
+    setPlatformHint(isiOS ? "ios" : "other");
+
+    const checkInstalled = () => {
+      const standalone =
+        window.matchMedia?.("(display-mode: standalone)")?.matches === true ||
+        (window.navigator as any)?.standalone === true; // iOS Safari
+      setIsInstalled(standalone);
     };
 
-    window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    checkInstalled();
+
+    const onAppInstalled = () => {
+      setIsInstalled(true);
+      setDeferredPrompt(null);
+    };
+
+    const onBeforeInstallPrompt = (e: Event) => {
+      // IMPORTANT: without preventDefault, Chrome may show its own mini-infobar and you can't trigger it later
+      e.preventDefault();
+      setDeferredPrompt(e as BIPEvent);
+    };
+
+    window.addEventListener("appinstalled", onAppInstalled);
+    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt as any);
+
+    const mq = window.matchMedia?.("(display-mode: standalone)");
+    const onModeChange = () => checkInstalled();
+    mq?.addEventListener?.("change", onModeChange);
+
+    return () => {
+      window.removeEventListener("appinstalled", onAppInstalled);
+      window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt as any);
+      mq?.removeEventListener?.("change", onModeChange);
+    };
   }, []);
 
-  const onInstallClick = async () => {
+  const canInstall = useMemo(() => !!deferredPrompt && !isInstalled, [deferredPrompt, isInstalled]);
+
+  async function handleInstallClick() {
     if (!deferredPrompt) return;
-    await deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    setDeferredPrompt(null);
-  };
+    try {
+      await deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      // If accepted, appinstalled event will usually fire shortly after.
+      if (choice.outcome !== "accepted") {
+        // user dismissed; keep instructions visible
+      }
+    } finally {
+      // Prompt can only be used once
+      setDeferredPrompt(null);
+    }
+  }
 
   return (
-    <main style={{ minHeight: "100vh", padding: 24, maxWidth: 720, margin: "0 auto" }}>
-      <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 12 }}>Install Havenly</h1>
-      <p style={{ opacity: 0.8, marginBottom: 20 }}>
+    <main className="mx-auto w-full max-w-3xl px-4 pt-10 md:pt-16">
+      <h1 className="text-3xl font-semibold text-white">Install</h1>
+      <p className="mt-2 text-slate-300">
         Installing creates an app icon and improves the login experience from email links.
       </p>
 
-      {isAndroid && (
-        <section style={{ padding: 16, border: "1px solid rgba(255,255,255,0.12)", borderRadius: 12, marginBottom: 16 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Android (Chrome)</h2>
-          {deferredPrompt ? (
-            <button
-              onClick={onInstallClick}
-              style={{
-                padding: "10px 14px",
-                borderRadius: 10,
-                border: "1px solid rgba(255,255,255,0.2)",
-                cursor: "pointer",
-              }}
-            >
-              Install Havenly
-            </button>
-          ) : (
-            <ol style={{ margin: 0, paddingLeft: 18, opacity: 0.9 }}>
-              <li>Open this site in Chrome.</li>
-              <li>Tap the menu (⋮).</li>
-              <li>Select <b>Install app</b> or <b>Add to Home screen</b>.</li>
-            </ol>
-          )}
-        </section>
-      )}
-
-      {isIOS && (
-        <section style={{ padding: 16, border: "1px solid rgba(255,255,255,0.12)", borderRadius: 12, marginBottom: 16 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>iPhone / iPad</h2>
-          {!isSafari ? (
-            <p style={{ opacity: 0.9, margin: 0 }}>
-              On iOS, install works best in <b>Safari</b>. Please open this page in Safari.
-            </p>
-          ) : (
-            <ol style={{ margin: 0, paddingLeft: 18, opacity: 0.9 }}>
-              <li>Tap the <b>Share</b> icon.</li>
-              <li>Select <b>Add to Home Screen</b>.</li>
-              <li>Tap <b>Add</b>.</li>
-            </ol>
-          )}
-          <p style={{ opacity: 0.75, marginTop: 10 }}>
-            Note: iOS PWAs can’t always open directly from email like native apps, but install still improves the experience.
+      {isInstalled ? (
+        <div className="mt-8 rounded-xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-lg font-semibold text-white">Already installed</h2>
+          <p className="mt-2 text-slate-300">
+            This device already has Havenly installed. You can hide the Install tab automatically
+            (your navbar logic handles this in standalone mode).
           </p>
-        </section>
-      )}
+        </div>
+      ) : (
+        <div className="mt-8 rounded-xl border border-white/10 bg-white/5 p-6">
+          <h2 className="text-lg font-semibold text-white">Install on this device</h2>
 
-      {!isAndroid && !isIOS && (
-        <section style={{ padding: 16, border: "1px solid rgba(255,255,255,0.12)", borderRadius: 12 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Desktop</h2>
-          <ol style={{ margin: 0, paddingLeft: 18, opacity: 0.9 }}>
-            <li>Open this site in Chrome or Edge.</li>
-            <li>Click the install icon in the address bar (if shown), or open the browser menu.</li>
-            <li>Select <b>Install Havenly</b>.</li>
-          </ol>
-        </section>
+          {canInstall ? (
+            <>
+              <p className="mt-2 text-slate-300">
+                Your browser supports one-click install.
+              </p>
+              <button
+                onClick={handleInstallClick}
+                className="mt-4 rounded-lg bg-emerald-500 px-4 py-3 text-sm font-medium text-black hover:bg-emerald-400"
+              >
+                Install Havenly
+              </button>
+              <p className="mt-3 text-xs text-slate-400">
+                If you don’t see the button in Incognito, open a normal browser window.
+              </p>
+            </>
+          ) : (
+            <>
+              {platformHint === "ios" ? (
+                <div className="mt-2 text-slate-300">
+                  <p>
+                    On iPhone/iPad (Safari): tap <b>Share</b> → <b>Add to Home Screen</b>.
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-2 text-slate-300">
+                  <p className="font-medium text-white">Desktop (Chrome/Edge)</p>
+                  <ol className="mt-2 list-decimal space-y-2 pl-5">
+                    <li>Open this site in a normal (non-Incognito) window.</li>
+                    <li>
+                      Click the install icon in the address bar (if shown) <b>or</b> open the browser
+                      menu (⋮).
+                    </li>
+                    <li>Select <b>Install Havenly…</b></li>
+                  </ol>
+                  <p className="mt-3 text-xs text-slate-400">
+                    If the install option never appears, the app may not meet installability
+                    requirements (manifest/service worker) or it may already be installed.
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       )}
     </main>
   );
