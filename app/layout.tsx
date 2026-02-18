@@ -26,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <DeepLinkBootstrap />
         <Providers>
           <Navbar />
-          <main className="md:pt-[72px]">{children}</main>
+          {children}
         </Providers>
         <SpeedInsights />
       </body>
