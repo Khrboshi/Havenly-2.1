@@ -7,20 +7,35 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
 
-function readStandaloneNow(): boolean {
+const IOS_INSTALLED_KEY = "havenly_ios_installed_v1";
+
+function isStandaloneNow(): boolean {
   if (typeof window === "undefined") return false;
 
   const navStandalone = (window.navigator as any).standalone === true; // iOS Safari
-
   const modes = [
     "(display-mode: standalone)",
     "(display-mode: minimal-ui)",
     "(display-mode: fullscreen)",
     "(display-mode: window-controls-overlay)",
   ];
-
   const mediaStandalone = modes.some((q) => window.matchMedia(q).matches);
+
   return navStandalone || mediaStandalone;
+}
+
+function readIOSInstalledFlag(): boolean {
+  try {
+    return localStorage.getItem(IOS_INSTALLED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function setIOSInstalledFlag() {
+  try {
+    localStorage.setItem(IOS_INSTALLED_KEY, "1");
+  } catch {}
 }
 
 export function useInstallAvailability() {
@@ -28,6 +43,7 @@ export function useInstallAvailability() {
     useState<BeforeInstallPromptEvent | null>(null);
 
   const [isStandalone, setIsStandalone] = useState(false);
+  const [iosInstalledKnown, setIosInstalledKnown] = useState(false);
 
   const isIOS = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -39,15 +55,28 @@ export function useInstallAvailability() {
     if (typeof window === "undefined") return false;
     if (!isIOS) return false;
     const ua = window.navigator.userAgent.toLowerCase();
+    // exclude common in-app webviews
     const isWebView = /(fbav|instagram|line|wv)/.test(ua);
     return !isWebView;
   }, [isIOS]);
 
-  // Keep standalone state reactive
+  // Track standalone state and mark "installed" when we see standalone
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const update = () => setIsStandalone(readStandaloneNow());
+    const update = () => {
+      const st = isStandaloneNow();
+      setIsStandalone(st);
+
+      // If we ever see standalone on iOS, we can remember the device is installed
+      if (st && isIOS) {
+        setIOSInstalledFlag();
+        setIosInstalledKnown(true);
+      } else if (isIOS) {
+        setIosInstalledKnown(readIOSInstalledFlag());
+      }
+    };
+
     update();
 
     const queries = [
@@ -71,7 +100,7 @@ export function useInstallAvailability() {
       });
       window.removeEventListener("appinstalled", update);
     };
-  }, []);
+  }, [isIOS]);
 
   // Capture install prompt event (Chrome/Edge/desktop)
   useEffect(() => {
@@ -86,9 +115,15 @@ export function useInstallAvailability() {
     return () => window.removeEventListener("beforeinstallprompt", onBIP);
   }, []);
 
+  // Decision:
+  // - Always hide install inside installed app (standalone)
+  // - Desktop: show only if beforeinstallprompt exists
+  // - iOS Safari: show only if NOT installed (known) and not standalone
   const canPromptNative = !isIOS && !!deferredPrompt && !isStandalone;
+
   const shouldShowInstall =
-    !isStandalone && (canPromptNative || (isIOS && isSafariIOS));
+    !isStandalone &&
+    (canPromptNative || (isIOS && isSafariIOS && !iosInstalledKnown));
 
   return {
     isStandalone,
@@ -96,6 +131,7 @@ export function useInstallAvailability() {
     isSafariIOS,
     deferredPrompt,
     canPromptNative,
+    iosInstalledKnown,
     shouldShowInstall,
     async promptInstall() {
       if (!deferredPrompt) return { outcome: "dismissed" as const };
