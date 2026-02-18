@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
+import { track } from "@/components/telemetry";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -208,12 +209,15 @@ export default function InstallPrompt() {
     }
 
     const handler = (e: Event) => {
+      track("beforeinstallprompt_fired", { pathname });
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       // DO NOT show yet; showing is decided by gates below
     };
 
     const onInstalled = () => {
+      track("appinstalled", { pathname });
+
       writeJSON(INSTALLED_KEY, {
         installedAt: Date.now(),
         lastSeenStandaloneAt: Date.now(),
@@ -290,7 +294,10 @@ export default function InstallPrompt() {
     setShow(meetsEngagement);
   }, [mounted, pathname, deferredPrompt, isIOS, isSafariIOS]);
 
-  const dismiss = () => {
+  const dismiss = (reason: "overlay" | "not_now" | "later" = "not_now") => {
+    track("install_prompt_dismissed", { reason, pathname });
+    track("install_prompt_outcome", { pathname, outcome: "dismissed" });
+
     const s = (readJSON<PromptState>(STATE_KEY) ?? {}) as PromptState;
     s.dismissedUntil = addDays(SNOOZE_DAYS);
     writeJSON(STATE_KEY, s);
@@ -298,6 +305,7 @@ export default function InstallPrompt() {
   };
 
   const install = async () => {
+    track("install_prompt_clicked_install", { pathname });
     if (!deferredPrompt) return;
 
     await deferredPrompt.prompt();
@@ -309,6 +317,8 @@ export default function InstallPrompt() {
     const s = (readJSON<PromptState>(STATE_KEY) ?? {}) as PromptState;
 
     if (choice.outcome === "accepted") {
+      track("install_prompt_outcome", { pathname, outcome: "accepted" });
+
       s.acceptedAt = Date.now();
       writeJSON(STATE_KEY, s);
       writeJSON(INSTALLED_KEY, {
@@ -317,6 +327,8 @@ export default function InstallPrompt() {
       });
       return;
     }
+
+    track("install_prompt_outcome", { pathname, outcome: "dismissed" });
 
     s.dismissedUntil = addDays(SNOOZE_DAYS);
     writeJSON(STATE_KEY, s);
@@ -335,7 +347,7 @@ export default function InstallPrompt() {
     <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
       <button
         aria-label="Close install prompt overlay"
-        onClick={dismiss}
+        onClick={() => dismiss("overlay")}
         className="absolute inset-0 bg-black/55 backdrop-blur-md"
       />
 
@@ -368,7 +380,7 @@ export default function InstallPrompt() {
             </div>
 
             <button
-              onClick={dismiss}
+              onClick={() => dismiss("not_now")}
               className={[
                 "rounded-full border border-slate-700/60 bg-slate-900/30",
                 "px-3 py-1 text-xs text-slate-200 hover:bg-slate-900/60",
@@ -433,7 +445,7 @@ export default function InstallPrompt() {
                   </button>
 
                   <button
-                    onClick={dismiss}
+                    onClick={() => dismiss("later")}
                     className={[
                       "inline-flex items-center justify-center rounded-full",
                       "border border-slate-700/60 bg-slate-900/30 px-4 py-2",
