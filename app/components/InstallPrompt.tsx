@@ -9,29 +9,28 @@ type BeforeInstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
 
-const STATE_KEY = "havenly_install_prompt_state_v4"; // bump when behavior changes
-const INSTALLED_KEY = "havenly_installed_v1";
+const STATE_KEY = "havenly_install_state_v1";
 
-// Smart timing knobs
+/**
+ * Behavior:
+ * - Standalone (already installed): show nothing
+ * - iOS Safari (not installed): show a lightweight banner explaining Add to Home Screen
+ * - Android/desktop Chrome (not installed): use beforeinstallprompt + show a banner/button when available
+ * - Gated by a small engagement threshold to avoid spam
+ */
+const MIN_SECONDS_ON_SITE = 15;
+const MIN_PAGE_VIEWS = 2;
 const SNOOZE_DAYS = 5;
-const MIN_SECONDS_ON_SITE = 25; // require time-on-site
-const MIN_PAGE_VIEWS = 2; // require a bit of exploration
-const MIN_SECONDS_SINCE_FIRST_SEEN = 10; // don't pop instantly on first view
-const COOLDOWN_AFTER_ACCEPT_DAYS = 365; // never re-prompt for a long time after accept
 
-function addDays(days: number) {
-  return Date.now() + days * 24 * 60 * 60 * 1000;
-}
+type PromptState = {
+  firstSeenAt?: number;
+  pageViews?: number;
+  totalSeconds?: number;
+  lastTickAt?: number;
+  dismissedUntil?: number;
+};
 
-function isStandalone() {
-  if (typeof window === "undefined") return false;
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    (window.navigator as any).standalone === true
-  );
-}
-
-function readJSON<T = any>(key: string): T | null {
+function readJSON<T>(key: string): T | null {
   try {
     const raw = localStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T) : null;
@@ -46,23 +45,39 @@ function writeJSON(key: string, value: any) {
   } catch {}
 }
 
-function useIsIOS() {
-  return useMemo(() => {
-    if (typeof window === "undefined") return false;
-    const ua = window.navigator.userAgent.toLowerCase();
-    return /iphone|ipad|ipod/.test(ua);
-  }, []);
+function addDays(days: number) {
+  return Date.now() + days * 24 * 60 * 60 * 1000;
 }
 
-function useIsSafariIOS(isIOS: boolean) {
-  return useMemo(() => {
-    if (typeof window === "undefined") return false;
-    if (!isIOS) return false;
-    const ua = window.navigator.userAgent.toLowerCase();
-    // avoid in-app webviews
-    const isWebView = /(fbav|instagram|line|wv)/.test(ua);
-    return !isWebView;
-  }, [isIOS]);
+function isStandalone() {
+  if (typeof window === "undefined") return false;
+  return (
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (window.navigator as any).standalone === true
+  );
+}
+
+function isIOS() {
+  if (typeof window === "undefined") return false;
+  const ua = window.navigator.userAgent.toLowerCase();
+  return /iphone|ipad|ipod/.test(ua);
+}
+
+function isSafariIOS() {
+  if (typeof window === "undefined") return false;
+  const ua = window.navigator.userAgent.toLowerCase();
+  if (!/iphone|ipad|ipod/.test(ua)) return false;
+  // Avoid in-app webviews where Add to Home Screen may be limited
+  const isWebView = /(fbav|instagram|line|wv)/.test(ua);
+  return !isWebView;
+}
+
+function shouldNeverPromptOnPath(path: string) {
+  return (
+    path.startsWith("/auth") ||
+    path.startsWith("/magic-login") ||
+    path.startsWith("/logout")
+  );
 }
 
 function ShareIcon(props: { className?: string }) {
@@ -99,83 +114,31 @@ function PlusSquareIcon(props: { className?: string }) {
   );
 }
 
-function SparkleIcon(props: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" className={props.className}>
-      <path
-        d="M12 2l1.2 4.2L17.5 8 13.2 9.2 12 13.5 10.8 9.2 6.5 8l4.3-1.8L12 2Z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M19 12l.8 2.7L22.5 16l-2.7.8L19 19.5l-.8-2.7L15.5 16l2.7-1.3L19 12Z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M4.5 13l.7 2.2L7.5 16l-2.3.7L4.5 19l-.7-2.3L1.5 16l2.3-.8L4.5 13Z"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-type PromptState = {
-  dismissedUntil?: number;
-  firstSeenAt?: number;
-  pageViews?: number;
-  totalSeconds?: number;
-  lastTickAt?: number;
-  acceptedAt?: number;
-};
-
-function shouldNeverPromptOnPath(path: string) {
-  return (
-    path.startsWith("/auth") ||
-    path.startsWith("/magic-login") ||
-    path.startsWith("/logout") ||
-    path.startsWith("/install")
-  );
-}
-
 export default function InstallPrompt() {
   const pathname = usePathname();
 
-  const isIOS = useIsIOS();
-  const isSafariIOS = useIsSafariIOS(isIOS);
+  const ios = useMemo(() => isIOS(), []);
+  const safariIOS = useMemo(() => isSafariIOS(), []);
+  const [mounted, setMounted] = useState(false);
 
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [show, setShow] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
-  // Track engagement: page views + time on site
+  // Engagement tracking (page views + time)
   useEffect(() => {
     if (!mounted) return;
     if (typeof window === "undefined") return;
 
     if (isStandalone()) {
-      // record install usage and never prompt in standalone
-      const prev = readJSON<{ installedAt?: number }>(INSTALLED_KEY);
-      writeJSON(INSTALLED_KEY, {
-        installedAt: prev?.installedAt ?? Date.now(),
-        lastSeenStandaloneAt: Date.now(),
-      });
       setShow(false);
       return;
     }
 
     const state = (readJSON<PromptState>(STATE_KEY) ?? {}) as PromptState;
-
-    if (!state.firstSeenAt) state.firstSeenAt = Date.now();
+    state.firstSeenAt = state.firstSeenAt ?? Date.now();
     state.pageViews = (state.pageViews ?? 0) + 1;
-
-    // set initial tick time
     state.lastTickAt = state.lastTickAt ?? Date.now();
     writeJSON(STATE_KEY, state);
 
@@ -192,55 +155,39 @@ export default function InstallPrompt() {
     return () => window.clearInterval(interval);
   }, [mounted, pathname]);
 
-  // Capture install event + handle installed signal
+  // Capture beforeinstallprompt (Chrome/Edge/Android mostly)
   useEffect(() => {
     if (!mounted) return;
     if (typeof window === "undefined") return;
 
-    if (shouldNeverPromptOnPath(pathname)) {
+    if (shouldNeverPromptOnPath(pathname) || isStandalone()) {
       setShow(false);
       return;
     }
 
-    if (isStandalone()) {
-      setShow(false);
-      setDeferredPrompt(null);
-      return;
-    }
-
-    const handler = (e: Event) => {
-      track("beforeinstallprompt_fired", { pathname });
+    const onBIP = (e: Event) => {
+      // Chrome fires this only when installable
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      // DO NOT show yet; showing is decided by gates below
+      track("beforeinstallprompt_fired", { pathname });
     };
 
     const onInstalled = () => {
       track("appinstalled", { pathname });
-
-      writeJSON(INSTALLED_KEY, {
-        installedAt: Date.now(),
-        lastSeenStandaloneAt: Date.now(),
-      });
-
-      const s = (readJSON<PromptState>(STATE_KEY) ?? {}) as PromptState;
-      s.acceptedAt = Date.now();
-      writeJSON(STATE_KEY, s);
-
-      setShow(false);
       setDeferredPrompt(null);
+      setShow(false);
     };
 
-    window.addEventListener("beforeinstallprompt", handler);
+    window.addEventListener("beforeinstallprompt", onBIP);
     window.addEventListener("appinstalled", onInstalled);
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("beforeinstallprompt", onBIP);
       window.removeEventListener("appinstalled", onInstalled);
     };
   }, [mounted, pathname]);
 
-  // Decide whether to show (smart timing)
+  // Decide whether to show
   useEffect(() => {
     if (!mounted) return;
     if (typeof window === "undefined") return;
@@ -252,219 +199,118 @@ export default function InstallPrompt() {
 
     const state = (readJSON<PromptState>(STATE_KEY) ?? {}) as PromptState;
 
-    // cooldown after accept
-    if (
-      state?.acceptedAt &&
-      Date.now() < state.acceptedAt + COOLDOWN_AFTER_ACCEPT_DAYS * 86400000
-    ) {
+    // snooze gate
+    if (state.dismissedUntil && Date.now() < state.dismissedUntil) {
       setShow(false);
       return;
     }
 
-    // snooze
-    if (state?.dismissedUntil && Date.now() < state.dismissedUntil) {
-      setShow(false);
-      return;
-    }
-
-    // avoid instant pop
-    if (
-      state?.firstSeenAt &&
-      Date.now() - state.firstSeenAt < MIN_SECONDS_SINCE_FIRST_SEEN * 1000
-    ) {
-      setShow(false);
-      return;
-    }
-
-    // eligibility
-    const eligibleIOS = isIOS && isSafariIOS;
-    const eligibleDesktop = !isIOS && !!deferredPrompt;
-    const eligible = eligibleIOS || eligibleDesktop;
-
-    if (!eligible) {
-      setShow(false);
-      return;
-    }
-
-    // engagement gates
     const pv = state.pageViews ?? 0;
     const sec = state.totalSeconds ?? 0;
-    const meetsEngagement = pv >= MIN_PAGE_VIEWS || sec >= MIN_SECONDS_ON_SITE;
+    const engaged = pv >= MIN_PAGE_VIEWS || sec >= MIN_SECONDS_ON_SITE;
+    if (!engaged) {
+      setShow(false);
+      return;
+    }
 
-    setShow(meetsEngagement);
-  }, [mounted, pathname, deferredPrompt, isIOS, isSafariIOS]);
+    // Eligibility:
+    // - iOS Safari: show banner (manual Add to Home Screen)
+    // - Others: show only if we have beforeinstallprompt (native prompt available)
+    const eligibleIOS = ios && safariIOS;
+    const eligibleOther = !ios && !!deferredPrompt;
 
-  const dismiss = (reason: "overlay" | "not_now" | "later" = "not_now") => {
+    setShow(eligibleIOS || eligibleOther);
+  }, [mounted, pathname, ios, safariIOS, deferredPrompt]);
+
+  const dismiss = (reason: "close" | "later" = "close") => {
     track("install_prompt_dismissed", { reason, pathname });
-    track("install_prompt_outcome", { pathname, outcome: "dismissed" });
 
     const s = (readJSON<PromptState>(STATE_KEY) ?? {}) as PromptState;
     s.dismissedUntil = addDays(SNOOZE_DAYS);
     writeJSON(STATE_KEY, s);
+
     setShow(false);
   };
 
-  const install = async () => {
-    track("install_prompt_clicked_install", { pathname });
+  const installNative = async () => {
     if (!deferredPrompt) return;
+    track("install_prompt_clicked_install", { pathname });
 
     await deferredPrompt.prompt();
     const choice = await deferredPrompt.userChoice;
 
-    setShow(false);
-    setDeferredPrompt(null);
-
-    const s = (readJSON<PromptState>(STATE_KEY) ?? {}) as PromptState;
-
     if (choice.outcome === "accepted") {
       track("install_prompt_outcome", { pathname, outcome: "accepted" });
-
-      s.acceptedAt = Date.now();
-      writeJSON(STATE_KEY, s);
-      writeJSON(INSTALLED_KEY, {
-        installedAt: Date.now(),
-        lastSeenStandaloneAt: Date.now(),
-      });
+      setShow(false);
+      setDeferredPrompt(null);
       return;
     }
 
     track("install_prompt_outcome", { pathname, outcome: "dismissed" });
-
-    s.dismissedUntil = addDays(SNOOZE_DAYS);
-    writeJSON(STATE_KEY, s);
+    dismiss("later");
   };
 
   if (!mounted) return null;
   if (!show) return null;
 
-  // iOS: only Safari iOS
-  if (isIOS && !isSafariIOS) return null;
-
-  // Desktop: only if event exists
-  if (!isIOS && !deferredPrompt) return null;
+  // iOS but not Safari (webview): do not show to avoid confusion
+  if (ios && !safariIOS) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center p-4">
-      <button
-        aria-label="Close install prompt overlay"
-        onClick={() => dismiss("overlay")}
-        className="absolute inset-0 bg-black/55 backdrop-blur-md"
-      />
-
-      <div
-        className={[
-          "relative w-full max-w-xl overflow-hidden rounded-3xl",
-          "border border-slate-700/70 bg-slate-950/90 shadow-2xl",
-          "transition duration-200 ease-out",
-          "animate-in fade-in slide-in-from-bottom-2",
-        ].join(" ")}
-        role="dialog"
-        aria-modal="true"
-      >
-        <div className="h-[2px] w-full bg-gradient-to-r from-emerald-400/70 via-cyan-400/40 to-transparent" />
-        <div className="pointer-events-none absolute -top-24 left-1/2 h-56 w-80 -translate-x-1/2 rounded-full bg-emerald-400/12 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-28 right-8 h-56 w-80 rounded-full bg-sky-500/10 blur-3xl" />
-
-        <div className="relative p-5 md:p-6">
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-emerald-400/20 bg-emerald-400/10">
-              <SparkleIcon className="h-5 w-5 text-emerald-200" />
-            </div>
-
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-white">Install Havenly</p>
-              <p className="mt-1 text-xs leading-relaxed text-slate-300">
-                Faster, full-screen journaling—like a native app. Keeps your last opened
-                screens available even when you’re offline.
+    <div className="fixed bottom-4 left-1/2 z-50 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2">
+      <div className="rounded-2xl border border-white/10 bg-slate-950/90 p-4 shadow-2xl backdrop-blur">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-slate-100">Install Havenly</p>
+            {ios ? (
+              <p className="mt-1 text-xs text-slate-300">
+                In Safari, tap <span className="inline-flex items-center gap-1 font-semibold text-slate-100"><ShareIcon className="h-4 w-4" /> Share</span>{" "}
+                then <span className="inline-flex items-center gap-1 font-semibold text-slate-100"><PlusSquareIcon className="h-4 w-4" /> Add to Home Screen</span>.
               </p>
-            </div>
+            ) : (
+              <p className="mt-1 text-xs text-slate-300">
+                Get a faster, app-like experience with offline support.
+              </p>
+            )}
+          </div>
 
+          <button
+            onClick={() => dismiss("close")}
+            className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200 hover:bg-white/10"
+          >
+            Close
+          </button>
+        </div>
+
+        {!ios && deferredPrompt ? (
+          <div className="mt-3 flex gap-2">
             <button
-              onClick={() => dismiss("not_now")}
-              className={[
-                "rounded-full border border-slate-700/60 bg-slate-900/30",
-                "px-3 py-1 text-xs text-slate-200 hover:bg-slate-900/60",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/40",
-              ].join(" ")}
+              onClick={installNative}
+              className="flex-1 rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-300"
             >
-              Not now
+              Install
+            </button>
+            <button
+              onClick={() => dismiss("later")}
+              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+            >
+              Later
             </button>
           </div>
-
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
-            <div className="rounded-2xl border border-slate-800/70 bg-slate-950/35 p-4">
-              <p className="text-xs font-semibold text-slate-200">What you get</p>
-              <ul className="mt-2 space-y-2 text-xs text-slate-300">
-                <li className="flex gap-2">
-                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-400/90" />
-                  One-tap launch from your home screen
-                </li>
-                <li className="flex gap-2">
-                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-400/90" />
-                  Full-screen, distraction-free experience
-                </li>
-                <li className="flex gap-2">
-                  <span className="mt-1 h-1.5 w-1.5 rounded-full bg-emerald-400/90" />
-                  Better feel + quicker loads
-                </li>
-              </ul>
-            </div>
-
-            <div className="rounded-2xl border border-slate-800/70 bg-slate-950/35 p-4">
-              <p className="text-xs font-semibold text-slate-200">
-                {isIOS ? "Install on iPhone/iPad" : "Install in one tap"}
-              </p>
-
-              {isIOS ? (
-                <div className="mt-3 space-y-2 text-xs text-slate-300">
-                  <div className="flex items-center gap-2">
-                    <ShareIcon className="h-4 w-4 text-slate-200" />
-                    <span>Tap the Share button in Safari</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <PlusSquareIcon className="h-4 w-4 text-slate-200" />
-                    <span>Select “Add to Home Screen”</span>
-                  </div>
-                  <div className="pt-2 text-[0.72rem] text-slate-400">
-                    Tip: If you don’t see it, scroll the share sheet.
-                  </div>
-                </div>
-              ) : (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <button
-                    onClick={install}
-                    className={[
-                      "inline-flex flex-1 items-center justify-center rounded-full",
-                      "bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950",
-                      "hover:bg-emerald-300",
-                      "shadow-[0_0_0_1px_rgba(16,185,129,.25),0_10px_30px_rgba(16,185,129,.15)]",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/60",
-                    ].join(" ")}
-                  >
-                    Install
-                  </button>
-
-                  <button
-                    onClick={() => dismiss("later")}
-                    className={[
-                      "inline-flex items-center justify-center rounded-full",
-                      "border border-slate-700/60 bg-slate-900/30 px-4 py-2",
-                      "text-sm font-semibold text-slate-200 hover:bg-slate-900/60",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/40",
-                    ].join(" ")}
-                  >
-                    Later
-                  </button>
-                </div>
-              )}
-            </div>
+        ) : (
+          <div className="mt-3 flex justify-end">
+            <button
+              onClick={() => dismiss("later")}
+              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+            >
+              Got it
+            </button>
           </div>
+        )}
 
-          <div className="mt-4 text-[0.72rem] text-slate-400">
-            This won’t show inside the installed app. If you dismiss, we’ll remind you again in{" "}
-            {SNOOZE_DAYS} days.
-          </div>
-        </div>
+        <p className="mt-2 text-[11px] text-slate-400">
+          This won’t appear when Havenly is opened as an installed app.
+        </p>
       </div>
     </div>
   );
