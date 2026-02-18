@@ -12,14 +12,15 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-6 pt-24 pb-20 text-slate-200">
-      <h1 className="text-3xl font-semibold tracking-tight mb-2">Settings</h1>
-      <p className="text-slate-400 mb-10">
+      <h1 className="mb-2 text-3xl font-semibold tracking-tight">Settings</h1>
+      <p className="mb-10 text-slate-400">
         Manage your account, preferences, and subscription.
       </p>
 
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-1">Account</h2>
-        <p className="text-slate-400 text-sm mb-4">{userEmail}</p>
+      {/* Account */}
+      <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-6">
+        <h2 className="mb-1 text-lg font-semibold">Account</h2>
+        <p className="mb-4 text-sm text-slate-400">{userEmail}</p>
 
         <div className="flex flex-wrap gap-3">
           <Link
@@ -38,9 +39,10 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {/* Plan */}
       <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-        <h2 className="text-lg font-semibold mb-2">Plan</h2>
-        <p className="text-slate-400 text-sm mb-4">
+        <h2 className="mb-2 text-lg font-semibold">Plan</h2>
+        <p className="mb-4 text-sm text-slate-400">
           Current plan: <span className="text-slate-200">{plan ?? "Free"}</span>
           {typeof credits === "number" ? (
             <>
@@ -50,13 +52,31 @@ export default function SettingsPage() {
           ) : null}
         </p>
 
-        <Link
-          href="/upgrade"
-          className="text-sm text-emerald-400 hover:text-emerald-300"
-        >
+        <Link href="/upgrade" className="text-sm text-emerald-400 hover:text-emerald-300">
           Manage subscription →
         </Link>
       </div>
+
+      {/* Install (discoverable entry point for iPhone Safari users) */}
+      <section className="mt-6">
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-slate-100">Install Havenly</p>
+              <p className="mt-1 text-xs text-slate-400">
+                Add to Home Screen for a faster, app-like experience (works best on iPhone Safari).
+              </p>
+            </div>
+
+            <Link
+              href="/install"
+              className="shrink-0 rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-300"
+            >
+              Install
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
