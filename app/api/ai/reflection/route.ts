@@ -39,7 +39,8 @@ function isNoCreditsError(msg: string) {
     m.includes("insufficient") ||
     m.includes("limit") ||
     m.includes("quota") ||
-    m.includes("exceeded")
+    m.includes("exceeded") ||
+    m.includes("payment required")
   );
 }
 
@@ -47,6 +48,7 @@ async function consumeOneCredit(supabase: any, userId: string): Promise<ConsumeR
   let rpcData: any = null;
   let rpcErr: any = null;
 
+  // Attempt A: function expects p_user_id + p_amount
   const first = await supabase.rpc("consume_reflection_credit", {
     p_user_id: userId,
     p_amount: 1,
@@ -55,6 +57,7 @@ async function consumeOneCredit(supabase: any, userId: string): Promise<ConsumeR
   rpcData = first?.data;
   rpcErr = first?.error;
 
+  // Attempt B: function expects only p_amount
   if (rpcErr && isParamMismatchError(String(rpcErr.message || ""))) {
     const second = await supabase.rpc("consume_reflection_credit", {
       p_amount: 1,
@@ -88,6 +91,43 @@ async function consumeOneCredit(supabase: any, userId: string): Promise<ConsumeR
   return { ok: true, remaining };
 }
 
+async function logReflectionUsageSafely(supabase: any, userId: string) {
+  // Your table is append-only: (id, user_id, date text, created_at)
+  const date = new Date().toISOString().slice(0, 10);
+
+  const { error } = await supabase.from("reflection_usage").insert({
+    user_id: userId,
+    date,
+  });
+
+  // NEVER crash the reflection endpoint because logging failed
+  if (error) {
+    console.warn("reflection_usage insert failed:", error.message || error);
+  }
+}
+
+async function refundOneCreditBestEffort(supabase: any, userId: string) {
+  // safest without a dedicated RPC: re-read then set +1
+  const { data: row, error: readErr } = await supabase
+    .from("user_credits")
+    .select("remaining_credits")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (readErr) return;
+
+  const current = typeof row?.remaining_credits === "number" ? row.remaining_credits : null;
+  if (current === null) return;
+
+  await supabase
+    .from("user_credits")
+    .update({
+      remaining_credits: current + 1,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", userId);
+}
+
 export async function POST(req: Request) {
   const supabase = await createServerSupabase();
 
@@ -108,13 +148,8 @@ export async function POST(req: Request) {
   const content = typeof body?.content === "string" ? body.content.trim() : "";
   const title = typeof body?.title === "string" ? body.title.trim() : "";
 
-  if (!entryId) {
-    return NextResponse.json({ error: "Missing entryId" }, { status: 400 });
-  }
-
-  if (!content) {
-    return NextResponse.json({ error: "Missing content" }, { status: 400 });
-  }
+  if (!entryId) return NextResponse.json({ error: "Missing entryId" }, { status: 400 });
+  if (!content) return NextResponse.json({ error: "Missing content" }, { status: 400 });
 
   if (content.length > 20000) {
     return NextResponse.json(
@@ -131,7 +166,7 @@ export async function POST(req: Request) {
     .eq("user_id", userId)
     .maybeSingle();
 
-  const planType = normalizePlan((creditsRow as any)?.plan_type);
+  const planType = normalizePlan(creditsRow?.plan_type);
   const isUnlimited = planType === "PREMIUM" || planType === "TRIAL";
 
   let remainingAfterConsume: number | null = null;
@@ -148,15 +183,23 @@ export async function POST(req: Request) {
     const reflection = await generateReflectionFromEntry({
       content,
       title,
-      plan: planType === "PREMIUM" || planType === "TRIAL" ? "PREMIUM" : "FREE",
+      plan: isUnlimited ? "PREMIUM" : "FREE",
     });
 
-    // ✅ Optional but recommended: persist reflection on the entry
-    await supabase
+    // Persist reflection on the entry (best effort; but should succeed)
+    const { error: saveErr } = await supabase
       .from("journal_entries")
       .update({ ai_response: JSON.stringify(reflection) })
       .eq("id", entryId)
       .eq("user_id", userId);
+
+    if (saveErr) {
+      // If saving fails, treat as server failure (and refund if needed)
+      throw new Error(`Failed to persist reflection: ${saveErr.message}`);
+    }
+
+    // Log usage WITHOUT risking a 500
+    await logReflectionUsageSafely(supabase, userId);
 
     return NextResponse.json(
       { reflection, remainingCredits: isUnlimited ? null : remainingAfterConsume },
@@ -165,18 +208,11 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error("Reflection generation failed:", err);
 
-    // Best-effort refund if consumed one
     if (!isUnlimited && remainingAfterConsume !== null) {
       try {
-        await supabase
-          .from("user_credits")
-          .update({
-            remaining_credits: remainingAfterConsume + 1,
-            updated_at: new Date().toISOString(),
-          } as any)
-          .eq("user_id", userId);
+        await refundOneCreditBestEffort(supabase, userId);
       } catch {
-        // ignore refund failure
+        // ignore
       }
     }
 
