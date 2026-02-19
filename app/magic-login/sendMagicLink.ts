@@ -15,10 +15,7 @@ function getSiteUrl() {
 
 export async function sendMagicLink(formData: FormData) {
   const email = String(formData.get("email") || "").trim();
-
-  if (!email) {
-    return { success: false, message: "Email is required." };
-  }
+  if (!email) return { success: false, message: "Email is required." };
 
   const cookieStore = cookies();
 
@@ -45,13 +42,10 @@ export async function sendMagicLink(formData: FormData) {
 
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: {
-      emailRedirectTo,
-    },
+    options: { emailRedirectTo },
   });
 
   if (error) {
-    console.error("Magic link error:", error.message);
     return { success: false, message: error.message };
   }
 
