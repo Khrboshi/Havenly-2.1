@@ -37,7 +37,6 @@ export async function verifyOtp(formData: FormData) {
   });
 
   if (error) {
-    console.error("OTP verify error:", error.message);
     return { success: false, message: error.message };
   }
 
