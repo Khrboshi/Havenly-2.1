@@ -3,11 +3,14 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+export const dynamic = "force-dynamic";
+
 function safeNext(pathname: string | null) {
   if (!pathname) return "/dashboard";
-  if (!pathname.startsWith("/")) return "/dashboard";
-  if (pathname.startsWith("//")) return "/dashboard";
-  return pathname;
+  const v = pathname.trim();
+  if (!v.startsWith("/")) return "/dashboard";
+  if (v.startsWith("//")) return "/dashboard";
+  return v;
 }
 
 export async function GET(request: Request) {
@@ -15,7 +18,7 @@ export async function GET(request: Request) {
   const code = url.searchParams.get("code");
   const next = safeNext(url.searchParams.get("next"));
 
-  // No code => go back to login
+  // No code => back to login
   if (!code) {
     const to = new URL("/magic-login", url.origin);
     to.searchParams.set("next", next);
@@ -51,7 +54,7 @@ export async function GET(request: Request) {
     return NextResponse.redirect(to, { status: 303 });
   }
 
-  // IMPORTANT: go to a page that signals the original tab and attempts close
+  // Go to a "complete" page that signals Tab A and attempts to close Tab B
   const done = new URL("/auth/complete", url.origin);
   done.searchParams.set("next", next);
   return NextResponse.redirect(done, { status: 303 });
