@@ -1,3 +1,4 @@
+// app/magic-login/verifyOtp.ts
 "use server";
 
 import { createServerClient } from "@supabase/ssr";
@@ -33,7 +34,7 @@ export async function verifyOtp(formData: FormData) {
   const { error } = await supabase.auth.verifyOtp({
     email,
     token,
-    type: "email",
+    type: "email_otp", // ✅ important: code-from-email flow
   });
 
   if (error) {
