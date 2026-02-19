@@ -51,6 +51,8 @@ export async function GET(request: Request) {
     return NextResponse.redirect(to, { status: 303 });
   }
 
-  // Important: 303 helps browsers treat this as a navigation replace
-  return NextResponse.redirect(new URL(next, url.origin), { status: 303 });
+  // IMPORTANT: go to a page that signals the original tab and attempts close
+  const done = new URL("/auth/complete", url.origin);
+  done.searchParams.set("next", next);
+  return NextResponse.redirect(done, { status: 303 });
 }
