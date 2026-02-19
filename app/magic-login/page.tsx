@@ -1,3 +1,4 @@
+// app/magic-login/page.tsx
 "use client";
 
 export const dynamic = "force-dynamic";
@@ -7,11 +8,9 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSupabase } from "@/components/SupabaseSessionProvider";
 import { sendMagicLink } from "./sendMagicLink";
-import { sendOtp } from "./sendOtp";
 import { verifyOtp } from "./verifyOtp";
 
 type Status = "idle" | "loading" | "success" | "error";
-type Mode = "link" | "code";
 
 function isIOS(): boolean {
   if (typeof window === "undefined") return false;
@@ -27,40 +26,45 @@ function isStandalone(): boolean {
   );
 }
 
+function safeNext(raw: string | null): string {
+  const v = (raw || "/dashboard").trim();
+  if (!v.startsWith("/")) return "/dashboard";
+  if (v.startsWith("//")) return "/dashboard";
+  return v;
+}
+
 function MagicLoginInner() {
   const router = useRouter();
   const sp = useSearchParams();
   const { session } = useSupabase();
 
-  const next = useMemo(() => {
-    const raw = sp.get("next") || "/dashboard";
-    if (!raw.startsWith("/") || raw.startsWith("//")) return "/dashboard";
-    return raw;
-  }, [sp]);
-
+  const next = useMemo(() => safeNext(sp.get("next")), [sp]);
   const callbackError = sp.get("callback_error") === "1";
 
   const ios = useMemo(() => isIOS(), []);
   const standalone = useMemo(() => isStandalone(), []);
 
-  const [mode, setMode] = useState<Mode>(() => (ios ? "code" : "link"));
+  // Default mode: iOS => code, others => link
+  const [mode, setMode] = useState<"link" | "code">(() => (ios ? "code" : "link"));
+
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState<string | null>(null);
 
-  // shared fields
   const [email, setEmail] = useState("");
   const [token, setToken] = useState("");
 
-  // If already logged in, go where you should go
+  // If already logged in, go to next
   useEffect(() => {
     if (session?.user) router.replace(next);
   }, [session?.user, router, next]);
 
+  // If callback exchange failed (common in iOS in-app contexts), guide to code
   useEffect(() => {
     if (!callbackError) return;
+    setMode("code");
     setStatus("error");
     setMessage(
-      "Sign-in didn’t complete in this browser tab. On iPhone, the installed app and Safari may not share sessions. Use the code option to sign in inside the same place you’re using."
+      "Sign-in didn’t complete in this browser context. On iPhone, Safari and the installed app may not share login. Use the code method below to sign in inside the same place you’re using."
     );
   }, [callbackError]);
 
@@ -72,6 +76,7 @@ function MagicLoginInner() {
     fd.set("email", email);
 
     const res = await sendMagicLink(fd);
+
     if (!res.success) {
       setStatus("error");
       setMessage(res.message || "Failed to send link.");
@@ -79,25 +84,9 @@ function MagicLoginInner() {
     }
 
     setStatus("success");
-    setMessage("Magic link sent. Open it in Safari/Chrome.");
-  }
-
-  async function onSendCode() {
-    setStatus("loading");
-    setMessage(null);
-
-    const fd = new FormData();
-    fd.set("email", email);
-
-    const res = await sendOtp(fd);
-    if (!res.success) {
-      setStatus("error");
-      setMessage(res.message || "Failed to send code.");
-      return;
-    }
-
-    setStatus("success");
-    setMessage("Code sent. Enter the 6-digit code from your email.");
+    setMessage(
+      "Magic link sent. Open the link in the same browser you started with. If you installed the app on iPhone, prefer the code method."
+    );
   }
 
   async function onVerifyCode() {
@@ -109,6 +98,7 @@ function MagicLoginInner() {
     fd.set("token", token);
 
     const res = await verifyOtp(fd);
+
     if (!res.success) {
       setStatus("error");
       setMessage(res.message || "Invalid code.");
@@ -123,14 +113,15 @@ function MagicLoginInner() {
       <div className="max-w-md w-full bg-[#0f172a] p-8 rounded-xl shadow-lg border border-white/10">
         <h1 className="text-2xl font-semibold text-center mb-2">Sign in to Havenly</h1>
 
+        {/* Installed app hint */}
         {standalone ? (
           <div className="mb-4 p-3 rounded bg-emerald-900/30 text-emerald-200 text-sm">
-            You’re in the installed app. On iPhone, the email link may open in Safari and not sign
-            you into the installed app. Use the <span className="font-semibold">code</span> option
-            below to sign in here.
+            You’re in the installed app. On iPhone, the email link may open in Safari and won’t sign
+            you into the installed app. Use <span className="font-semibold">code sign-in</span>.
           </div>
         ) : null}
 
+        {/* Status message */}
         {message ? (
           <div
             className={`mb-4 p-3 rounded ${
@@ -145,6 +136,7 @@ function MagicLoginInner() {
           </div>
         ) : null}
 
+        {/* Mode toggle */}
         <div className="mb-4 flex gap-2">
           <button
             type="button"
@@ -170,6 +162,7 @@ function MagicLoginInner() {
           </button>
         </div>
 
+        {/* Email */}
         <label className="block text-sm mb-2">Email address</label>
         <input
           required
@@ -180,6 +173,7 @@ function MagicLoginInner() {
           className="w-full rounded-md px-3 py-2 mb-4 bg-black/20 border border-white/20 text-white"
         />
 
+        {/* Link flow */}
         {mode === "link" ? (
           <button
             type="button"
@@ -193,18 +187,18 @@ function MagicLoginInner() {
           <>
             <button
               type="button"
-              onClick={onSendCode}
+              onClick={onSendLink}
               disabled={status === "loading" || !email}
               className="w-full bg-emerald-400 hover:bg-emerald-500 text-black font-semibold py-2 rounded-md transition"
             >
-              {status === "loading" ? "Sending..." : "Send Code"}
+              {status === "loading" ? "Sending..." : "Send Email (code inside)"}
             </button>
 
             <div className="mt-4">
               <label className="block text-sm mb-2">6-digit code</label>
               <input
                 value={token}
-                onChange={(e) => setToken(e.target.value)}
+                onChange={(e) => setToken(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 inputMode="numeric"
                 placeholder="123456"
                 className="w-full rounded-md px-3 py-2 mb-3 bg-black/20 border border-white/20 text-white"
@@ -212,7 +206,7 @@ function MagicLoginInner() {
               <button
                 type="button"
                 onClick={onVerifyCode}
-                disabled={status === "loading" || !email || !token}
+                disabled={status === "loading" || !email || token.length !== 6}
                 className="w-full border border-white/20 bg-white/5 hover:bg-white/10 text-white font-semibold py-2 rounded-md transition"
               >
                 {status === "loading" ? "Verifying..." : "Verify & Sign in"}
@@ -228,7 +222,7 @@ function MagicLoginInner() {
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-3">
-          Desktop: magic link is fine. iPhone installed app: use code.
+          Desktop: magic link works. iPhone installed app: use code.
         </p>
       </div>
     </div>
