@@ -80,14 +80,14 @@ function MagicLoginInner() {
 
     if (!res.success) {
       setStatus("error");
-      setMessage(res.message || "Failed to send link.");
+      setMessage(res.message || "Failed to send email.");
       return;
     }
 
     setStatus("success");
     setMessage(
       mode === "code"
-        ? "Email sent. Enter the 6-digit code from the email below."
+        ? "Email sent. Enter the code from the email below."
         : "Magic link sent. Open the link in the same browser you started with. If you installed the app on iPhone, prefer the code method."
     );
   }
@@ -108,9 +108,12 @@ function MagicLoginInner() {
       return;
     }
 
-    // ✅ Hard navigation ensures cookies/session are applied in THIS context (Safari/PWA)
+    // Hard navigation ensures cookies/session are applied in THIS context (Safari/PWA)
     window.location.assign(next);
   }
+
+  const tokenDigits = token.replace(/\D/g, "");
+  const tokenOk = tokenDigits.length >= 6; // Supabase often sends 6–8 digits
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
@@ -194,18 +197,18 @@ function MagicLoginInner() {
             </button>
 
             <div className="mt-4">
-              <label className="block text-sm mb-2">6-digit code</label>
+              <label className="block text-sm mb-2">Code from email</label>
               <input
                 value={token}
-                onChange={(e) => setToken(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                onChange={(e) => setToken(e.target.value.replace(/\D/g, "").slice(0, 8))}
                 inputMode="numeric"
-                placeholder="123456"
+                placeholder="Enter the code"
                 className="w-full rounded-md px-3 py-2 mb-3 bg-black/20 border border-white/20 text-white"
               />
               <button
                 type="button"
                 onClick={onVerifyCode}
-                disabled={status === "loading" || !email || token.length !== 6}
+                disabled={status === "loading" || !email || !tokenOk}
                 className="w-full border border-white/20 bg-white/5 hover:bg-white/10 text-white font-semibold py-2 rounded-md transition"
               >
                 {status === "loading" ? "Verifying..." : "Verify & Sign in"}
