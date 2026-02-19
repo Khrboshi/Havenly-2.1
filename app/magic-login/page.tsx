@@ -3,7 +3,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { Suspense, useEffect, useMemo, useState, useCallback } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSupabase } from "@/components/SupabaseSessionProvider";
@@ -57,7 +57,7 @@ function MagicLoginInner() {
   const goNext = useCallback(
     (target?: string) => {
       const n = safeNext(target ?? next);
-      // hard navigation ensures cookies are applied consistently
+      // Hard navigation ensures cookies are applied consistently
       window.location.assign(n);
     },
     [next]
@@ -66,7 +66,6 @@ function MagicLoginInner() {
   // If already logged in, go to next
   useEffect(() => {
     if (session?.user) {
-      // Use replace to avoid history pollution, but still ok.
       router.replace(next);
     }
   }, [session?.user, router, next]);
@@ -81,7 +80,7 @@ function MagicLoginInner() {
     );
   }, [callbackError]);
 
-  // STEP 3: listen for auth completion coming from the /auth/complete tab
+  // Step 3: listen for auth completion coming from the /auth/complete tab
   useEffect(() => {
     const STORAGE_KEY = "havenly:auth_complete";
 
@@ -135,8 +134,8 @@ function MagicLoginInner() {
     setStatus("success");
     setMessage(
       mode === "code"
-        ? "Email sent. Enter the code from the email below (often 6–8 digits)."
-        : "Magic link sent. Open the link in the same browser you started with. If you installed the Home Screen app on iPhone, prefer the code method."
+        ? "Email sent. It may take a moment depending on your mail app. If your email includes a code, enter it below. Otherwise, open the button/link to sign in."
+        : "Email sent. It may take a moment depending on your mail app. Open the button/link in the same browser you started with. If you installed Havenly on iPhone, you can use the code option instead."
     );
   }
 
@@ -241,7 +240,7 @@ function MagicLoginInner() {
               disabled={status === "loading" || !email}
               className="w-full bg-emerald-400 hover:bg-emerald-500 text-black font-semibold py-2 rounded-md transition"
             >
-              {status === "loading" ? "Sending..." : "Send Email (link + code)"}
+              {status === "loading" ? "Sending..." : "Send Email (link + code if available)"}
             </button>
 
             <div className="mt-4">
