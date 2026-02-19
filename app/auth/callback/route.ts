@@ -4,7 +4,6 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 function safeNext(pathname: string | null) {
-  // only allow internal paths
   if (!pathname) return "/dashboard";
   if (!pathname.startsWith("/")) return "/dashboard";
   if (pathname.startsWith("//")) return "/dashboard";
@@ -16,11 +15,11 @@ export async function GET(request: Request) {
   const code = url.searchParams.get("code");
   const next = safeNext(url.searchParams.get("next"));
 
-  // No code => go back to magic-login with next preserved
+  // No code => go back to login
   if (!code) {
     const to = new URL("/magic-login", url.origin);
     to.searchParams.set("next", next);
-    return NextResponse.redirect(to);
+    return NextResponse.redirect(to, { status: 303 });
   }
 
   const cookieStore = cookies();
@@ -46,13 +45,12 @@ export async function GET(request: Request) {
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    // iOS in-app browsers often fail here due to blocked cookies.
-    // Send user back to magic-login with a flag so you can show “Open in Safari”.
     const to = new URL("/magic-login", url.origin);
     to.searchParams.set("callback_error", "1");
     to.searchParams.set("next", next);
-    return NextResponse.redirect(to);
+    return NextResponse.redirect(to, { status: 303 });
   }
 
-  return NextResponse.redirect(new URL(next, url.origin));
+  // Important: 303 helps browsers treat this as a navigation replace
+  return NextResponse.redirect(new URL(next, url.origin), { status: 303 });
 }
