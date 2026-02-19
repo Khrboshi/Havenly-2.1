@@ -5,10 +5,13 @@ export const dynamic = "force-dynamic";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { sendMagicLink } from "./sendMagicLink";
 import { useSupabase } from "@/components/SupabaseSessionProvider";
+import { sendMagicLink } from "./sendMagicLink";
+import { sendOtp } from "./sendOtp";
+import { verifyOtp } from "./verifyOtp";
 
 type Status = "idle" | "loading" | "success" | "error";
+type Mode = "link" | "code";
 
 function isIOS(): boolean {
   if (typeof window === "undefined") return false;
@@ -24,24 +27,13 @@ function isStandalone(): boolean {
   );
 }
 
-// Rough detection of in-app browsers that commonly break auth cookies
-function isInAppBrowser(): boolean {
-  if (typeof window === "undefined") return false;
-  const ua = window.navigator.userAgent.toLowerCase();
-  return /(fbav|fb_iab|instagram|line|wv|snapchat|gsa|gmail|outlook)/.test(ua);
-}
-
 function MagicLoginInner() {
   const router = useRouter();
   const sp = useSearchParams();
   const { session } = useSupabase();
 
-  const [status, setStatus] = useState<Status>("idle");
-  const [message, setMessage] = useState<string | null>(null);
-
   const next = useMemo(() => {
     const raw = sp.get("next") || "/dashboard";
-    // only allow internal paths
     if (!raw.startsWith("/") || raw.startsWith("//")) return "/dashboard";
     return raw;
   }, [sp]);
@@ -50,70 +42,92 @@ function MagicLoginInner() {
 
   const ios = useMemo(() => isIOS(), []);
   const standalone = useMemo(() => isStandalone(), []);
-  const inApp = useMemo(() => isInAppBrowser(), []);
 
-  // If session exists, do not stay on magic-login.
+  const [mode, setMode] = useState<Mode>(() => (ios ? "code" : "link"));
+  const [status, setStatus] = useState<Status>("idle");
+  const [message, setMessage] = useState<string | null>(null);
+
+  // shared fields
+  const [email, setEmail] = useState("");
+  const [token, setToken] = useState("");
+
+  // If already logged in, go where you should go
   useEffect(() => {
-    if (session?.user) {
-      router.replace(next);
-    }
+    if (session?.user) router.replace(next);
   }, [session?.user, router, next]);
 
-  // Surface a helpful message if callback failed (common on iOS in-app browsers)
   useEffect(() => {
     if (!callbackError) return;
-
-    if (ios && inApp) {
-      setStatus("error");
-      setMessage(
-        "It looks like you opened the magic link inside an in-app browser (Gmail/Outlook/Instagram). iPhone often blocks the sign-in cookie there. Please open the email link in Safari (Share → Open in Safari) and try again."
-      );
-      return;
-    }
-
     setStatus("error");
     setMessage(
-      "We couldn’t complete sign-in in this browser tab. Please try opening the magic link again in Safari/Chrome, or request a new link."
+      "Sign-in didn’t complete in this browser tab. On iPhone, the installed app and Safari may not share sessions. Use the code option to sign in inside the same place you’re using."
     );
-  }, [callbackError, ios, inApp]);
+  }, [callbackError]);
 
-  async function handleSubmit(formData: FormData) {
+  async function onSendLink() {
     setStatus("loading");
     setMessage(null);
 
-    const result = await sendMagicLink(formData);
+    const fd = new FormData();
+    fd.set("email", email);
 
-    if (!result.success) {
+    const res = await sendMagicLink(fd);
+    if (!res.success) {
       setStatus("error");
-      setMessage(result.message || "Something went wrong.");
+      setMessage(res.message || "Failed to send link.");
       return;
     }
 
     setStatus("success");
-    setMessage("A secure magic link has been sent to your email. Open it in Safari/Chrome.");
+    setMessage("Magic link sent. Open it in Safari/Chrome.");
+  }
+
+  async function onSendCode() {
+    setStatus("loading");
+    setMessage(null);
+
+    const fd = new FormData();
+    fd.set("email", email);
+
+    const res = await sendOtp(fd);
+    if (!res.success) {
+      setStatus("error");
+      setMessage(res.message || "Failed to send code.");
+      return;
+    }
+
+    setStatus("success");
+    setMessage("Code sent. Enter the 6-digit code from your email.");
+  }
+
+  async function onVerifyCode() {
+    setStatus("loading");
+    setMessage(null);
+
+    const fd = new FormData();
+    fd.set("email", email);
+    fd.set("token", token);
+
+    const res = await verifyOtp(fd);
+    if (!res.success) {
+      setStatus("error");
+      setMessage(res.message || "Invalid code.");
+      return;
+    }
+
+    router.replace(next);
   }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
       <div className="max-w-md w-full bg-[#0f172a] p-8 rounded-xl shadow-lg border border-white/10">
-        <h1 className="text-2xl font-semibold text-center mb-6">
-          Sign in to Havenly
-        </h1>
+        <h1 className="text-2xl font-semibold text-center mb-2">Sign in to Havenly</h1>
 
-        {/* Standalone note (installed app) */}
         {standalone ? (
           <div className="mb-4 p-3 rounded bg-emerald-900/30 text-emerald-200 text-sm">
-            You’re using the installed app. If you requested a magic link from email,
-            iPhone will usually open the link in Safari. After signing in, return to the
-            Havenly app from your Home Screen.
-          </div>
-        ) : null}
-
-        {/* iOS + in-app browser warning (preemptive) */}
-        {!standalone && ios && inApp && !message ? (
-          <div className="mb-4 p-3 rounded bg-amber-900/30 text-amber-200 text-sm">
-            Tip: If you open the magic link inside Gmail/Outlook’s built-in browser,
-            sign-in may fail. Use Share → <span className="font-semibold">Open in Safari</span>.
+            You’re in the installed app. On iPhone, the email link may open in Safari and not sign
+            you into the installed app. Use the <span className="font-semibold">code</span> option
+            below to sign in here.
           </div>
         ) : null}
 
@@ -122,51 +136,99 @@ function MagicLoginInner() {
             className={`mb-4 p-3 rounded ${
               status === "success"
                 ? "bg-emerald-900/40 text-emerald-300"
-                : "bg-red-900/40 text-red-300"
+                : status === "error"
+                ? "bg-red-900/40 text-red-300"
+                : "bg-white/5 text-slate-200"
             }`}
           >
             {message}
           </div>
         ) : null}
 
-        <form action={handleSubmit}>
-          <label className="block text-sm mb-2">Email address</label>
-          <input
-            required
-            type="email"
-            name="email"
-            placeholder="you@example.com"
-            className="w-full rounded-md px-3 py-2 mb-4 bg-black/20 border border-white/20 text-white"
-          />
-
+        <div className="mb-4 flex gap-2">
           <button
-            type="submit"
-            disabled={status === "loading"}
+            type="button"
+            onClick={() => setMode("code")}
+            className={`flex-1 rounded-md px-3 py-2 text-sm font-medium border ${
+              mode === "code"
+                ? "bg-white/10 border-white/20 text-white"
+                : "bg-transparent border-white/10 text-slate-300"
+            }`}
+          >
+            Code (best on iPhone)
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("link")}
+            className={`flex-1 rounded-md px-3 py-2 text-sm font-medium border ${
+              mode === "link"
+                ? "bg-white/10 border-white/20 text-white"
+                : "bg-transparent border-white/10 text-slate-300"
+            }`}
+          >
+            Magic link
+          </button>
+        </div>
+
+        <label className="block text-sm mb-2">Email address</label>
+        <input
+          required
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@example.com"
+          className="w-full rounded-md px-3 py-2 mb-4 bg-black/20 border border-white/20 text-white"
+        />
+
+        {mode === "link" ? (
+          <button
+            type="button"
+            onClick={onSendLink}
+            disabled={status === "loading" || !email}
             className="w-full bg-emerald-400 hover:bg-emerald-500 text-black font-semibold py-2 rounded-md transition"
           >
             {status === "loading" ? "Sending..." : "Send Magic Link"}
           </button>
-        </form>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={onSendCode}
+              disabled={status === "loading" || !email}
+              className="w-full bg-emerald-400 hover:bg-emerald-500 text-black font-semibold py-2 rounded-md transition"
+            >
+              {status === "loading" ? "Sending..." : "Send Code"}
+            </button>
 
-        <div className="text-center mt-4 flex items-center justify-center gap-3">
+            <div className="mt-4">
+              <label className="block text-sm mb-2">6-digit code</label>
+              <input
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                inputMode="numeric"
+                placeholder="123456"
+                className="w-full rounded-md px-3 py-2 mb-3 bg-black/20 border border-white/20 text-white"
+              />
+              <button
+                type="button"
+                onClick={onVerifyCode}
+                disabled={status === "loading" || !email || !token}
+                className="w-full border border-white/20 bg-white/5 hover:bg-white/10 text-white font-semibold py-2 rounded-md transition"
+              >
+                {status === "loading" ? "Verifying..." : "Verify & Sign in"}
+              </button>
+            </div>
+          </>
+        )}
+
+        <div className="text-center mt-4">
           <Link href="/" className="text-sm text-blue-300 hover:underline">
             ← Back to Home
           </Link>
-
-          {/* If callback error happened, offer quick retry navigation */}
-          {callbackError ? (
-            <button
-              onClick={() => router.replace(`/magic-login?next=${encodeURIComponent(next)}`)}
-              className="text-sm text-emerald-300 hover:underline"
-              type="button"
-            >
-              Try again
-            </button>
-          ) : null}
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-3">
-          You will be redirected to your dashboard after signing in.
+          Desktop: magic link is fine. iPhone installed app: use code.
         </p>
       </div>
     </div>
@@ -175,9 +237,7 @@ function MagicLoginInner() {
 
 export default function MagicLoginPage() {
   return (
-    <Suspense
-      fallback={<div className="text-center p-10 text-white">Loading…</div>}
-    >
+    <Suspense fallback={<div className="text-center p-10 text-white">Loading…</div>}>
       <MagicLoginInner />
     </Suspense>
   );
