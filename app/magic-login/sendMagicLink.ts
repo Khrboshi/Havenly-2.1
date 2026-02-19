@@ -1,7 +1,17 @@
+// app/magic-login/sendMagicLink.ts
 "use server";
 
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+
+function getSiteUrl() {
+  const raw = process.env.NEXT_PUBLIC_SITE_URL || "";
+  const url = raw.trim().replace(/\/+$/, ""); // strip trailing slash
+  if (!url.startsWith("http")) {
+    throw new Error("NEXT_PUBLIC_SITE_URL is missing or invalid");
+  }
+  return url;
+}
 
 export async function sendMagicLink(formData: FormData) {
   const email = String(formData.get("email") || "").trim();
@@ -30,10 +40,13 @@ export async function sendMagicLink(formData: FormData) {
     }
   );
 
+  const siteUrl = getSiteUrl();
+  const emailRedirectTo = `${siteUrl}/auth/callback?next=/dashboard`;
+
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+      emailRedirectTo,
     },
   });
 
