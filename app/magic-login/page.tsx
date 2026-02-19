@@ -45,7 +45,7 @@ function MagicLoginInner() {
   const ios = useMemo(() => isIOS(), []);
   const standalone = useMemo(() => isStandalone(), []);
 
-  // Default mode: iOS => code, others => link
+  // Default: iOS => code, others => link
   const [mode, setMode] = useState<Mode>(() => (ios ? "code" : "link"));
 
   const [status, setStatus] = useState<Status>("idle");
@@ -69,7 +69,7 @@ function MagicLoginInner() {
     );
   }, [callbackError]);
 
-  async function onSendLink() {
+  async function onSendEmail() {
     setStatus("loading");
     setMessage(null);
 
@@ -87,7 +87,7 @@ function MagicLoginInner() {
     setStatus("success");
     setMessage(
       mode === "code"
-        ? "Email sent. Enter the code from the email below."
+        ? "Email sent. Enter the code from the email below (often 8 digits on some providers)."
         : "Magic link sent. Open the link in the same browser you started with. If you installed the app on iPhone, prefer the code method."
     );
   }
@@ -108,12 +108,13 @@ function MagicLoginInner() {
       return;
     }
 
-    // Hard navigation ensures cookies/session are applied in THIS context (Safari/PWA)
+    // Hard navigation so the new cookies/session are applied in this context (Safari/PWA)
     window.location.assign(next);
   }
 
-  const tokenDigits = token.replace(/\D/g, "");
-  const tokenOk = tokenDigits.length >= 6; // Supabase often sends 6–8 digits
+  const digitsOnlyToken = token.replace(/\D/g, "");
+  const tokenLen = digitsOnlyToken.length;
+  const tokenOk = tokenLen >= 6 && tokenLen <= 8;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4">
@@ -179,7 +180,7 @@ function MagicLoginInner() {
         {mode === "link" ? (
           <button
             type="button"
-            onClick={onSendLink}
+            onClick={onSendEmail}
             disabled={status === "loading" || !email}
             className="w-full bg-emerald-400 hover:bg-emerald-500 text-black font-semibold py-2 rounded-md transition"
           >
@@ -189,20 +190,20 @@ function MagicLoginInner() {
           <>
             <button
               type="button"
-              onClick={onSendLink}
+              onClick={onSendEmail}
               disabled={status === "loading" || !email}
               className="w-full bg-emerald-400 hover:bg-emerald-500 text-black font-semibold py-2 rounded-md transition"
             >
-              {status === "loading" ? "Sending..." : "Send Email (code inside)"}
+              {status === "loading" ? "Sending..." : "Send Email (link + code)"}
             </button>
 
             <div className="mt-4">
-              <label className="block text-sm mb-2">Code from email</label>
+              <label className="block text-sm mb-2">Code from email (6–8 digits)</label>
               <input
                 value={token}
                 onChange={(e) => setToken(e.target.value.replace(/\D/g, "").slice(0, 8))}
                 inputMode="numeric"
-                placeholder="Enter the code"
+                placeholder="Enter code"
                 className="w-full rounded-md px-3 py-2 mb-3 bg-black/20 border border-white/20 text-white"
               />
               <button
@@ -213,6 +214,10 @@ function MagicLoginInner() {
               >
                 {status === "loading" ? "Verifying..." : "Verify & Sign in"}
               </button>
+
+              <p className="mt-2 text-xs text-slate-400">
+                Tip: if the email shows spaces between numbers, just paste it — Havenly will remove spaces automatically.
+              </p>
             </div>
           </>
         )}
