@@ -11,13 +11,6 @@ type BeforeInstallPromptEvent = Event & {
 
 const STATE_KEY = "havenly_install_state_v1";
 
-/**
- * Behavior:
- * - Standalone (already installed): show nothing
- * - iOS Safari (not installed): show a lightweight banner explaining Add to Home Screen
- * - Android/desktop Chrome (not installed): use beforeinstallprompt + show a banner/button when available
- * - Gated by a small engagement threshold to avoid spam
- */
 const MIN_SECONDS_ON_SITE = 15;
 const MIN_PAGE_VIEWS = 2;
 const SNOOZE_DAYS = 5;
@@ -52,7 +45,7 @@ function addDays(days: number) {
 function isStandalone() {
   if (typeof window === "undefined") return false;
   return (
-    window.matchMedia("(display-mode: standalone)").matches ||
+    window.matchMedia?.("(display-mode: standalone)")?.matches === true ||
     (window.navigator as any).standalone === true
   );
 }
@@ -63,21 +56,33 @@ function isIOS() {
   return /iphone|ipad|ipod/.test(ua);
 }
 
-function isSafariIOS() {
+/**
+ * True iOS Safari (not Chrome iOS, not Firefox iOS, not in-app webviews).
+ * - Chrome iOS uses "CriOS"
+ * - Firefox iOS uses "FxiOS"
+ * - In-app webviews often include FBAV / Instagram / Line / wv etc.
+ */
+function isIOSSafari() {
   if (typeof window === "undefined") return false;
-  const ua = window.navigator.userAgent.toLowerCase();
-  if (!/iphone|ipad|ipod/.test(ua)) return false;
-  // Avoid in-app webviews where Add to Home Screen may be limited
-  const isWebView = /(fbav|instagram|line|wv)/.test(ua);
-  return !isWebView;
+  const ua = window.navigator.userAgent;
+
+  const isIOSDevice = /iPhone|iPad|iPod/i.test(ua);
+  if (!isIOSDevice) return false;
+
+  const isChrome = /CriOS/i.test(ua);
+  const isFirefox = /FxiOS/i.test(ua);
+  if (isChrome || isFirefox) return false;
+
+  // common in-app webview indicators
+  const isWebView = /(FBAN|FBAV|Instagram|Line|wv)/i.test(ua);
+  if (isWebView) return false;
+
+  // Safari contains "Safari" but not those above
+  return /Safari/i.test(ua);
 }
 
 function shouldNeverPromptOnPath(path: string) {
-  return (
-    path.startsWith("/auth") ||
-    path.startsWith("/magic-login") ||
-    path.startsWith("/logout")
-  );
+  return path.startsWith("/auth") || path.startsWith("/magic-login") || path.startsWith("/logout");
 }
 
 function ShareIcon(props: { className?: string }) {
@@ -118,7 +123,7 @@ export default function InstallPrompt() {
   const pathname = usePathname();
 
   const ios = useMemo(() => isIOS(), []);
-  const safariIOS = useMemo(() => isSafariIOS(), []);
+  const iosSafari = useMemo(() => isIOSSafari(), []);
   const [mounted, setMounted] = useState(false);
 
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -166,7 +171,6 @@ export default function InstallPrompt() {
     }
 
     const onBIP = (e: Event) => {
-      // Chrome fires this only when installable
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       track("beforeinstallprompt_fired", { pathname });
@@ -214,13 +218,13 @@ export default function InstallPrompt() {
     }
 
     // Eligibility:
-    // - iOS Safari: show banner (manual Add to Home Screen)
-    // - Others: show only if we have beforeinstallprompt (native prompt available)
-    const eligibleIOS = ios && safariIOS;
+    // - iOS Safari: show manual Add to Home Screen instructions
+    // - Others: show only if beforeinstallprompt is available
+    const eligibleIOS = ios && iosSafari;
     const eligibleOther = !ios && !!deferredPrompt;
 
     setShow(eligibleIOS || eligibleOther);
-  }, [mounted, pathname, ios, safariIOS, deferredPrompt]);
+  }, [mounted, pathname, ios, iosSafari, deferredPrompt]);
 
   const dismiss = (reason: "close" | "later" = "close") => {
     track("install_prompt_dismissed", { reason, pathname });
@@ -253,19 +257,24 @@ export default function InstallPrompt() {
   if (!mounted) return null;
   if (!show) return null;
 
-  // iOS but not Safari (webview): do not show to avoid confusion
-  if (ios && !safariIOS) return null;
-
   return (
     <div className="fixed bottom-4 left-1/2 z-50 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2">
       <div className="rounded-2xl border border-white/10 bg-slate-950/90 p-4 shadow-2xl backdrop-blur">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-slate-100">Install Havenly</p>
-            {ios ? (
+
+            {ios && iosSafari ? (
               <p className="mt-1 text-xs text-slate-300">
-                In Safari, tap <span className="inline-flex items-center gap-1 font-semibold text-slate-100"><ShareIcon className="h-4 w-4" /> Share</span>{" "}
-                then <span className="inline-flex items-center gap-1 font-semibold text-slate-100"><PlusSquareIcon className="h-4 w-4" /> Add to Home Screen</span>.
+                On iPhone Safari: tap{" "}
+                <span className="inline-flex items-center gap-1 font-semibold text-slate-100">
+                  <ShareIcon className="h-4 w-4" /> Share
+                </span>{" "}
+                then{" "}
+                <span className="inline-flex items-center gap-1 font-semibold text-slate-100">
+                  <PlusSquareIcon className="h-4 w-4" /> Add to Home Screen
+                </span>
+                .
               </p>
             ) : (
               <p className="mt-1 text-xs text-slate-300">
