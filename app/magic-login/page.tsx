@@ -11,6 +11,7 @@ import { sendMagicLink } from "./sendMagicLink";
 import { verifyOtp } from "./verifyOtp";
 
 type Status = "idle" | "loading" | "success" | "error";
+type Mode = "link" | "code";
 
 function isIOS(): boolean {
   if (typeof window === "undefined") return false;
@@ -45,7 +46,7 @@ function MagicLoginInner() {
   const standalone = useMemo(() => isStandalone(), []);
 
   // Default mode: iOS => code, others => link
-  const [mode, setMode] = useState<"link" | "code">(() => (ios ? "code" : "link"));
+  const [mode, setMode] = useState<Mode>(() => (ios ? "code" : "link"));
 
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState<string | null>(null);
@@ -58,7 +59,7 @@ function MagicLoginInner() {
     if (session?.user) router.replace(next);
   }, [session?.user, router, next]);
 
-  // If callback exchange failed (common in iOS in-app contexts), guide to code
+  // If callback exchange failed, guide to code
   useEffect(() => {
     if (!callbackError) return;
     setMode("code");
@@ -85,7 +86,9 @@ function MagicLoginInner() {
 
     setStatus("success");
     setMessage(
-      "Magic link sent. Open the link in the same browser you started with. If you installed the app on iPhone, prefer the code method."
+      mode === "code"
+        ? "Email sent. Enter the 6-digit code from the email below."
+        : "Magic link sent. Open the link in the same browser you started with. If you installed the app on iPhone, prefer the code method."
     );
   }
 
@@ -105,7 +108,8 @@ function MagicLoginInner() {
       return;
     }
 
-    router.replace(next);
+    // ✅ Hard navigation ensures cookies/session are applied in THIS context (Safari/PWA)
+    window.location.assign(next);
   }
 
   return (
@@ -113,7 +117,6 @@ function MagicLoginInner() {
       <div className="max-w-md w-full bg-[#0f172a] p-8 rounded-xl shadow-lg border border-white/10">
         <h1 className="text-2xl font-semibold text-center mb-2">Sign in to Havenly</h1>
 
-        {/* Installed app hint */}
         {standalone ? (
           <div className="mb-4 p-3 rounded bg-emerald-900/30 text-emerald-200 text-sm">
             You’re in the installed app. On iPhone, the email link may open in Safari and won’t sign
@@ -121,7 +124,6 @@ function MagicLoginInner() {
           </div>
         ) : null}
 
-        {/* Status message */}
         {message ? (
           <div
             className={`mb-4 p-3 rounded ${
@@ -136,7 +138,6 @@ function MagicLoginInner() {
           </div>
         ) : null}
 
-        {/* Mode toggle */}
         <div className="mb-4 flex gap-2">
           <button
             type="button"
@@ -162,7 +163,6 @@ function MagicLoginInner() {
           </button>
         </div>
 
-        {/* Email */}
         <label className="block text-sm mb-2">Email address</label>
         <input
           required
@@ -173,7 +173,6 @@ function MagicLoginInner() {
           className="w-full rounded-md px-3 py-2 mb-4 bg-black/20 border border-white/20 text-white"
         />
 
-        {/* Link flow */}
         {mode === "link" ? (
           <button
             type="button"
