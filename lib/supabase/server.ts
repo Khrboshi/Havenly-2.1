@@ -2,27 +2,38 @@ import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-/**
- * Per-request Supabase client that works in RSC/SSR contexts.
- */
 export const createServerSupabase = (): SupabaseClient => {
   const cookieStore = cookies();
 
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name: string, value: string, options: any) {
-          cookieStore.set({ name, value, ...options });
-        },
-        remove(name: string, options: any) {
-          cookieStore.set({ name, value: "", ...options });
-        },
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+  return createServerClient(url, anon, {
+    cookies: {
+      get(name: string) {
+        return cookieStore.get(name)?.value;
       },
-    }
-  );
+      set(name: string, value: string, options: any) {
+        cookieStore.set({
+          name,
+          value,
+          ...options,
+          path: options?.path ?? "/",
+          sameSite: options?.sameSite ?? "lax",
+          secure: options?.secure ?? process.env.NODE_ENV === "production",
+        });
+      },
+      remove(name: string, options: any) {
+        cookieStore.set({
+          name,
+          value: "",
+          ...options,
+          path: options?.path ?? "/",
+          sameSite: options?.sameSite ?? "lax",
+          secure: options?.secure ?? process.env.NODE_ENV === "production",
+          maxAge: 0,
+        });
+      },
+    },
+  });
 };
