@@ -3,7 +3,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSupabase } from "@/components/SupabaseSessionProvider";
@@ -54,9 +54,21 @@ function MagicLoginInner() {
   const [email, setEmail] = useState("");
   const [token, setToken] = useState("");
 
+  const goNext = useCallback(
+    (target?: string) => {
+      const n = safeNext(target ?? next);
+      // hard navigation ensures cookies are applied consistently
+      window.location.assign(n);
+    },
+    [next]
+  );
+
   // If already logged in, go to next
   useEffect(() => {
-    if (session?.user) router.replace(next);
+    if (session?.user) {
+      // Use replace to avoid history pollution, but still ok.
+      router.replace(next);
+    }
   }, [session?.user, router, next]);
 
   // If callback exchange failed, guide to code
@@ -65,9 +77,45 @@ function MagicLoginInner() {
     setMode("code");
     setStatus("error");
     setMessage(
-      "Sign-in didn’t complete in this browser context. On iPhone, Safari and the installed app may not share login. Use the code method below to sign in inside the same place you’re using."
+      "Sign-in didn’t complete in this browser context. On iPhone, Safari and the Home Screen app may not share login. Use the code method below to sign in inside the same place you’re using."
     );
   }, [callbackError]);
+
+  // STEP 3: listen for auth completion coming from the /auth/complete tab
+  useEffect(() => {
+    const STORAGE_KEY = "havenly:auth_complete";
+
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== STORAGE_KEY || !e.newValue) return;
+      try {
+        const data = JSON.parse(e.newValue);
+        goNext(data?.next);
+      } catch {
+        goNext();
+      }
+    };
+
+    window.addEventListener("storage", onStorage);
+
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel("havenly_auth");
+      bc.onmessage = (ev) => {
+        if (ev?.data?.type === "AUTH_COMPLETE") {
+          goNext(ev.data?.next);
+        }
+      };
+    } catch {
+      // BroadcastChannel not supported; storage fallback still works
+    }
+
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      try {
+        bc?.close();
+      } catch {}
+    };
+  }, [goNext]);
 
   async function onSendEmail() {
     setStatus("loading");
@@ -87,8 +135,8 @@ function MagicLoginInner() {
     setStatus("success");
     setMessage(
       mode === "code"
-        ? "Email sent. Enter the code from the email below (often 8 digits on some providers)."
-        : "Magic link sent. Open the link in the same browser you started with. If you installed the app on iPhone, prefer the code method."
+        ? "Email sent. Enter the code from the email below (often 6–8 digits)."
+        : "Magic link sent. Open the link in the same browser you started with. If you installed the Home Screen app on iPhone, prefer the code method."
     );
   }
 
@@ -108,8 +156,7 @@ function MagicLoginInner() {
       return;
     }
 
-    // Hard navigation so the new cookies/session are applied in this context (Safari/PWA)
-    window.location.assign(next);
+    goNext();
   }
 
   const digitsOnlyToken = token.replace(/\D/g, "");
@@ -123,8 +170,8 @@ function MagicLoginInner() {
 
         {standalone ? (
           <div className="mb-4 p-3 rounded bg-emerald-900/30 text-emerald-200 text-sm">
-            You’re in the installed app. On iPhone, the email link may open in Safari and won’t sign
-            you into the installed app. Use <span className="font-semibold">code sign-in</span>.
+            You’re in the Home Screen app. On iPhone, the email link may open in Safari and won’t sign
+            you into the Home Screen app. Use <span className="font-semibold">code sign-in</span>.
           </div>
         ) : null}
 
@@ -216,7 +263,7 @@ function MagicLoginInner() {
               </button>
 
               <p className="mt-2 text-xs text-slate-400">
-                Tip: if the email shows spaces between numbers, just paste it — Havenly will remove spaces automatically.
+                Tip: if the email shows spaces between numbers, just paste it — Havenly removes spaces automatically.
               </p>
             </div>
           </>
@@ -229,7 +276,7 @@ function MagicLoginInner() {
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-3">
-          Desktop: magic link works. iPhone installed app: use code.
+          Desktop: magic link works. iPhone Home Screen app: use code.
         </p>
       </div>
     </div>
