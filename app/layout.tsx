@@ -1,5 +1,5 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Navbar from "@/components/Navbar";
 import Providers from "./providers";
 import DeepLinkBootstrap from "./components/DeepLinkBootstrap";
@@ -18,12 +18,15 @@ export const metadata: Metadata = {
     apple: [{ url: "/pwa/icon-192.png" }]
   },
   manifest: "/manifest.json",
-  themeColor: "#34d399",
   appleWebApp: {
     capable: true,
     title: "Havenly",
     statusBarStyle: "black-translucent"
   }
+};
+
+export const viewport: Viewport = {
+  themeColor: "#34d399"
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
