@@ -46,7 +46,7 @@ function PlusSquareIcon(props: { className?: string }) {
 export default function InstallPrompt() {
   const pathname = usePathname();
 
-  // IMPORTANT: Only this component should "own" preventDefault behavior for the custom banner.
+  // The banner is the ONLY place that requests preventDefault (custom install UI).
   const { isIOS, isSafariIOS, canPromptNative, shouldShowInstall, promptInstall } =
     useInstallAvailability({ allowPreventDefault: true });
 
