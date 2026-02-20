@@ -38,7 +38,7 @@ function isIOSSafariNow(): boolean {
 
   const ua = window.navigator.userAgent;
 
-  // Exclude Chrome/Firefox on iOS (they are WebKit but different UA tokens)
+  // Exclude Chrome/Firefox on iOS
   if (/CriOS/i.test(ua) || /FxiOS/i.test(ua)) return false;
 
   // Exclude common in-app webviews
@@ -53,7 +53,7 @@ function isIOSSafariNow(): boolean {
 let started = false;
 let listeners = new Set<() => void>();
 
-let wantsPreventDefaultCount = 0; // number of active consumers requesting preventDefault
+let wantsPreventDefaultCount = 0; // # of active consumers requesting preventDefault
 let hasCapturedPromptThisSession = false;
 
 let state: StoreState = {
@@ -68,10 +68,11 @@ function emit() {
 }
 
 function computeBaseState(): Pick<StoreState, "isStandalone" | "isIOS" | "isSafariIOS"> {
-  const isStandalone = isStandaloneNow();
-  const isIOS = isIOSNow();
-  const isSafariIOS = isIOSSafariNow();
-  return { isStandalone, isIOS, isSafariIOS };
+  return {
+    isStandalone: isStandaloneNow(),
+    isIOS: isIOSNow(),
+    isSafariIOS: isIOSSafariNow(),
+  };
 }
 
 function startOnce() {
@@ -83,11 +84,13 @@ function startOnce() {
   emit();
 
   const updateStandalone = () => {
-    state = { ...state, ...computeBaseState() };
-    if (state.isStandalone) {
+    const base = computeBaseState();
+    state = { ...state, ...base };
+
+    if (base.isStandalone) {
       // If installed, drop any deferred prompt
       state = { ...state, deferredPrompt: null };
-      hasCapturedPromptThisSession = true; // no need to capture anymore
+      hasCapturedPromptThisSession = true;
     }
     emit();
   };
@@ -105,23 +108,22 @@ function startOnce() {
     else mq.addListener(updateStandalone);
   });
 
-  const onInstalled = () => {
-    updateStandalone();
-  };
+  const onInstalled = () => updateStandalone();
 
   const onBIP = (e: Event) => {
-    // Ignore if already installed or iOS (iOS has no native prompt)
     const base = computeBaseState();
+
+    // Ignore if already installed or iOS (iOS has no native prompt)
     if (base.isStandalone || base.isIOS) return;
 
-    // If no UI wants to control the prompt, do nothing (avoid warnings/spam)
+    // If no UI wants to control the prompt, do nothing (avoid warnings spam)
     if (wantsPreventDefaultCount <= 0) return;
 
-    // Avoid repeated capture noise within a session
+    // Avoid repeated capture in a session
     if (hasCapturedPromptThisSession) return;
     hasCapturedPromptThisSession = true;
 
-    // Defer prompt so we can trigger it on user gesture (our button)
+    // Defer prompt so we can trigger it via user gesture
     e.preventDefault();
     state = { ...state, ...base, deferredPrompt: e as BeforeInstallPromptEvent };
     emit();
@@ -130,16 +132,14 @@ function startOnce() {
   window.addEventListener("appinstalled", onInstalled);
   window.addEventListener("beforeinstallprompt", onBIP);
 
-  // also refresh standalone state once shortly after load
+  // refresh once shortly after load
   setTimeout(updateStandalone, 250);
 }
 
 function subscribe(cb: () => void) {
   startOnce();
   listeners.add(cb);
-  return () => {
-    listeners.delete(cb);
-  };
+  return () => listeners.delete(cb);
 }
 
 function getSnapshot() {
@@ -147,19 +147,14 @@ function getSnapshot() {
 }
 
 function getServerSnapshot(): StoreState {
-  return {
-    isStandalone: false,
-    isIOS: false,
-    isSafariIOS: false,
-    deferredPrompt: null,
-  };
+  return { isStandalone: false, isIOS: false, isSafariIOS: false, deferredPrompt: null };
 }
 
 /**
  * -------- Public Hook --------
  * allowPreventDefault:
- * - true  => this consumer wants the custom "Install" button experience (we will preventDefault once)
- * - false => this consumer doesn't need the deferred prompt
+ * - true  => consumer wants deferred prompt for a custom Install button
+ * - false => consumer does NOT capture (lets Chrome handle it normally)
  */
 export function useInstallAvailability(opts?: { allowPreventDefault?: boolean }) {
   const allowPreventDefault = opts?.allowPreventDefault ?? false;
@@ -181,18 +176,14 @@ export function useInstallAvailability(opts?: { allowPreventDefault?: boolean })
   }, [snap.isIOS, snap.deferredPrompt, snap.isStandalone]);
 
   const shouldShowInstall = useMemo(() => {
-    // Hide if installed app
     if (snap.isStandalone) return false;
-
-    // iOS Safari => show manual instructions (no native prompt)
-    if (snap.isIOS && snap.isSafariIOS) return true;
-
-    // Other platforms => show only if we captured deferred prompt
+    if (snap.isIOS && snap.isSafariIOS) return true; // manual iOS instructions
     return canPromptNative;
   }, [snap.isStandalone, snap.isIOS, snap.isSafariIOS, canPromptNative]);
 
   async function promptInstall() {
     if (!snap.deferredPrompt) return { outcome: "dismissed" as const };
+
     await snap.deferredPrompt.prompt();
     const choice = await snap.deferredPrompt.userChoice;
 
