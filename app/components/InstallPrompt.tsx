@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { track } from "@/components/telemetry";
 
@@ -58,9 +58,6 @@ function isIOS() {
 
 /**
  * True iOS Safari (not Chrome iOS, not Firefox iOS, not in-app webviews).
- * - Chrome iOS uses "CriOS"
- * - Firefox iOS uses "FxiOS"
- * - In-app webviews often include FBAV / Instagram / Line / wv etc.
  */
 function isIOSSafari() {
   if (typeof window === "undefined") return false;
@@ -73,16 +70,18 @@ function isIOSSafari() {
   const isFirefox = /FxiOS/i.test(ua);
   if (isChrome || isFirefox) return false;
 
-  // common in-app webview indicators
   const isWebView = /(FBAN|FBAV|Instagram|Line|wv)/i.test(ua);
   if (isWebView) return false;
 
-  // Safari contains "Safari" but not those above
   return /Safari/i.test(ua);
 }
 
 function shouldNeverPromptOnPath(path: string) {
-  return path.startsWith("/auth") || path.startsWith("/magic-login") || path.startsWith("/logout");
+  return (
+    path.startsWith("/auth") ||
+    path.startsWith("/magic-login") ||
+    path.startsWith("/logout")
+  );
 }
 
 function ShareIcon(props: { className?: string }) {
@@ -121,22 +120,27 @@ function PlusSquareIcon(props: { className?: string }) {
 
 export default function InstallPrompt() {
   const pathname = usePathname();
+  const pathnameRef = useRef(pathname);
+
+  useEffect(() => {
+    pathnameRef.current = pathname;
+  }, [pathname]);
 
   const ios = useMemo(() => isIOS(), []);
   const iosSafari = useMemo(() => isIOSSafari(), []);
-  const [mounted, setMounted] = useState(false);
 
+  const [mounted, setMounted] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [show, setShow] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
-  // Engagement tracking (page views + time)
+  // Engagement tracking (page views + time) - runs on navigation
   useEffect(() => {
     if (!mounted) return;
     if (typeof window === "undefined") return;
 
-    if (isStandalone()) {
+    if (isStandalone() || shouldNeverPromptOnPath(pathname)) {
       setShow(false);
       return;
     }
@@ -160,24 +164,22 @@ export default function InstallPrompt() {
     return () => window.clearInterval(interval);
   }, [mounted, pathname]);
 
-  // Capture beforeinstallprompt (Chrome/Edge/Android mostly)
+  // Capture beforeinstallprompt (register ONCE)
   useEffect(() => {
     if (!mounted) return;
     if (typeof window === "undefined") return;
 
-    if (shouldNeverPromptOnPath(pathname) || isStandalone()) {
-      setShow(false);
-      return;
-    }
-
     const onBIP = (e: Event) => {
+      if (isStandalone()) return;
+
+      // keep custom UX (button-triggered prompt)
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      track("beforeinstallprompt_fired", { pathname });
+      track("beforeinstallprompt_fired", { pathname: pathnameRef.current });
     };
 
     const onInstalled = () => {
-      track("appinstalled", { pathname });
+      track("appinstalled", { pathname: pathnameRef.current });
       setDeferredPrompt(null);
       setShow(false);
     };
@@ -189,14 +191,14 @@ export default function InstallPrompt() {
       window.removeEventListener("beforeinstallprompt", onBIP);
       window.removeEventListener("appinstalled", onInstalled);
     };
-  }, [mounted, pathname]);
+  }, [mounted]);
 
   // Decide whether to show
   useEffect(() => {
     if (!mounted) return;
     if (typeof window === "undefined") return;
 
-    if (shouldNeverPromptOnPath(pathname) || isStandalone()) {
+    if (isStandalone() || shouldNeverPromptOnPath(pathname)) {
       setShow(false);
       return;
     }
@@ -212,14 +214,12 @@ export default function InstallPrompt() {
     const pv = state.pageViews ?? 0;
     const sec = state.totalSeconds ?? 0;
     const engaged = pv >= MIN_PAGE_VIEWS || sec >= MIN_SECONDS_ON_SITE;
+
     if (!engaged) {
       setShow(false);
       return;
     }
 
-    // Eligibility:
-    // - iOS Safari: show manual Add to Home Screen instructions
-    // - Others: show only if beforeinstallprompt is available
     const eligibleIOS = ios && iosSafari;
     const eligibleOther = !ios && !!deferredPrompt;
 
@@ -227,7 +227,7 @@ export default function InstallPrompt() {
   }, [mounted, pathname, ios, iosSafari, deferredPrompt]);
 
   const dismiss = (reason: "close" | "later" = "close") => {
-    track("install_prompt_dismissed", { reason, pathname });
+    track("install_prompt_dismissed", { reason, pathname: pathnameRef.current });
 
     const s = (readJSON<PromptState>(STATE_KEY) ?? {}) as PromptState;
     s.dismissedUntil = addDays(SNOOZE_DAYS);
@@ -238,19 +238,20 @@ export default function InstallPrompt() {
 
   const installNative = async () => {
     if (!deferredPrompt) return;
-    track("install_prompt_clicked_install", { pathname });
+
+    track("install_prompt_clicked_install", { pathname: pathnameRef.current });
 
     await deferredPrompt.prompt();
     const choice = await deferredPrompt.userChoice;
 
     if (choice.outcome === "accepted") {
-      track("install_prompt_outcome", { pathname, outcome: "accepted" });
+      track("install_prompt_outcome", { pathname: pathnameRef.current, outcome: "accepted" });
       setShow(false);
       setDeferredPrompt(null);
       return;
     }
 
-    track("install_prompt_outcome", { pathname, outcome: "dismissed" });
+    track("install_prompt_outcome", { pathname: pathnameRef.current, outcome: "dismissed" });
     dismiss("later");
   };
 
