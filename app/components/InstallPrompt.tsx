@@ -13,7 +13,11 @@ function addDays(days: number) {
 }
 
 function shouldNeverPromptOnPath(path: string) {
-  return path.startsWith("/auth") || path.startsWith("/magic-login") || path.startsWith("/logout");
+  return (
+    path.startsWith("/auth") ||
+    path.startsWith("/magic-login") ||
+    path.startsWith("/logout")
+  );
 }
 
 function readSnoozeUntil(): number {
@@ -72,15 +76,16 @@ export default function InstallPrompt() {
   const [hidden, setHidden] = useState(false);
   const [snoozed, setSnoozed] = useState(true);
 
-  // Re-check snooze on route change (safe: component is client-only)
+  // Re-check snooze on route change (client-only).
+  // IMPORTANT: Do NOT reset `hidden` on navigation.
   useEffect(() => {
     const until = readSnoozeUntil();
     setSnoozed(until > Date.now());
-    setHidden(false); // optional: allow showing again after navigation if not snoozed
+    // Do NOT reset hidden on navigation.
+    // Hidden should only change via user actions (Close/Later/Install).
   }, [pathname]);
 
   // Only capture (preventDefault) when we are actually willing to show our custom banner.
-  // This reduces "Banner not shown..." spam in console.
   const allowPreventDefault = useMemo(() => {
     return !blockedPath && !hidden && !snoozed;
   }, [blockedPath, hidden, snoozed]);
@@ -106,7 +111,7 @@ export default function InstallPrompt() {
     track("install_prompt_clicked_install", { pathname });
     const choice = await promptInstall();
     track("install_prompt_outcome", { pathname, outcome: choice.outcome });
-    // Prompt can only be used once; hide banner regardless to avoid repeated warnings
+    // Prompt can only be used once; hide banner regardless
     setHidden(true);
   };
 
