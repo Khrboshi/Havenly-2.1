@@ -3,37 +3,18 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const PUBLIC_PATHS = ["/", "/about", "/blog", "/privacy", "/premium", "/upgrade"];
 const AUTH_PATHS = ["/magic-login", "/auth/callback", "/logout", "/install"];
 const PROTECTED_PREFIXES = ["/dashboard", "/journal", "/tools", "/insights", "/settings"];
 
-function isPublicPath(pathname: string) {
-  return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
-}
 function isAuthPath(pathname: string) {
   return AUTH_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 function isProtectedPath(pathname: string) {
   return PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
-function isStaticFile(pathname: string) {
-  return /\.[^/]+$/.test(pathname);
-}
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-
-  // Hard skips
-  if (pathname.startsWith("/api")) return NextResponse.next();
-  if (pathname.startsWith("/_next")) return NextResponse.next();
-  if (isStaticFile(pathname)) return NextResponse.next();
-
-  // If it's public, no auth work needed
-  if (isPublicPath(pathname)) return NextResponse.next();
-
-  // If it's neither protected nor auth-related, no auth work needed
-  const needsAuthWork = isProtectedPath(pathname) || isAuthPath(pathname);
-  if (!needsAuthWork) return NextResponse.next();
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -62,13 +43,13 @@ export async function middleware(req: NextRequest) {
     },
   });
 
-  // Refresh cookies silently (only when needed)
+  // Refresh cookies silently (only runs on matched routes)
   await supabase.auth.getSession();
 
   // Never redirect on auth routes
   if (isAuthPath(pathname)) return res;
 
-  // Only protect specific prefixes
+  // Protect only protected prefixes
   if (!isProtectedPath(pathname)) return res;
 
   const { data } = await supabase.auth.getUser();
@@ -84,6 +65,20 @@ export async function middleware(req: NextRequest) {
   return res;
 }
 
+/**
+ * CRITICAL: This is the actual cost-saving change.
+ * Middleware runs ONLY on protected + auth routes now.
+ */
 export const config = {
-  matcher: ["/((?!api|_next|.*\\..*).*)"],
+  matcher: [
+    "/dashboard/:path*",
+    "/journal/:path*",
+    "/tools/:path*",
+    "/insights/:path*",
+    "/settings/:path*",
+    "/magic-login",
+    "/auth/:path*",
+    "/logout",
+    "/install",
+  ],
 };
