@@ -13,6 +13,8 @@ type NavLink = { href: string; label: string };
 export default function Navbar() {
   const pathname = usePathname();
   const { session, supabase } = useSupabase();
+
+  // Hide Install only when already installed (standalone).
   const { isStandalone } = useInstallAvailability();
 
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -22,7 +24,6 @@ export default function Navbar() {
     setMobileOpen(false);
   }, [pathname]);
 
-  // Prevent background scroll when mobile menu is open
   useEffect(() => {
     if (!mobileOpen) {
       document.body.style.overflow = "";
@@ -54,8 +55,6 @@ export default function Navbar() {
     { href: "/install", label: "Install" },
   ];
 
-  // Final policy:
-  // - Hide Install only when already installed (standalone)
   const shouldShowInstall = useMemo(() => {
     return !isStandalone;
   }, [isStandalone]);
@@ -139,12 +138,10 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Desktop Navbar (fixed) */}
       <header className="hidden md:block fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-[#020617]/80 backdrop-blur">
         <HeaderInner mode="desktop" />
       </header>
 
-      {/* Mobile Navbar (fixed) */}
       <header className="md:hidden fixed top-0 left-0 right-0 z-50 w-full border-b border-white/10 bg-[#020617]/80 backdrop-blur">
         <HeaderInner mode="mobile" />
 
@@ -190,7 +187,6 @@ export default function Navbar() {
         )}
       </header>
 
-      {/* Spacer so content doesn't go under the fixed headers */}
       <div className="h-[72px]" />
     </>
   );
