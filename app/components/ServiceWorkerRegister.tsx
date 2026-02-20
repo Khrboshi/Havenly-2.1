@@ -1,21 +1,24 @@
 "use client";
+
 import { useEffect } from "react";
 
-export default function ServiceWorkerRegister() {
+export default function ServiceWorkerRegisterer() {
   useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.getRegistrations().then((regs) => {
-        const alreadyRegistered = regs.some((r) =>
-          r.active?.scriptURL.includes("service-worker.js")
-        );
+    // Only in production, only if supported
+    if (process.env.NODE_ENV !== "production") return;
+    if (!("serviceWorker" in navigator)) return;
 
-        if (!alreadyRegistered) {
-          navigator.serviceWorker.register("/service-worker.js", {
-            scope: "/",
-          });
-        }
-      });
-    }
+    const register = async () => {
+      try {
+        await navigator.serviceWorker.register("/service-worker.js", { scope: "/" });
+      } catch (e) {
+        // Keep silent in prod; optional log in dev
+        // console.error("SW register failed", e);
+      }
+    };
+
+    // Register after first paint
+    window.requestAnimationFrame(() => register());
   }, []);
 
   return null;
