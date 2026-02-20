@@ -80,7 +80,6 @@ export default function InstallPrompt() {
     setSnoozed(until > Date.now());
   }, [pathname]);
 
-  // Only capture (preventDefault) when we are actually willing to show our custom banner.
   const allowPreventDefault = useMemo(() => {
     return !blockedPath && !hidden && !snoozed;
   }, [blockedPath, hidden, snoozed]);
