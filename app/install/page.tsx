@@ -4,7 +4,8 @@ import { useMemo } from "react";
 import { useInstallAvailability } from "@/app/hooks/useInstallAvailability";
 
 export default function InstallPage() {
-  // Let Chrome behave normally here (no preventDefault capture).
+  // Do NOT capture here (no preventDefault).
+  // This page is for instructions and browser-native install UI.
   const { isStandalone, isIOS, isSafariIOS, canPromptNative, promptInstall } =
     useInstallAvailability({ allowPreventDefault: false });
 
@@ -24,9 +25,7 @@ export default function InstallPage() {
       {isStandalone ? (
         <div className="mt-8 rounded-xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-lg font-semibold text-white">Already installed</h2>
-          <p className="mt-2 text-slate-300">
-            This device already has Havenly installed.
-          </p>
+          <p className="mt-2 text-slate-300">This device already has Havenly installed.</p>
         </div>
       ) : (
         <div className="mt-8 rounded-xl border border-white/10 bg-white/5 p-6">
@@ -59,8 +58,8 @@ export default function InstallPage() {
                   <ol className="mt-2 list-decimal space-y-2 pl-5">
                     <li>Open this site in a normal (non-Incognito) window.</li>
                     <li>
-                      Click the install icon in the address bar (if shown) <b>or</b> open the browser
-                      menu (⋮).
+                      Click the install icon in the address bar (if shown) <b>or</b> open the
+                      browser menu (⋮).
                     </li>
                     <li>
                       Select <b>Install Havenly…</b>
