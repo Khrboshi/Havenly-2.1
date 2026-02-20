@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { useSupabase } from "@/components/SupabaseSessionProvider";
@@ -12,32 +12,31 @@ type NavLink = { href: string; label: string };
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { session, supabase } = useSupabase();
 
-  // ✅ Single policy: hide Install only when already installed (standalone)
   const { isStandalone } = useInstallAvailability();
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const isLoggedIn = !!session;
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
-  // ✅ FIX: do NOT mutate document.body.style.overflow (causes "two click" navigation issues)
-  // Use class toggling instead.
+  // Do not mutate inline style; use class toggling
   useEffect(() => {
-    if (mobileOpen) {
-      document.body.classList.add("overflow-hidden");
-    } else {
-      document.body.classList.remove("overflow-hidden");
-    }
-
-    return () => {
-      document.body.classList.remove("overflow-hidden");
-    };
+    if (mobileOpen) document.body.classList.add("overflow-hidden");
+    else document.body.classList.remove("overflow-hidden");
+    return () => document.body.classList.remove("overflow-hidden");
   }, [mobileOpen]);
+
+  // ✅ Prefetch common authed routes right after login
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const routes = ["/dashboard", "/journal", "/tools", "/insights"];
+    routes.forEach((r) => router.prefetch(r));
+  }, [isLoggedIn, router]);
 
   const linkBase = "text-sm font-medium transition-colors hover:text-emerald-400";
   const activeLink = "text-emerald-400";
@@ -80,7 +79,7 @@ export default function Navbar() {
 
   const HeaderInner = ({ mode }: { mode: "desktop" | "mobile" }) => (
     <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-      <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-white">
+      <Link href="/" prefetch className="flex items-center gap-2 text-lg font-semibold text-white">
         <Image
           src="/pwa/icon-192.png"
           alt="Havenly"
@@ -103,6 +102,7 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
+                prefetch
                 className={`${linkBase} ${isActive ? activeLink : inactiveLink}`}
               >
                 {link.label}
@@ -113,6 +113,7 @@ export default function Navbar() {
           {!isLoggedIn ? (
             <Link
               href="/magic-login"
+              prefetch
               className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
             >
               Start free journal
@@ -158,6 +159,7 @@ export default function Navbar() {
                   <Link
                     key={link.href}
                     href={link.href}
+                    prefetch
                     onClick={() => setMobileOpen(false)}
                     className={`rounded-md px-2 py-2 text-base ${
                       isActive ? "bg-white/5 text-emerald-400" : "text-slate-300"
@@ -171,6 +173,7 @@ export default function Navbar() {
               {!isLoggedIn ? (
                 <Link
                   href="/magic-login"
+                  prefetch
                   onClick={() => setMobileOpen(false)}
                   className="mt-2 rounded-md bg-emerald-500 px-4 py-3 text-center text-sm font-medium text-black"
                 >
