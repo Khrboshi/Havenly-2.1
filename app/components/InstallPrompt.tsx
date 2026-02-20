@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useInstallAvailability } from "@/app/hooks/useInstallAvailability";
 import { track } from "@/components/telemetry";
 
@@ -13,11 +13,7 @@ function addDays(days: number) {
 }
 
 function shouldNeverPromptOnPath(path: string) {
-  return (
-    path.startsWith("/auth") ||
-    path.startsWith("/magic-login") ||
-    path.startsWith("/logout")
-  );
+  return path.startsWith("/auth") || path.startsWith("/magic-login") || path.startsWith("/logout");
 }
 
 function readSnoozeUntil(): number {
@@ -70,19 +66,18 @@ function PlusSquareIcon(props: { className?: string }) {
 
 export default function InstallPrompt() {
   const pathname = usePathname();
+  const router = useRouter();
 
   const blockedPath = useMemo(() => shouldNeverPromptOnPath(pathname), [pathname]);
 
   const [hidden, setHidden] = useState(false);
   const [snoozed, setSnoozed] = useState(true);
 
-  // Re-check snooze on route change (client-only).
-  // IMPORTANT: Do NOT reset `hidden` on navigation.
+  // Re-check snooze on route change.
+  // IMPORTANT: Do NOT reset hidden on navigation.
   useEffect(() => {
     const until = readSnoozeUntil();
     setSnoozed(until > Date.now());
-    // Do NOT reset hidden on navigation.
-    // Hidden should only change via user actions (Close/Later/Install).
   }, [pathname]);
 
   // Only capture (preventDefault) when we are actually willing to show our custom banner.
@@ -109,9 +104,18 @@ export default function InstallPrompt() {
 
   const installNative = async () => {
     track("install_prompt_clicked_install", { pathname });
+
     const choice = await promptInstall();
+
+    // If we couldn't prompt (no deferred prompt), send user to /install page
+    if (choice.outcome === "dismissed" && !canPromptNative && !(isIOS && isSafariIOS)) {
+      router.push("/install");
+      return;
+    }
+
     track("install_prompt_outcome", { pathname, outcome: choice.outcome });
-    // Prompt can only be used once; hide banner regardless
+
+    // Hide after click to prevent repeated prompting/warnings
     setHidden(true);
   };
 
@@ -138,7 +142,7 @@ export default function InstallPrompt() {
               </p>
             ) : (
               <p className="mt-1 text-xs text-slate-300">
-                Get a faster, app-like experience with offline support.
+                Get a faster, app-like experience with an app icon on your device.
               </p>
             )}
           </div>
