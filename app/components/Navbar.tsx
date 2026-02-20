@@ -20,18 +20,22 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const isLoggedIn = !!session;
 
+  // Close mobile menu on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
+  // ✅ FIX: do NOT mutate document.body.style.overflow (causes "two click" navigation issues)
+  // Use class toggling instead.
   useEffect(() => {
-    if (!mobileOpen) {
-      document.body.style.overflow = "";
-      return;
+    if (mobileOpen) {
+      document.body.classList.add("overflow-hidden");
+    } else {
+      document.body.classList.remove("overflow-hidden");
     }
-    document.body.style.overflow = "hidden";
+
     return () => {
-      document.body.style.overflow = "";
+      document.body.classList.remove("overflow-hidden");
     };
   }, [mobileOpen]);
 
