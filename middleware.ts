@@ -5,7 +5,6 @@ import { createServerClient } from "@supabase/ssr";
 
 const PUBLIC_PATHS = ["/", "/about", "/blog", "/privacy", "/premium", "/upgrade"];
 const AUTH_PATHS = ["/magic-login", "/auth/callback", "/logout", "/install"];
-
 const PROTECTED_PREFIXES = ["/dashboard", "/journal", "/tools", "/insights", "/settings"];
 
 function isPublicPath(pathname: string) {
@@ -24,18 +23,25 @@ function isStaticFile(pathname: string) {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // hard skips
+  // Hard skips
   if (pathname.startsWith("/api")) return NextResponse.next();
   if (pathname.startsWith("/_next")) return NextResponse.next();
   if (isStaticFile(pathname)) return NextResponse.next();
 
+  // If it's public, no auth work needed
+  if (isPublicPath(pathname)) return NextResponse.next();
+
+  // If it's neither protected nor auth-related, no auth work needed
+  const needsAuthWork = isProtectedPath(pathname) || isAuthPath(pathname);
+  if (!needsAuthWork) return NextResponse.next();
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  // if env missing, do nothing
+  // If env missing, do nothing
   if (!supabaseUrl || !supabaseAnon) return NextResponse.next();
 
-  // Important: create a response we can mutate with cookies
+  // Create a response we can mutate with cookies
   const res = NextResponse.next();
 
   const supabase = createServerClient(supabaseUrl, supabaseAnon, {
@@ -56,16 +62,15 @@ export async function middleware(req: NextRequest) {
     },
   });
 
-  // Refresh cookies silently
+  // Refresh cookies silently (only when needed)
   await supabase.auth.getSession();
 
-  // Never redirect on public/auth routes
-  if (isPublicPath(pathname) || isAuthPath(pathname)) return res;
+  // Never redirect on auth routes
+  if (isAuthPath(pathname)) return res;
 
   // Only protect specific prefixes
   if (!isProtectedPath(pathname)) return res;
 
-  // Verified decision
   const { data } = await supabase.auth.getUser();
 
   if (!data?.user) {
