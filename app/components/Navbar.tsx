@@ -14,7 +14,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const { session, supabase } = useSupabase();
 
-  // Hide Install only when already installed (standalone).
+  // ✅ Single policy: hide Install only when already installed (standalone)
   const { isStandalone } = useInstallAvailability();
 
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -55,9 +55,7 @@ export default function Navbar() {
     { href: "/install", label: "Install" },
   ];
 
-  const shouldShowInstall = useMemo(() => {
-    return !isStandalone;
-  }, [isStandalone]);
+  const shouldShowInstall = useMemo(() => !isStandalone, [isStandalone]);
 
   const links = useMemo(() => {
     const base = isLoggedIn ? authLinks : publicLinks;
