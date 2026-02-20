@@ -54,7 +54,7 @@ export default function Navbar() {
     { href: "/install", label: "Install" },
   ];
 
-  // ✅ Final policy:
+  // Final policy:
   // - Hide Install only when already installed (standalone)
   const shouldShowInstall = useMemo(() => {
     return !isStandalone;
