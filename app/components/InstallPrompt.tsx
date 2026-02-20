@@ -1,40 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useInstallAvailability } from "@/app/hooks/useInstallAvailability";
 import { track } from "@/components/telemetry";
-
-const STATE_KEY = "havenly_install_prompt_state_v2";
-const MIN_SECONDS_ON_SITE = 15;
-const MIN_PAGE_VIEWS = 2;
-const SNOOZE_DAYS = 5;
-
-type PromptState = {
-  pageViews?: number;
-  totalSeconds?: number;
-  lastTickAt?: number;
-  dismissedUntil?: number;
-};
-
-function readJSON<T>(key: string): T | null {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : null;
-  } catch {
-    return null;
-  }
-}
-
-function writeJSON(key: string, value: any) {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch {}
-}
-
-function addDays(days: number) {
-  return Date.now() + days * 24 * 60 * 60 * 1000;
-}
 
 function shouldNeverPromptOnPath(path: string) {
   return path.startsWith("/auth") || path.startsWith("/magic-login") || path.startsWith("/logout");
@@ -76,95 +45,33 @@ function PlusSquareIcon(props: { className?: string }) {
 
 export default function InstallPrompt() {
   const pathname = usePathname();
-  const { isStandalone, isIOS, isSafariIOS, canPromptNative, promptInstall } = useInstallAvailability();
 
-  const [mounted, setMounted] = useState(false);
-  const [show, setShow] = useState(false);
+  // IMPORTANT: Only this component should "own" preventDefault behavior for the custom banner.
+  const { isIOS, isSafariIOS, canPromptNative, shouldShowInstall, promptInstall } =
+    useInstallAvailability({ allowPreventDefault: true });
 
-  useEffect(() => setMounted(true), []);
+  const [hidden, setHidden] = useState(false);
 
-  // Engagement tracking (page views + time)
-  useEffect(() => {
-    if (!mounted) return;
-    if (typeof window === "undefined") return;
-    if (isStandalone) return;
+  const blockedPath = useMemo(() => shouldNeverPromptOnPath(pathname), [pathname]);
 
-    const state = (readJSON<PromptState>(STATE_KEY) ?? {}) as PromptState;
-    state.pageViews = (state.pageViews ?? 0) + 1;
-    state.lastTickAt = state.lastTickAt ?? Date.now();
-    writeJSON(STATE_KEY, state);
-
-    const interval = window.setInterval(() => {
-      const s = (readJSON<PromptState>(STATE_KEY) ?? {}) as PromptState;
-      const now = Date.now();
-      const last = s.lastTickAt ?? now;
-      const deltaSec = Math.max(0, Math.round((now - last) / 1000));
-      s.totalSeconds = (s.totalSeconds ?? 0) + deltaSec;
-      s.lastTickAt = now;
-      writeJSON(STATE_KEY, s);
-    }, 3000);
-
-    return () => window.clearInterval(interval);
-  }, [mounted, pathname, isStandalone]);
-
-  // Decide whether to show the bottom banner
-  useEffect(() => {
-    if (!mounted) return;
-    if (typeof window === "undefined") return;
-
-    if (isStandalone || shouldNeverPromptOnPath(pathname)) {
-      setShow(false);
-      return;
-    }
-
-    const state = (readJSON<PromptState>(STATE_KEY) ?? {}) as PromptState;
-
-    // snooze gate
-    if (state.dismissedUntil && Date.now() < state.dismissedUntil) {
-      setShow(false);
-      return;
-    }
-
-    const pv = state.pageViews ?? 0;
-    const sec = state.totalSeconds ?? 0;
-    const engaged = pv >= MIN_PAGE_VIEWS || sec >= MIN_SECONDS_ON_SITE;
-    if (!engaged) {
-      setShow(false);
-      return;
-    }
-
-    // Eligibility:
-    // - iOS Safari: show manual instructions
-    // - Others: show only if native prompt is available
-    const eligible = (isIOS && isSafariIOS) || canPromptNative;
-    setShow(eligible);
-  }, [mounted, pathname, isStandalone, isIOS, isSafariIOS, canPromptNative]);
+  const show = useMemo(() => {
+    if (hidden) return false;
+    if (blockedPath) return false;
+    return shouldShowInstall;
+  }, [hidden, blockedPath, shouldShowInstall]);
 
   const dismiss = (reason: "close" | "later" = "close") => {
     track("install_prompt_dismissed", { reason, pathname });
-
-    const s = (readJSON<PromptState>(STATE_KEY) ?? {}) as PromptState;
-    s.dismissedUntil = addDays(SNOOZE_DAYS);
-    writeJSON(STATE_KEY, s);
-
-    setShow(false);
+    setHidden(true);
   };
 
   const installNative = async () => {
     track("install_prompt_clicked_install", { pathname });
-
     const choice = await promptInstall();
-    if (choice.outcome === "accepted") {
-      track("install_prompt_outcome", { pathname, outcome: "accepted" });
-      setShow(false);
-      return;
-    }
-
-    track("install_prompt_outcome", { pathname, outcome: "dismissed" });
-    dismiss("later");
+    track("install_prompt_outcome", { pathname, outcome: choice.outcome });
+    if (choice.outcome === "accepted") setHidden(true);
   };
 
-  if (!mounted) return null;
   if (!show) return null;
 
   return (
