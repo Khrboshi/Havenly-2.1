@@ -1,12 +1,33 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useInstallAvailability } from "@/app/hooks/useInstallAvailability";
 import { track } from "@/components/telemetry";
 
+const SNOOZE_KEY = "hvn_install_snooze_until_v1";
+const SNOOZE_DAYS = 5;
+
+function addDays(days: number) {
+  return Date.now() + days * 24 * 60 * 60 * 1000;
+}
+
 function shouldNeverPromptOnPath(path: string) {
   return path.startsWith("/auth") || path.startsWith("/magic-login") || path.startsWith("/logout");
+}
+
+function readSnoozeUntil(): number {
+  try {
+    return Number(localStorage.getItem(SNOOZE_KEY) || "0") || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function writeSnoozeUntil(ts: number) {
+  try {
+    localStorage.setItem(SNOOZE_KEY, String(ts));
+  } catch {}
 }
 
 function ShareIcon(props: { className?: string }) {
@@ -46,22 +67,33 @@ function PlusSquareIcon(props: { className?: string }) {
 export default function InstallPrompt() {
   const pathname = usePathname();
 
-  // The banner is the ONLY place that requests preventDefault (custom install UI).
-  const { isIOS, isSafariIOS, canPromptNative, shouldShowInstall, promptInstall } =
-    useInstallAvailability({ allowPreventDefault: true });
+  const blockedPath = useMemo(() => shouldNeverPromptOnPath(pathname), [pathname]);
 
   const [hidden, setHidden] = useState(false);
+  const [snoozed, setSnoozed] = useState(true);
 
-  const blockedPath = useMemo(() => shouldNeverPromptOnPath(pathname), [pathname]);
+  useEffect(() => {
+    const until = readSnoozeUntil();
+    setSnoozed(until > Date.now());
+  }, [pathname]);
+
+  // Only capture (preventDefault) when we are actually willing to show our custom banner
+  const allowPreventDefault = !blockedPath && !hidden && !snoozed;
+
+  const { isIOS, isSafariIOS, canPromptNative, shouldShowInstall, promptInstall } =
+    useInstallAvailability({ allowPreventDefault });
 
   const show = useMemo(() => {
     if (hidden) return false;
     if (blockedPath) return false;
+    if (snoozed) return false;
     return shouldShowInstall;
-  }, [hidden, blockedPath, shouldShowInstall]);
+  }, [hidden, blockedPath, snoozed, shouldShowInstall]);
 
   const dismiss = (reason: "close" | "later" = "close") => {
     track("install_prompt_dismissed", { reason, pathname });
+    writeSnoozeUntil(addDays(SNOOZE_DAYS));
+    setSnoozed(true);
     setHidden(true);
   };
 
