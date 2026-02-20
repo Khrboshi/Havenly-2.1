@@ -1,12 +1,12 @@
 "use client";
 
 import { SupabaseSessionProvider } from "@/components/SupabaseSessionProvider";
-import ServiceWorkerRegisterer from "@/app/components/ServiceWorkerRegister";
+import ServiceWorkerRegister from "./components/ServiceWorkerRegister";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SupabaseSessionProvider>
-      <ServiceWorkerRegisterer />
+      <ServiceWorkerRegister />
       {children}
     </SupabaseSessionProvider>
   );
