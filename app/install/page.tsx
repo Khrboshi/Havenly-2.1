@@ -4,12 +4,13 @@ import { useMemo } from "react";
 import { useInstallAvailability } from "@/app/hooks/useInstallAvailability";
 
 export default function InstallPage() {
-  const { isStandalone, isIOS, isSafariIOS, canPromptNative, promptInstall } = useInstallAvailability();
+  // On this page, let Chrome behave normally (no preventDefault) to avoid warnings/spam.
+  const { isStandalone, isIOS, isSafariIOS, canPromptNative, promptInstall } =
+    useInstallAvailability({ allowPreventDefault: false });
 
   const platformHint = useMemo(() => (isIOS ? "ios" : "other"), [isIOS]);
 
   async function handleInstallClick() {
-    if (!canPromptNative) return;
     await promptInstall();
   }
 
@@ -24,7 +25,8 @@ export default function InstallPage() {
         <div className="mt-8 rounded-xl border border-white/10 bg-white/5 p-6">
           <h2 className="text-lg font-semibold text-white">Already installed</h2>
           <p className="mt-2 text-slate-300">
-            Havenly is currently running in installed (standalone) mode on this device.
+            This device already has Havenly installed. The Install banner/tab should be hidden in
+            standalone mode.
           </p>
         </div>
       ) : (
@@ -57,11 +59,17 @@ export default function InstallPage() {
                   <p className="font-medium text-white">Desktop (Chrome/Edge)</p>
                   <ol className="mt-2 list-decimal space-y-2 pl-5">
                     <li>Open this site in a normal (non-Incognito) window.</li>
-                    <li>Open the browser menu (⋮) or the install icon in the address bar.</li>
-                    <li>Select <b>Install Havenly…</b></li>
+                    <li>
+                      Click the install icon in the address bar (if shown) <b>or</b> open the browser
+                      menu (⋮).
+                    </li>
+                    <li>
+                      Select <b>Install Havenly…</b>
+                    </li>
                   </ol>
                   <p className="mt-3 text-xs text-slate-400">
-                    If install never appears, check manifest + service worker and ensure HTTPS.
+                    If install never appears, the app may already be installed or the browser isn’t
+                    detecting installability.
                   </p>
                 </div>
               )}
