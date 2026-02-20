@@ -1,37 +1,35 @@
 "use client";
 
-import { useEffect, useMemo, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
 
-type StoreState = {
-  deferredPrompt: BeforeInstallPromptEvent | null;
-  isStandalone: boolean;
-  isIOS: boolean;
-  isSafariIOS: boolean;
-};
+function isStandaloneNow(): boolean {
+  if (typeof window === "undefined") return false;
 
-function detectIOS(): boolean {
+  const navStandalone = (window.navigator as any).standalone === true;
+  const modes = [
+    "(display-mode: standalone)",
+    "(display-mode: minimal-ui)",
+    "(display-mode: fullscreen)",
+    "(display-mode: window-controls-overlay)",
+  ];
+  return navStandalone || modes.some((q) => window.matchMedia(q).matches);
+}
+
+function isIOSNow(): boolean {
   if (typeof window === "undefined") return false;
   return /iphone|ipad|ipod/i.test(window.navigator.userAgent);
 }
 
-/**
- * True iOS Safari (not Chrome iOS, not Firefox iOS, not in-app webviews).
- * - Chrome iOS uses "CriOS"
- * - Firefox iOS uses "FxiOS"
- * - In-app webviews often include FBAV / Instagram / Line / wv etc.
- */
-function detectIOSSafari(): boolean {
+function isIOSSafariNow(): boolean {
   if (typeof window === "undefined") return false;
+  if (!isIOSNow()) return false;
 
   const ua = window.navigator.userAgent;
-  const isIOSDevice = /iPhone|iPad|iPod/i.test(ua);
-  if (!isIOSDevice) return false;
-
   const isChrome = /CriOS/i.test(ua);
   const isFirefox = /FxiOS/i.test(ua);
   if (isChrome || isFirefox) return false;
@@ -42,139 +40,103 @@ function detectIOSSafari(): boolean {
   return /Safari/i.test(ua);
 }
 
-function detectStandalone(): boolean {
-  if (typeof window === "undefined") return false;
+export function useInstallAvailability(opts?: { allowPreventDefault?: boolean }) {
+  const allowPreventDefault = opts?.allowPreventDefault ?? true;
 
-  const navStandalone = (window.navigator as any).standalone === true; // iOS Safari
-  const modes = [
-    "(display-mode: standalone)",
-    "(display-mode: minimal-ui)",
-    "(display-mode: fullscreen)",
-    "(display-mode: window-controls-overlay)",
-  ];
-  const mediaStandalone = modes.some((q) => window.matchMedia(q).matches);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
 
-  return navStandalone || mediaStandalone;
-}
+  const [isStandalone, setIsStandalone] = useState(false);
 
-// --------------------
-// Singleton store
-// --------------------
-let started = false;
-let state: StoreState = {
-  deferredPrompt: null,
-  isStandalone: false,
-  isIOS: false,
-  isSafariIOS: false,
-};
+  // prevents re-handling the same event across route changes
+  const seenPromptRef = useRef(false);
 
-const listeners = new Set<() => void>();
+  const isIOS = useMemo(() => isIOSNow(), []);
+  const isSafariIOS = useMemo(() => isIOSSafariNow(), []);
 
-function emit() {
-  listeners.forEach((l) => l());
-}
+  useEffect(() => {
+    if (typeof window === "undefined") return;
 
-function setState(patch: Partial<StoreState>) {
-  state = { ...state, ...patch };
-  emit();
-}
+    const updateStandalone = () => setIsStandalone(isStandaloneNow());
 
-function startStore() {
-  if (started || typeof window === "undefined") return;
-  started = true;
+    updateStandalone();
 
-  // initial detection
-  setState({
-    isIOS: detectIOS(),
-    isSafariIOS: detectIOSSafari(),
-    isStandalone: detectStandalone(),
-  });
+    const queries = [
+      "(display-mode: standalone)",
+      "(display-mode: minimal-ui)",
+      "(display-mode: fullscreen)",
+      "(display-mode: window-controls-overlay)",
+    ].map((q) => window.matchMedia(q));
 
-  // track standalone changes
-  const mqs = [
-    "(display-mode: standalone)",
-    "(display-mode: minimal-ui)",
-    "(display-mode: fullscreen)",
-    "(display-mode: window-controls-overlay)",
-  ].map((q) => window.matchMedia(q));
+    queries.forEach((mq) => {
+      if (mq.addEventListener) mq.addEventListener("change", updateStandalone);
+      else mq.addListener(updateStandalone);
+    });
 
-  const onModeChange = () => {
-    setState({ isStandalone: detectStandalone() });
-  };
+    window.addEventListener("appinstalled", updateStandalone);
 
-  mqs.forEach((mq) => {
-    if (mq.addEventListener) mq.addEventListener("change", onModeChange);
-    else mq.addListener(onModeChange);
-  });
+    return () => {
+      queries.forEach((mq) => {
+        if (mq.removeEventListener) mq.removeEventListener("change", updateStandalone);
+        else mq.removeListener(updateStandalone);
+      });
+      window.removeEventListener("appinstalled", updateStandalone);
+    };
+  }, []);
 
-  // capture install prompt ONCE
-  const onBIP = (e: Event) => {
-    // Prevent Chrome mini-infobar; we will trigger prompt() ourselves.
-    e.preventDefault();
-    setState({ deferredPrompt: e as BeforeInstallPromptEvent });
-  };
+  useEffect(() => {
+    if (typeof window === "undefined") return;
 
-  const onInstalled = () => {
-    setState({ deferredPrompt: null, isStandalone: true });
-  };
+    const onBIP = (e: Event) => {
+      // If already installed, ignore.
+      if (isStandaloneNow()) return;
 
-  window.addEventListener("beforeinstallprompt", onBIP);
-  window.addEventListener("appinstalled", onInstalled);
+      // Avoid spam: only store first prompt per session.
+      if (seenPromptRef.current) return;
+      seenPromptRef.current = true;
 
-  // Also update standalone on install event
-  window.addEventListener("appinstalled", onModeChange);
+      // Only preventDefault if we actually plan to show a custom install UI.
+      // If false, Chrome can show its own UI and no console spam.
+      if (allowPreventDefault) {
+        e.preventDefault();
+      }
 
-  // No teardown needed for singleton in app lifetime.
-}
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    };
 
-function subscribe(cb: () => void) {
-  startStore();
-  listeners.add(cb);
-  return () => listeners.delete(cb);
-}
+    const onInstalled = () => {
+      setDeferredPrompt(null);
+      setIsStandalone(true);
+    };
 
-function getSnapshot() {
-  return state;
-}
+    window.addEventListener("beforeinstallprompt", onBIP);
+    window.addEventListener("appinstalled", onInstalled);
 
-function getServerSnapshot(): StoreState {
-  return {
-    deferredPrompt: null,
-    isStandalone: false,
-    isIOS: false,
-    isSafariIOS: false,
-  };
-}
+    return () => {
+      window.removeEventListener("beforeinstallprompt", onBIP);
+      window.removeEventListener("appinstalled", onInstalled);
+    };
+  }, [allowPreventDefault]);
 
-export function useInstallAvailability() {
-  const snap = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const canPromptNative = !isIOS && !!deferredPrompt && !isStandalone;
 
-  const canPromptNative = useMemo(() => {
-    return !snap.isIOS && !!snap.deferredPrompt && !snap.isStandalone;
-  }, [snap.isIOS, snap.deferredPrompt, snap.isStandalone]);
-
-  const shouldShowInstall = useMemo(() => {
-    if (snap.isStandalone) return false;
-    // iOS Safari cannot fire beforeinstallprompt; install UI should be manual instructions.
-    return canPromptNative || (snap.isIOS && snap.isSafariIOS);
-  }, [snap.isStandalone, snap.isIOS, snap.isSafariIOS, canPromptNative]);
-
-  async function promptInstall() {
-    if (!state.deferredPrompt) return { outcome: "dismissed" as const };
-
-    await state.deferredPrompt.prompt();
-    const choice = await state.deferredPrompt.userChoice;
-
-    // The event can only be used once.
-    setState({ deferredPrompt: null });
-
-    return choice;
-  }
+  const shouldShowInstall =
+    !isStandalone &&
+    (canPromptNative || (isIOS && isSafariIOS)); // iOS is manual instructions
 
   return {
-    ...snap,
+    isStandalone,
+    isIOS,
+    isSafariIOS,
+    deferredPrompt,
     canPromptNative,
     shouldShowInstall,
-    promptInstall,
+    async promptInstall() {
+      if (!deferredPrompt) return { outcome: "dismissed" as const };
+      await deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      setDeferredPrompt(null);
+      return choice;
+    },
   };
 }
