@@ -6,43 +6,15 @@ import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { useSupabase } from "@/components/SupabaseSessionProvider";
+import { useInstallAvailability } from "@/app/hooks/useInstallAvailability";
 
 type NavLink = { href: string; label: string };
-
-function isStandalone(): boolean {
-  if (typeof window === "undefined") return false;
-
-  const navStandalone = (window.navigator as any).standalone === true; // iOS Safari
-  const modes = [
-    "(display-mode: standalone)",
-    "(display-mode: minimal-ui)",
-    "(display-mode: fullscreen)",
-    "(display-mode: window-controls-overlay)",
-  ];
-  const mediaStandalone = modes.some((q) => window.matchMedia(q).matches);
-
-  return navStandalone || mediaStandalone;
-}
-
-function isIOS(): boolean {
-  if (typeof window === "undefined") return false;
-  const ua = window.navigator.userAgent.toLowerCase();
-  return /iphone|ipad|ipod/.test(ua);
-}
-
-function isSafariIOS(): boolean {
-  if (typeof window === "undefined") return false;
-  if (!isIOS()) return false;
-
-  const ua = window.navigator.userAgent.toLowerCase();
-  // exclude common in-app webviews
-  const isWebView = /(fbav|instagram|line|wv)/.test(ua);
-  return !isWebView;
-}
 
 export default function Navbar() {
   const pathname = usePathname();
   const { session, supabase } = useSupabase();
+  const { isStandalone } = useInstallAvailability();
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const isLoggedIn = !!session;
 
@@ -83,15 +55,10 @@ export default function Navbar() {
   ];
 
   // ✅ Final policy:
-  // - Hide Install inside installed app (standalone)
-  // - Hide Install on iOS Safari (because we can't reliably know "already installed")
-  // - Show Install on desktop browsers (where beforeinstallprompt exists or users expect it)
+  // - Hide Install only when already installed (standalone)
   const shouldShowInstall = useMemo(() => {
-    if (typeof window === "undefined") return true; // SSR safe default
-    if (isStandalone()) return false;
-    if (isSafariIOS()) return false;
-    return true;
-  }, []);
+    return !isStandalone;
+  }, [isStandalone]);
 
   const links = useMemo(() => {
     const base = isLoggedIn ? authLinks : publicLinks;
@@ -129,8 +96,7 @@ export default function Navbar() {
         <div className="flex items-center gap-6">
           {links.map((link) => {
             const isActive =
-              pathname === link.href ||
-              (link.href !== "/" && pathname.startsWith(link.href));
+              pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
 
             return (
               <Link
@@ -187,8 +153,7 @@ export default function Navbar() {
             <div className="flex flex-col gap-4">
               {links.map((link) => {
                 const isActive =
-                  pathname === link.href ||
-                  (link.href !== "/" && pathname.startsWith(link.href));
+                  pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
 
                 return (
                   <Link
