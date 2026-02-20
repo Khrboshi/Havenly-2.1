@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useInstallAvailability } from "@/app/hooks/useInstallAvailability";
 import { track } from "@/components/telemetry";
@@ -72,13 +72,18 @@ export default function InstallPrompt() {
   const [hidden, setHidden] = useState(false);
   const [snoozed, setSnoozed] = useState(true);
 
+  // Re-check snooze on route change (safe: component is client-only)
   useEffect(() => {
     const until = readSnoozeUntil();
     setSnoozed(until > Date.now());
+    setHidden(false); // optional: allow showing again after navigation if not snoozed
   }, [pathname]);
 
-  // Only capture (preventDefault) when we are actually willing to show our custom banner
-  const allowPreventDefault = !blockedPath && !hidden && !snoozed;
+  // Only capture (preventDefault) when we are actually willing to show our custom banner.
+  // This reduces "Banner not shown..." spam in console.
+  const allowPreventDefault = useMemo(() => {
+    return !blockedPath && !hidden && !snoozed;
+  }, [blockedPath, hidden, snoozed]);
 
   const { isIOS, isSafariIOS, canPromptNative, shouldShowInstall, promptInstall } =
     useInstallAvailability({ allowPreventDefault });
@@ -101,7 +106,8 @@ export default function InstallPrompt() {
     track("install_prompt_clicked_install", { pathname });
     const choice = await promptInstall();
     track("install_prompt_outcome", { pathname, outcome: choice.outcome });
-    if (choice.outcome === "accepted") setHidden(true);
+    // Prompt can only be used once; hide banner regardless to avoid repeated warnings
+    setHidden(true);
   };
 
   if (!show) return null;
