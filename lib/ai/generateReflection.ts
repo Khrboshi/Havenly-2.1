@@ -1,9 +1,9 @@
 // lib/ai/generateReflection.ts
-// Havenly Prompt V10.1 — Premium Perception Multiplier (Wise Mirror + Auto-Retry + No-Crash)
+// Havenly Prompt V10.2 — Premium Perception Multiplier (Wise Mirror + Auto-Retry + No-Crash)
 // BUILD SAFE, SAME SCHEMA
 //
-// Change vs V10: relax "must quote" rule to allow paraphrased specific moments,
-// preventing generic outputs and improving premium perceived intelligence.
+// Change vs V10.1: Force 1–2 concrete moments from the entry (paraphrase allowed)
+// to prevent generic output and improve premium perceived intelligence.
 
 export type Reflection = {
   summary: string;
@@ -125,9 +125,10 @@ Write directly to "you". Never say "the user" or "this person".
 
 NON-NEGOTIABLE TRUTH RULE:
 - NEVER invent events that did not appear in the entry.
-- You MUST reference at least ONE specific moment or situation that appears in the entry.
-- You may paraphrase specifics (recommended) or quote a short phrase from the entry.
-- Avoid generic summaries when the entry contains concrete events.
+- You MUST include 1–2 concrete moments from the entry (paraphrase is fine).
+  Examples of a “concrete moment”: a specific situation, action, or exchange (e.g., driving at night, a gift incident, a specific worry).
+- Do NOT use placeholders like “a situation happened” — name the situation.
+- If the entry contains multiple moments, pick the most emotionally charged one + one secondary one.
 
 TONE:
 Grounded, calm, perceptive.
