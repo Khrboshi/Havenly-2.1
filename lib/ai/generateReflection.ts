@@ -1,5 +1,5 @@
 // lib/ai/generateReflection.ts
-// Havenly Prompt V8 — Premium Voice + High Reliability (Auto-retry + No-crash)
+// Havenly Prompt V10 — Premium Perception Multiplier (Wise Mirror + Auto-Retry + No-Crash)
 // BUILD SAFE, SAME SCHEMA
 
 export type Reflection = {
@@ -83,10 +83,10 @@ function normalizeReflection(r: any): Reflection {
     questionsRaw.length >= 2
       ? questionsRaw.slice(0, 4)
       : [
-          "What part of this situation feels most painful or unfair to you?",
-          "What would ‘enough’ look like for you in this relationship, in plain words?",
-          "What is one boundary or request you could name without blaming anyone?",
-          "Next time, capture the exact words that triggered you and what you did right after.",
+          "What is the real need underneath what you wrote (respect, reassurance, appreciation, safety, clarity)?",
+          "What would ‘enough’ look like for you—one sentence, no explanation?",
+          "What boundary or request would protect your self-respect without trying to control the other person?",
+          "Next time, paste the exact words that stung and what you did right after.",
         ];
 
   return {
@@ -98,7 +98,7 @@ function normalizeReflection(r: any): Reflection {
     emotions: emotions.length ? emotions : ["neutral"],
     gentle_next_step:
       nextStep ||
-      'Option A: Write one sentence: "What I did, what I hoped it meant, and what I needed back." Option B: Copy only the key paragraph and generate again for sharper focus.',
+      "Option A: Write one sentence: “What I did, what I hoped it meant, and what I needed back.” Option B: Copy only the key paragraph and generate again for sharper focus.",
     questions,
   };
 }
@@ -115,41 +115,48 @@ export async function generateReflectionFromEntry(
   const entryText = `${titleLine}Entry:\n${(input.content || "").trim()}`;
 
   const systemBase = `
-You are MindScribe — a premium reflection coach.
+You are Havenly — a Wise Reflective Mirror.
 
-VOICE RULE (CRITICAL):
-- Write directly to the person as "you". Never say "the user", "the person", "they", or "this user".
-- Keep it human and grounded, not like a report.
+VOICE:
+Write directly to "you". Never say "the user" or "this person".
 
-TRUTH / SAFETY RULE:
-- Never invent details.
-- If you refer to a concrete moment, anchor it by quoting a short exact phrase from the entry in quotation marks.
-- If you cannot quote it confidently, stay general.
-
-GOAL:
-Help the person feel seen AND gain clarity.
-Move beyond summary: name one underlying tension and offer a small strategy.
+TRUTH:
+Never invent details.
+If you mention a specific moment, anchor it by quoting a short exact phrase from the entry in quotation marks.
+If you cannot quote confidently, stay general.
 
 TONE:
-Warm, steady, specific.
-No clinical jargon.
-No generic advice.
-No flattery.
+Grounded, calm, perceptive.
+Not clinical. Not preachy. Not flattering.
 
-OUTPUT RULES (VERY IMPORTANT):
-- Output MUST be valid JSON ONLY.
-- Use DOUBLE QUOTES for all JSON strings.
-- No markdown, no code fences, no extra text before or after JSON.
+GOAL:
+Create self-understanding that turns into certainty, confidence, and gentle action.
 
-STRUCTURE REQUIREMENTS:
-- summary: 3–5 sentences. Start with validation + what’s at stake. Add one reframing sentence.
-- core_pattern: one sentence naming the deeper dynamic.
-- gentle_next_step: MUST include "Option A:" and "Option B:".
-- questions: 2–4 questions. The LAST question MUST start with "Next time,".
+PREMIUM PERCEPTION MULTIPLIER (IMPORTANT):
+Make the reflection feel like it gives clarity, not just comfort.
+Do this WITHOUT changing the schema by embedding short labeled lines INSIDE the existing fields.
 
-PLAN DIFFERENTIATION:
-- FREE: helpful, concise, still specific.
-- PREMIUM: add sharper reframing + one short script line (1–2 sentences) inside gentle_next_step.
+Required internal structure:
+- summary MUST include these labeled lines (as plain text, not markdown):
+  1) "What you’re carrying:"
+  2) "What’s really happening:"
+  3) (PREMIUM only) "Deeper direction:"
+
+- core_pattern: ONE sentence naming the deeper dynamic.
+
+- gentle_next_step:
+  MUST include:
+  "Option A:" and "Option B:"
+  (PREMIUM only) Add:
+  "Script line:" (1–2 sentences, calm, non-pushy)
+
+- questions: 2–4.
+  The LAST question MUST start with: "Next time,"
+
+OUTPUT RULES (STRICT):
+Return valid JSON ONLY.
+Use DOUBLE QUOTES for all JSON strings.
+No markdown, no code fences, no extra text.
 
 Return EXACTLY this schema:
 {
@@ -165,12 +172,12 @@ Return EXACTLY this schema:
   const user = `
 User plan: ${input.plan}
 
-Create a MindScribe V8 reflection for this journal entry:
+Create a Havenly V10 Wise Mirror reflection for this journal entry:
 
 ${entryText}
 `.trim();
 
-  const max_tokens = input.plan === "PREMIUM" ? 950 : 650;
+  const max_tokens = input.plan === "PREMIUM" ? 1050 : 650;
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
@@ -204,7 +211,7 @@ ${entryText}
   }
 
   try {
-    // Attempt #1
+    // Attempt #1 (normal)
     const raw1 = await callGroq({
       temperature: input.plan === "PREMIUM" ? 0.55 : 0.4,
       system: systemBase,
@@ -213,11 +220,11 @@ ${entryText}
     const parsed1 = parseModelJson<any>(raw1);
     if (parsed1) return normalizeReflection(parsed1);
 
-    // Attempt #2 (auto-retry: stricter + lower temperature)
+    // Attempt #2 (auto-retry: stricter, lower creativity => higher JSON compliance)
     const systemRetry = `
 ${systemBase}
 
-RETRY INSTRUCTION:
+RETRY:
 Your previous output was not valid JSON.
 Now output ONLY valid JSON with the exact schema.
 No extra commentary. No markdown. Use double quotes only.
@@ -231,59 +238,69 @@ No extra commentary. No markdown. Use double quotes only.
     const parsed2 = parseModelJson<any>(raw2);
     if (parsed2) return normalizeReflection(parsed2);
 
-    // Final fallback: premium-safe language
+    // Final fallback (premium-safe language, not “failure” language)
     return normalizeReflection({
       summary:
-        "Your entry is worth a precise reflection, and I’m not going to give you a sloppy one. Tap generate again, or paste only the key paragraph so I can lock onto the strongest signal.",
+        input.plan === "PREMIUM"
+          ? "What you’re carrying: Something important that doesn’t feel fully seen yet.\nWhat’s really happening: The meaning of your effort isn’t landing the way you intend.\nDeeper direction: You’re being pulled toward clearer needs and cleaner boundaries."
+          : "What you’re carrying: Something important that doesn’t feel fully seen yet.\nWhat’s really happening: The meaning of your effort isn’t landing the way you intend.",
       core_pattern:
-        "The reflection needed an extra pass to format cleanly without losing nuance.",
-      themes: ["reflection"],
-      emotions: ["neutral"],
+        "You’re trying to be understood through effort, but you need clearer agreement on what effort means.",
+      themes: ["clarity", "needs", "expectations"],
+      emotions: ["confusion", "frustration", "hurt"],
       gentle_next_step:
         input.plan === "PREMIUM"
-          ? 'Option A: Tap generate again for a cleaner, more specific pass. Option B: Paste only the key paragraph and regenerate. Script line: "I want to understand what ‘effort’ means to you, because I’m trying — and I keep feeling like it doesn’t land."'
-          : "Option A: Tap generate again. Option B: Paste only the key paragraph and regenerate for sharper focus.",
+          ? "Option A: Write one sentence: “When I do X, I hope it means Y to you.” Option B: Write one sentence: “What does effort look like to you, specifically?” Script line: “I care about you, and I keep trying—can we define what ‘effort’ means to you so I stop guessing?”"
+          : "Option A: Write one sentence: “When I do X, I hope it means Y to you.” Option B: Ask yourself: “What do I need to feel appreciated?”",
       questions: [
-        "What feels most painful or unfair to you right now?",
-        "What do you wish your partner understood about your intention?",
-        "What would ‘enough’ look like for you, in one sentence?",
-        "Next time, paste the exact words that triggered you and what you did right after.",
+        "What do you most want your effort to communicate—love, safety, commitment, respect?",
+        "What is your ‘minimum standard’ for appreciation in a relationship?",
+        "What would you stop doing if you were fully protecting your self-respect?",
+        "Next time, paste the exact sentence that stung and what you felt in your body right after.",
       ],
     });
   } catch (err: any) {
     if (err?.name === "AbortError") {
       return normalizeReflection({
         summary:
-          "This reflection needs a second pass for clarity, but the request timed out. Your entry is saved — try again once.",
+          input.plan === "PREMIUM"
+            ? "What you’re carrying: A situation that needs a more precise pass.\nWhat’s really happening: The reflection timed out before it could land cleanly.\nDeeper direction: You’re moving toward clarity and simplicity."
+            : "What you’re carrying: A situation that needs a more precise pass.\nWhat’s really happening: The reflection timed out before it could land cleanly.",
         core_pattern:
-          "The system could not complete processing within the time limit.",
-        themes: ["reflection"],
-        emotions: ["neutral"],
+          "This needs a calmer, more focused pass to turn emotion into clarity.",
+        themes: ["clarity", "focus"],
+        emotions: ["overwhelm"],
         gentle_next_step:
-          "Option A: Tap generate again. Option B: Shorten the entry to 6–10 lines and regenerate for faster clarity.",
+          input.plan === "PREMIUM"
+            ? "Option A: Tap generate again. Option B: Shorten your entry to the key moment (6–10 lines). Script line: “I want us to be clear about what we each need, so we don’t keep missing each other.”"
+            : "Option A: Tap generate again. Option B: Shorten your entry to the key moment (6–10 lines).",
         questions: [
-          "What is the core question you want answered in one sentence?",
-          "What feels most confusing right now?",
-          "What would ‘enough’ look like for you in this situation?",
-          "Next time, include the exact words said and what you felt immediately after.",
+          "What is the one question you want answered in plain words?",
+          "What outcome would make you feel steady again?",
+          "What are you afraid might be true here?",
+          "Next time, paste only the key paragraph and the exact question you want answered.",
         ],
       });
     }
 
     return normalizeReflection({
       summary:
-        "I couldn’t complete a clean reflection on this pass, but your entry is saved. Try again — the next pass usually lands better.",
+        input.plan === "PREMIUM"
+          ? "What you’re carrying: Something that deserves clarity.\nWhat’s really happening: A temporary system issue blocked a clean reflection.\nDeeper direction: You’re moving toward naming your needs more directly."
+          : "What you’re carrying: Something that deserves clarity.\nWhat’s really happening: A temporary system issue blocked a clean reflection.",
       core_pattern:
-        "A temporary system issue prevented a fully structured reflection.",
-      themes: ["reflection"],
-      emotions: ["neutral"],
+        "A clean reflection wasn’t available on this pass, but the pattern is still worth naming.",
+      themes: ["clarity"],
+      emotions: ["uncertainty"],
       gentle_next_step:
-        "Option A: Tap generate again. Option B: Retry after 30 seconds if your connection is slow.",
+        input.plan === "PREMIUM"
+          ? "Option A: Tap generate again. Option B: Retry after 30 seconds. Script line: “I want to talk about what appreciation looks like for us—specifically.”"
+          : "Option A: Tap generate again. Option B: Retry after 30 seconds.",
       questions: [
-        "What part of what you wrote feels most important right now?",
+        "What part of this feels most personal to you?",
         "What do you wish the other person understood about your intention?",
-        "What are you afraid might be true here?",
-        "Next time, capture the exact moment the tone changed and what was said.",
+        "What would ‘enough’ look like in one sentence?",
+        "Next time, capture the exact words that triggered you and what you did right after.",
       ],
     });
   } finally {
