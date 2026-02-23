@@ -63,7 +63,7 @@ async function consumeOneCredit(
   rpcData = first?.data;
   rpcErr = first?.error;
 
-  // Attempt 2: RPC expects only p_amount (user inferred in DB via auth.uid())
+  // Attempt 2: RPC expects only p_amount (user inferred via auth.uid())
   if (rpcErr && isParamMismatchError(String(rpcErr.message || ""))) {
     const second = await supabase.rpc("consume_reflection_credit", {
       p_amount: 1,
@@ -93,7 +93,6 @@ async function consumeOneCredit(
       ? (row.remaining_credits as number)
       : null;
 
-  // If we can't read remaining, treat as out-of-credits to be safe
   if (remaining === null) {
     return { ok: false, status: 402, error: "Reflection limit reached" };
   }
@@ -103,7 +102,7 @@ async function consumeOneCredit(
 
 /**
  * Lightweight request fingerprint (debugging only).
- * Not cryptographic. Used to prove request/response integrity.
+ * Not cryptographic. Used to confirm request/response integrity.
  */
 function contentFingerprint(s: string) {
   let h = 2166136261;
