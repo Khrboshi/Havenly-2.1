@@ -1,6 +1,5 @@
 // lib/ai/generateReflection.ts
-// Havenly Prompt V6 — Insight Coach (Premium Cognitive Upgrade)
-// SAFE: Same schema, same API contract, zero UI break.
+// Havenly Prompt V6 — Insight Coach (BUILD SAFE)
 
 export type Reflection = {
   summary: string;
@@ -73,7 +72,7 @@ function normalizeReflection(r: any): Reflection {
   return {
     summary:
       summary ||
-      "A reflective summary could not be generated. Try adding more detail about what felt important.",
+      "A reflective summary could not be generated. Try adding more detail.",
     core_pattern: corePattern || undefined,
     themes: themes.length ? themes : ["reflection"],
     emotions: emotions.length ? emotions : ["neutral"],
@@ -99,35 +98,28 @@ export async function generateReflectionFromEntry(
 You are MindScribe — an emotionally intelligent insight coach.
 
 GOAL:
-Move beyond summarizing. Reveal meaningful insight that helps the user think differently.
+Reveal meaningful insight that helps the user think differently.
 
-CRITICAL RULES:
-- NEVER invent details. Only reference what is explicitly written.
-- If using an example, quote or paraphrase from the entry itself.
-- Identify ONE subtle tension or contradiction the user may not fully see yet.
+RULES:
+- NEVER invent details.
+- Only reference what is explicitly written.
+- Identify ONE subtle tension.
 
 TONE:
-Warm, grounded, psychologically perceptive.
+Warm, grounded, perceptive.
 NO clinical jargon.
 NO generic advice.
-
-INTELLIGENCE LAYER:
-Your reflection must include:
-1) Emotional validation
-2) Hidden pattern or tension
-3) Gentle cognitive reframing
-4) Tiny forward-thinking prompt
 
 Output JSON ONLY.
 
 Return EXACTLY:
 {
-  "summary": "3-4 sentences that validate emotion AND introduce a fresh perspective.",
-  "core_pattern": "One concise insight revealing a deeper dynamic.",
+  "summary": "3-4 sentences introducing a fresh perspective.",
+  "core_pattern": "One concise deeper insight.",
   "themes": ["3–6 themes"],
   "emotions": ["3–6 nuanced emotions"],
-  "gentle_next_step": "A tiny reflective strategy that helps the user think differently, not act drastically.",
-  "questions": ["2–4 deep perspective-shifting questions"]
+  "gentle_next_step": "Tiny reflective strategy.",
+  "questions": ["2–4 perspective-shifting questions"]
 }
 `.trim();
 
@@ -152,7 +144,7 @@ ${entryText}
         signal: controller.signal,
         headers: {
           "Content-Type": "application/json",
-          Authorization: \`Bearer \${apiKey}\`,
+          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
           model,
@@ -168,7 +160,7 @@ ${entryText}
 
     if (!res.ok) {
       const text = await res.text().catch(() => "");
-      throw new Error(\`Groq request failed (\${res.status}): \${text}\`);
+      throw new Error(`Groq request failed (${res.status}): ${text}`);
     }
 
     const data: any = await res.json();
@@ -176,7 +168,7 @@ ${entryText}
 
     const parsed = safeJsonParse<any>(raw);
     if (!parsed) {
-      throw new Error(\`Model returned non-JSON output: \${raw.slice(0, 400)}\`);
+      throw new Error(`Model returned non-JSON output`);
     }
 
     return normalizeReflection(parsed);
