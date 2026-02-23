@@ -1,5 +1,5 @@
 // lib/ai/generateReflection.ts
-// Havenly Prompt V6 — Insight Coach (BUILD SAFE)
+// Havenly Prompt V7 — Insight + Strategy + Retention (BUILD SAFE, SAME SCHEMA)
 
 export type Reflection = {
   summary: string;
@@ -67,18 +67,20 @@ function normalizeReflection(r: any): Reflection {
       : [
           "What feels most unresolved for you right now?",
           "What small perspective shift might change how you see this moment?",
+          "If you zoom out one year, what would you wish you had protected or clarified?",
+          "Next time, what specific moment (their words + your reaction) should you capture so we can map the pattern more precisely?",
         ];
 
   return {
     summary:
       summary ||
-      "A reflective summary could not be generated. Try adding more detail.",
+      "A reflective summary could not be generated. Try adding more detail about what happened and what you felt.",
     core_pattern: corePattern || undefined,
     themes: themes.length ? themes : ["reflection"],
     emotions: emotions.length ? emotions : ["neutral"],
     gentle_next_step:
       nextStep ||
-      "Pause for a moment and write one honest sentence about what you need most right now.",
+      "Take 2 minutes to write one sentence: “What I wanted to give, what I hoped it would mean, and what I needed back.”",
     questions,
   };
 }
@@ -94,69 +96,81 @@ export async function generateReflectionFromEntry(
   const titleLine = input.title?.trim() ? `Title: ${input.title.trim()}\n` : "";
   const entryText = `${titleLine}Entry:\n${(input.content || "").trim()}`;
 
+  // V7 Prompt: adds Strategy + Retention loop while keeping SAME output fields.
   const system = `
 You are MindScribe — an emotionally intelligent insight coach.
 
-GOAL:
-Reveal meaningful insight that helps the user think differently.
-
-RULES:
+NON-NEGOTIABLE TRUTH RULE:
 - NEVER invent details.
-- Only reference what is explicitly written.
-- Identify ONE subtle tension.
+- If you reference a specific detail, you MUST quote an exact phrase from the entry (3–12 words) in quotation marks.
+- If you cannot quote, stay general rather than guessing.
 
-TONE:
-Warm, grounded, perceptive.
+GOAL:
+Go beyond summarizing. Create a meaningful shift in how the user understands the situation.
+
+OUTPUT STYLE:
+Warm, grounded, direct.
 NO clinical jargon.
 NO generic advice.
+NO flattery.
 
-Output JSON ONLY.
+DEPTH RULE:
+- If the entry is long/emotional, match its seriousness.
+- Identify ONE hidden tension (a “why this keeps hurting” dynamic).
+- Offer a tiny strategy (two micro-options) that the user can try mentally or conversationally.
 
-Return EXACTLY:
+PLAN DIFFERENTIATION:
+- FREE: insightful, brief, still grounded.
+- PREMIUM: higher precision:
+  - name the tension more sharply,
+  - include two micro-options in gentle_next_step,
+  - include one “script line” the user could say (short, non-pushy).
+
+Output JSON ONLY. No markdown. No extra text.
+
+Return EXACTLY this schema:
 {
-  "summary": "3-4 sentences introducing a fresh perspective.",
-  "core_pattern": "One concise deeper insight.",
-  "themes": ["3–6 themes"],
+  "summary": "3–5 sentences. Start with validation + an exact quoted detail. Then add a reframing sentence that changes perspective.",
+  "core_pattern": "One concise sentence describing the deeper dynamic.",
+  "themes": ["3–6 short themes"],
   "emotions": ["3–6 nuanced emotions"],
-  "gentle_next_step": "Tiny reflective strategy.",
-  "questions": ["2–4 perspective-shifting questions"]
+  "gentle_next_step": "A tiny strategy with two options (A/B). PREMIUM must include a 1–2 sentence script line.",
+  "questions": ["2–4 deep questions. The LAST question must be a retention hook starting with: 'Next time,'"]
 }
 `.trim();
 
   const user = `
 User plan: ${input.plan}
 
-Create an Insight Coach reflection for this journal entry:
+Create a MindScribe V7 reflection for this journal entry:
 
 ${entryText}
 `.trim();
 
-  const max_tokens = input.plan === "PREMIUM" ? 900 : 600;
+  const max_tokens = input.plan === "PREMIUM" ? 1050 : 650;
+  const temperature = input.plan === "PREMIUM" ? 0.65 : 0.5;
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
 
   try {
-    const res = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
-      {
-        method: "POST",
-        signal: controller.signal,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model,
-          temperature: input.plan === "PREMIUM" ? 0.65 : 0.5,
-          max_tokens,
-          messages: [
-            { role: "system", content: system },
-            { role: "user", content: user },
-          ],
-        }),
-      }
-    );
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        temperature,
+        max_tokens,
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: user },
+        ],
+      }),
+    });
 
     if (!res.ok) {
       const text = await res.text().catch(() => "");
@@ -168,7 +182,7 @@ ${entryText}
 
     const parsed = safeJsonParse<any>(raw);
     if (!parsed) {
-      throw new Error(`Model returned non-JSON output`);
+      throw new Error(`Model returned non-JSON output: ${raw.slice(0, 400)}`);
     }
 
     return normalizeReflection(parsed);
