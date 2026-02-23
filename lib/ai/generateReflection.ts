@@ -1,10 +1,10 @@
 // lib/ai/generateReflection.ts
-// MindScribe V6 — "The Insight Engine" (High-Value Analysis)
-// Groq (OpenAI-compatible): https://api.groq.com/openai/v1/chat/completions
+// Havenly Prompt V6 — Insight Coach (Premium Cognitive Upgrade)
+// SAFE: Same schema, same API contract, zero UI break.
 
 export type Reflection = {
   summary: string;
-  core_pattern?: string; // optional so UI never crashes if missing
+  core_pattern?: string;
   themes: string[];
   emotions: string[];
   gentle_next_step: string;
@@ -66,20 +66,20 @@ function normalizeReflection(r: any): Reflection {
     questionsRaw.length >= 2
       ? questionsRaw.slice(0, 4)
       : [
-          "What is one small thing you actually need right now?",
-          "How would you treat a friend in this exact situation?",
+          "What feels most unresolved for you right now?",
+          "What small perspective shift might change how you see this moment?",
         ];
 
   return {
     summary:
       summary ||
-      "We hear you. Try adding a bit more detail so we can find the deeper pattern.",
+      "A reflective summary could not be generated. Try adding more detail about what felt important.",
     core_pattern: corePattern || undefined,
     themes: themes.length ? themes : ["reflection"],
     emotions: emotions.length ? emotions : ["neutral"],
     gentle_next_step:
       nextStep ||
-      "Take a deep breath and acknowledge that your feelings make sense.",
+      "Pause for a moment and write one honest sentence about what you need most right now.",
     questions,
   };
 }
@@ -90,93 +90,99 @@ export async function generateReflectionFromEntry(
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("Missing GROQ_API_KEY");
 
-  // Premium users need the smartest model capability
   const model = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
 
   const titleLine = input.title?.trim() ? `Title: ${input.title.trim()}\n` : "";
   const entryText = `${titleLine}Entry:\n${(input.content || "").trim()}`;
 
-  // V6 PROMPT: FOCUS ON "SYNTHESIS" NOT "SUMMARY"
   const system = `
-You are MindScribe, an advanced psychological companion designed to help users find clarity.
+You are MindScribe — an emotionally intelligent insight coach.
 
-YOUR MISSION:
-The user is paying for *insight*, not just a summary. 
-Do not just repeat what happened. Tell them *why* it matters.
-Connect the dots between their actions and their feelings.
+GOAL:
+Move beyond summarizing. Reveal meaningful insight that helps the user think differently.
 
-CRITICAL RULES FOR ANALYSIS:
-1. DETECT THE IRONY: Look for mismatches (e.g., "I gave safety, she saw risk"). Point this out gently.
-2. VALIDATE THE EFFORT: Explicitly mention the specific hard thing they did (e.g., "driving at night").
-3. NO CLICHES: Do not say "Communication is key." Say "You are speaking 'Safety' and she is hearing 'Control'."
-4. TONE: Deep, calm, and highly perceptive. Like a wise mentor.
+CRITICAL RULES:
+- NEVER invent details. Only reference what is explicitly written.
+- If using an example, quote or paraphrase from the entry itself.
+- Identify ONE subtle tension or contradiction the user may not fully see yet.
 
-Output MUST be valid JSON only.
+TONE:
+Warm, grounded, psychologically perceptive.
+NO clinical jargon.
+NO generic advice.
 
-Return EXACTLY this schema:
+INTELLIGENCE LAYER:
+Your reflection must include:
+1) Emotional validation
+2) Hidden pattern or tension
+3) Gentle cognitive reframing
+4) Tiny forward-thinking prompt
+
+Output JSON ONLY.
+
+Return EXACTLY:
 {
-  "summary": "3-4 sentences. Validate the specific action they took. Then, pivot to the underlying emotional disconnect. Use the phrase 'It makes sense that you feel...' at least once.",
-  "core_pattern": "One powerhouse sentence that names the 'Root Cause' of the tension. make it insightful.",
-  "themes": ["3–6 punchy themes"],
+  "summary": "3-4 sentences that validate emotion AND introduce a fresh perspective.",
+  "core_pattern": "One concise insight revealing a deeper dynamic.",
+  "themes": ["3–6 themes"],
   "emotions": ["3–6 nuanced emotions"],
-  "gentle_next_step": "A psychological shifting task (e.g., 'Notice when you feel...', not just 'Write a list').",
-  "questions": ["2–4 deep questions that force a new perspective, not just open-ended ones."]
+  "gentle_next_step": "A tiny reflective strategy that helps the user think differently, not act drastically.",
+  "questions": ["2–4 deep perspective-shifting questions"]
 }
 `.trim();
 
   const user = `
 User plan: ${input.plan}
 
-Analyze this entry:
+Create an Insight Coach reflection for this journal entry:
+
 ${entryText}
 `.trim();
 
-  const max_tokens = input.plan === "PREMIUM" ? 1100 : 700;
+  const max_tokens = input.plan === "PREMIUM" ? 900 : 600;
 
   const controller = new AbortController();
-  const timeoutMs = 35_000;
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  const timeout = setTimeout(() => controller.abort(), 30000);
 
   try {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      signal: controller.signal,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        // Higher temperature for more "human" insight, less robotic summary
-        temperature: 0.7, 
-        max_tokens,
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: user },
-        ],
-      }),
-    });
+    const res = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: \`Bearer \${apiKey}\`,
+        },
+        body: JSON.stringify({
+          model,
+          temperature: input.plan === "PREMIUM" ? 0.65 : 0.5,
+          max_tokens,
+          messages: [
+            { role: "system", content: system },
+            { role: "user", content: user },
+          ],
+        }),
+      }
+    );
 
     if (!res.ok) {
       const text = await res.text().catch(() => "");
-      throw new Error(`Groq request failed (${res.status}): ${text}`);
+      throw new Error(\`Groq request failed (\${res.status}): \${text}\`);
     }
 
     const data: any = await res.json();
     const raw: string = data?.choices?.[0]?.message?.content ?? "";
-    
-    // Safety cleaner if model adds markdown blocks
-    const cleanRaw = raw.replace(/```json/g, "").replace(/```/g, "");
 
-    const parsed = safeJsonParse<any>(cleanRaw);
+    const parsed = safeJsonParse<any>(raw);
     if (!parsed) {
-      throw new Error(`Model returned non-JSON output.`);
+      throw new Error(\`Model returned non-JSON output: \${raw.slice(0, 400)}\`);
     }
 
     return normalizeReflection(parsed);
   } catch (err: any) {
     if (err?.name === "AbortError") {
-      throw new Error("Analysis timed out. Please try again.");
+      throw new Error("Groq request timed out. Please try again.");
     }
     throw err;
   } finally {
