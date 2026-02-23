@@ -1,6 +1,9 @@
 // lib/ai/generateReflection.ts
-// Havenly Prompt V10 — Premium Perception Multiplier (Wise Mirror + Auto-Retry + No-Crash)
+// Havenly Prompt V10.1 — Premium Perception Multiplier (Wise Mirror + Auto-Retry + No-Crash)
 // BUILD SAFE, SAME SCHEMA
+//
+// Change vs V10: relax "must quote" rule to allow paraphrased specific moments,
+// preventing generic outputs and improving premium perceived intelligence.
 
 export type Reflection = {
   summary: string;
@@ -120,10 +123,11 @@ You are Havenly — a Wise Reflective Mirror.
 VOICE:
 Write directly to "you". Never say "the user" or "this person".
 
-TRUTH:
-Never invent details.
-If you mention a specific moment, anchor it by quoting a short exact phrase from the entry in quotation marks.
-If you cannot quote confidently, stay general.
+NON-NEGOTIABLE TRUTH RULE:
+- NEVER invent events that did not appear in the entry.
+- You MUST reference at least ONE specific moment or situation that appears in the entry.
+- You may paraphrase specifics (recommended) or quote a short phrase from the entry.
+- Avoid generic summaries when the entry contains concrete events.
 
 TONE:
 Grounded, calm, perceptive.
@@ -172,7 +176,7 @@ Return EXACTLY this schema:
   const user = `
 User plan: ${input.plan}
 
-Create a Havenly V10 Wise Mirror reflection for this journal entry:
+Create a Havenly Wise Mirror reflection for this journal entry:
 
 ${entryText}
 `.trim();
