@@ -1,5 +1,6 @@
 // lib/ai/generateReflection.ts
-// Havenly Prompt V7 — Insight + Strategy + Retention (BUILD SAFE, SAME SCHEMA)
+// Havenly Prompt V7.1 — Insight + Strategy + Retention + NO-CRASH Fallback
+// BUILD SAFE, SAME SCHEMA
 
 export type Reflection = {
   summary: string;
@@ -80,7 +81,7 @@ function normalizeReflection(r: any): Reflection {
     emotions: emotions.length ? emotions : ["neutral"],
     gentle_next_step:
       nextStep ||
-      "Take 2 minutes to write one sentence: “What I wanted to give, what I hoped it would mean, and what I needed back.”",
+      'Take 2 minutes to write one sentence: "What I wanted to give, what I hoped it would mean, and what I needed back."',
     questions,
   };
 }
@@ -96,7 +97,6 @@ export async function generateReflectionFromEntry(
   const titleLine = input.title?.trim() ? `Title: ${input.title.trim()}\n` : "";
   const entryText = `${titleLine}Entry:\n${(input.content || "").trim()}`;
 
-  // V7 Prompt: adds Strategy + Retention loop while keeping SAME output fields.
   const system = `
 You are MindScribe — an emotionally intelligent insight coach.
 
@@ -174,23 +174,89 @@ ${entryText}
 
     if (!res.ok) {
       const text = await res.text().catch(() => "");
-      throw new Error(`Groq request failed (${res.status}): ${text}`);
+      // NO-CRASH fallback on upstream errors
+      return normalizeReflection({
+        summary:
+          "The reflection service had a temporary issue generating a structured result. Your entry still matters, and you can try again in a moment.",
+        core_pattern:
+          "A meaningful pattern may be present, but the system could not safely format it right now.",
+        themes: ["reflection"],
+        emotions: ["neutral"],
+        gentle_next_step:
+          "Wait 30 seconds and try again. If it repeats, shorten the entry to the key moment and retry.",
+        questions: [
+          "What is the single moment in your entry that carries the most weight?",
+          "What do you wish the other person understood about your intention?",
+          "What would a ‘good enough’ outcome look like for you?",
+          "Next time, paste the exact sentence that hurt most and what you felt in your body when you read/heard it.",
+        ],
+      });
     }
 
     const data: any = await res.json();
     const raw: string = data?.choices?.[0]?.message?.content ?? "";
 
     const parsed = safeJsonParse<any>(raw);
+
     if (!parsed) {
-      throw new Error(`Model returned non-JSON output: ${raw.slice(0, 400)}`);
+      // SAFETY FALLBACK — never crash production on non-JSON model output
+      return normalizeReflection({
+        summary:
+          "Something meaningful was detected in your writing, but the reflection couldn't be safely structured this time. Please try generating again.",
+        core_pattern:
+          "The system detected emotional complexity but could not safely format a full reflection.",
+        themes: ["reflection"],
+        emotions: ["neutral"],
+        gentle_next_step:
+          "Try again once. If it repeats, shorten the entry to 6–10 lines focusing on the key moment.",
+        questions: [
+          "What part of what you wrote feels most important right now?",
+          "If you rewrote one sentence more clearly, what would it be?",
+          "What do you most want your partner to understand about your intention?",
+          "Next time, include the exact words said and your immediate reaction so we can map the pattern precisely.",
+        ],
+      });
     }
 
     return normalizeReflection(parsed);
   } catch (err: any) {
     if (err?.name === "AbortError") {
-      throw new Error("Groq request timed out. Please try again.");
+      // NO-CRASH fallback on timeouts
+      return normalizeReflection({
+        summary:
+          "The reflection request timed out. Your entry is still saved, and you can try again.",
+        core_pattern:
+          "The system could not complete processing within the time limit.",
+        themes: ["reflection"],
+        emotions: ["neutral"],
+        gentle_next_step:
+          "Try again once. If it keeps timing out, shorten the entry and retry.",
+        questions: [
+          "What is the core question you want answered in one sentence?",
+          "What feels most confusing right now?",
+          "What would ‘enough’ look like for you in this situation?",
+          "Next time, paste only the key paragraph and what you want clarity on.",
+        ],
+      });
     }
-    throw err;
+
+    // Final safety fallback for unknown errors
+    return normalizeReflection({
+      summary:
+        "The reflection could not be generated due to a temporary error. Please try again.",
+      core_pattern:
+        "A system error occurred while generating the reflection.",
+      themes: ["reflection"],
+      emotions: ["neutral"],
+      gentle_next_step:
+        "Try again in a minute. If it repeats, report the time and entry title.",
+      questions: [
+        "What is the main feeling you want help naming right now?",
+        "What outcome are you hoping for?",
+        "What are you afraid might be true?",
+        "Next time, capture the exact moment you felt the shift and what happened right before it.",
+      ],
+    });
   } finally {
     clearTimeout(timeout);
   }
