@@ -1,5 +1,5 @@
 // lib/ai/generateReflection.ts
-// Havenly Prompt V4 — Stable (with core_pattern)
+// Havenly Prompt V5 — "The Deep Listener" (Smart & Touching)
 // Groq (OpenAI-compatible): https://api.groq.com/openai/v1/chat/completions
 
 export type Reflection = {
@@ -98,49 +98,55 @@ export async function generateReflectionFromEntry(
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("Missing GROQ_API_KEY");
 
+  // Use the smartest model available for nuance
   const model = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
 
   const titleLine = input.title?.trim() ? `Title: ${input.title.trim()}\n` : "";
   const entryText = `${titleLine}Entry:\n${(input.content || "").trim()}`;
 
+  // PROMPT ENGINEERED FOR "TOUCHING" & "SMART" NUANCE
   const system = `
-You are Havenly — a warm, emotionally intelligent journaling companion.
+You are MindScribe — a highly perceptive, emotionally intelligent psychological companion.
+Your goal is not just to summarize, but to make the user feel deeply "seen" and "understood."
 
-Speak directly to the user in a grounded, human voice.
+CRITICAL INSTRUCTION:
+- PROVE YOU LISTENED: You MUST reference 1 specific tiny detail or anecdote from the text (e.g., "driving in that storm," "the specific gift you bought," "the way they replied"). Do not remain abstract.
+- VALIDATE INTENT: If the user describes a conflict, acknowledge their *good intentions* first (e.g., "You were trying to keep them safe," "You wanted to show love").
+- MATCH THE DEPTH: If the user writes a long, painful entry, match their seriousness. Do not be overly cheerful.
 
-Rules:
-- Avoid clinical language.
-- Avoid phrases like "it seems that" / "there appears to be" / "this suggests".
-- Mirror tensions gently.
-- Focus on ONE core pattern if visible.
-- Do NOT diagnose or sound like therapy notes.
-- Do NOT include extra keys, markdown, or commentary.
+TONE RULES:
+- Warm, grounded, and curious.
+- NO clinical language ("cognitive dissonance," "maladaptive").
+- NO generic advice ("You should talk to them").
+- NO pleasing/fawning ("You are so brave!"). Just validate the reality.
 
 Output MUST be valid JSON only.
 
 Return EXACTLY this schema:
 {
-  "summary": "2–4 sentences in Havenly voice",
-  "core_pattern": "one concise sentence describing the central pattern or tension (optional if not clear)",
+  "summary": "3-4 sentences. Start by validating the specific struggle using a detail from the text. Then gently mirror the underlying emotion without judgment.",
+  "core_pattern": "One concise sentence identifying the hidden tension (e.g., 'The gap between your way of showing love and how it is received').",
   "themes": ["3–6 short themes"],
   "emotions": ["3–6 nuanced emotions"],
-  "gentle_next_step": "one tiny action under 10 minutes, doable today",
-  "questions": ["2–4 thoughtful reflective questions"]
+  "gentle_next_step": "One tiny, low-pressure thinking task. Do not ask them to 'do' something big.",
+  "questions": ["2–4 deep, specific questions that invite them to look at the situation from a new angle"]
 }
 `.trim();
 
+  // We feed the plan to the prompt so the AI knows if it can go deeper
   const user = `
 User plan: ${input.plan}
 
-Write a Havenly reflection for this journal entry:
+Write a MindScribe reflection for this journal entry:
 
 ${entryText}
 `.trim();
 
-  const max_tokens = input.plan === "PREMIUM" ? 900 : 560;
+  // Increased tokens slightly to allow for the deeper explanation
+  const max_tokens = input.plan === "PREMIUM" ? 1024 : 650;
 
   const controller = new AbortController();
-  const timeoutMs = 25_000;
+  const timeoutMs = 30_000; // Gave it 5 more seconds for "thinking"
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
@@ -153,7 +159,8 @@ ${entryText}
       },
       body: JSON.stringify({
         model,
-        temperature: input.plan === "PREMIUM" ? 0.6 : 0.5,
+        // Premium gets slightly higher creativity (temperature) for "Smart" insights
+        temperature: input.plan === "PREMIUM" ? 0.65 : 0.5,
         max_tokens,
         messages: [
           { role: "system", content: system },
