@@ -1,6 +1,6 @@
 // lib/ai/generateReflection.ts
-// Havenly Prompt V7.1 — Insight + Strategy + Retention + NO-CRASH Fallback
-// BUILD SAFE, SAME SCHEMA
+// Havenly Prompt V7.2 — Reliability Upgrade (Auto-retry + Better JSON enforcement)
+// BUILD SAFE, SAME SCHEMA, NEVER CRASH
 
 export type Reflection = {
   summary: string;
@@ -17,21 +17,44 @@ type Input = {
   plan: "FREE" | "PREMIUM";
 };
 
+function stripCodeFences(raw: string): string {
+  // Removes ```json ... ``` or ``` ... ```
+  return raw.replace(/```(?:json)?\s*([\s\S]*?)\s*```/gi, "$1").trim();
+}
+
+function normalizeQuotes(raw: string): string {
+  // Replace “ ” ‘ ’ with plain quotes to reduce JSON parse failures
+  return raw
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .trim();
+}
+
 function safeJsonParse<T>(raw: string): T | null {
   try {
     return JSON.parse(raw) as T;
   } catch {
-    const start = raw.indexOf("{");
-    const end = raw.lastIndexOf("}");
-    if (start >= 0 && end > start) {
-      try {
-        return JSON.parse(raw.slice(start, end + 1)) as T;
-      } catch {
-        return null;
-      }
-    }
     return null;
   }
+}
+
+function extractJsonObject(raw: string): string | null {
+  // Tries to extract the broadest JSON object region { ... }
+  const start = raw.indexOf("{");
+  const end = raw.lastIndexOf("}");
+  if (start >= 0 && end > start) return raw.slice(start, end + 1);
+  return null;
+}
+
+function parseModelJson<T>(raw: string): T | null {
+  const cleaned = normalizeQuotes(stripCodeFences(raw));
+  const direct = safeJsonParse<T>(cleaned);
+  if (direct) return direct;
+
+  const extracted = extractJsonObject(cleaned);
+  if (!extracted) return null;
+
+  return safeJsonParse<T>(extracted);
 }
 
 function cleanString(v: unknown): string {
@@ -67,21 +90,21 @@ function normalizeReflection(r: any): Reflection {
       ? questionsRaw.slice(0, 4)
       : [
           "What feels most unresolved for you right now?",
-          "What small perspective shift might change how you see this moment?",
-          "If you zoom out one year, what would you wish you had protected or clarified?",
-          "Next time, what specific moment (their words + your reaction) should you capture so we can map the pattern more precisely?",
+          "What are you hoping your partner understands about your intention?",
+          "What would “enough” look like in this situation, realistically?",
+          "Next time, capture the exact moment you felt the shift and what happened right before it.",
         ];
 
   return {
     summary:
       summary ||
-      "A reflective summary could not be generated. Try adding more detail about what happened and what you felt.",
+      "I’m preparing a clearer reflection from what you wrote. If you try again, the next pass is usually more specific and useful.",
     core_pattern: corePattern || undefined,
     themes: themes.length ? themes : ["reflection"],
     emotions: emotions.length ? emotions : ["neutral"],
     gentle_next_step:
       nextStep ||
-      'Take 2 minutes to write one sentence: "What I wanted to give, what I hoped it would mean, and what I needed back."',
+      'Write one sentence: "What I did, what I hoped it meant, and what I needed back."',
     questions,
   };
 }
@@ -97,63 +120,61 @@ export async function generateReflectionFromEntry(
   const titleLine = input.title?.trim() ? `Title: ${input.title.trim()}\n` : "";
   const entryText = `${titleLine}Entry:\n${(input.content || "").trim()}`;
 
-  const system = `
+  // V7.2: Less brittle than V7.
+  // - Still grounded: "use exact phrase IF you include a detail", but not mandatory.
+  // - Adds Strategy A/B in gentle_next_step.
+  // - Last question MUST start with "Next time," for retention loop.
+  const systemBase = `
 You are MindScribe — an emotionally intelligent insight coach.
 
-NON-NEGOTIABLE TRUTH RULE:
+GROUNDING (TRUST) RULE:
 - NEVER invent details.
-- If you reference a specific detail, you MUST quote an exact phrase from the entry (3–12 words) in quotation marks.
-- If you cannot quote, stay general rather than guessing.
+- If you mention a specific event/detail, include an exact short phrase from the entry in quotation marks.
+- If you cannot confidently quote it, stay general rather than guessing.
 
 GOAL:
-Go beyond summarizing. Create a meaningful shift in how the user understands the situation.
+Help the user feel understood AND gain clarity.
+Go beyond summary: name one underlying tension and offer a tiny strategy.
 
-OUTPUT STYLE:
+TONE:
 Warm, grounded, direct.
-NO clinical jargon.
-NO generic advice.
-NO flattery.
+No clinical jargon.
+No generic advice.
+No flattery.
 
-DEPTH RULE:
-- If the entry is long/emotional, match its seriousness.
-- Identify ONE hidden tension (a “why this keeps hurting” dynamic).
-- Offer a tiny strategy (two micro-options) that the user can try mentally or conversationally.
-
-PLAN DIFFERENTIATION:
-- FREE: insightful, brief, still grounded.
-- PREMIUM: higher precision:
-  - name the tension more sharply,
-  - include two micro-options in gentle_next_step,
-  - include one “script line” the user could say (short, non-pushy).
-
-Output JSON ONLY. No markdown. No extra text.
+OUTPUT RULES (VERY IMPORTANT):
+- Output MUST be valid JSON ONLY.
+- Use DOUBLE QUOTES for all JSON strings.
+- No markdown. No code fences. No extra text before or after JSON.
 
 Return EXACTLY this schema:
 {
-  "summary": "3–5 sentences. Start with validation + an exact quoted detail. Then add a reframing sentence that changes perspective.",
+  "summary": "3–5 sentences. Validate + add a reframing perspective.",
   "core_pattern": "One concise sentence describing the deeper dynamic.",
   "themes": ["3–6 short themes"],
   "emotions": ["3–6 nuanced emotions"],
-  "gentle_next_step": "A tiny strategy with two options (A/B). PREMIUM must include a 1–2 sentence script line.",
-  "questions": ["2–4 deep questions. The LAST question must be a retention hook starting with: 'Next time,'"]
+  "gentle_next_step": "A tiny strategy with two options labeled 'Option A:' and 'Option B:'. PREMIUM adds a short script line.",
+  "questions": ["2–4 deep questions. The LAST question must start with: 'Next time,'"]
 }
 `.trim();
 
   const user = `
 User plan: ${input.plan}
 
-Create a MindScribe V7 reflection for this journal entry:
+Create a MindScribe V7.2 reflection for this journal entry:
 
 ${entryText}
 `.trim();
 
-  const max_tokens = input.plan === "PREMIUM" ? 1050 : 650;
-  const temperature = input.plan === "PREMIUM" ? 0.65 : 0.5;
+  const max_tokens = input.plan === "PREMIUM" ? 1000 : 650;
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
 
-  try {
+  async function callGroq(args: {
+    temperature: number;
+    system: string;
+  }): Promise<string> {
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       signal: controller.signal,
@@ -163,10 +184,10 @@ ${entryText}
       },
       body: JSON.stringify({
         model,
-        temperature,
+        temperature: args.temperature,
         max_tokens,
         messages: [
-          { role: "system", content: system },
+          { role: "system", content: args.system },
           { role: "user", content: user },
         ],
       }),
@@ -174,87 +195,92 @@ ${entryText}
 
     if (!res.ok) {
       const text = await res.text().catch(() => "");
-      // NO-CRASH fallback on upstream errors
-      return normalizeReflection({
-        summary:
-          "The reflection service had a temporary issue generating a structured result. Your entry still matters, and you can try again in a moment.",
-        core_pattern:
-          "A meaningful pattern may be present, but the system could not safely format it right now.",
-        themes: ["reflection"],
-        emotions: ["neutral"],
-        gentle_next_step:
-          "Wait 30 seconds and try again. If it repeats, shorten the entry to the key moment and retry.",
-        questions: [
-          "What is the single moment in your entry that carries the most weight?",
-          "What do you wish the other person understood about your intention?",
-          "What would a ‘good enough’ outcome look like for you?",
-          "Next time, paste the exact sentence that hurt most and what you felt in your body when you read/heard it.",
-        ],
-      });
+      throw new Error(`Groq request failed (${res.status}): ${text}`);
     }
 
     const data: any = await res.json();
-    const raw: string = data?.choices?.[0]?.message?.content ?? "";
+    return String(data?.choices?.[0]?.message?.content ?? "");
+  }
 
-    const parsed = safeJsonParse<any>(raw);
+  try {
+    // Attempt #1 (normal)
+    const raw1 = await callGroq({
+      temperature: input.plan === "PREMIUM" ? 0.6 : 0.45,
+      system: systemBase,
+    });
 
-    if (!parsed) {
-      // SAFETY FALLBACK — never crash production on non-JSON model output
-      return normalizeReflection({
-        summary:
-          "Something meaningful was detected in your writing, but the reflection couldn't be safely structured this time. Please try generating again.",
-        core_pattern:
-          "The system detected emotional complexity but could not safely format a full reflection.",
-        themes: ["reflection"],
-        emotions: ["neutral"],
-        gentle_next_step:
-          "Try again once. If it repeats, shorten the entry to 6–10 lines focusing on the key moment.",
-        questions: [
-          "What part of what you wrote feels most important right now?",
-          "If you rewrote one sentence more clearly, what would it be?",
-          "What do you most want your partner to understand about your intention?",
-          "Next time, include the exact words said and your immediate reaction so we can map the pattern precisely.",
-        ],
-      });
-    }
+    const parsed1 = parseModelJson<any>(raw1);
+    if (parsed1) return normalizeReflection(parsed1);
 
-    return normalizeReflection(parsed);
+    // Attempt #2 (auto-retry, stricter)
+    const systemRetry = `
+${systemBase}
+
+RETRY INSTRUCTION:
+Your previous output was not valid JSON.
+Now output ONLY valid JSON with the exact schema.
+No extra commentary. No markdown. Use double quotes.
+`.trim();
+
+    const raw2 = await callGroq({
+      temperature: 0.2, // lower creativity => higher format compliance
+      system: systemRetry,
+    });
+
+    const parsed2 = parseModelJson<any>(raw2);
+    if (parsed2) return normalizeReflection(parsed2);
+
+    // Final fallback (never crash, premium-friendly wording)
+    return normalizeReflection({
+      summary:
+        "Your entry deserves a precise reflection. I’m not showing a rushed result. Tap generate again, or shorten the entry to the single key moment for maximum clarity.",
+      core_pattern:
+        "The system paused to refine the emotional pattern before presenting a clearer reflection.",
+      themes: ["reflection"],
+      emotions: ["neutral"],
+      gentle_next_step:
+        "Option A: Tap generate again (the next pass is usually more specific). Option B: Copy only the key paragraph and regenerate for sharper insight.",
+      questions: [
+        "What is the single moment in your entry that carries the most weight?",
+        "What do you most want your partner to understand about your intention?",
+        "What outcome would feel fair and stable for you?",
+        "Next time, paste the exact sentence that hurt most and your immediate reaction.",
+      ],
+    });
   } catch (err: any) {
     if (err?.name === "AbortError") {
-      // NO-CRASH fallback on timeouts
       return normalizeReflection({
         summary:
-          "The reflection request timed out. Your entry is still saved, and you can try again.",
+          "This reflection needs a second pass for clarity, but the request timed out. Your entry is saved — try again once.",
         core_pattern:
           "The system could not complete processing within the time limit.",
         themes: ["reflection"],
         emotions: ["neutral"],
         gentle_next_step:
-          "Try again once. If it keeps timing out, shorten the entry and retry.",
+          "Option A: Tap generate again. Option B: Shorten the entry to 6–10 lines and regenerate for faster clarity.",
         questions: [
           "What is the core question you want answered in one sentence?",
           "What feels most confusing right now?",
           "What would ‘enough’ look like for you in this situation?",
-          "Next time, paste only the key paragraph and what you want clarity on.",
+          "Next time, include the exact words said and what you felt immediately after.",
         ],
       });
     }
 
-    // Final safety fallback for unknown errors
     return normalizeReflection({
       summary:
-        "The reflection could not be generated due to a temporary error. Please try again.",
+        "I couldn’t complete a clean reflection on this pass, but your entry is saved. Try again — the next pass usually lands better.",
       core_pattern:
-        "A system error occurred while generating the reflection.",
+        "A temporary system issue prevented a fully structured reflection.",
       themes: ["reflection"],
       emotions: ["neutral"],
       gentle_next_step:
-        "Try again in a minute. If it repeats, report the time and entry title.",
+        "Option A: Tap generate again. Option B: Retry after 30 seconds if you’re on a slow connection.",
       questions: [
-        "What is the main feeling you want help naming right now?",
-        "What outcome are you hoping for?",
-        "What are you afraid might be true?",
-        "Next time, capture the exact moment you felt the shift and what happened right before it.",
+        "What part of what you wrote feels most important right now?",
+        "What do you wish the other person understood about your intention?",
+        "What are you afraid might be true here?",
+        "Next time, capture the exact moment the tone changed and what was said.",
       ],
     });
   } finally {
