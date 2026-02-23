@@ -4,7 +4,10 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { ensureCreditsFresh } from "@/lib/creditRules";
 import { generateReflectionFromEntry } from "@/lib/ai/generateReflection";
 
+// Hard-disable caching
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const runtime = "nodejs";
 
 type PlanType = "FREE" | "TRIAL" | "PREMIUM";
 
@@ -43,7 +46,10 @@ function isNoCreditsError(msg: string) {
   );
 }
 
-async function consumeOneCredit(supabase: any, userId: string): Promise<ConsumeResult> {
+async function consumeOneCredit(
+  supabase: any,
+  userId: string
+): Promise<ConsumeResult> {
   let rpcData: any = null;
   let rpcErr: any = null;
 
@@ -76,22 +82,42 @@ async function consumeOneCredit(supabase: any, userId: string): Promise<ConsumeR
       return { ok: false, status: 402, error: "Reflection limit reached" };
     }
 
-    // Log in server to debug (shows in Vercel logs)
     console.error("consume_reflection_credit rpc error:", rpcErr);
-
     return { ok: false, status: 500, error: "Failed to consume credits" };
   }
 
   const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
   const remaining =
-    row && typeof row.remaining_credits === "number" ? (row.remaining_credits as number) : null;
+    row && typeof row.remaining_credits === "number"
+      ? (row.remaining_credits as number)
+      : null;
 
-  // If we can't read remaining, treat as out-of-credits to be safe
   if (remaining === null) {
     return { ok: false, status: 402, error: "Reflection limit reached" };
   }
 
   return { ok: true, remaining };
+}
+
+/**
+ * Lightweight request fingerprint (debugging only).
+ * Not cryptographic. Used to prove request/response integrity.
+ */
+function contentFingerprint(s: string) {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return (h >>> 0).toString(16);
+}
+
+function noStoreHeaders() {
+  return {
+    "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+    Pragma: "no-cache",
+    Expires: "0",
+  };
 }
 
 export async function POST(req: Request) {
@@ -125,18 +151,33 @@ export async function POST(req: Request) {
   if (content.length > 20000) {
     return NextResponse.json(
       { error: "Entry too long. Please shorten it a bit." },
-      { status: 413 }
+      { status: 413, headers: noStoreHeaders() }
     );
+  }
+
+  // Debug toggle: /api/ai/reflection?debug=1
+  const url = new URL(req.url);
+  const debugEnabled = url.searchParams.get("debug") === "1";
+
+  const fp = debugEnabled ? contentFingerprint(content) : undefined;
+  const snippet = debugEnabled ? content.slice(0, 80) : undefined;
+
+  if (debugEnabled) {
+    console.log("[reflection] entryId=", entryId, "fp=", fp, "snippet=", snippet);
   }
 
   // Ensure monthly credits row exists / is up to date
   await ensureCreditsFresh({ supabase, userId });
 
-  const { data: creditsRow } = await supabase
+  const { data: creditsRow, error: creditsErr } = await supabase
     .from("user_credits")
     .select("plan_type")
     .eq("user_id", userId)
     .maybeSingle();
+
+  if (creditsErr) {
+    console.error("[reflection] failed to read user_credits:", creditsErr);
+  }
 
   const planType = normalizePlan((creditsRow as any)?.plan_type);
   const isUnlimited = planType === "PREMIUM" || planType === "TRIAL";
@@ -147,7 +188,10 @@ export async function POST(req: Request) {
   if (!isUnlimited) {
     const consumed = await consumeOneCredit(supabase, userId);
     if (isConsumeFail(consumed)) {
-      return NextResponse.json({ error: consumed.error }, { status: consumed.status });
+      return NextResponse.json(
+        { error: consumed.error },
+        { status: consumed.status, headers: noStoreHeaders() }
+      );
     }
     remainingAfterConsume = consumed.remaining;
   }
@@ -160,24 +204,42 @@ export async function POST(req: Request) {
       plan: isUnlimited ? "PREMIUM" : "FREE",
     });
 
-    // Persist reflection on the entry
-    await supabase
+    // Persist reflection on the entry (verify update)
+    const { data: updated, error: updErr } = await supabase
       .from("journal_entries")
       .update({ ai_response: JSON.stringify(reflection) })
       .eq("id", entryId)
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .select("id")
+      .maybeSingle();
+
+    if (updErr || !updated?.id) {
+      console.error("[reflection] journal_entries update failed:", {
+        entryId,
+        updErr,
+      });
+    }
 
     // Log reflection usage (ONLY on success)
-    // NOTE: your reflection_usage table has columns: id, user_id, date (text), created_at
-    await supabase.from("reflection_usage").insert({
+    const { error: usageErr } = await supabase.from("reflection_usage").insert({
       user_id: userId,
       date: new Date().toISOString().slice(0, 10), // YYYY-MM-DD
     });
 
-    return NextResponse.json(
-      { reflection, remainingCredits: isUnlimited ? null : remainingAfterConsume },
-      { headers: { "Cache-Control": "no-store, max-age=0" } }
-    );
+    if (usageErr) {
+      console.error("[reflection] reflection_usage insert failed:", usageErr);
+    }
+
+    const payload: any = {
+      reflection,
+      remainingCredits: isUnlimited ? null : remainingAfterConsume,
+    };
+
+    if (debugEnabled) {
+      payload.debug = { entryId, fp, snippet };
+    }
+
+    return NextResponse.json(payload, { headers: noStoreHeaders() });
   } catch (err) {
     console.error("Reflection generation failed:", err);
 
@@ -196,6 +258,9 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json({ error: "Failed to generate reflection" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to generate reflection" },
+      { status: 500, headers: noStoreHeaders() }
+    );
   }
 }
