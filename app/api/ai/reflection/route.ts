@@ -42,7 +42,8 @@ function isNoCreditsError(msg: string) {
     m.includes("insufficient") ||
     m.includes("limit") ||
     m.includes("quota") ||
-    m.includes("exceeded")
+    m.includes("exceeded") ||
+    m.includes("out of credits")
   );
 }
 
@@ -82,7 +83,7 @@ async function consumeOneCredit(
       return { ok: false, status: 402, error: "Reflection limit reached" };
     }
 
-    console.error("consume_reflection_credit rpc error:", rpcErr);
+    console.error("[reflection] consume_reflection_credit rpc error:", rpcErr);
     return { ok: false, status: 500, error: "Failed to consume credits" };
   }
 
@@ -92,6 +93,7 @@ async function consumeOneCredit(
       ? (row.remaining_credits as number)
       : null;
 
+  // If we can't read remaining, treat as out-of-credits to be safe
   if (remaining === null) {
     return { ok: false, status: 402, error: "Reflection limit reached" };
   }
@@ -129,7 +131,10 @@ export async function POST(req: Request) {
   } = await supabase.auth.getUser();
 
   if (userErr || !user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401, headers: noStoreHeaders() }
+    );
   }
 
   const userId = user.id;
@@ -141,11 +146,17 @@ export async function POST(req: Request) {
   const title = typeof body?.title === "string" ? body.title.trim() : "";
 
   if (!entryId) {
-    return NextResponse.json({ error: "Missing entryId" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing entryId" },
+      { status: 400, headers: noStoreHeaders() }
+    );
   }
 
   if (!content) {
-    return NextResponse.json({ error: "Missing content" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing content" },
+      { status: 400, headers: noStoreHeaders() }
+    );
   }
 
   if (content.length > 20000) {
@@ -158,9 +169,8 @@ export async function POST(req: Request) {
   // Debug toggle: /api/ai/reflection?debug=1
   const url = new URL(req.url);
   const debugEnabled = url.searchParams.get("debug") === "1";
-
   const fp = debugEnabled ? contentFingerprint(content) : undefined;
-  const snippet = debugEnabled ? content.slice(0, 80) : undefined;
+  const snippet = debugEnabled ? content.slice(0, 120) : undefined;
 
   if (debugEnabled) {
     console.log("[reflection] entryId=", entryId, "fp=", fp, "snippet=", snippet);
@@ -197,27 +207,21 @@ export async function POST(req: Request) {
   }
 
   try {
-    // Generate reflection (AI)
     const reflection = await generateReflectionFromEntry({
       content,
       title,
       plan: isUnlimited ? "PREMIUM" : "FREE",
     });
 
-    // Persist reflection on the entry (verify update)
-    const { data: updated, error: updErr } = await supabase
+    // Persist reflection on the entry
+    const { error: updErr } = await supabase
       .from("journal_entries")
       .update({ ai_response: JSON.stringify(reflection) })
       .eq("id", entryId)
-      .eq("user_id", userId)
-      .select("id")
-      .maybeSingle();
+      .eq("user_id", userId);
 
-    if (updErr || !updated?.id) {
-      console.error("[reflection] journal_entries update failed:", {
-        entryId,
-        updErr,
-      });
+    if (updErr) {
+      console.error("[reflection] journal_entries update failed:", updErr);
     }
 
     // Log reflection usage (ONLY on success)
@@ -241,7 +245,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(payload, { headers: noStoreHeaders() });
   } catch (err) {
-    console.error("Reflection generation failed:", err);
+    console.error("[reflection] generation failed:", err);
 
     // Best-effort refund if we consumed a credit
     if (!isUnlimited && remainingAfterConsume !== null) {
@@ -254,7 +258,7 @@ export async function POST(req: Request) {
           } as any)
           .eq("user_id", userId);
       } catch (refundErr) {
-        console.error("Refund failed:", refundErr);
+        console.error("[reflection] refund failed:", refundErr);
       }
     }
 
