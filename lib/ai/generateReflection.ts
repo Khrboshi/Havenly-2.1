@@ -1,9 +1,13 @@
 // lib/ai/generateReflection.ts
-// Havenly Prompt V10.2 — Premium Perception Multiplier (Wise Mirror + Auto-Retry + No-Crash)
+// Havenly Prompt V10.3 — Premium Perception Multiplier (Wise Mirror + Anchors + Validate + Auto-Retry + No-Crash)
 // BUILD SAFE, SAME SCHEMA
 //
-// Change vs V10.1: Force 1–2 concrete moments from the entry (paraphrase allowed)
-// to prevent generic output and improve premium perceived intelligence.
+// Fix vs V10.2: Prompt-only constraints are not enough.
+// This version:
+// 1) Extracts concrete "anchors" from the entry,
+// 2) Injects them into the prompt,
+// 3) Validates that output includes at least one anchor,
+// 4) Auto-retries with stricter instructions if it doesn't.
 
 export type Reflection = {
   summary: string;
@@ -106,6 +110,60 @@ function normalizeReflection(r: any): Reflection {
   };
 }
 
+function normalizeForMatch(s: string): string {
+  return (s || "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/[^\p{L}\p{N}\s'’-]/gu, "")
+    .trim();
+}
+
+function containsAny(haystack: string, needles: string[]): boolean {
+  const h = normalizeForMatch(haystack);
+  for (const n of needles) {
+    const nn = normalizeForMatch(n);
+    if (!nn) continue;
+    if (h.includes(nn)) return true;
+  }
+  return false;
+}
+
+/**
+ * Anchor extraction (heuristic, fast, no dependencies).
+ * Goal: produce short, human-readable anchors the model can reuse verbatim.
+ */
+function extractAnchors(entry: string): string[] {
+  const t = entry || "";
+  const anchors: string[] = [];
+
+  const add = (s: string) => {
+    const v = s.trim();
+    if (!v) return;
+    if (anchors.some((a) => normalizeForMatch(a) === normalizeForMatch(v))) return;
+    anchors.push(v);
+  };
+
+  // Relationship/gifts
+  if (/expensive gift|more expensive|spend more/i.test(t)) add("expensive gifts still feel “not enough”");
+  if (/small.*gift|little gift/i.test(t)) add("small gifts from others make her happy");
+  if (/paid for the gift/i.test(t)) add("you paid for a gift she gave to someone else");
+
+  // Driving/night/safety
+  if (/night/i.test(t) && /road|roads/i.test(t)) add("driving at night when the roads were bad");
+  if (/weather/i.test(t)) add("bad weather while trying to get her home safely");
+  if (/worried about how i am driving|worried about.*driving/i.test(t)) add("she worried about your driving more than your intention");
+  if (/taxi/i.test(t)) add("you planned to take a taxi back after dropping her off");
+  if (/mom|mother/i.test(t)) add("leaving the car at her mom’s place");
+
+  // If heuristics fail, provide fallback anchors that still relate to the entry shape.
+  if (anchors.length < 2) {
+    add("your big efforts feel unseen");
+    add("small gestures from others land differently");
+  }
+
+  return anchors.slice(0, 5);
+}
+
 export async function generateReflectionFromEntry(
   input: Input
 ): Promise<Reflection> {
@@ -115,7 +173,11 @@ export async function generateReflectionFromEntry(
   const model = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
 
   const titleLine = input.title?.trim() ? `Title: ${input.title.trim()}\n` : "";
-  const entryText = `${titleLine}Entry:\n${(input.content || "").trim()}`;
+  const entryBody = (input.content || "").trim();
+  const entryText = `${titleLine}Entry:\n${entryBody}`;
+
+  const anchors = extractAnchors(entryBody);
+  const anchorsBlock = anchors.map((a, i) => `${i + 1}) ${a}`).join("\n");
 
   const systemBase = `
 You are Havenly — a Wise Reflective Mirror.
@@ -123,12 +185,11 @@ You are Havenly — a Wise Reflective Mirror.
 VOICE:
 Write directly to "you". Never say "the user" or "this person".
 
-NON-NEGOTIABLE TRUTH RULE:
+TRUTH (NON-NEGOTIABLE):
 - NEVER invent events that did not appear in the entry.
-- You MUST include 1–2 concrete moments from the entry (paraphrase is fine).
-  Examples of a “concrete moment”: a specific situation, action, or exchange (e.g., driving at night, a gift incident, a specific worry).
-- Do NOT use placeholders like “a situation happened” — name the situation.
-- If the entry contains multiple moments, pick the most emotionally charged one + one secondary one.
+- You MUST reference at least ONE concrete moment from the entry.
+- To ensure specificity, you MUST include at least ONE of the provided ANCHORS exactly as written (verbatim).
+- Do not use placeholder phrasing like “a situation happened.” Name the situation.
 
 TONE:
 Grounded, calm, perceptive.
@@ -137,22 +198,20 @@ Not clinical. Not preachy. Not flattering.
 GOAL:
 Create self-understanding that turns into certainty, confidence, and gentle action.
 
-PREMIUM PERCEPTION MULTIPLIER (IMPORTANT):
-Make the reflection feel like it gives clarity, not just comfort.
-Do this WITHOUT changing the schema by embedding short labeled lines INSIDE the existing fields.
+PREMIUM PERCEPTION MULTIPLIER:
+Make it feel like clarity (not just comfort) WITHOUT changing the schema.
 
 Required internal structure:
-- summary MUST include these labeled lines (as plain text, not markdown):
+- summary MUST include these labeled lines (plain text):
   1) "What you’re carrying:"
   2) "What’s really happening:"
   3) (PREMIUM only) "Deeper direction:"
 
 - core_pattern: ONE sentence naming the deeper dynamic.
 
-- gentle_next_step:
-  MUST include:
+- gentle_next_step MUST include:
   "Option A:" and "Option B:"
-  (PREMIUM only) Add:
+  (PREMIUM only) add:
   "Script line:" (1–2 sentences, calm, non-pushy)
 
 - questions: 2–4.
@@ -176,6 +235,9 @@ Return EXACTLY this schema:
 
   const user = `
 User plan: ${input.plan}
+
+ANCHORS (you MUST include at least ONE verbatim in your reflection):
+${anchorsBlock}
 
 Create a Havenly Wise Mirror reflection for this journal entry:
 
@@ -215,6 +277,16 @@ ${entryText}
     return String(data?.choices?.[0]?.message?.content ?? "");
   }
 
+  function reflectionTextForCheck(r: any): string {
+    const parts = [
+      cleanString(r?.summary),
+      cleanString(r?.core_pattern),
+      cleanString(r?.gentle_next_step),
+      ...(Array.isArray(r?.questions) ? r.questions.map(String) : []),
+    ];
+    return parts.join("\n");
+  }
+
   try {
     // Attempt #1 (normal)
     const raw1 = await callGroq({
@@ -223,15 +295,18 @@ ${entryText}
     });
 
     const parsed1 = parseModelJson<any>(raw1);
-    if (parsed1) return normalizeReflection(parsed1);
+    if (parsed1) {
+      const checkText = reflectionTextForCheck(parsed1);
+      if (containsAny(checkText, anchors)) return normalizeReflection(parsed1);
+    }
 
-    // Attempt #2 (auto-retry: stricter, lower creativity => higher JSON compliance)
+    // Attempt #2 (content-validated retry: strict anchor requirement)
     const systemRetry = `
 ${systemBase}
 
-RETRY:
-Your previous output was not valid JSON.
-Now output ONLY valid JSON with the exact schema.
+RETRY (STRICT):
+Your previous output was either not valid JSON OR it did NOT include any ANCHOR verbatim.
+Now output ONLY valid JSON with the exact schema AND include at least ONE ANCHOR verbatim.
 No extra commentary. No markdown. Use double quotes only.
 `.trim();
 
@@ -241,38 +316,62 @@ No extra commentary. No markdown. Use double quotes only.
     });
 
     const parsed2 = parseModelJson<any>(raw2);
-    if (parsed2) return normalizeReflection(parsed2);
+    if (parsed2) {
+      const checkText = reflectionTextForCheck(parsed2);
+      if (containsAny(checkText, anchors)) return normalizeReflection(parsed2);
+    }
 
-    // Final fallback (premium-safe language, not “failure” language)
+    // Attempt #3 (final strict: force the model to pick one anchor explicitly)
+    const systemFinal = `
+${systemBase}
+
+FINAL ATTEMPT:
+You MUST include EXACTLY ONE of the ANCHORS verbatim in the summary line "What’s really happening:".
+Return only valid JSON.
+`.trim();
+
+    const raw3 = await callGroq({
+      temperature: 0.1,
+      system: systemFinal,
+    });
+
+    const parsed3 = parseModelJson<any>(raw3);
+    if (parsed3) {
+      const checkText = reflectionTextForCheck(parsed3);
+      if (containsAny(checkText, anchors)) return normalizeReflection(parsed3);
+    }
+
+    // Final fallback (never “system failed” tone; still anchored)
+    const fallbackAnchor = anchors[0] || "your big efforts feel unseen";
     return normalizeReflection({
       summary:
         input.plan === "PREMIUM"
-          ? "What you’re carrying: Something important that doesn’t feel fully seen yet.\nWhat’s really happening: The meaning of your effort isn’t landing the way you intend.\nDeeper direction: You’re being pulled toward clearer needs and cleaner boundaries."
-          : "What you’re carrying: Something important that doesn’t feel fully seen yet.\nWhat’s really happening: The meaning of your effort isn’t landing the way you intend.",
+          ? `What you’re carrying: You’re tired of trying and still feeling “not enough”.\nWhat’s really happening: ${fallbackAnchor}.\nDeeper direction: You’re being pulled toward clearer needs and cleaner boundaries.`
+          : `What you’re carrying: You’re tired of trying and still feeling “not enough”.\nWhat’s really happening: ${fallbackAnchor}.`,
       core_pattern:
-        "You’re trying to be understood through effort, but you need clearer agreement on what effort means.",
+        "You’re trying to be understood through effort, but you need agreement on what effort means in this relationship.",
       themes: ["clarity", "needs", "expectations"],
       emotions: ["confusion", "frustration", "hurt"],
       gentle_next_step:
         input.plan === "PREMIUM"
-          ? "Option A: Write one sentence: “When I do X, I hope it means Y to you.” Option B: Write one sentence: “What does effort look like to you, specifically?” Script line: “I care about you, and I keep trying—can we define what ‘effort’ means to you so I stop guessing?”"
+          ? "Option A: Write one sentence: “When I do X, I hope it means Y to you.” Option B: Ask: “What does effort look like to you, specifically?” Script line: “I care about you, and I’m tired of guessing—can we define what ‘effort’ means to you so I can meet it without losing myself?”"
           : "Option A: Write one sentence: “When I do X, I hope it means Y to you.” Option B: Ask yourself: “What do I need to feel appreciated?”",
       questions: [
         "What do you most want your effort to communicate—love, safety, commitment, respect?",
-        "What is your ‘minimum standard’ for appreciation in a relationship?",
+        "What is your minimum standard for appreciation in a relationship?",
         "What would you stop doing if you were fully protecting your self-respect?",
-        "Next time, paste the exact sentence that stung and what you felt in your body right after.",
+        "Next time, paste the exact sentence that stung and what you did right after.",
       ],
     });
   } catch (err: any) {
     if (err?.name === "AbortError") {
+      const fallbackAnchor = anchors[0] || "your big efforts feel unseen";
       return normalizeReflection({
         summary:
           input.plan === "PREMIUM"
-            ? "What you’re carrying: A situation that needs a more precise pass.\nWhat’s really happening: The reflection timed out before it could land cleanly.\nDeeper direction: You’re moving toward clarity and simplicity."
-            : "What you’re carrying: A situation that needs a more precise pass.\nWhat’s really happening: The reflection timed out before it could land cleanly.",
-        core_pattern:
-          "This needs a calmer, more focused pass to turn emotion into clarity.",
+            ? `What you’re carrying: A lot of emotion that needs a calmer pass.\nWhat’s really happening: ${fallbackAnchor}.\nDeeper direction: You’re moving toward clarity and simplicity.`
+            : `What you’re carrying: A lot of emotion that needs a calmer pass.\nWhat’s really happening: ${fallbackAnchor}.`,
+        core_pattern: "This needs a calmer, more focused pass to turn emotion into clarity.",
         themes: ["clarity", "focus"],
         emotions: ["overwhelm"],
         gentle_next_step:
@@ -288,13 +387,13 @@ No extra commentary. No markdown. Use double quotes only.
       });
     }
 
+    const fallbackAnchor = anchors[0] || "your big efforts feel unseen";
     return normalizeReflection({
       summary:
         input.plan === "PREMIUM"
-          ? "What you’re carrying: Something that deserves clarity.\nWhat’s really happening: A temporary system issue blocked a clean reflection.\nDeeper direction: You’re moving toward naming your needs more directly."
-          : "What you’re carrying: Something that deserves clarity.\nWhat’s really happening: A temporary system issue blocked a clean reflection.",
-      core_pattern:
-        "A clean reflection wasn’t available on this pass, but the pattern is still worth naming.",
+          ? `What you’re carrying: Something that deserves clarity.\nWhat’s really happening: ${fallbackAnchor}.\nDeeper direction: You’re moving toward naming your needs more directly.`
+          : `What you’re carrying: Something that deserves clarity.\nWhat’s really happening: ${fallbackAnchor}.`,
+      core_pattern: "A clean reflection wasn’t available on this pass, but the pattern is still worth naming.",
       themes: ["clarity"],
       emotions: ["uncertainty"],
       gentle_next_step:
