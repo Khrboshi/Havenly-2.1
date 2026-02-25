@@ -1,5 +1,5 @@
 // lib/ai/generateReflection.ts
-// Havenly V11.2 — Strong FREE Baseline (Anchors + Quality Gate + Auto-Retry + Safe Memory)
+// Havenly V11.3 — Strong FREE Baseline (Entry-Derived Anchors + Quality Gate + Auto-Retry + Safe Memory)
 // BUILD SAFE, SAME SCHEMA
 
 export type Reflection = {
@@ -87,19 +87,24 @@ function containsAny(haystack: string, needles: string[]): boolean {
 }
 
 function ensureFourQuestions(qs: string[]): string[] {
-  const cleaned = qs.map(s => String(s || "").trim()).filter(Boolean);
+  const cleaned = qs.map((s) => String(s || "").trim()).filter(Boolean);
+
+  // Generic defaults (works for work, relationships, health, goals, etc.)
   const defaults = [
-    "What do you most want your effort to communicate—love, safety, commitment, respect?",
-    "What is your minimum standard for appreciation in a relationship?",
-    "What would you stop doing if you were fully protecting your self-respect?",
-    "Next time, paste the exact sentence that stung and what you did right after.",
+    "What exactly did the moment trigger in you—embarrassment, anger, shame, fear, or something else?",
+    "What is the cleanest interpretation that still respects your feelings?",
+    "What boundary or request would protect you without escalating the situation?",
+    "Next time, paste the exact words that stung and what you did immediately after.",
   ];
+
   const out = cleaned.slice(0, 4);
   while (out.length < 4) out.push(defaults[out.length]);
+
   // Last must start with "Next time,"
   if (!out[out.length - 1].toLowerCase().startsWith("next time,")) {
     out[out.length - 1] = defaults[3];
   }
+
   return out.slice(0, 4);
 }
 
@@ -120,45 +125,91 @@ function normalizeReflection(r: any): Reflection {
       summary ||
       "What you’re carrying: Something important is asking for clarity.\nWhat’s really happening: The meaning of your effort isn’t landing the way you intend.",
     core_pattern: corePattern || undefined,
-    themes: themes.length ? themes : ["clarity", "needs", "expectations"],
+    themes: themes.length ? themes : ["clarity", "communication", "self-respect"],
     emotions: emotions.length ? emotions : ["confusion", "frustration", "hurt"],
     gentle_next_step:
       nextStep ||
-      "Option A: Write one sentence: “When I do X, I hope it means Y.” Option B: Ask: “What does effort look like to you—specifically?”",
+      "Option A: Name the moment in one sentence. Option B: Ask one clean question to clarify what you need next.",
     questions: ensureFourQuestions(questionsRaw),
   };
 }
 
 /**
  * Anchor extraction (heuristic, fast).
- * Goal: produce short anchors the model can reuse verbatim.
+ * Priority:
+ * 1) QUOTED PHRASES (highest signal)
+ * 2) 1–2 SENTENCES FROM THIS ENTRY (verbatim)
+ * 3) CONTEXT CLUES (work/relationship/health/etc.)
+ * 4) NEUTRAL FALLBACKS ONLY (never relationship-biased)
  */
 function extractAnchors(entry: string): string[] {
-  const t = entry || "";
+  const t = (entry || "").trim();
   const anchors: string[] = [];
 
   const add = (s: string) => {
-    const v = s.trim();
+    const v = String(s || "").trim();
     if (!v) return;
-    if (anchors.some(a => normalizeForMatch(a) === normalizeForMatch(v))) return;
+    if (anchors.some((a) => normalizeForMatch(a) === normalizeForMatch(v))) return;
     anchors.push(v);
   };
 
-  // Gifts / appreciation mismatch
+  // 1) Pull quoted phrases as high-signal anchors: “...” or "..."
+  const quoteMatches = t.match(/[“"][^”"]+[”"]/g) || [];
+  for (const q of quoteMatches) {
+    const cleaned = q.replace(/^[“"]|[”"]$/g, "").trim();
+    if (cleaned.length >= 4 && cleaned.length <= 90) add(`“${cleaned}”`);
+    if (anchors.length >= 3) break;
+  }
+
+  // 2) Take up to 2 short sentences from THIS entry (verbatim, not invented)
+  if (anchors.length < 2) {
+    const sentences = t
+      .split(/\n|[.!?]/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .slice(0, 4);
+
+    for (const s of sentences) {
+      const short = s.length > 110 ? s.slice(0, 110).trim() : s;
+      add(short);
+      if (anchors.length >= 2) break;
+    }
+  }
+
+  // 3) Context clue anchors (broad, not domain-specific)
+  if (/in front of others|in front of people|public|everyone/i.test(t)) {
+    add("in front of others");
+  }
+  if (/colleague|coworker|manager|team|meeting|work/i.test(t)) {
+    add("a work moment landed as a put-down");
+  }
+  if (/smiled|laughed it off|kept it in|stayed silent/i.test(t)) {
+    add("you smiled in the moment, then replayed it later");
+  }
+  if (/replaying|kept replaying|ruminat/i.test(t)) {
+    add("you kept replaying it and felt small");
+  }
+  if (/respond without starting a fight|don’t want to start a fight|avoid conflict/i.test(t)) {
+    add("you want to respond without starting a fight");
+  }
+
+  // 4) Domain-specific anchors only if clearly present (do NOT force)
+  // Relationship / gifts mismatch (only if entry actually indicates it)
   if (/expensive gift|more expensive|spend more/i.test(t)) add("expensive gifts still feel “not enough”");
   if (/small.*gift|little gift/i.test(t)) add("small gifts from others make her happy");
   if (/paid for the gift/i.test(t)) add("you paid for a gift she gave to someone else");
 
-  // Driving / safety
+  // Driving / safety (only if present)
   if (/night/i.test(t) && /road|roads/i.test(t)) add("driving at night when the roads were bad");
   if (/weather/i.test(t)) add("bad weather while trying to get her home safely");
-  if (/worried about how i am driving|worried about.*driving/i.test(t)) add("she worried about your driving more than your intention");
+  if (/worried about.*driving/i.test(t)) add("she worried about your driving more than your intention");
   if (/taxi/i.test(t)) add("you planned to take a taxi back after dropping her off");
   if (/mom|mother/i.test(t)) add("leaving the car at her mom’s place");
 
+  // Neutral fallbacks ONLY (never “partner”)
   if (anchors.length < 2) {
-    add("your big efforts feel unseen");
-    add("small gestures from others land differently");
+    add("a moment felt dismissive");
+    add("you don’t want to stay silent again");
   }
 
   return anchors.slice(0, 5);
@@ -194,14 +245,20 @@ function qualityPass(parsed: any, anchors: string[], plan: "FREE" | "PREMIUM"): 
   // Must include A/B options
   if (!/Option A:/i.test(nextStep) || !/Option B:/i.test(nextStep)) return false;
 
-  // Must have usable depth: avoid tiny fallback-looking reflections
-  if (summary.length < (plan === "PREMIUM" ? 240 : 200)) return false;
+  // FREE entries can be short; avoid over-rejecting good concise output
+  const minSummaryLen = plan === "PREMIUM" ? 240 : 150;
+  if (summary.length < minSummaryLen) return false;
 
-  // Ensure some variety
-  if (themes.length < 3) return false;
-  if (emotions.length < 3) return false;
+  // Variety (FREE can be 2; PREMIUM should be richer)
+  if (plan === "PREMIUM") {
+    if (themes.length < 3) return false;
+    if (emotions.length < 3) return false;
+  } else {
+    if (themes.length < 2) return false;
+    if (emotions.length < 2) return false;
+  }
 
-  // Ensure 3–4 questions (we normalize to 4 anyway, but make sure model returned something)
+  // Must have some questions
   if (qs.length < 2) return false;
 
   return true;
@@ -220,9 +277,15 @@ export async function generateReflectionFromEntry(input: Input): Promise<Reflect
   const anchors = extractAnchors(entryBody);
   const anchorsBlock = anchors.map((a, i) => `${i + 1}) ${a}`).join("\n");
 
-  const recentThemes = (input.recentThemes || []).map(s => String(s).trim()).filter(Boolean).slice(0, 5);
+  const recentThemes = (input.recentThemes || [])
+    .map((s) => String(s).trim())
+    .filter(Boolean)
+    .slice(0, 5);
+
   const memoryBlock = recentThemes.length
-    ? `RECENT THEMES FROM THIS USER (optional context, do NOT overreach):\n${recentThemes.map((t, i) => `${i + 1}) ${t}`).join("\n")}`
+    ? `RECENT THEMES FROM THIS USER (optional context, do NOT overreach):\n${recentThemes
+        .map((t, i) => `${i + 1}) ${t}`)
+        .join("\n")}`
     : "";
 
   const systemBase = `
@@ -347,7 +410,7 @@ Your previous output was either not valid JSON OR did not meet requirements.
 Now:
 - Include ONE ANCHOR verbatim in "What’s really happening:"
 - Include TWO concrete moments (one primary + one secondary).
-- Keep it specific, not generic.
+- Keep it specific to THIS entry (no other life area).
 Return ONLY valid JSON.
 `.trim();
 
@@ -381,47 +444,49 @@ Return ONLY valid JSON.
       return normalizeReflection(parsed3);
     }
 
-    // Strong fallback (still anchored + concrete)
-    const a1 = anchors[0] || "your big efforts feel unseen";
-    const a2 = anchors[1] || "small gestures from others land differently";
-    const continuityLine = recentThemes.length ? `This echoes a theme you’ve touched before: ${recentThemes[0]}.` : "";
+    // Strong fallback (still anchored + concrete, and neutral)
+    const a1 = anchors[0] || "a moment felt dismissive";
+    const a2 = anchors[1] || "you don’t want to stay silent again";
+    const continuityLine = recentThemes.length
+      ? `This echoes a theme you’ve touched before: ${recentThemes[0]}.`
+      : "";
 
     return normalizeReflection({
       summary:
         input.plan === "PREMIUM"
-          ? `What you’re carrying: You’re exhausted from trying to love well and still feeling “not enough”.\nWhat’s really happening: ${a1} — and that’s colliding with ${a2}.\nDeeper direction: You’re being pulled toward clearer needs and cleaner boundaries.\n${continuityLine}`.trim()
-          : `What you’re carrying: You’re exhausted from trying to love well and still feeling “not enough”.\nWhat’s really happening: ${a1} — and that’s colliding with ${a2}.\n${continuityLine}`.trim(),
+          ? `What you’re carrying: You’re holding a mix of emotion that’s asking for clean self-respect.\nWhat’s really happening: ${a1} — and it’s pulling you between keeping the peace and speaking up.\nDeeper direction: You’re moving toward clearer boundaries and calmer communication.\n${continuityLine}`.trim()
+          : `What you’re carrying: You’re holding a mix of emotion that’s asking for clean self-respect.\nWhat’s really happening: ${a1} — and it’s pulling you between keeping the peace and speaking up.\n${continuityLine}`.trim(),
       core_pattern:
-        "You’re trying to be understood through effort, but you need agreement on what effort means and how appreciation is shown.",
-      themes: ["appreciation", "misaligned expectations", "communication", "effort"],
-      emotions: ["confusion", "frustration", "hurt", "uncertainty"],
+        "You’re trying to protect harmony, but you also need a respectful way to name what crossed a line.",
+      themes: ["communication", "self-respect", "boundaries", "confidence"],
+      emotions: ["irritation", "hurt", "embarrassment", "uncertainty"],
       gentle_next_step:
         input.plan === "PREMIUM"
-          ? "Option A: Ask one clean question: “What does effort look like to you, specifically?” Option B: Name your need without defending: “I need appreciation when I try to protect and support you.” Script line: “I care about you, and I’m tired of guessing—can we define what ‘effort’ means to you so I can meet it without losing myself?”"
-          : "Option A: Ask one clean question: “What does effort look like to you, specifically?” Option B: Name your need simply: “When I try to support you, I need appreciation—not criticism.”",
+          ? "Option A: Name the impact in one sentence and stop there. Option B: Ask for a better way to handle it next time. Script line: “When you said that, I felt put on the spot—can we keep feedback private and specific?”"
+          : "Option A: Name the impact in one sentence and stop there. Option B: Ask for a better way to handle it next time.",
       questions: [
-        "If you stop trying to ‘earn’ appreciation, what would you do differently this week?",
-        "What would a fair, specific appreciation response from your partner sound like?",
-        "What boundary would protect you from feeling ‘never enough’?",
-        "Next time, paste the exact words she said and what you did immediately after.",
+        "What part of the moment felt worst—being judged, being exposed, or feeling dismissed?",
+        "What would a calm, one-sentence response sound like if you were protecting your dignity?",
+        "What boundary would help you speak up without turning it into a fight?",
+        "Next time, paste the exact words that stung and what you did immediately after.",
       ],
     });
   } catch (err: any) {
-    const a1 = anchors[0] || "your big efforts feel unseen";
-    const a2 = anchors[1] || "small gestures from others land differently";
+    const a1 = anchors[0] || "a moment felt dismissive";
+    const a2 = anchors[1] || "you don’t want to stay silent again";
 
     return normalizeReflection({
-      summary:
-        `What you’re carrying: Something important needs a cleaner pass.\nWhat’s really happening: ${a1} — and it’s colliding with ${a2}.`.trim(),
-      core_pattern: "A stable reflection wasn’t available on this pass, but the pattern still deserves clarity.",
-      themes: ["clarity", "communication", "expectations"],
+      summary: `What you’re carrying: Something important needs a cleaner pass.\nWhat’s really happening: ${a1} — and it’s pulling you between keeping the peace and speaking up.`.trim(),
+      core_pattern:
+        "This needs a calmer, more focused pass to turn emotion into a clear next move.",
+      themes: ["clarity", "communication", "self-respect"],
       emotions: ["uncertainty", "frustration", "overwhelm"],
       gentle_next_step:
         "Option A: Tap generate again. Option B: Shorten the entry to the key moment (6–10 lines) and try again.",
       questions: [
-        "What is the one sentence you wish she understood about your intention?",
-        "What is the minimum appreciation you require to stay steady?",
-        "What are you afraid might be true here?",
+        "What is the one outcome you want from speaking up—apology, respect, or a new boundary?",
+        "What would you say in one sentence if you were calm and firm?",
+        "What are you afraid will happen if you speak up?",
         "Next time, paste only the key paragraph and the exact question you want answered.",
       ],
     });
