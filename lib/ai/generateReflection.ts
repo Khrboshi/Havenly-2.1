@@ -462,3 +462,52 @@ Return ONLY valid JSON.
     clearTimeout(timeout);
   }
 }
+type Domain = "WORK" | "RELATIONSHIP" | "FITNESS" | "GENERAL";
+
+function detectDomain(t: string): Domain {
+  const s = (t || "").toLowerCase();
+
+  const fitness =
+    /run|running|\bkm\b|workout|training|exercise|gym|lift|lifting|cardio|pace|steps|sore|recovery/.test(s);
+  const work =
+    /colleague|coworker|manager|team|meeting|work|office|client|boss/.test(s);
+  const rel =
+    /partner|wife|husband|girlfriend|boyfriend|relationship|love|date|argue|fight|gift/.test(s);
+
+  if (fitness && !work && !rel) return "FITNESS";
+  if (work && !fitness && !rel) return "WORK";
+  if (rel && !fitness && !work) return "RELATIONSHIP";
+  // If mixed/unclear, keep it general
+  return "GENERAL";
+}
+DOMAIN GUARDRAIL (NON-NEGOTIABLE):
+- Domain for this entry is: ${domain}
+- You MUST stay inside this domain.
+- If domain is FITNESS, do NOT talk about colleagues, partners, speaking up, conflict, boundaries with others, or “keeping the peace”.
+- If domain is WORK, do NOT talk about partners/relationship dynamics.
+- If domain is RELATIONSHIP, do NOT talk about workplace feedback loops unless explicitly present.
+  const a1 = anchors[0] || "a moment felt dismissive";
+const a2 = anchors[1] || "you don’t want to stay silent again";
+const continuityLine = recentThemes.length ? `This echoes a theme you’ve touched before: ${recentThemes[0]}.` : "";
+
+if (domain === "FITNESS") {
+  return normalizeReflection({
+    summary:
+      input.plan === "PREMIUM"
+        ? `What you’re carrying: Pride with fatigue — you did something hard and your body is asking for recovery.\nWhat’s really happening: ${a1} — and it’s creating a tension between “push more” and “respect your limits.”\nDeeper direction: Build consistency without turning discipline into self-pressure.\n${continuityLine}`.trim()
+        : `What you’re carrying: Pride with fatigue — you did something hard and your body is asking for recovery.\nWhat’s really happening: ${a1} — and it’s creating a tension between “push more” and “respect your limits.”\n${continuityLine}`.trim(),
+    core_pattern: "You’re proud of progress, but you’re still learning the line between healthy challenge and unnecessary pressure.",
+    themes: ["consistency", "recovery", "self-respect", "motivation"],
+    emotions: ["pride", "tiredness", "uncertainty", "determination"],
+    gentle_next_step:
+      input.plan === "PREMIUM"
+        ? "Option A: Decide one recovery action today (sleep, hydration, easy walk) and treat it as training. Option B: Define tomorrow’s effort as “easy” or “hard” before you start. Script line: “I’m building consistency, and recovery is part of the plan.”"
+        : "Option A: Choose one recovery action today (sleep, hydration, easy walk) and treat it as training. Option B: Define tomorrow’s effort as “easy” or “hard” before you start.",
+    questions: [
+      "What did you prove to yourself by finishing the 5km?",
+      "What would “healthy discipline” look like this week (not perfection)?",
+      "What is one sign your body needs recovery that you tend to ignore?",
+      "Next time, paste your exact self-talk after the workout and what you did next.",
+    ],
+  });
+}
