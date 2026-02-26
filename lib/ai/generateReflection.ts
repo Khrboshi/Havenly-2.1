@@ -23,15 +23,12 @@ function detectDomain(t: string): Domain {
   const s = (t || "").toLowerCase();
 
   const fitness =
-    /run|running|\bkm\b|workout|training|exercise|gym|lift|lifting|cardio|pace|steps|sore|recovery/.test(
+    /run|running|\bkm\b|workout|training|exercise|gym|lift|lifting|cardio|pace|steps|sore|recovery|rest|sleep|hydration/.test(
       s
     );
-  const work =
-    /colleague|coworker|manager|team|meeting|work|office|client|boss/.test(s);
+  const work = /colleague|coworker|manager|team|meeting|work|office|client|boss/.test(s);
   const rel =
-    /partner|wife|husband|girlfriend|boyfriend|relationship|love|date|argue|fight|gift/.test(
-      s
-    );
+    /partner|wife|husband|girlfriend|boyfriend|relationship|love|date|argue|fight|gift/.test(s);
 
   if (fitness && !work && !rel) return "FITNESS";
   if (work && !fitness && !rel) return "WORK";
@@ -189,6 +186,7 @@ function extractAnchors(entry: string): string[] {
     anchors.push(v);
   };
 
+  // quoted phrases first
   const quoteMatches = t.match(/[“"][^”"]+[”"]/g) || [];
   for (const q of quoteMatches) {
     const cleaned = q.replace(/^[“"]|[”"]$/g, "").trim();
@@ -196,6 +194,7 @@ function extractAnchors(entry: string): string[] {
     if (anchors.length >= 3) break;
   }
 
+  // then 1–2 sentences from entry
   if (anchors.length < 2) {
     const sentences = t
       .split(/\n|[.!?]/)
@@ -210,6 +209,7 @@ function extractAnchors(entry: string): string[] {
     }
   }
 
+  // broad context clues
   if (/in front of others|in front of people|public|everyone/i.test(t)) add("in front of others");
   if (/colleague|coworker|manager|team|meeting|work/i.test(t)) add("a work moment landed as a put-down");
   if (/smiled|laughed it off|kept it in|stayed silent/i.test(t)) add("you smiled in the moment, then replayed it later");
@@ -217,8 +217,11 @@ function extractAnchors(entry: string): string[] {
   if (/respond without starting a fight|don’t want to start a fight|avoid conflict/i.test(t))
     add("you want to respond without starting a fight");
 
+  // fitness cues (only if present)
   if (/run|running|\bkm\b|workout|training|exercise/i.test(t)) {
-    if (/ran\s*5\s*km/i.test(t)) add("I ran 5km today and felt proud but also tired");
+    // do NOT hardcode 5km unless entry says it
+    const kmMatch = t.match(/\bran\s*(\d+)\s*km\b/i);
+    if (kmMatch?.[1]) add(`I ran ${kmMatch[1]}km today and felt proud but also tired`);
     else add("you exercised and felt proud but also tired");
   }
   if (/tired|exhausted|fatigue/i.test(t)) add("part of you wants rest while another wants to push harder");
@@ -242,6 +245,10 @@ function reflectionTextForCheck(r: any): string {
   return parts.join("\n");
 }
 
+/**
+ * IMPORTANT: acceptance gate.
+ * This is where we reject "good-looking" but off-domain outputs.
+ */
 function qualityPass(parsed: any, anchors: string[], plan: "FREE" | "PREMIUM", domain: Domain): boolean {
   const summary = cleanString(parsed?.summary);
   const nextStep = cleanString(parsed?.gentle_next_step);
@@ -250,18 +257,24 @@ function qualityPass(parsed: any, anchors: string[], plan: "FREE" | "PREMIUM", d
   const emotions = Array.isArray(parsed?.emotions) ? parsed.emotions : [];
 
   const text = reflectionTextForCheck(parsed);
+  const textLower = text.toLowerCase();
 
+  // Must include at least one anchor verbatim
   if (!containsAny(text, anchors)) return false;
 
+  // Required labels
   if (!summary.includes("What you’re carrying:")) return false;
   if (!summary.includes("What’s really happening:")) return false;
   if (plan === "PREMIUM" && !summary.includes("Deeper direction:")) return false;
 
+  // Must include Option A/B
   if (!/Option A:/i.test(nextStep) || !/Option B:/i.test(nextStep)) return false;
 
+  // Minimum depth
   const minSummaryLen = plan === "PREMIUM" ? 240 : 150;
   if (summary.length < minSummaryLen) return false;
 
+  // Variety
   if (plan === "PREMIUM") {
     if (themes.length < 3) return false;
     if (emotions.length < 3) return false;
@@ -270,12 +283,32 @@ function qualityPass(parsed: any, anchors: string[], plan: "FREE" | "PREMIUM", d
     if (emotions.length < 2) return false;
   }
 
+  // Must have some questions
   if (qs.length < 2) return false;
 
+  // ===== Domain lock (the real fix) =====
   if (domain === "FITNESS") {
+    // Must contain fitness language (prevents accepting “conflict” reflections)
+    const mustHaveFitness =
+      /(run|running|\bkm\b|workout|training|exercise|recovery|rest|sleep|hydration|pace|cardio|gym|lift|lifting)/;
+    if (!mustHaveFitness.test(textLower)) return false;
+
+    // Must NOT contain common drift terms
     const drift =
-      /colleague|coworker|manager|partner|wife|husband|girlfriend|boyfriend|relationship|fight|argument|keep the peace|speaking up/i;
-    if (drift.test(text.toLowerCase())) return false;
+      /(colleague|coworker|manager|meeting|office|boss|partner|wife|husband|girlfriend|boyfriend|relationship|argument|fight|speaking up|keep the peace)/;
+    if (drift.test(textLower)) return false;
+  }
+
+  if (domain === "WORK") {
+    const drift =
+      /(partner|wife|husband|girlfriend|boyfriend|relationship|date|gift)/;
+    if (drift.test(textLower)) return false;
+  }
+
+  if (domain === "RELATIONSHIP") {
+    const drift =
+      /(colleague|coworker|manager|meeting|office|boss|client)/;
+    if (drift.test(textLower)) return false;
   }
 
   return true;
@@ -291,7 +324,7 @@ export async function generateReflectionFromEntry(input: Input): Promise<Reflect
   const entryBody = (input.content || "").trim();
   const entryText = `${titleLine}Entry:\n${entryBody}`;
 
-  const domain = detectDomain(entryBody);
+  const domain = detectDomain(`${input.title || ""}\n${entryBody}`);
 
   const anchors = extractAnchors(entryBody);
   const anchorsBlock = anchors.map((a, i) => `${i + 1}) ${a}`).join("\n");
@@ -457,6 +490,7 @@ Return ONLY valid JSON.
       return normalizeReflection(parsed3, domain);
     }
 
+    // strong fallback (domain-specific)
     const a1 = anchors[0] || "a moment felt important";
     const continuityLine = recentThemes.length
       ? `This echoes a theme you’ve touched before: ${recentThemes[0]}.`
@@ -494,8 +528,7 @@ Return ONLY valid JSON.
           input.plan === "PREMIUM"
             ? `What you’re carrying: Something important is asking for clarity.\nWhat’s really happening: ${a1} — and you’re still searching for the cleanest meaning.\nDeeper direction: Turn this into a simple next move you can repeat.\n${continuityLine}`.trim()
             : `What you’re carrying: Something important is asking for clarity.\nWhat’s really happening: ${a1} — and you’re still searching for the cleanest meaning.\n${continuityLine}`.trim(),
-        core_pattern:
-          "You’re trying to make sense of the moment while protecting your self-respect.",
+        core_pattern: "You’re trying to make sense of the moment while protecting your self-respect.",
         themes: ["clarity", "self-respect", "communication"],
         emotions: ["confusion", "frustration", "uncertainty"],
         gentle_next_step:
@@ -518,8 +551,7 @@ Return ONLY valid JSON.
     return normalizeReflection(
       {
         summary: `What you’re carrying: Something important needs a cleaner pass.\nWhat’s really happening: ${a1} — and it’s still echoing in your body.`.trim(),
-        core_pattern:
-          "This needs a calmer, more focused pass to turn emotion into a clear next move.",
+        core_pattern: "This needs a calmer, more focused pass to turn emotion into a clear next move.",
         themes: ["clarity", "self-respect", "focus"],
         emotions: ["uncertainty", "frustration", "overwhelm"],
         gentle_next_step:
