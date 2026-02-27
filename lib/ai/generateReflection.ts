@@ -19,7 +19,7 @@ type Input = {
 
 type Domain = "WORK" | "RELATIONSHIP" | "FITNESS" | "GENERAL";
 
-/* Robust fitness signal: handles "ran", "5km", "5 km", "5k" /
+/* Robust fitness signal: handles "ran", "5km", "5 km", "5k" */
 function isFitnessText(s: string): boolean {
   const t = (s || "").toLowerCase();
   return (
@@ -65,7 +65,8 @@ function detectDomain(t: string): Domain {
 }
 
 function stripCodeFences(raw: string): string {
-  return raw.replace(/``(?:json)?\s([\s\S]?)\s`/gi, "$1").trim();
+  // Remove accidental code fences without being strict
+  return raw.replace(/```(?:json)?\s*([\s\S]*?)\s*```/gi, "$1").trim();
 }
 
 function normalizeQuotes(raw: string): string {
@@ -220,7 +221,7 @@ function extractAnchors(entry: string): string[] {
   const quoteMatches = t.match(/[“"][^”"]+[”"]/g) || [];
   for (const q of quoteMatches) {
     const cleaned = q.replace(/^[“"]|[”"]$/g, "").trim();
-    if (cleaned.length >= 4 && cleaned.length <= 90) add(“${cleaned}”);
+    if (cleaned.length >= 4 && cleaned.length <= 90) add(`"${cleaned}"`);
     if (anchors.length >= 3) break;
   }
 
@@ -334,14 +335,14 @@ export async function generateReflectionFromEntry(input: Input): Promise<Reflect
 
   const model = process.env.GROQMODEL || "llama-3.3-70b-versatile";
 
-  const titleLine = input.title?.trim() ? Title: ${input.title.trim()}\n : "";
+  const titleLine = input.title?.trim() ? `Title: ${input.title.trim()}\n` : "";
   const entryBody = (input.content || "").trim();
-  const entryText = ${titleLine}Entry:\n${entryBody};
+  const entryText = `${titleLine}Entry:\n${entryBody}`;
 
   const domain = detectDomain(entryBody);
 
   const anchors = extractAnchors(entryBody);
-  const anchorsBlock = anchors.map((a, i) => ${i + 1}) ${a}).join("\n");
+  const anchorsBlock = anchors.map((a, i) => `${i + 1}) ${a}`).join("\n");
 
   const recentThemes = (input.recentThemes || [])
     .map((s) => String(s).trim())
@@ -349,12 +350,12 @@ export async function generateReflectionFromEntry(input: Input): Promise<Reflect
     .slice(0, 5);
 
   const memoryBlock = recentThemes.length
-    ? RECENT THEMES FROM THIS USER (optional context, do NOT overreach):\n${recentThemes
-        .map((t, i) => ${i + 1}) ${t})
-        .join("\n")}
+    ? `RECENT THEMES FROM THIS USER (optional context, do NOT overreach):\n${recentThemes
+        .map((t, i) => `${i + 1}) ${t}`)
+        .join("\n")}`
     : "";
 
-  const systemBase = 
+  const systemBase = `
 You are Havenly — a Wise Reflective Mirror.
 
 VOICE:
@@ -411,9 +412,9 @@ Return EXACTLY this schema:
   "gentlenextstep": "…",
   "questions": ["…"]
 }
-.trim();
+`.trim();
 
-  const user = 
+  const user = `
 User plan: ${input.plan}
 
 ${memoryBlock}
@@ -424,7 +425,7 @@ ${anchorsBlock}
 Create a Havenly reflection for this journal entry:
 
 ${entryText}
-.trim();
+`.trim();
 
   const maxtokens = input.plan === "PREMIUM" ? 1050 : 700;
 
@@ -437,12 +438,12 @@ ${entryText}
       signal: controller.signal,
       headers: {
         "Content-Type": "application/json",
-        Authorization: Bearer ${apiKey},
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model,
         temperature: args.temperature,
-        maxtokens,
+        max_tokens: maxtokens,
         messages: [
           { role: "system", content: args.system },
           { role: "user", content: user },
@@ -452,7 +453,7 @@ ${entryText}
 
     if (!res.ok) {
       const text = await res.text().catch(() => "");
-      throw new Error(Groq request failed (${res.status}): ${text});
+      throw new Error(`Groq request failed (${res.status}): ${text}`);
     }
 
     const data: any = await res.json();
@@ -470,7 +471,7 @@ ${entryText}
       return normalizeReflection(parsed1, domain);
     }
 
-    const systemRetry2 = 
+    const systemRetry2 = `
 ${systemBase}
 
 RETRY (STRICT):
@@ -480,7 +481,7 @@ Now:
 • Include TWO concrete moments from THIS entry (one primary + one secondary).
 • Stay inside the domain: ${domain}. Do not drift to any other life area.
 Return ONLY valid JSON.
-.trim();
+`.trim();
 
     const raw2 = await callGroq({ temperature: 0.25, system: systemRetry2 });
     const parsed2 = parseModelJson<any>(raw2);
@@ -488,7 +489,7 @@ Return ONLY valid JSON.
       return normalizeReflection(parsed2, domain);
     }
 
-    const systemRetry3 = 
+    const systemRetry3 = `
 ${systemBase}
 
 FINAL ATTEMPT:
@@ -496,7 +497,7 @@ You MUST include EXACTLY ONE ANCHOR verbatim in the summary line "What’s reall
 Also include a second concrete moment from THIS entry.
 Stay inside the domain: ${domain}.
 Return ONLY valid JSON.
-.trim();
+`.trim();
 
     const raw3 = await callGroq({ temperature: 0.12, system: systemRetry3 });
     const parsed3 = parseModelJson<any>(raw3);
@@ -504,10 +505,10 @@ Return ONLY valid JSON.
       return normalizeReflection(parsed3, domain);
     }
 
-    // Fallbacks remain as you had them (unchanged)…
+    // Fallbacks (as in the original intent)
     const a1 = anchors[0] || "a moment felt important";
     const continuityLine = recentThemes.length
-      ? This echoes a theme you’ve touched before: ${recentThemes[0]}.
+      ? `This echoes a theme you’ve touched before: ${recentThemes[0]}.`
       : "";
 
     if (domain === "FITNESS") {
@@ -515,8 +516,8 @@ Return ONLY valid JSON.
         {
           summary:
             input.plan === "PREMIUM"
-              ? What you’re carrying: Pride with fatigue — you did something hard and your body is asking for recovery.\nWhat’s really happening: ${a1} — and it’s creating a tension between “push more” and “respect your limits.”\nDeeper direction: Build consistency without turning discipline into self-pressure.\n${continuityLine}.trim()
-              : What you’re carrying: Pride with fatigue — you did something hard and your body is asking for recovery.\nWhat’s really happening: ${a1} — and it’s creating a tension between “push more” and “respect your limits.”\n${continuityLine}.trim(),
+              ? `What you’re carrying: Pride with fatigue — you did something hard and your body is asking for recovery.\nWhat’s really happening: ${a1} — and it’s creating a tension between “push more” and “respect your limits.”\nDeeper direction: Build consistency without turning discipline into self-pressure.\n${continuityLine}`.trim()
+              : `What you’re carrying: Pride with fatigue — you did something hard and your body is asking for recovery.\nWhat’s really happening: ${a1} — and it’s creating a tension between “push more” and “respect your limits.”\n${continuityLine}`.trim(),
           corepattern:
             "You’re proud of progress, but you’re still learning the line between healthy challenge and unnecessary pressure.",
           themes: ["consistency", "recovery", "self-respect", "motivation"],
@@ -540,13 +541,13 @@ Return ONLY valid JSON.
       {
         summary:
           input.plan === "PREMIUM"
-            ? What you’re carrying: Something important is asking for clarity.\nWhat’s really happening: ${a1} — and you’re still searching for the cleanest meaning.\nDeeper direction: Turn this into a simple next move you can repeat.\n${continuityLine}.trim()
-            : What you’re carrying: Something important is asking for clarity.\nWhat’s really happening: ${a1} — and you’re still searching for the cleanest meaning.\n${continuityLine}`.trim(),
+            ? `What you’re carrying: Something important is asking for clarity.\nWhat’s really happening: ${a1} — and you’re still searching for the cleanest meaning.\nDeeper direction: Turn this into a simple next move you can repeat.\n${continuityLine}`.trim()
+            : `What you’re carrying: Something important is asking for clarity.\nWhat’s really happening: ${a1} — and you’re still searching for the cleanest meaning.\n${continuityLine}`.trim(),
         corepattern:
           "You’re trying to make sense of the moment while protecting your self-respect.",
         themes: ["clarity", "self-respect", "communication"],
         emotions: ["confusion", "frustration", "uncertainty"],
-        gentlenext_step:
+        gentlenextstep:
           input.plan === "PREMIUM"
             ? "Option A: Name the impact in one sentence and stop. Option B: Ask one clean question that would reduce guessing. Script line: “I want to be clear about what I need next.”"
             : "Option A: Name the impact in one sentence and stop. Option B: Ask one clean question that would reduce guessing.",
