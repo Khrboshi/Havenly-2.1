@@ -1,5 +1,5 @@
 // lib/ai/generateReflection.ts
-// Havenly V11.4 — Domain-Locked FREE Baseline (Entry-Derived Anchors + Domain Guardrails + Quality Gate + Auto-Retry + Safe Memory)
+// Havenly V12 — Smarter Domain Lock | Quality Gate with Failure Reasons | Per-Attempt Timeout
 
 export type Reflection = {
   summary: string;
@@ -19,256 +19,203 @@ type Input = {
 
 type Domain = "WORK" | "RELATIONSHIP" | "FITNESS" | "GENERAL";
 
-/* Robust fitness signal: handles "ran", "5km", "5 km", "5k" */
-function isFitnessText(s: string): boolean {
-  const t = (s || "").toLowerCase();
-  return (
-    /\bran\b/.test(t) ||
-    /\brun\b/.test(t) ||
-    /\brunning\b/.test(t) ||
-    /\bworkout\b/.test(t) ||
-    /\btraining\b/.test(t) ||
-    /\bexercise\b/.test(t) ||
-    /\bgym\b/.test(t) ||
-    /\blift\b/.test(t) ||
-    /\blifting\b/.test(t) ||
-    /\bcardio\b/.test(t) ||
-    /\bpace\b/.test(t) ||
-    /\bsteps?\b/.test(t) ||
-    /\bsore\b/.test(t) ||
-    /\brecovery\b/.test(t) ||
-    /\brest\b/.test(t) ||
-    /\bsleep\b/.test(t) ||
-    /\bhydration\b/.test(t) ||
-    /\b(\d+)\skm\b/.test(t) ||
-    /\b(\d+)\sk\b/.test(t)
-  );
+// ─── Domain Detection (weighted scoring) ─────────────────────────────────────
+
+const DOMAIN_SIGNALS: Record<Domain, RegExp[]> = {
+  FITNESS: [
+    /\b(ran|run|running|jog(ged)?|sprint(ed)?)\b/,
+    /\b(workout|training|exercise|gym|lifting|cardio)\b/,
+    /\b(pace|steps?|miles?|kilometres?|km|5k|10k)\b/,
+    /\b(sore|recovery|rest day|hydration|protein|reps|sets)\b/,
+    /\b(sleep|tired|exhausted|fatigue)\b/,
+  ],
+  WORK: [
+    /\b(colleague|coworker|manager|boss|team|client)\b/,
+    /\b(meeting|office|project|deadline|presentation)\b/,
+    /\b(work|job|career|promotion|performance review)\b/,
+  ],
+  RELATIONSHIP: [
+    /\b(partner|wife|husband|girlfriend|boyfriend|spouse)\b/,
+    /\b(relationship|love|date|argue|fight|break ?up)\b/,
+    /\b(family|friend|parents?|sibling)\b/,
+  ],
+  GENERAL: [],
+};
+
+function scoreDomain(text: string): Record<Domain, number> {
+  const s = text.toLowerCase();
+  const scores: Record<Domain, number> = { FITNESS: 0, WORK: 0, RELATIONSHIP: 0, GENERAL: 0 };
+  for (const [domain, patterns] of Object.entries(DOMAIN_SIGNALS) as [Domain, RegExp[]][]) {
+    for (const p of patterns) {
+      if (p.test(s)) scores[domain]++;
+    }
+  }
+  return scores;
 }
 
-function detectDomain(t: string): Domain {
-  const s = (t || "").toLowerCase();
+function detectDomain(text: string): Domain {
+  const scores = scoreDomain(text);
+  const sorted = (Object.entries(scores) as [Domain, number][])
+    .filter(([d]) => d !== "GENERAL")
+    .sort(([, a], [, b]) => b - a);
 
-  const fitness = isFitnessText(s);
-
-  const work =
-    /colleague|coworker|manager|team|meeting|work|office|client|boss/.test(s);
-
-  const rel =
-    /partner|wife|husband|girlfriend|boyfriend|relationship|love|date|argue|fight|gift/.test(
-      s
-    );
-
-  if (fitness && !work && !rel) return "FITNESS";
-  if (work && !fitness && !rel) return "WORK";
-  if (rel && !fitness && !work) return "RELATIONSHIP";
+  const [top, second] = sorted;
+  // Only assign a specific domain if it clearly wins (not a tie)
+  if (top[1] > 0 && top[1] > (second?.[1] ?? 0)) return top[0];
   return "GENERAL";
 }
 
-function stripCodeFences(raw: string): string {
-  // Remove accidental code fences without being strict
-  return raw.replace(/```(?:json)?\s*([\s\S]*?)\s*```/gi, "$1").trim();
-}
+// ─── Domain Defaults ──────────────────────────────────────────────────────────
 
-function normalizeQuotes(raw: string): string {
-  return raw.replace(/[“”]/g, '"').replace(/[‘’]/g, "'").trim();
-}
+type DomainDefaults = {
+  summary: string;
+  corepattern: string;
+  themes: string[];
+  emotions: string[];
+  nextStepFree: string;
+  nextStepPremium: string;
+  questions: string[];
+  driftKeywords: RegExp;
+  mustHave: RegExp;
+};
 
-function safeJsonParse<T>(raw: string): T | null {
-  try {
-    return JSON.parse(raw) as T;
-  } catch {
-    return null;
-  }
-}
-
-function extractJsonObject(raw: string): string | null {
-  const start = raw.indexOf("{");
-  const end = raw.lastIndexOf("}");
-  if (start >= 0 && end > start) return raw.slice(start, end + 1);
-  return null;
-}
-
-function parseModelJson<T>(raw: string): T | null {
-  const cleaned = normalizeQuotes(stripCodeFences(raw));
-  const direct = safeJsonParse<T>(cleaned);
-  if (direct) return direct;
-
-  const extracted = extractJsonObject(cleaned);
-  if (!extracted) return null;
-
-  return safeJsonParse<T>(extracted);
-}
-
-function cleanString(v: unknown): string {
-  return typeof v === "string" ? v.trim() : "";
-}
-
-function cleanStringArray(v: unknown, max: number): string[] {
-  if (!Array.isArray(v)) return [];
-  const out: string[] = [];
-  for (const item of v) {
-    const s = String(item ?? "").trim();
-    if (!s) continue;
-    out.push(s);
-    if (out.length >= max) break;
-  }
-  return out;
-}
-
-function normalizeForMatch(s: string): string {
-  return (s || "")
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .replace(/[^\p{L}\p{N}\s'’-]/gu, "")
-    .trim();
-}
-
-function containsAny(haystack: string, needles: string[]): boolean {
-  const h = normalizeForMatch(haystack);
-  for (const n of needles) {
-    const nn = normalizeForMatch(n);
-    if (!nn) continue;
-    if (h.includes(nn)) return true;
-  }
-  return false;
-}
-
-function ensureFourQuestions(qs: string[], domain: Domain): string[] {
-  const cleaned = qs.map((s) => String(s || "").trim()).filter(Boolean);
-
-  const defaultsGeneral = [
-    "What exactly did the moment trigger in you—anger, shame, fear, sadness, or something else?",
-    "What is the cleanest interpretation that still respects your feelings?",
-    "What boundary or request would protect you without escalating the situation?",
-    "Next time, paste the exact words that stung and what you did immediately after.",
-  ];
-
-  const defaultsFitness = [
-    "What did you prove to yourself by showing up today?",
-    "What would “healthy discipline” look like this week (not perfection)?",
-    "What is one recovery signal your body gives you that you tend to ignore?",
-    "Next time, paste your exact self-talk after the workout and what you did next.",
-  ];
-
-  const defaults = domain === "FITNESS" ? defaultsFitness : defaultsGeneral;
-
-  const out = cleaned.slice(0, 4);
-  while (out.length < 4) out.push(defaults[out.length]);
-
-  if (!out[out.length - 1].toLowerCase().startsWith("next time,")) {
-    out[out.length - 1] = defaults[3];
-  }
-
-  return out.slice(0, 4);
-}
-
-function normalizeReflection(r: any, domain: Domain): Reflection {
-  const summary = cleanString(r?.summary);
-  const corePattern = cleanString(r?.corepattern);
-
-  const themesRaw = cleanStringArray(r?.themes, 8);
-  const emotionsRaw = cleanStringArray(r?.emotions, 8);
-  const nextStep = cleanString(r?.gentlenextstep);
-  const questionsRaw = cleanStringArray(r?.questions, 6);
-
-  const themes = themesRaw.length ? themesRaw.slice(0, 6) : [];
-  const emotions = emotionsRaw.length ? emotionsRaw.slice(0, 6) : [];
-
-  const defaultSummaryFitness =
-    "What you’re carrying: Pride mixed with fatigue — you did something hard and your body is asking for recovery.\nWhat’s really happening: You’re negotiating the line between healthy challenge and unnecessary pressure.";
-  const defaultSummaryGeneral =
-    "What you’re carrying: Something important is asking for clarity.\nWhat’s really happening: The meaning of what happened isn’t sitting right inside you yet.";
-
-  const defaultNextFitness =
-    "Option A: Choose one recovery action today (sleep, hydration, easy walk) and treat it as training. Option B: Define tomorrow’s effort as “easy” or “hard” before you start.";
-  const defaultNextGeneral =
-    "Option A: Name the moment in one sentence. Option B: Ask one clean question to clarify what you need next.";
-
-  return {
+const DOMAIN_DEFAULTS: Record<Domain, DomainDefaults> = {
+  FITNESS: {
     summary:
-      summary ||
-      (domain === "FITNESS" ? defaultSummaryFitness : defaultSummaryGeneral),
-    corepattern: corePattern || undefined,
-    themes:
-      themes.length
-        ? themes
-        : domain === "FITNESS"
-          ? ["consistency", "recovery", "self-respect"]
-          : ["clarity", "communication", "self-respect"],
-    emotions:
-      emotions.length
-        ? emotions
-        : domain === "FITNESS"
-          ? ["pride", "tiredness", "uncertainty"]
-          : ["confusion", "frustration", "hurt"],
-    gentlenextstep:
-      nextStep ||
-      (domain === "FITNESS" ? defaultNextFitness : defaultNextGeneral),
-    questions: ensureFourQuestions(questionsRaw, domain),
-  };
-}
+      "What you're carrying: Pride mixed with fatigue — you did something hard and your body is asking for recovery.\nWhat's really happening: You're negotiating the line between healthy challenge and unnecessary pressure.",
+    corepattern:
+      "You're proud of progress, but still learning the line between healthy challenge and unnecessary pressure.",
+    themes: ["consistency", "recovery", "self-respect", "motivation"],
+    emotions: ["pride", "tiredness", "uncertainty", "determination"],
+    nextStepFree:
+      'Option A: Choose one recovery action today (sleep, hydration, easy walk) and treat it as training. Option B: Define tomorrow\'s effort as "easy" or "hard" before you start.',
+    nextStepPremium:
+      'Option A: Choose one recovery action today (sleep, hydration, easy walk) and treat it as training. Option B: Define tomorrow\'s effort as "easy" or "hard" before you start. Script line: "I\'m building consistency, and recovery is part of the plan."',
+    questions: [
+      "What did you prove to yourself by showing up today?",
+      'What would "healthy discipline" look like this week (not perfection)?',
+      "What is one recovery signal your body gives you that you tend to ignore?",
+      "Next time, paste your exact self-talk after the workout and what you did next.",
+    ],
+    mustHave:
+      /\b(ran|run|running|workout|training|exercise|recovery|rest|sleep|hydration|pace|cardio|\d+\s*km|\d+\s*k)\b/,
+    driftKeywords:
+      /\b(colleague|coworker|manager|meeting|office|partner|wife|husband|girlfriend|boyfriend|argument|speaking up|keep the peace)\b/,
+  },
+  WORK: {
+    summary:
+      "What you're carrying: A workplace moment that left a mark.\nWhat's really happening: Something in that dynamic touched your sense of value or competence.",
+    corepattern:
+      "You're navigating a tension between your professional self-worth and external expectations.",
+    themes: ["clarity", "communication", "boundaries"],
+    emotions: ["frustration", "uncertainty", "determination"],
+    nextStepFree:
+      "Option A: Write down the one thing you wish had gone differently. Option B: Name what you'd want to say if there were no consequences.",
+    nextStepPremium:
+      'Option A: Write down the one thing you wish had gone differently. Option B: Name what you\'d want to say if there were no consequences. Script line: "I need to be clear about what I need here."',
+    questions: [
+      "What felt most dismissed — your idea, your effort, or your presence?",
+      "What would a calm, direct version of yourself say in that moment?",
+      "What boundary, if stated clearly, would protect you without escalating?",
+      "Next time, write down the exact words exchanged and your immediate reaction.",
+    ],
+    mustHave: /\b(work|meeting|colleague|manager|office|team|project|boss|client)\b/,
+    driftKeywords:
+      /\b(partner|wife|husband|girlfriend|boyfriend|relationship|workout|running|gym)\b/,
+  },
+  RELATIONSHIP: {
+    summary:
+      "What you're carrying: Something in this connection left you unsettled.\nWhat's really happening: A gap between what you felt and what was expressed is asking for attention.",
+    corepattern:
+      "You're trying to protect your self-respect while staying connected to someone who matters.",
+    themes: ["connection", "communication", "self-worth"],
+    emotions: ["hurt", "confusion", "longing"],
+    nextStepFree:
+      "Option A: Name the feeling in one sentence without assigning blame. Option B: Ask yourself what you most needed in that moment.",
+    nextStepPremium:
+      'Option A: Name the feeling in one sentence without assigning blame. Option B: Ask yourself what you most needed in that moment. Script line: "I want to understand this before I respond."',
+    questions: [
+      "What exactly did that moment trigger — anger, shame, fear, or something else?",
+      "What's the most generous interpretation that still respects your feelings?",
+      "What would you ask for if you knew you'd be heard without judgment?",
+      "Next time, paste the exact words that stung and what you did immediately after.",
+    ],
+    mustHave: /\b(partner|wife|husband|girlfriend|boyfriend|relationship|family|friend|love|date)\b/,
+    driftKeywords: /\b(colleague|manager|meeting|workout|gym|running)\b/,
+  },
+  GENERAL: {
+    summary:
+      "What you're carrying: Something important is asking for clarity.\nWhat's really happening: The meaning of what happened isn't sitting right inside you yet.",
+    corepattern: "You're trying to make sense of the moment while protecting your self-respect.",
+    themes: ["clarity", "self-respect", "communication"],
+    emotions: ["confusion", "frustration", "uncertainty"],
+    nextStepFree:
+      "Option A: Name the moment in one sentence. Option B: Ask one clean question to clarify what you need next.",
+    nextStepPremium:
+      'Option A: Name the moment in one sentence. Option B: Ask one clean question to clarify what you need next. Script line: "I want to be clear about what I need next."',
+    questions: [
+      "What exactly did the moment trigger in you — anger, shame, fear, sadness, or something else?",
+      "What is the cleanest interpretation that still respects your feelings?",
+      "What boundary or request would protect you without escalating the situation?",
+      "Next time, paste the exact words that stung and what you did immediately after.",
+    ],
+    mustHave: /./, // always passes
+    driftKeywords: /(?!)/,
+  },
+};
+
+// ─── Anchor Extraction ────────────────────────────────────────────────────────
 
 function extractAnchors(entry: string): string[] {
-  const t = (entry || "").trim();
+  const t = entry.trim();
+  const seen = new Set<string>();
   const anchors: string[] = [];
 
   const add = (s: string) => {
-    const v = String(s || "").trim();
+    const v = s.trim();
     if (!v) return;
-    if (anchors.some((a) => normalizeForMatch(a) === normalizeForMatch(v))) return;
+    const key = v.toLowerCase().replace(/\s+/g, " ");
+    if (seen.has(key)) return;
+    seen.add(key);
     anchors.push(v);
   };
 
-  const quoteMatches = t.match(/[“"][^”"]+[”"]/g) || [];
-  for (const q of quoteMatches) {
-    const cleaned = q.replace(/^[“"]|[”"]$/g, "").trim();
-    if (cleaned.length >= 4 && cleaned.length <= 90) add(`"${cleaned}"`);
+  // 1. Quoted speech first (highest signal)
+  for (const m of t.matchAll(/["""]([^"""]{4,90})["""]/g)) {
+    add(`"${m[1]}"`);
     if (anchors.length >= 3) break;
   }
 
+  // 2. First 1-2 concrete sentences
   if (anchors.length < 2) {
-    const sentences = t
-      .split(/\n|[.!?]/)
-      .map((s) => s.trim())
-      .filter(Boolean)
-      .slice(0, 4);
-
-    for (const s of sentences) {
-      const short = s.length > 110 ? s.slice(0, 110).trim() : s;
-      add(short);
+    const sentences = t.split(/\n|(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean);
+    for (const s of sentences.slice(0, 4)) {
+      add(s.length > 110 ? s.slice(0, 110).trim() : s);
       if (anchors.length >= 2) break;
     }
   }
 
-  if (/in front of others|in front of people|public|everyone/i.test(t))
-    add("in front of others");
-  if (/colleague|coworker|manager|team|meeting|work/i.test(t))
-    add("a work moment landed as a put-down");
-  if (/smiled|laughed it off|kept it in|stayed silent/i.test(t))
-    add("you smiled in the moment, then replayed it later");
-  if (/replaying|kept replaying|ruminat/i.test(t))
-    add("you kept replaying it and felt small");
-  if (/respond without starting a fight|don’t want to start a fight|avoid conflict/i.test(t))
-    add("you want to respond without starting a fight");
+  // 3. Situational patterns
+  const patterns: [RegExp, string][] = [
+    [/in front of (others|people|everyone)/i, "in front of others"],
+    [/colleague|coworker|manager|team|meeting/i, "a work moment landed as a put-down"],
+    [/smiled|laughed it off|kept it in|stayed silent/i, "you smiled in the moment, then replayed it later"],
+    [/replaying|kept replaying|ruminat/i, "you kept replaying it and felt small"],
+    [/don't want to start a fight|avoid conflict|respond without starting a fight/i, "you want to respond without starting a fight"],
+    [/\b(tired|exhausted|fatigue)\b/i, "part of you wants rest while another wants to push harder"],
+    [/improving|progress|forcing myself|discipline/i, "you're questioning whether this is growth or pressure"],
+  ];
 
-  // Fitness anchors (robust)
-  if (isFitnessText(t)) {
-    if (
-      /ran\s5\skm/i.test(t) ||
-      /ran\s5km/i.test(t) ||
-      /ran\s5\sk\b/i.test(t) ||
-      /ran\s5k\b/i.test(t)
-    ) {
-      add("I ran 5km today and felt proud but also tired");
-    } else {
-      add("you exercised and felt proud but also tired");
-    }
+  for (const [re, label] of patterns) {
+    if (re.test(t)) add(label);
   }
 
-  if (/tired|exhausted|fatigue/i.test(t))
-    add("part of you wants rest while another wants to push harder");
-  if (/improving|progress|forcing myself|discipline/i.test(t))
-    add("you’re questioning whether this is growth or pressure");
+  // 4. Fitness-specific anchors
+  if (/ran\s*5\s*k(m)?\b/i.test(t)) {
+    add("I ran 5km today and felt proud but also tired");
+  } else if (DOMAIN_DEFAULTS.FITNESS.mustHave.test(t.toLowerCase())) {
+    add("you exercised and felt proud but also tired");
+  }
 
   if (anchors.length < 2) {
     add("a moment felt important");
@@ -278,146 +225,171 @@ function extractAnchors(entry: string): string[] {
   return anchors.slice(0, 5);
 }
 
-function reflectionTextForCheck(r: any): string {
-  const parts = [
-    cleanString(r?.summary),
-    cleanString(r?.corepattern),
-    cleanString(r?.gentlenextstep),
-    ...(Array.isArray(r?.questions) ? r.questions.map(String) : []),
-  ];
-  return parts.join("\n");
+// ─── JSON Parsing ─────────────────────────────────────────────────────────────
+
+function parseModelJson<T>(raw: string): T | null {
+  const cleaned = raw
+    .replace(/```(?:json)?\s*([\s\S]*?)\s*```/gi, "$1")
+    .replace(/[""]/g, '"')
+    .replace(/['']/g, "'")
+    .trim();
+
+  try {
+    return JSON.parse(cleaned) as T;
+  } catch {
+    const start = cleaned.indexOf("{");
+    const end = cleaned.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      try { return JSON.parse(cleaned.slice(start, end + 1)) as T; } catch { }
+    }
+    return null;
+  }
 }
 
-function qualityPass(
+// ─── Quality Gate (with failure reasons for smart retries) ────────────────────
+
+type QualityResult = { pass: true } | { pass: false; reasons: string[] };
+
+function qualityCheck(
   parsed: any,
   anchors: string[],
   plan: "FREE" | "PREMIUM",
   domain: Domain
-): boolean {
-  const summary = cleanString(parsed?.summary);
-  const nextStep = cleanString(parsed?.gentlenextstep);
-  const qs = Array.isArray(parsed?.questions) ? parsed.questions : [];
-  const themes = Array.isArray(parsed?.themes) ? parsed.themes : [];
-  const emotions = Array.isArray(parsed?.emotions) ? parsed.emotions : [];
+): QualityResult {
+  const reasons: string[] = [];
+  const defaults = DOMAIN_DEFAULTS[domain];
 
-  const text = reflectionTextForCheck(parsed);
-  const s = text.toLowerCase();
+  const summary = String(parsed?.summary ?? "").trim();
+  const nextStep = String(parsed?.gentlenextstep ?? "").trim();
+  const themes: unknown[] = Array.isArray(parsed?.themes) ? parsed.themes : [];
+  const emotions: unknown[] = Array.isArray(parsed?.emotions) ? parsed.emotions : [];
+  const questions: unknown[] = Array.isArray(parsed?.questions) ? parsed.questions : [];
 
-  // Must include at least one anchor verbatim-ish
-  if (!containsAny(text, anchors)) return false;
+  const fullText = [summary, nextStep, ...questions].join("\n").toLowerCase();
 
-  if (!summary.includes("What you’re carrying:")) return false;
-  if (!summary.includes("What’s really happening:")) return false;
-  if (plan === "PREMIUM" && !summary.includes("Deeper direction:")) return false;
+  // Anchor check
+  const hasAnchor = anchors.some(a =>
+    fullText.includes(a.toLowerCase().replace(/^[""]|[""]$/g, "").trim())
+  );
+  if (!hasAnchor) reasons.push("Missing verbatim anchor");
 
-  if (!/Option A:/i.test(nextStep) || !/Option B:/i.test(nextStep)) return false;
+  // Summary structure
+  if (!summary.includes("What you're carrying:")) reasons.push('Missing "What you\'re carrying:" label');
+  if (!summary.includes("What's really happening:")) reasons.push('Missing "What\'s really happening:" label');
+  if (plan === "PREMIUM" && !summary.includes("Deeper direction:"))
+    reasons.push('Missing "Deeper direction:" label (PREMIUM)');
 
-  const minSummaryLen = plan === "PREMIUM" ? 240 : 150;
-  if (summary.length < minSummaryLen) return false;
+  // Length
+  const minLen = plan === "PREMIUM" ? 240 : 150;
+  if (summary.length < minLen)
+    reasons.push(`Summary too short (${summary.length} < ${minLen})`);
 
-  if (plan === "PREMIUM") {
-    if (themes.length < 3) return false;
-    if (emotions.length < 3) return false;
-  } else {
-    if (themes.length < 2) return false;
-    if (emotions.length < 2) return false;
+  // Next step
+  if (!/Option A:/i.test(nextStep)) reasons.push("Missing Option A in gentlenextstep");
+  if (!/Option B:/i.test(nextStep)) reasons.push("Missing Option B in gentlenextstep");
+  if (plan === "PREMIUM" && !/Script line:/i.test(nextStep))
+    reasons.push("Missing Script line in gentlenextstep (PREMIUM)");
+
+  // Array minimums
+  const minArr = plan === "PREMIUM" ? 3 : 2;
+  if (themes.length < minArr) reasons.push(`themes: need ${minArr}, got ${themes.length}`);
+  if (emotions.length < minArr) reasons.push(`emotions: need ${minArr}, got ${emotions.length}`);
+  if (questions.length < 2) reasons.push(`questions: need 2, got ${questions.length}`);
+
+  // Last question must start with "Next time,"
+  const lastQ = String(questions[questions.length - 1] ?? "");
+  if (!lastQ.toLowerCase().startsWith("next time,"))
+    reasons.push('Last question must start with "Next time,"');
+
+  // Domain lock
+  if (domain !== "GENERAL") {
+    if (!defaults.mustHave.test(fullText))
+      reasons.push(`Domain signal missing for ${domain}`);
+    if (defaults.driftKeywords.test(fullText))
+      reasons.push(`Domain drift detected for ${domain}`);
   }
 
-  if (qs.length < 2) return false;
-
-  // Domain lock (hard)
-  if (domain === "FITNESS") {
-    // 1) Must contain fitness signal
-    const mustHave =
-      /\b(ran|run|running|workout|training|exercise|recovery|rest|sleep|hydration|pace|cardio)\b|\b\d+\skm\b|\b\d+\s*k\b/;
-    if (!mustHave.test(s)) return false;
-
-    // 2) Must not drift to work/relationship conflict
-    const drift =
-      /\b(colleague|coworker|manager|meeting|office|partner|wife|husband|girlfriend|boyfriend|relationship|argument|fight|speaking up|keep the peace)\b/;
-    if (drift.test(s)) return false;
-  }
-
-  return true;
+  return reasons.length === 0 ? { pass: true } : { pass: false, reasons };
 }
 
-export async function generateReflectionFromEntry(
-  input: Input
-): Promise<Reflection> {
-  const apiKey = process.env.GROQAPIKEY || process.env.GROQ_API_KEY;
-  if (!apiKey) throw new Error("Missing GROQAPIKEY (or GROQ_API_KEY)");
+// ─── Normalization ────────────────────────────────────────────────────────────
 
-  const model = process.env.GROQMODEL || "llama-3.3-70b-versatile";
+function normalizeReflection(r: any, domain: Domain): Reflection {
+  const defaults = DOMAIN_DEFAULTS[domain];
 
-  const titleLine = input.title?.trim() ? `Title: ${input.title.trim()}\n` : "";
-  const entryBody = (input.content || "").trim();
-  const entryText = `${titleLine}Entry:\n${entryBody}`;
+  const clean = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+  const cleanArr = (v: unknown, max: number): string[] =>
+    Array.isArray(v)
+      ? v.map(x => String(x ?? "").trim()).filter(Boolean).slice(0, max)
+      : [];
 
-  const domain = detectDomain(entryBody);
+  const questions = ensureFourQuestions(cleanArr(r?.questions, 6), domain);
 
-  const anchors = extractAnchors(entryBody);
-  const anchorsBlock = anchors.map((a, i) => `${i + 1}) ${a}`).join("\n");
+  return {
+    summary: clean(r?.summary) || defaults.summary,
+    corepattern: clean(r?.corepattern) || defaults.corepattern,
+    themes: cleanArr(r?.themes, 6).length ? cleanArr(r.themes, 6) : defaults.themes,
+    emotions: cleanArr(r?.emotions, 6).length ? cleanArr(r.emotions, 6) : defaults.emotions,
+    gentlenextstep: clean(r?.gentlenextstep) || defaults.nextStepFree,
+    questions,
+  };
+}
 
-  const recentThemes = (input.recentThemes || [])
-    .map((s) => String(s).trim())
-    .filter(Boolean)
-    .slice(0, 5);
+function ensureFourQuestions(qs: string[], domain: Domain): string[] {
+  const defaults = DOMAIN_DEFAULTS[domain].questions;
+  const out = qs.filter(Boolean).slice(0, 4);
+  while (out.length < 4) out.push(defaults[out.length]);
+  if (!out[out.length - 1].toLowerCase().startsWith("next time,")) {
+    out[out.length - 1] = defaults[3];
+  }
+  return out;
+}
 
-  const memoryBlock = recentThemes.length
-    ? `RECENT THEMES FROM THIS USER (optional context, do NOT overreach):\n${recentThemes
-        .map((t, i) => `${i + 1}) ${t}`)
-        .join("\n")}`
-    : "";
+// ─── Prompt Builder ───────────────────────────────────────────────────────────
 
-  const systemBase = `
+function buildSystemPrompt(plan: "FREE" | "PREMIUM", domain: Domain): string {
+  const isPremium = plan === "PREMIUM";
+
+  const summaryStructure = isPremium
+    ? `1) "What you're carrying:"\n  2) "What's really happening:"\n  3) "Deeper direction:"`
+    : `1) "What you're carrying:"\n  2) "What's really happening:"`;
+
+  const nextStepStructure = isPremium
+    ? `"Option A:" and "Option B:" and "Script line:" (1–2 calm, non-pushy sentences)`
+    : `"Option A:" and "Option B:"`;
+
+  return `
 You are Havenly — a Wise Reflective Mirror.
 
-VOICE:
-Write directly to "you". Never say "the user" or "this person".
+VOICE: Write directly to "you". Never say "the user" or "this person".
 
 TRUTH (NON-NEGOTIABLE):
-• NEVER invent events that did not appear in the entry.
-• You MUST reference at least ONE concrete moment from the entry.
-• You MUST include at least ONE of the provided ANCHORS exactly as written (verbatim).
-• Do not use placeholder phrasing like “a situation happened.” Name the situation.
+- Never invent events not in the entry.
+- Reference at least ONE concrete moment from the entry.
+- Include at least ONE ANCHOR verbatim in the response.
+- Never use placeholders like "a situation happened." Name the situation.
 
-DOMAIN GUARDRAIL (NON-NEGOTIABLE):
-• Domain for this entry is: ${domain}
-• You MUST stay inside this domain.
-• If domain is FITNESS, do NOT talk about colleagues, partners, speaking up, conflict with others, or “keeping the peace”.
-• If domain is WORK, do NOT talk about partners/relationship dynamics.
-• If domain is RELATIONSHIP, do NOT talk about workplace dynamics unless explicitly present.
-• Do not blend multiple life areas.
+DOMAIN GUARDRAIL — Active domain: ${domain}
+- Stay strictly inside this domain.
+- FITNESS → No colleagues, partners, conflict, speaking up, keeping the peace.
+- WORK → No relationship/partner dynamics (unless explicitly present).
+- RELATIONSHIP → No workplace dynamics (unless explicitly present).
 
-CROSS-JOURNAL CONTINUITY (FREE SAFE):
-• If RECENT THEMES exist, you MAY add ONE sentence like:
-  “This echoes a theme you’ve touched before: <theme>.”
-• Do NOT diagnose. Do NOT profile identity. Keep it grounded.
+TONE: Grounded, calm, perceptive. Not clinical, not preachy, not flattering.
 
-TONE:
-Grounded, calm, perceptive. Not clinical. Not preachy. Not flattering.
+STRUCTURE:
+- summary must contain labeled sections in order:
+  ${summaryStructure}
 
-STRUCTURE REQUIREMENTS:
-• summary MUST include these labeled lines (plain text):
-  1) "What you’re carrying:"
-  2) "What’s really happening:"
-  3) (PREMIUM only) "Deeper direction:"
+- corepattern: ONE concise sentence naming the deeper dynamic.
 
-• corepattern: ONE concise sentence naming the deeper dynamic.
+- gentlenextstep must include:
+  ${nextStepStructure}
 
-• gentlenextstep MUST include:
-  "Option A:" and "Option B:"
-  (PREMIUM only) add "Script line:" (1–2 sentences, calm, non-pushy)
+- questions: exactly 4. The LAST must start with: "Next time,"
 
-• questions: return 4 questions.
-  The LAST question MUST start with: "Next time,"
-
-OUTPUT RULES (STRICT):
-Return valid JSON ONLY.
-Use DOUBLE QUOTES for all JSON strings.
-No markdown, no code fences, no extra text.
-
-Return EXACTLY this schema:
+OUTPUT: Return ONLY valid JSON with double-quoted strings. No markdown, no code fences.
+Schema:
 {
   "summary": "…",
   "corepattern": "…",
@@ -425,41 +397,36 @@ Return EXACTLY this schema:
   "emotions": ["…"],
   "gentlenextstep": "…",
   "questions": ["…"]
+}`.trim();
 }
-`.trim();
 
-  const user = `
-User plan: ${input.plan}
+// ─── Groq Caller ─────────────────────────────────────────────────────────────
 
-${memoryBlock}
-
-ANCHORS (you MUST include at least ONE verbatim):
-${anchorsBlock}
-
-Create a Havenly reflection for this journal entry:
-
-${entryText}
-`.trim();
-
-  const maxtokens = input.plan === "PREMIUM" ? 1050 : 700;
+async function callGroq(opts: {
+  apiKey: string;
+  model: string;
+  system: string;
+  user: string;
+  maxTokens: number;
+  temperature: number;
+  timeoutMs?: number;
+}): Promise<string> {
+  const { apiKey, model, system, user, maxTokens, temperature, timeoutMs = 30_000 } = opts;
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000);
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-  async function callGroq(args: { temperature: number; system: string }) {
+  try {
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       signal: controller.signal,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({
         model,
-        temperature: args.temperature,
-        max_tokens: maxtokens,
+        temperature,
+        max_tokens: maxTokens,
         messages: [
-          { role: "system", content: args.system },
+          { role: "system", content: system },
           { role: "user", content: user },
         ],
       }),
@@ -467,114 +434,115 @@ ${entryText}
 
     if (!res.ok) {
       const text = await res.text().catch(() => "");
-      throw new Error(`Groq request failed (${res.status}): ${text}`);
+      throw new Error(`Groq ${res.status}: ${text}`);
     }
 
     const data: any = await res.json();
     return String(data?.choices?.[0]?.message?.content ?? "");
+  } finally {
+    clearTimeout(timer);
   }
+}
 
-  try {
-    const raw1 = await callGroq({
-      temperature: input.plan === "PREMIUM" ? 0.55 : 0.45,
-      system: systemBase,
+// ─── Main Export ──────────────────────────────────────────────────────────────
+
+export async function generateReflectionFromEntry(input: Input): Promise<Reflection> {
+  const apiKey = process.env.GROQAPIKEY || process.env.GROQ_API_KEY;
+  if (!apiKey) throw new Error("Missing GROQAPIKEY");
+
+  const model = process.env.GROQMODEL || "llama-3.3-70b-versatile";
+  const entryBody = (input.content || "").trim();
+  const titleLine = input.title?.trim() ? `Title: ${input.title.trim()}\n` : "";
+  const entryText = `${titleLine}Entry:\n${entryBody}`;
+
+  const domain = detectDomain(entryBody);
+  const anchors = extractAnchors(entryBody);
+  const anchorsBlock = anchors.map((a, i) => `${i + 1}) ${a}`).join("\n");
+
+  const recentThemes = (input.recentThemes || [])
+    .map(s => String(s).trim())
+    .filter(Boolean)
+    .slice(0, 5);
+
+  const memoryBlock = recentThemes.length
+    ? `RECENT THEMES (optional context, do NOT overreach):\n${recentThemes.map((t, i) => `${i + 1}) ${t}`).join("\n")}`
+    : "";
+
+  const userPrompt = `
+User plan: ${input.plan}
+
+${memoryBlock}
+
+ANCHORS (include at least ONE verbatim in your response):
+${anchorsBlock}
+
+Reflect on this journal entry:
+${entryText}`.trim();
+
+  const maxTokens = input.plan === "PREMIUM" ? 1050 : 700;
+  const systemPrompt = buildSystemPrompt(input.plan, domain);
+
+  const ATTEMPTS: { temperature: number; extraInstruction?: string }[] = [
+    { temperature: input.plan === "PREMIUM" ? 0.55 : 0.45 },
+    { temperature: 0.25, extraInstruction: "Include ONE ANCHOR verbatim in 'What's really happening:'. Add a second concrete moment from the entry. Do NOT drift to another life area." },
+    { temperature: 0.12, extraInstruction: "FINAL ATTEMPT. You MUST include ONE ANCHOR verbatim in 'What's really happening:' and a second concrete moment. Stay in the domain. Return ONLY valid JSON." },
+  ];
+
+  for (let i = 0; i < ATTEMPTS.length; i++) {
+    const attempt = ATTEMPTS[i];
+    const system = attempt.extraInstruction
+      ? `${systemPrompt}\n\nRETRY NOTE: ${attempt.extraInstruction}`
+      : systemPrompt;
+
+    const raw = await callGroq({
+      apiKey, model, system, user: userPrompt,
+      maxTokens, temperature: attempt.temperature,
     });
 
-    const parsed1 = parseModelJson<any>(raw1);
-    if (parsed1 && qualityPass(parsed1, anchors, input.plan, domain)) {
-      return normalizeReflection(parsed1, domain);
+    const parsed = parseModelJson<any>(raw);
+    if (!parsed) continue;
+
+    const result = qualityCheck(parsed, anchors, input.plan, domain);
+    if (result.pass) return normalizeReflection(parsed, domain);
+
+    // On last attempt before fallback, log failures (server-side only)
+    if (i === ATTEMPTS.length - 1) {
+      console.warn("[Havenly] All attempts failed. Reasons:", (result as { pass: false; reasons: string[] }).reasons);
     }
-
-    const systemRetry2 = `
-${systemBase}
-
-RETRY (STRICT):
-Your previous output was either not valid JSON OR did not meet requirements.
-Now:
-• Include ONE ANCHOR verbatim in "What’s really happening:"
-• Include TWO concrete moments from THIS entry (one primary + one secondary).
-• Stay inside the domain: ${domain}. Do not drift to any other life area.
-Return ONLY valid JSON.
-`.trim();
-
-    const raw2 = await callGroq({ temperature: 0.25, system: systemRetry2 });
-    const parsed2 = parseModelJson<any>(raw2);
-    if (parsed2 && qualityPass(parsed2, anchors, input.plan, domain)) {
-      return normalizeReflection(parsed2, domain);
-    }
-
-    const systemRetry3 = `
-${systemBase}
-
-FINAL ATTEMPT:
-You MUST include EXACTLY ONE ANCHOR verbatim in the summary line "What’s really happening:".
-Also include a second concrete moment from THIS entry.
-Stay inside the domain: ${domain}.
-Return ONLY valid JSON.
-`.trim();
-
-    const raw3 = await callGroq({ temperature: 0.12, system: systemRetry3 });
-    const parsed3 = parseModelJson<any>(raw3);
-    if (parsed3 && qualityPass(parsed3, anchors, input.plan, domain)) {
-      return normalizeReflection(parsed3, domain);
-    }
-
-    // Fallbacks (as in the original intent)
-    const a1 = anchors[0] || "a moment felt important";
-    const continuityLine = recentThemes.length
-      ? `This echoes a theme you’ve touched before: ${recentThemes[0]}.`
-      : "";
-
-    if (domain === "FITNESS") {
-      return normalizeReflection(
-        {
-          summary:
-            input.plan === "PREMIUM"
-              ? `What you’re carrying: Pride with fatigue — you did something hard and your body is asking for recovery.\nWhat’s really happening: ${a1} — and it’s creating a tension between “push more” and “respect your limits.”\nDeeper direction: Build consistency without turning discipline into self-pressure.\n${continuityLine}`.trim()
-              : `What you’re carrying: Pride with fatigue — you did something hard and your body is asking for recovery.\nWhat’s really happening: ${a1} — and it’s creating a tension between “push more” and “respect your limits.”\n${continuityLine}`.trim(),
-          corepattern:
-            "You’re proud of progress, but you’re still learning the line between healthy challenge and unnecessary pressure.",
-          themes: ["consistency", "recovery", "self-respect", "motivation"],
-          emotions: ["pride", "tiredness", "uncertainty", "determination"],
-          gentlenextstep:
-            input.plan === "PREMIUM"
-              ? "Option A: Decide one recovery action today (sleep, hydration, easy walk) and treat it as training. Option B: Define tomorrow’s effort as “easy” or “hard” before you start. Script line: “I’m building consistency, and recovery is part of the plan.”"
-              : "Option A: Choose one recovery action today (sleep, hydration, easy walk) and treat it as training. Option B: Define tomorrow’s effort as “easy” or “hard” before you start.",
-          questions: [
-            "What did you prove to yourself by showing up today?",
-            "What would “healthy discipline” look like this week (not perfection)?",
-            "What is one recovery signal your body gives you that you tend to ignore?",
-            "Next time, paste your exact self-talk after the workout and what you did next.",
-          ],
-        },
-        domain
-      );
-    }
-
-    return normalizeReflection(
-      {
-        summary:
-          input.plan === "PREMIUM"
-            ? `What you’re carrying: Something important is asking for clarity.\nWhat’s really happening: ${a1} — and you’re still searching for the cleanest meaning.\nDeeper direction: Turn this into a simple next move you can repeat.\n${continuityLine}`.trim()
-            : `What you’re carrying: Something important is asking for clarity.\nWhat’s really happening: ${a1} — and you’re still searching for the cleanest meaning.\n${continuityLine}`.trim(),
-        corepattern:
-          "You’re trying to make sense of the moment while protecting your self-respect.",
-        themes: ["clarity", "self-respect", "communication"],
-        emotions: ["confusion", "frustration", "uncertainty"],
-        gentlenextstep:
-          input.plan === "PREMIUM"
-            ? "Option A: Name the impact in one sentence and stop. Option B: Ask one clean question that would reduce guessing. Script line: “I want to be clear about what I need next.”"
-            : "Option A: Name the impact in one sentence and stop. Option B: Ask one clean question that would reduce guessing.",
-        questions: [
-          "What felt most threatened in the moment—your dignity, your safety, or your competence?",
-          "What interpretation is most accurate (not most painful)?",
-          "What request or boundary would protect you without escalating?",
-          "Next time, paste the exact words that stung and what you did immediately after.",
-        ],
-      },
-      domain
-    );
-  } finally {
-    clearTimeout(timeout);
   }
+
+  // ─── Guaranteed Fallback ──────────────────────────────────────────────────
+  const defaults = DOMAIN_DEFAULTS[domain];
+  const a1 = anchors[0] || "a moment felt important";
+  const continuityLine = recentThemes.length
+    ? `This echoes a theme you've touched before: ${recentThemes[0]}.`
+    : "";
+
+  const isPremium = input.plan === "PREMIUM";
+
+  const fallbackSummaryLines = [
+    defaults.summary,
+    ...(isPremium ? [`Deeper direction: ${defaults.corepattern}`] : []),
+    ...(continuityLine ? [continuityLine] : []),
+  ];
+
+  // Inject anchor into "What's really happening:" line
+  const summaryWithAnchor = fallbackSummaryLines
+    .join("\n")
+    .replace(
+      "What's really happening:",
+      `What's really happening: ${a1} —`
+    );
+
+  return normalizeReflection(
+    {
+      summary: summaryWithAnchor,
+      corepattern: defaults.corepattern,
+      themes: defaults.themes,
+      emotions: defaults.emotions,
+      gentlenextstep: isPremium ? defaults.nextStepPremium : defaults.nextStepFree,
+      questions: defaults.questions,
+    },
+    domain
+  );
 }
