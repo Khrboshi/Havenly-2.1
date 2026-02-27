@@ -297,3 +297,4 @@ return normalizeReflection(
   },
   domain
 );
+} finally { clearTimeout(timeout); } }
