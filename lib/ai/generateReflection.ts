@@ -42,6 +42,12 @@ const DOMAIN_SIGNALS: Record<Domain, RegExp[]> = {
     /\b(partner|wife|husband|girlfriend|boyfriend|spouse)\b/,
     /\b(relationship|love|date|argu(e|ed|ment)|fight|break.?up)\b/,
     /\b(family|friend|parents?|sibling)\b/,
+    // Pronouns in intimate context — "he/she/they" + emotional verb
+    /\b(he|she|they)\b.{0,60}\b(said|asked|didn't|ignored|forgot|left|looked|felt|was|weren't|never)\b/i,
+    // Feeling invisible or unseen in a personal relationship
+    /\b(invisible|unheard|unseen|disconnected|lonely|taken for granted)\b/,
+    // "We" context — shared experience gone wrong
+    /\bwe\b.{0,80}\b(didn't|wasn't|weren't|fine|awkward|quiet|distant|ignored)\b/i,
   ],
   GENERAL: [],
 };
@@ -225,7 +231,7 @@ const DOMAIN_DEFAULTS: Record<Domain, DomainDefaults> = {
       "What would it feel like to say this feeling out loud to someone safe?",
       "Next time, write two more sentences — what happened before this feeling arrived?",
     ],
-    mustHave: /\b(partner|wife|husband|girlfriend|boyfriend|relationship|family|friend|love|date|he |she |they )\b/,
+    mustHave: /\b(partner|wife|husband|girlfriend|boyfriend|relationship|family|friend|love|date)\b|\b(he|she|they|we)\b/i,
     driftKeywords: /\b(colleague|manager|meeting|workout|gym|running)\b/,
   },
 
