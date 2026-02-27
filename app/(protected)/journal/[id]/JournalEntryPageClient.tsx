@@ -1,3 +1,4 @@
+// app/(protected)/journal/[id]/JournalEntryPageClient.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -11,10 +12,20 @@ type JournalEntry = {
   created_at: string;
 };
 
+type Reflection = {
+  summary: string;
+  corepattern?: string;
+  themes: string[];
+  emotions: string[];
+  gentlenextstep: string;
+  questions: string[];
+};
+
 export default function JournalEntryPageClient({ id }: { id: string }) {
   const { supabase } = useSupabase();
 
   const [entry, setEntry] = useState<JournalEntry | null>(null);
+  const [initialReflection, setInitialReflection] = useState<Reflection | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -25,7 +36,6 @@ export default function JournalEntryPageClient({ id }: { id: string }) {
       setLoading(true);
       setErrorMsg(null);
 
-      // Ensure user session exists (so RLS works)
       const { data: userData, error: userErr } = await supabase.auth.getUser();
       if (userErr || !userData?.user) {
         if (!cancelled) {
@@ -35,9 +45,10 @@ export default function JournalEntryPageClient({ id }: { id: string }) {
         return;
       }
 
+      // ✅ FIX: added ai_response to the select so saved reflections are loaded
       const { data, error } = await supabase
         .from("journal_entries")
-        .select("id,title,content,created_at")
+        .select("id,title,content,created_at,ai_response")
         .eq("id", id)
         .single();
 
@@ -46,7 +57,15 @@ export default function JournalEntryPageClient({ id }: { id: string }) {
           setErrorMsg(error.message);
           setEntry(null);
         } else {
-          setEntry(data as JournalEntry);
+          const { ai_response, ...entryFields } = data as any;
+          setEntry(entryFields as JournalEntry);
+
+          // ✅ FIX: parse and pass the saved reflection
+          try {
+            setInitialReflection(ai_response ? JSON.parse(ai_response) : null);
+          } catch {
+            setInitialReflection(null);
+          }
         }
         setLoading(false);
       }
@@ -71,5 +90,6 @@ export default function JournalEntryPageClient({ id }: { id: string }) {
       <div className="px-6 py-10 text-slate-300">Entry not found.</div>
     );
 
-  return <JournalEntryClient entry={entry} />;
+  // ✅ FIX: now passes initialReflection (was missing entirely before)
+  return <JournalEntryClient entry={entry} initialReflection={initialReflection} />;
 }
