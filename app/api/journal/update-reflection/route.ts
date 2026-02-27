@@ -6,10 +6,20 @@ import { createServerSupabase } from "@/lib/supabase/server";
 
 const FREE_REFLECTION_LIMIT = 3;
 
+function asJsonString(v: unknown): string | null {
+  if (!v) return null;
+  if (typeof v === "string") return v;
+  try {
+    return JSON.stringify(v);
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: Request) {
   try {
-    const supabase = createServerSupabase();
-    const body = await req.json();
+    const supabase = await createServerSupabase();
+    const body = await req.json().catch(() => ({}));
 
     const {
       data: { user },
@@ -20,16 +30,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { entryId, reflection } = body;
+    const entryId = typeof body?.entryId === "string" ? body.entryId.trim() : "";
+    const reflectionStr = asJsonString(body?.reflection);
 
-    if (!entryId || !reflection) {
-      return NextResponse.json(
-        { error: "Missing reflection data" },
-        { status: 400 }
-      );
+    if (!entryId || !reflectionStr) {
+      return NextResponse.json({ error: "Missing reflection data" }, { status: 400 });
     }
 
-    /** 1️⃣ Check user plan */
+    // 1) Check user plan (keep your existing logic)
     const { data: profile } = await supabase
       .from("user_profiles")
       .select("plan")
@@ -38,7 +46,7 @@ export async function POST(req: Request) {
 
     const isPremium = profile?.plan === "premium";
 
-    /** 2️⃣ Enforce limit for free users */
+    // 2) Enforce weekly limit for free users (based on ai_response)
     if (!isPremium) {
       const startOfWeek = new Date();
       startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
@@ -46,9 +54,9 @@ export async function POST(req: Request) {
 
       const { count } = await supabase
         .from("journal_entries")
-        .select("*", { count: "exact", head: true })
+        .select("id", { count: "exact", head: true })
         .eq("user_id", user.id)
-        .not("ai_reflection", "is", null)
+        .not("ai_response", "is", null)
         .gte("updated_at", startOfWeek.toISOString());
 
       if ((count || 0) >= FREE_REFLECTION_LIMIT) {
@@ -63,26 +71,20 @@ export async function POST(req: Request) {
       }
     }
 
-    /** 3️⃣ Save reflection */
+    // 3) Save reflection to ai_response (standardized)
     const { error: updateError } = await supabase
       .from("journal_entries")
-      .update({ ai_reflection: reflection })
+      .update({ ai_response: reflectionStr })
       .eq("id", entryId)
       .eq("user_id", user.id);
 
     if (updateError) {
-      return NextResponse.json(
-        { error: updateError.message },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: updateError.message }, { status: 400 });
     }
 
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("AI reflection error:", err);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
