@@ -37,6 +37,18 @@ function questionsHeading(count: number): string {
   return `${count} questions`;
 }
 
+/**
+ * Uses the current page querystring so you can open:
+ * /journal/<id>?debug=1
+ * and automatically call /api/ai/reflection?debug=1
+ */
+function getReflectionApiUrl() {
+  if (typeof window === "undefined") return "/api/ai/reflection";
+  const qs = new URLSearchParams(window.location.search);
+  const debug = qs.get("debug") === "1";
+  return debug ? "/api/ai/reflection?debug=1" : "/api/ai/reflection";
+}
+
 export default function JournalEntryClient({
   entry,
   initialReflection,
@@ -50,9 +62,7 @@ export default function JournalEntryClient({
   const [busy, setBusy] = useState(false);
 
   // ✅ Persist on refresh by initializing from server-provided reflection
-  const [reflection, setReflection] = useState<Reflection | null>(
-    initialReflection ?? null
-  );
+  const [reflection, setReflection] = useState<Reflection | null>(initialReflection ?? null);
 
   const [error, setError] = useState<string | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
@@ -82,7 +92,7 @@ export default function JournalEntryClient({
     setError(null);
 
     try {
-      const res = await fetch("/api/ai/reflection", {
+      const res = await fetch(getReflectionApiUrl(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -120,9 +130,7 @@ export default function JournalEntryClient({
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{entry.title || "Untitled"}</h1>
-          <p className="mt-1 text-xs text-white/50">
-            {new Date(entry.created_at).toLocaleString()}
-          </p>
+          <p className="mt-1 text-xs text-white/50">{new Date(entry.created_at).toLocaleString()}</p>
         </div>
 
         <Link href="/journal" className="text-sm text-emerald-400 hover:underline">
@@ -169,8 +177,7 @@ export default function JournalEntryClient({
 
         {!reflection ? (
           <p className="mt-4 text-sm text-white/60">
-            When you’re ready, Havenly will reflect back themes, emotions, and a gentle next
-            step.
+            When you’re ready, Havenly will reflect back themes, emotions, and a gentle next step.
           </p>
         ) : (
           <div className="mt-5 space-y-4 text-sm text-white/80">
@@ -244,12 +251,3 @@ export default function JournalEntryClient({
     </div>
   );
 }
-const res = await fetch(getReflectionApiUrl(), {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    entryId: entry.id,
-    title: entry.title ?? "",
-    content: entry.content ?? "",
-  }),
-});
