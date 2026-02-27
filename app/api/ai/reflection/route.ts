@@ -43,14 +43,12 @@ function isNoCreditsError(msg: string) {
     m.includes("limit") ||
     m.includes("quota") ||
     m.includes("exceeded") ||
-    m.includes("out of credits")
+    m.includes("out of credits") ||
+    m.includes("reflection limit")
   );
 }
 
-async function consumeOneCredit(
-  supabase: any,
-  userId: string
-): Promise<ConsumeResult> {
+async function consumeOneCredit(supabase: any, userId: string): Promise<ConsumeResult> {
   let rpcData: any = null;
   let rpcErr: any = null;
 
@@ -89,15 +87,21 @@ async function consumeOneCredit(
 
   const row = Array.isArray(rpcData) ? rpcData[0] : rpcData;
   const remaining =
-    row && typeof row.remaining_credits === "number"
-      ? (row.remaining_credits as number)
-      : null;
+    row && typeof row.remaining_credits === "number" ? (row.remaining_credits as number) : null;
 
   if (remaining === null) {
     return { ok: false, status: 402, error: "Reflection limit reached" };
   }
 
   return { ok: true, remaining };
+}
+
+function noStoreHeaders() {
+  return {
+    "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+    Pragma: "no-cache",
+    Expires: "0",
+  };
 }
 
 /**
@@ -113,51 +117,19 @@ function contentFingerprint(s: string) {
   return (h >>> 0).toString(16);
 }
 
-function noStoreHeaders() {
-  return {
-    "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
-    Pragma: "no-cache",
-    Expires: "0",
-  };
-}
-
 /** Debug-only domain detection (server-side) */
 type Domain = "WORK" | "RELATIONSHIP" | "FITNESS" | "GENERAL";
-
-function isFitnessText(s: string): boolean {
-  const t = (s || "").toLowerCase();
-  return (
-    /\bran\b/.test(t) ||
-    /\brun\b/.test(t) ||
-    /\brunning\b/.test(t) ||
-    /\bworkout\b/.test(t) ||
-    /\btraining\b/.test(t) ||
-    /\bexercise\b/.test(t) ||
-    /\bgym\b/.test(t) ||
-    /\blift(ing)?\b/.test(t) ||
-    /\bcardio\b/.test(t) ||
-    /\bpace\b/.test(t) ||
-    /\bsteps?\b/.test(t) ||
-    /\bsore\b/.test(t) ||
-    /\brecovery\b/.test(t) ||
-    /\brest\b/.test(t) ||
-    /\bsleep\b/.test(t) ||
-    /\bhydration\b/.test(t) ||
-    /\b(\d+)\s*km\b/.test(t) ||
-    /\b(\d+)\s*k\b/.test(t)
-  );
-}
-
 function detectDomain(text: string): Domain {
   const s = (text || "").toLowerCase();
 
-  const fitness = isFitnessText(s);
-  const work =
-    /colleague|coworker|manager|team|meeting|work|office|client|boss/.test(s);
-  const rel =
-    /partner|wife|husband|girlfriend|boyfriend|relationship|love|date|argue|fight|gift/.test(
+  const fitness =
+    /run|running|\bkm\b|workout|training|exercise|gym|lift|lifting|cardio|pace|steps|sore|recovery|rest|sleep|hydration/.test(
       s
     );
+  const work = /colleague|coworker|manager|team|meeting|work|office|client|boss/.test(s);
+  const rel = /partner|wife|husband|girlfriend|boyfriend|relationship|love|date|argue|fight|gift/.test(
+    s
+  );
 
   if (fitness && !work && !rel) return "FITNESS";
   if (work && !fitness && !rel) return "WORK";
@@ -212,10 +184,7 @@ export async function POST(req: Request) {
   } = await supabase.auth.getUser();
 
   if (userErr || !user?.id) {
-    return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401, headers: noStoreHeaders() }
-    );
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: noStoreHeaders() });
   }
 
   const userId = user.id;
@@ -227,17 +196,11 @@ export async function POST(req: Request) {
   const title = typeof body?.title === "string" ? body.title.trim() : "";
 
   if (!entryId) {
-    return NextResponse.json(
-      { error: "Missing entryId" },
-      { status: 400, headers: noStoreHeaders() }
-    );
+    return NextResponse.json({ error: "Missing entryId" }, { status: 400, headers: noStoreHeaders() });
   }
 
   if (!content) {
-    return NextResponse.json(
-      { error: "Missing content" },
-      { status: 400, headers: noStoreHeaders() }
-    );
+    return NextResponse.json({ error: "Missing content" }, { status: 400, headers: noStoreHeaders() });
   }
 
   if (content.length > 20000) {
@@ -258,16 +221,7 @@ export async function POST(req: Request) {
   const anchors = debugEnabled ? extractAnchorsForDebug(content) : undefined;
 
   if (debugEnabled) {
-    console.log(
-      "[reflection] entryId=",
-      entryId,
-      "fp=",
-      fp,
-      "domain=",
-      domain,
-      "anchors=",
-      anchors
-    );
+    console.log("[reflection] entryId=", entryId, "fp=", fp, "domain=", domain, "anchors=", anchors);
   }
 
   // Ensure monthly credits row exists / is up to date
