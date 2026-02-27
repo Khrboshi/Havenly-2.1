@@ -244,3 +244,12 @@ export default function JournalEntryClient({
     </div>
   );
 }
+const res = await fetch(getReflectionApiUrl(), {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    entryId: entry.id,
+    title: entry.title ?? "",
+    content: entry.content ?? "",
+  }),
+});
