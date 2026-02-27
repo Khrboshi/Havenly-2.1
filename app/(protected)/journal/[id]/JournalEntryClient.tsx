@@ -13,12 +13,13 @@ type JournalEntry = {
   created_at: string;
 };
 
+// ✅ FIX: field names now match exactly what the AI returns
 type Reflection = {
   summary: string;
-  core_pattern?: string;
+  corepattern?: string;
   themes: string[];
   emotions: string[];
-  gentle_next_step: string;
+  gentlenextstep: string;
   questions: string[];
 };
 
@@ -33,14 +34,10 @@ function pickKeyPatternFromSummary(summary: string): string {
 
 function questionsHeading(count: number): string {
   if (count <= 0) return "Questions";
-  if (count === 1) return "1 question";
-  return `${count} questions`;
+  if (count === 1) return "1 Question";
+  return `${count} Questions`;
 }
 
-/**
- * If the journal page is opened as /journal/[id]?debug=1,
- * we also call the API as /api/ai/reflection?debug=1
- */
 function getReflectionApiUrl() {
   if (typeof window === "undefined") return "/api/ai/reflection";
   const params = new URLSearchParams(window.location.search);
@@ -59,10 +56,7 @@ export default function JournalEntryClient({
   const isPremium = planType === "PREMIUM";
 
   const [busy, setBusy] = useState(false);
-
-  // Persist on refresh by initializing from server-provided reflection
   const [reflection, setReflection] = useState<Reflection | null>(initialReflection ?? null);
-
   const [error, setError] = useState<string | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
 
@@ -72,12 +66,13 @@ export default function JournalEntryClient({
     return "Free";
   }, [planType]);
 
+  // ✅ FIX: uses corepattern (not core_pattern)
   const keyPattern = useMemo(() => {
-    const core = (reflection?.core_pattern || "").trim();
+    const core = (reflection?.corepattern || "").trim();
     if (core) return core;
     if (!reflection?.summary) return "";
     return pickKeyPatternFromSummary(reflection.summary);
-  }, [reflection?.core_pattern, reflection?.summary]);
+  }, [reflection?.corepattern, reflection?.summary]);
 
   const questionsTitle = useMemo(() => {
     const n = reflection?.questions?.length ?? 0;
@@ -115,7 +110,6 @@ export default function JournalEntryClient({
       const j = await res.json();
       setReflection(j?.reflection || null);
 
-      // Sync credits after server consumption
       await refresh();
     } catch {
       setError("We couldn't generate a reflection right now.");
@@ -163,12 +157,13 @@ export default function JournalEntryClient({
             </p>
           </div>
 
+          {/* ✅ FIX: disabled when reflection exists to prevent accidental re-generation and credit waste */}
           <button
             onClick={generateReflection}
-            disabled={busy}
+            disabled={busy || !!reflection}
             className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-slate-950 hover:bg-emerald-400 disabled:opacity-60"
           >
-            {busy ? "Generating…" : "Generate Reflection"}
+            {busy ? "Generating…" : reflection ? "Reflection Ready ✓" : "Generate Reflection"}
           </button>
         </div>
 
@@ -176,7 +171,7 @@ export default function JournalEntryClient({
 
         {!reflection ? (
           <p className="mt-4 text-sm text-white/60">
-            When you’re ready, Havenly will reflect back themes, emotions, and a gentle next step.
+            When you're ready, Havenly will reflect back themes, emotions, and a gentle next step.
           </p>
         ) : (
           <div className="mt-5 space-y-4 text-sm text-white/80">
@@ -187,7 +182,7 @@ export default function JournalEntryClient({
             {keyPattern && (
               <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-white/70">
-                  Key pattern detected
+                  Key Pattern Detected
                 </h3>
                 <p className="mt-2 text-white/90">{keyPattern}</p>
               </div>
@@ -217,11 +212,12 @@ export default function JournalEntryClient({
               </div>
             </div>
 
+            {/* ✅ FIX: was reflection.gentle_next_step — now correctly gentlenextstep */}
             <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-white/70">
-                Gentle next step
+                Gentle Next Step
               </h3>
-              <p className="mt-2 whitespace-pre-wrap">{reflection.gentle_next_step}</p>
+              <p className="mt-2 whitespace-pre-wrap">{reflection.gentlenextstep}</p>
             </div>
 
             <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
@@ -241,7 +237,7 @@ export default function JournalEntryClient({
       <UpgradeTriggerModal
         open={showUpgrade}
         onClose={() => setShowUpgrade(false)}
-        title="You’ve reached your reflection limit"
+        title="You've reached your reflection limit"
         message="Upgrade to Premium for unlimited reflections and deeper insights when you need them most."
         source="reflection_limit"
         ctaHref="/upgrade"
