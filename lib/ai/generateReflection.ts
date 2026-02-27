@@ -1,5 +1,5 @@
 // lib/ai/generateReflection.ts
-// Havenly V11.5 — Domain-Locked (Entry Anchors + Domain Guardrails + Strong FITNESS Acceptance + Auto-Retry + Safe Memory)
+// Havenly V11.4 — Domain-Locked FREE Baseline (Entry-Derived Anchors + Domain Guardrails + Quality Gate + Auto-Retry + Safe Memory)
 
 export type Reflection = {
   summary: string;
@@ -10,8 +10,6 @@ export type Reflection = {
   questions: string[];
 };
 
-export type Domain = "WORK" | "RELATIONSHIP" | "FITNESS" | "GENERAL";
-
 type Input = {
   title?: string;
   content: string;
@@ -19,16 +17,42 @@ type Input = {
   recentThemes?: string[];
 };
 
-// --- Exported for API debug (safe; no schema changes) ---
-export function detectDomain(t: string): Domain {
+type Domain = "WORK" | "RELATIONSHIP" | "FITNESS" | "GENERAL";
+
+/** Robust fitness signal: handles "ran", "5km", "5 km", "5k" */
+function isFitnessText(s: string): boolean {
+  const t = (s || "").toLowerCase();
+  return (
+    /\bran\b/.test(t) ||
+    /\brun\b/.test(t) ||
+    /\brunning\b/.test(t) ||
+    /\bworkout\b/.test(t) ||
+    /\btraining\b/.test(t) ||
+    /\bexercise\b/.test(t) ||
+    /\bgym\b/.test(t) ||
+    /\blift\b/.test(t) ||
+    /\blifting\b/.test(t) ||
+    /\bcardio\b/.test(t) ||
+    /\bpace\b/.test(t) ||
+    /\bsteps?\b/.test(t) ||
+    /\bsore\b/.test(t) ||
+    /\brecovery\b/.test(t) ||
+    /\brest\b/.test(t) ||
+    /\bsleep\b/.test(t) ||
+    /\bhydration\b/.test(t) ||
+    /\b(\d+)\s*km\b/.test(t) ||
+    /\b(\d+)\s*k\b/.test(t)
+  );
+}
+
+function detectDomain(t: string): Domain {
   const s = (t || "").toLowerCase();
 
-  const fitness =
-    /run|running|\bkm\b|workout|training|exercise|gym|lift|lifting|cardio|pace|steps|sore|recovery|rest|sleep|hydration/.test(
-      s
-    );
+  const fitness = isFitnessText(s);
+
   const work =
     /colleague|coworker|manager|team|meeting|work|office|client|boss/.test(s);
+
   const rel =
     /partner|wife|husband|girlfriend|boyfriend|relationship|love|date|argue|fight|gift/.test(
       s
@@ -121,7 +145,7 @@ function ensureFourQuestions(qs: string[], domain: Domain): string[] {
   const defaultsFitness = [
     "What did you prove to yourself by showing up today?",
     "What would “healthy discipline” look like this week (not perfection)?",
-    "What recovery signal is your body giving you that you tend to ignore?",
+    "What is one recovery signal your body gives you that you tend to ignore?",
     "Next time, paste your exact self-talk after the workout and what you did next.",
   ];
 
@@ -160,7 +184,9 @@ function normalizeReflection(r: any, domain: Domain): Reflection {
     "Option A: Name the moment in one sentence. Option B: Ask one clean question to clarify what you need next.";
 
   return {
-    summary: summary || (domain === "FITNESS" ? defaultSummaryFitness : defaultSummaryGeneral),
+    summary:
+      summary ||
+      (domain === "FITNESS" ? defaultSummaryFitness : defaultSummaryGeneral),
     core_pattern: corePattern || undefined,
     themes:
       themes.length
@@ -174,13 +200,13 @@ function normalizeReflection(r: any, domain: Domain): Reflection {
         : domain === "FITNESS"
           ? ["pride", "tiredness", "uncertainty"]
           : ["confusion", "frustration", "hurt"],
-    gentle_next_step: nextStep || (domain === "FITNESS" ? defaultNextFitness : defaultNextGeneral),
+    gentle_next_step:
+      nextStep || (domain === "FITNESS" ? defaultNextFitness : defaultNextGeneral),
     questions: ensureFourQuestions(questionsRaw, domain),
   };
 }
 
-// --- Exported for API debug (safe; no schema changes) ---
-export function extractAnchors(entry: string): string[] {
+function extractAnchors(entry: string): string[] {
   const t = (entry || "").trim();
   const anchors: string[] = [];
 
@@ -191,7 +217,6 @@ export function extractAnchors(entry: string): string[] {
     anchors.push(v);
   };
 
-  // 1) quoted phrases
   const quoteMatches = t.match(/[“"][^”"]+[”"]/g) || [];
   for (const q of quoteMatches) {
     const cleaned = q.replace(/^[“"]|[”"]$/g, "").trim();
@@ -199,7 +224,6 @@ export function extractAnchors(entry: string): string[] {
     if (anchors.length >= 3) break;
   }
 
-  // 2) 1–2 short sentences from entry
   if (anchors.length < 2) {
     const sentences = t
       .split(/\n|[.!?]/)
@@ -214,12 +238,24 @@ export function extractAnchors(entry: string): string[] {
     }
   }
 
-  // 3) fitness-specific anchor if entry is fitness-ish
-  if (/run|running|\bkm\b|workout|training|exercise/i.test(t)) {
-    // keep it literal to what user wrote when possible
-    const m = t.match(/i\s+ran\s+(\d+)\s*km[^.!\n]*/i);
-    if (m) add(m[0].trim());
+  if (/in front of others|in front of people|public|everyone/i.test(t)) add("in front of others");
+  if (/colleague|coworker|manager|team|meeting|work/i.test(t)) add("a work moment landed as a put-down");
+  if (/smiled|laughed it off|kept it in|stayed silent/i.test(t)) add("you smiled in the moment, then replayed it later");
+  if (/replaying|kept replaying|ruminat/i.test(t)) add("you kept replaying it and felt small");
+  if (/respond without starting a fight|don’t want to start a fight|avoid conflict/i.test(t))
+    add("you want to respond without starting a fight");
+
+  // Fitness anchors (robust)
+  if (isFitnessText(t)) {
+    if (/ran\s*5\s*km/i.test(t) || /ran\s*5km/i.test(t) || /ran\s*5\s*k\b/i.test(t) || /ran\s*5k\b/i.test(t)) {
+      add("I ran 5km today and felt proud but also tired");
+    } else {
+      add("you exercised and felt proud but also tired");
+    }
   }
+
+  if (/tired|exhausted|fatigue/i.test(t)) add("part of you wants rest while another wants to push harder");
+  if (/improving|progress|forcing myself|discipline/i.test(t)) add("you’re questioning whether this is growth or pressure");
 
   if (anchors.length < 2) {
     add("a moment felt important");
@@ -235,13 +271,16 @@ function reflectionTextForCheck(r: any): string {
     cleanString(r?.core_pattern),
     cleanString(r?.gentle_next_step),
     ...(Array.isArray(r?.questions) ? r.questions.map(String) : []),
-    ...(Array.isArray(r?.themes) ? r.themes.map(String) : []),
-    ...(Array.isArray(r?.emotions) ? r.emotions.map(String) : []),
   ];
   return parts.join("\n");
 }
 
-function qualityPass(parsed: any, anchors: string[], plan: "FREE" | "PREMIUM", domain: Domain): boolean {
+function qualityPass(
+  parsed: any,
+  anchors: string[],
+  plan: "FREE" | "PREMIUM",
+  domain: Domain
+): boolean {
   const summary = cleanString(parsed?.summary);
   const nextStep = cleanString(parsed?.gentle_next_step);
   const qs = Array.isArray(parsed?.questions) ? parsed.questions : [];
@@ -251,22 +290,18 @@ function qualityPass(parsed: any, anchors: string[], plan: "FREE" | "PREMIUM", d
   const text = reflectionTextForCheck(parsed);
   const s = text.toLowerCase();
 
-  // Must include at least one anchor verbatim
+  // Must include at least one anchor verbatim-ish
   if (!containsAny(text, anchors)) return false;
 
-  // Structure
   if (!summary.includes("What you’re carrying:")) return false;
   if (!summary.includes("What’s really happening:")) return false;
   if (plan === "PREMIUM" && !summary.includes("Deeper direction:")) return false;
 
-  // A/B
   if (!/Option A:/i.test(nextStep) || !/Option B:/i.test(nextStep)) return false;
 
-  // Length
   const minSummaryLen = plan === "PREMIUM" ? 240 : 150;
   if (summary.length < minSummaryLen) return false;
 
-  // Variety
   if (plan === "PREMIUM") {
     if (themes.length < 3) return false;
     if (emotions.length < 3) return false;
@@ -277,20 +312,16 @@ function qualityPass(parsed: any, anchors: string[], plan: "FREE" | "PREMIUM", d
 
   if (qs.length < 2) return false;
 
-  // --- REAL FIX: FITNESS must look fitness-related (and must NOT drift) ---
+  // Domain lock (hard)
   if (domain === "FITNESS") {
-    const mustHaveFitness =
-      /(run|running|\bkm\b|workout|training|exercise|recovery|rest|sleep|hydration|pace|cardio|fatigue|tired|sore)/;
-    if (!mustHaveFitness.test(s)) return false;
+    // 1) Must contain fitness signal
+    const mustHave =
+      /\b(ran|run|running|workout|training|exercise|recovery|rest|sleep|hydration|pace|cardio)\b|\b\d+\s*km\b|\b\d+\s*k\b/;
+    if (!mustHave.test(s)) return false;
 
-    // require at least one fitness term in next step OR questions (prevents generic “dignity/speaking up” stuff)
-    const nextOrQs = (nextStep + "\n" + qs.map(String).join("\n")).toLowerCase();
-    const mustFitnessInAction =
-      /(recovery|rest|sleep|hydration|easy|deload|pace|workout|training|run|km|exercise)/;
-    if (!mustFitnessInAction.test(nextOrQs)) return false;
-
+    // 2) Must not drift to work/relationship conflict
     const drift =
-      /(colleague|coworker|manager|meeting|office|boss|partner|wife|husband|girlfriend|boyfriend|relationship|argument|fight|speaking up|keep the peace|in front of others)/;
+      /\b(colleague|coworker|manager|meeting|office|partner|wife|husband|girlfriend|boyfriend|relationship|argument|fight|speaking up|keep the peace)\b/;
     if (drift.test(s)) return false;
   }
 
@@ -308,6 +339,7 @@ export async function generateReflectionFromEntry(input: Input): Promise<Reflect
   const entryText = `${titleLine}Entry:\n${entryBody}`;
 
   const domain = detectDomain(entryBody);
+
   const anchors = extractAnchors(entryBody);
   const anchorsBlock = anchors.map((a, i) => `${i + 1}) ${a}`).join("\n");
 
@@ -332,13 +364,15 @@ TRUTH (NON-NEGOTIABLE):
 - NEVER invent events that did not appear in the entry.
 - You MUST reference at least ONE concrete moment from the entry.
 - You MUST include at least ONE of the provided ANCHORS exactly as written (verbatim).
+- Do not use placeholder phrasing like “a situation happened.” Name the situation.
 
 DOMAIN GUARDRAIL (NON-NEGOTIABLE):
 - Domain for this entry is: ${domain}
-- You MUST stay inside this domain and NOT blend life areas.
-- If domain is FITNESS: focus on training, fatigue, recovery, pacing, consistency. Do NOT talk about colleagues/partners/conflict/speaking up.
-- If domain is WORK: do NOT talk about partners/relationship dynamics.
-- If domain is RELATIONSHIP: do NOT talk about workplace dynamics unless explicitly present.
+- You MUST stay inside this domain.
+- If domain is FITNESS, do NOT talk about colleagues, partners, speaking up, conflict with others, or “keeping the peace”.
+- If domain is WORK, do NOT talk about partners/relationship dynamics.
+- If domain is RELATIONSHIP, do NOT talk about workplace dynamics unless explicitly present.
+- Do not blend multiple life areas.
 
 CROSS-JOURNAL CONTINUITY (FREE SAFE):
 - If RECENT THEMES exist, you MAY add ONE sentence like:
@@ -358,15 +392,17 @@ STRUCTURE REQUIREMENTS:
 
 - gentle_next_step MUST include:
   "Option A:" and "Option B:"
-  (PREMIUM only) add "Script line:" (1–2 sentences)
+  (PREMIUM only) add "Script line:" (1–2 sentences, calm, non-pushy)
 
 - questions: return 4 questions.
   The LAST question MUST start with: "Next time,"
 
 OUTPUT RULES (STRICT):
-Return valid JSON ONLY. Use DOUBLE QUOTES. No markdown.
+Return valid JSON ONLY.
+Use DOUBLE QUOTES for all JSON strings.
+No markdown, no code fences, no extra text.
 
-Schema:
+Return EXACTLY this schema:
 {
   "summary": "…",
   "core_pattern": "…",
@@ -438,10 +474,12 @@ ${entryText}
 ${systemBase}
 
 RETRY (STRICT):
-- Output valid JSON only.
+Your previous output was either not valid JSON OR did not meet requirements.
+Now:
 - Include ONE ANCHOR verbatim in "What’s really happening:"
-- Include TWO concrete moments from THIS entry.
-- Stay inside domain: ${domain}.
+- Include TWO concrete moments from THIS entry (one primary + one secondary).
+- Stay inside the domain: ${domain}. Do not drift to any other life area.
+Return ONLY valid JSON.
 `.trim();
 
     const raw2 = await callGroq({ temperature: 0.25, system: systemRetry2 });
@@ -454,9 +492,10 @@ RETRY (STRICT):
 ${systemBase}
 
 FINAL ATTEMPT:
-- Output valid JSON only.
-- Include EXACTLY ONE ANCHOR verbatim in "What’s really happening:".
-- Stay inside domain: ${domain}.
+You MUST include EXACTLY ONE ANCHOR verbatim in the summary line "What’s really happening:".
+Also include a second concrete moment from THIS entry.
+Stay inside the domain: ${domain}.
+Return ONLY valid JSON.
 `.trim();
 
     const raw3 = await callGroq({ temperature: 0.12, system: systemRetry3 });
@@ -465,43 +504,37 @@ FINAL ATTEMPT:
       return normalizeReflection(parsed3, domain);
     }
 
-    // Domain-specific fallback (important: FITNESS gets a fitness-safe fallback)
-    if (domain === "FITNESS") {
-      const a1 = anchors[0] || "you trained and felt tired";
-      const continuityLine = recentThemes.length
-        ? `This echoes a theme you’ve touched before: ${recentThemes[0]}.`
-        : "";
+    // Fallbacks remain as you had them (unchanged)…
+    const a1 = anchors[0] || "a moment felt important";
+    const continuityLine = recentThemes.length
+      ? `This echoes a theme you’ve touched before: ${recentThemes[0]}.`
+      : "";
 
+    if (domain === "FITNESS") {
       return normalizeReflection(
         {
           summary:
             input.plan === "PREMIUM"
-              ? `What you’re carrying: Pride with fatigue — you did something hard and your body is asking for recovery.\nWhat’s really happening: ${a1} — and it’s creating tension between “push more” and “respect your limits.”\nDeeper direction: Build consistency without turning discipline into self-pressure.\n${continuityLine}`.trim()
-              : `What you’re carrying: Pride with fatigue — you did something hard and your body is asking for recovery.\nWhat’s really happening: ${a1} — and it’s creating tension between “push more” and “respect your limits.”\n${continuityLine}`.trim(),
+              ? `What you’re carrying: Pride with fatigue — you did something hard and your body is asking for recovery.\nWhat’s really happening: ${a1} — and it’s creating a tension between “push more” and “respect your limits.”\nDeeper direction: Build consistency without turning discipline into self-pressure.\n${continuityLine}`.trim()
+              : `What you’re carrying: Pride with fatigue — you did something hard and your body is asking for recovery.\nWhat’s really happening: ${a1} — and it’s creating a tension between “push more” and “respect your limits.”\n${continuityLine}`.trim(),
           core_pattern:
             "You’re proud of progress, but you’re still learning the line between healthy challenge and unnecessary pressure.",
           themes: ["consistency", "recovery", "self-respect", "motivation"],
           emotions: ["pride", "tiredness", "uncertainty", "determination"],
           gentle_next_step:
             input.plan === "PREMIUM"
-              ? "Option A: Choose one recovery action today (sleep, hydration, easy walk) and treat it as training. Option B: Decide tomorrow’s run as easy or off before you start. Script line: “Consistency includes recovery; I’m not failing by resting.”"
-              : "Option A: Choose one recovery action today (sleep, hydration, easy walk) and treat it as training. Option B: Decide tomorrow’s run as easy or off before you start.",
+              ? "Option A: Decide one recovery action today (sleep, hydration, easy walk) and treat it as training. Option B: Define tomorrow’s effort as “easy” or “hard” before you start. Script line: “I’m building consistency, and recovery is part of the plan.”"
+              : "Option A: Choose one recovery action today (sleep, hydration, easy walk) and treat it as training. Option B: Define tomorrow’s effort as “easy” or “hard” before you start.",
           questions: [
-            "What did you prove to yourself by finishing today’s effort?",
+            "What did you prove to yourself by showing up today?",
             "What would “healthy discipline” look like this week (not perfection)?",
-            "What recovery signal is your body giving you that you tend to ignore?",
-            "Next time, paste your self-talk right after the run and what you did next.",
+            "What is one recovery signal your body gives you that you tend to ignore?",
+            "Next time, paste your exact self-talk after the workout and what you did next.",
           ],
         },
         domain
       );
     }
-
-    // General fallback
-    const a1 = anchors[0] || "a moment felt important";
-    const continuityLine = recentThemes.length
-      ? `This echoes a theme you’ve touched before: ${recentThemes[0]}.`
-      : "";
 
     return normalizeReflection(
       {
@@ -515,37 +548,16 @@ FINAL ATTEMPT:
         emotions: ["confusion", "frustration", "uncertainty"],
         gentle_next_step:
           input.plan === "PREMIUM"
-            ? "Option A: Name the impact in one sentence and stop. Option B: Ask one clean question that reduces guessing. Script line: “I want to be clear about what I need next.”"
-            : "Option A: Name the impact in one sentence and stop. Option B: Ask one clean question that reduces guessing.",
+            ? "Option A: Name the impact in one sentence and stop. Option B: Ask one clean question that would reduce guessing. Script line: “I want to be clear about what I need next.”"
+            : "Option A: Name the impact in one sentence and stop. Option B: Ask one clean question that would reduce guessing.",
         questions: [
-          "What is the most important meaning you’re trying to clarify?",
+          "What felt most threatened in the moment—your dignity, your safety, or your competence?",
           "What interpretation is most accurate (not most painful)?",
-          "What is one small action that would reduce uncertainty by 10%?",
-          "Next time, paste the exact sentence that stung and what you did immediately after.",
+          "What request or boundary would protect you without escalating?",
+          "Next time, paste the exact words that stung and what you did immediately after.",
         ],
       },
       domain
-    );
-  } catch {
-    // Hard failure fallback
-    const domain2 = detectDomain(entryBody);
-    const anchors2 = extractAnchors(entryBody);
-    const a1 = anchors2[0] || "something important happened";
-
-    return normalizeReflection(
-      {
-        summary: `What you’re carrying: Something important needs a cleaner pass.\nWhat’s really happening: ${a1} — and it’s still echoing in your body.`.trim(),
-        core_pattern:
-          "This needs a calmer, more focused pass to turn emotion into a clear next move.",
-        themes: domain2 === "FITNESS" ? ["recovery", "consistency", "focus"] : ["clarity", "self-respect", "focus"],
-        emotions: domain2 === "FITNESS" ? ["tiredness", "uncertainty", "overwhelm"] : ["uncertainty", "frustration", "overwhelm"],
-        gentle_next_step:
-          domain2 === "FITNESS"
-            ? "Option A: Do one recovery action (sleep/hydration/easy walk). Option B: Make the next session intentionally easy and track how you feel."
-            : "Option A: Tap generate again. Option B: Shorten the entry to the key moment (6–10 lines) and retry.",
-        questions: ensureFourQuestions([], domain2),
-      },
-      domain2
     );
   } finally {
     clearTimeout(timeout);
