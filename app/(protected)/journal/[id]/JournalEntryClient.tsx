@@ -38,15 +38,14 @@ function questionsHeading(count: number): string {
 }
 
 /**
- * Uses the current page querystring so you can open:
- * /journal/<id>?debug=1
- * and automatically call /api/ai/reflection?debug=1
+ * If the journal page is opened as /journal/[id]?debug=1,
+ * we also call the API as /api/ai/reflection?debug=1
  */
 function getReflectionApiUrl() {
   if (typeof window === "undefined") return "/api/ai/reflection";
-  const qs = new URLSearchParams(window.location.search);
-  const debug = qs.get("debug") === "1";
-  return debug ? "/api/ai/reflection?debug=1" : "/api/ai/reflection";
+  const params = new URLSearchParams(window.location.search);
+  const debug = params.get("debug");
+  return debug === "1" ? "/api/ai/reflection?debug=1" : "/api/ai/reflection";
 }
 
 export default function JournalEntryClient({
@@ -61,7 +60,7 @@ export default function JournalEntryClient({
 
   const [busy, setBusy] = useState(false);
 
-  // ✅ Persist on refresh by initializing from server-provided reflection
+  // Persist on refresh by initializing from server-provided reflection
   const [reflection, setReflection] = useState<Reflection | null>(initialReflection ?? null);
 
   const [error, setError] = useState<string | null>(null);
@@ -96,9 +95,9 @@ export default function JournalEntryClient({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          entryId: entry.id, // ✅ keep this
+          entryId: entry.id,
           content: entry.content,
-          title: entry.title || "",
+          title: entry.title ?? "",
         }),
       });
 
@@ -116,7 +115,7 @@ export default function JournalEntryClient({
       const j = await res.json();
       setReflection(j?.reflection || null);
 
-      // sync credits AFTER server consumption
+      // Sync credits after server consumption
       await refresh();
     } catch {
       setError("We couldn't generate a reflection right now.");
@@ -182,7 +181,7 @@ export default function JournalEntryClient({
         ) : (
           <div className="mt-5 space-y-4 text-sm text-white/80">
             <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
-              <p className="text-white/90">{reflection.summary}</p>
+              <p className="whitespace-pre-wrap text-white/90">{reflection.summary}</p>
             </div>
 
             {keyPattern && (
@@ -201,7 +200,7 @@ export default function JournalEntryClient({
                 </h3>
                 <ul className="mt-2 list-disc space-y-1 pl-5">
                   {reflection.themes.map((t, i) => (
-                    <li key={i}>{t}</li>
+                    <li key={`${t}-${i}`}>{t}</li>
                   ))}
                 </ul>
               </div>
@@ -212,7 +211,7 @@ export default function JournalEntryClient({
                 </h3>
                 <ul className="mt-2 list-disc space-y-1 pl-5">
                   {reflection.emotions.map((e, i) => (
-                    <li key={i}>{e}</li>
+                    <li key={`${e}-${i}`}>{e}</li>
                   ))}
                 </ul>
               </div>
@@ -222,7 +221,7 @@ export default function JournalEntryClient({
               <h3 className="text-xs font-semibold uppercase tracking-wide text-white/70">
                 Gentle next step
               </h3>
-              <p className="mt-2">{reflection.gentle_next_step}</p>
+              <p className="mt-2 whitespace-pre-wrap">{reflection.gentle_next_step}</p>
             </div>
 
             <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
@@ -231,7 +230,7 @@ export default function JournalEntryClient({
               </h3>
               <ul className="mt-2 list-disc space-y-1 pl-5">
                 {reflection.questions.map((q, i) => (
-                  <li key={i}>{q}</li>
+                  <li key={`${q}-${i}`}>{q}</li>
                 ))}
               </ul>
             </div>
