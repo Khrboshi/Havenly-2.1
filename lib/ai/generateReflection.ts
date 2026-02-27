@@ -202,7 +202,8 @@ function normalizeReflection(r: any, domain: Domain): Reflection {
           ? ["pride", "tiredness", "uncertainty"]
           : ["confusion", "frustration", "hurt"],
     gentlenextstep:
-      nextStep || (domain === "FITNESS" ? defaultNextFitness : defaultNextGeneral),
+      nextStep ||
+      (domain === "FITNESS" ? defaultNextFitness : defaultNextGeneral),
     questions: ensureFourQuestions(questionsRaw, domain),
   };
 }
@@ -239,24 +240,35 @@ function extractAnchors(entry: string): string[] {
     }
   }
 
-  if (/in front of others|in front of people|public|everyone/i.test(t)) add("in front of others");
-  if (/colleague|coworker|manager|team|meeting|work/i.test(t)) add("a work moment landed as a put-down");
-  if (/smiled|laughed it off|kept it in|stayed silent/i.test(t)) add("you smiled in the moment, then replayed it later");
-  if (/replaying|kept replaying|ruminat/i.test(t)) add("you kept replaying it and felt small");
+  if (/in front of others|in front of people|public|everyone/i.test(t))
+    add("in front of others");
+  if (/colleague|coworker|manager|team|meeting|work/i.test(t))
+    add("a work moment landed as a put-down");
+  if (/smiled|laughed it off|kept it in|stayed silent/i.test(t))
+    add("you smiled in the moment, then replayed it later");
+  if (/replaying|kept replaying|ruminat/i.test(t))
+    add("you kept replaying it and felt small");
   if (/respond without starting a fight|don’t want to start a fight|avoid conflict/i.test(t))
     add("you want to respond without starting a fight");
 
   // Fitness anchors (robust)
   if (isFitnessText(t)) {
-    if (/ran\s5\skm/i.test(t) || /ran\s5km/i.test(t) || /ran\s5\sk\b/i.test(t) || /ran\s5k\b/i.test(t)) {
+    if (
+      /ran\s5\skm/i.test(t) ||
+      /ran\s5km/i.test(t) ||
+      /ran\s5\sk\b/i.test(t) ||
+      /ran\s5k\b/i.test(t)
+    ) {
       add("I ran 5km today and felt proud but also tired");
     } else {
       add("you exercised and felt proud but also tired");
     }
   }
 
-  if (/tired|exhausted|fatigue/i.test(t)) add("part of you wants rest while another wants to push harder");
-  if (/improving|progress|forcing myself|discipline/i.test(t)) add("you’re questioning whether this is growth or pressure");
+  if (/tired|exhausted|fatigue/i.test(t))
+    add("part of you wants rest while another wants to push harder");
+  if (/improving|progress|forcing myself|discipline/i.test(t))
+    add("you’re questioning whether this is growth or pressure");
 
   if (anchors.length < 2) {
     add("a moment felt important");
@@ -329,9 +341,11 @@ function qualityPass(
   return true;
 }
 
-export async function generateReflectionFromEntry(input: Input): Promise<Reflection> {
-  const apiKey = process.env.GROQAPIKEY;
-  if (!apiKey) throw new Error("Missing GROQAPIKEY");
+export async function generateReflectionFromEntry(
+  input: Input
+): Promise<Reflection> {
+  const apiKey = process.env.GROQAPIKEY || process.env.GROQ_API_KEY;
+  if (!apiKey) throw new Error("Missing GROQAPIKEY (or GROQ_API_KEY)");
 
   const model = process.env.GROQMODEL || "llama-3.3-70b-versatile";
 
