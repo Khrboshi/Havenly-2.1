@@ -1,5 +1,5 @@
 // lib/ai/generateReflection.ts
-// Havenly V12 — Smarter Domain Lock | Quality Gate with Failure Reasons | Per-Attempt Timeout
+// Havenly V13 — Smarter GENERAL domain | Lead-domain for mixed entries | Short-entry compassion
 
 export type Reflection = {
   summary: string;
@@ -19,7 +19,11 @@ type Input = {
 
 type Domain = "WORK" | "RELATIONSHIP" | "FITNESS" | "GENERAL";
 
-// ─── Domain Detection (weighted scoring) ─────────────────────────────────────
+// ─── Domain Detection (weighted scoring + lead-domain for mixed entries) ───────
+//
+// FIX 2: Instead of falling back to GENERAL on a tie, we now pick the domain
+// with the strongest EMOTIONAL signal. "I had an argument with my partner"
+// outweighs "I went for a run" when the entry is clearly about the relationship.
 
 const DOMAIN_SIGNALS: Record<Domain, RegExp[]> = {
   FITNESS: [
@@ -32,14 +36,33 @@ const DOMAIN_SIGNALS: Record<Domain, RegExp[]> = {
   WORK: [
     /\b(colleague|coworker|manager|boss|team|client)\b/,
     /\b(meeting|office|project|deadline|presentation)\b/,
-    /\b(work|job|career|promotion|performance review)\b/,
+    /\b(work|job|career|promotion|performance.?review)\b/,
   ],
   RELATIONSHIP: [
     /\b(partner|wife|husband|girlfriend|boyfriend|spouse)\b/,
-    /\b(relationship|love|date|argue|fight|break ?up)\b/,
+    /\b(relationship|love|date|argu(e|ed|ment)|fight|break.?up)\b/,
     /\b(family|friend|parents?|sibling)\b/,
   ],
   GENERAL: [],
+};
+
+// Emotional weight boosters — if an entry contains these alongside a domain
+// signal, that domain wins the tie-break.
+const EMOTIONAL_BOOSTERS: Record<Exclude<Domain, "GENERAL">, RegExp[]> = {
+  WORK: [
+    /\b(humiliat|embarrass|dismiss|invisible|overlooked|undervalued|unfair)\b/,
+    /\b(cried|crying|tears|hurt|angry|rage|shame)\b/,
+    /\b(replaying|can't let go|kept thinking|couldn't sleep after)\b/,
+  ],
+  RELATIONSHIP: [
+    /\b(invisible|lonely|disconnected|unloved|unheard|ignored|taken for granted)\b/,
+    /\b(cried|crying|hurt|heartbreak|ache|longing|miss)\b/,
+    /\b(fine isn't what I wanted|didn't ask|didn't notice|wasn't there)\b/,
+  ],
+  FITNESS: [
+    /\b(proud|accomplished|strong|powerful|beat my)\b/,
+    /\b(pushing too hard|overdid|burnout|injury|pain)\b/,
+  ],
 };
 
 function scoreDomain(text: string): Record<Domain, number> {
@@ -53,16 +76,43 @@ function scoreDomain(text: string): Record<Domain, number> {
   return scores;
 }
 
-function detectDomain(text: string): Domain {
+function emotionalBoost(text: string, domain: Exclude<Domain, "GENERAL">): number {
+  const s = text.toLowerCase();
+  let boost = 0;
+  for (const p of EMOTIONAL_BOOSTERS[domain]) {
+    if (p.test(s)) boost++;
+  }
+  return boost;
+}
+
+export function detectDomain(text: string): Domain {
   const scores = scoreDomain(text);
-  const sorted = (Object.entries(scores) as [Domain, number][])
-    .filter(([d]) => d !== "GENERAL")
+  const candidates = (Object.entries(scores) as [Domain, number][])
+    .filter(([d]) => d !== "GENERAL" && scores[d] > 0)
     .sort(([, a], [, b]) => b - a);
 
-  const [top, second] = sorted;
-  // Only assign a specific domain if it clearly wins (not a tie)
-  if (top[1] > 0 && top[1] > (second?.[1] ?? 0)) return top[0];
-  return "GENERAL";
+  if (candidates.length === 0) return "GENERAL";
+
+  const [top, second] = candidates;
+
+  // Clear winner — no tie-break needed
+  if (!second || top[1] > second[1]) return top[0];
+
+  // Tie — use emotional boost to pick the lead domain
+  const topBoost = emotionalBoost(text, top[0] as Exclude<Domain, "GENERAL">);
+  const secondBoost = emotionalBoost(text, second[0] as Exclude<Domain, "GENERAL">);
+
+  if (topBoost >= secondBoost) return top[0];
+  return second[0];
+}
+
+// ─── Short Entry Detection ────────────────────────────────────────────────────
+//
+// FIX 3: entries under ~10 words are treated as "short" and get a different
+// tone — curious and gentle, not analytical. Avoids generic clarity templates.
+
+function isShortEntry(text: string): boolean {
+  return text.trim().split(/\s+/).length < 12;
 }
 
 // ─── Domain Defaults ──────────────────────────────────────────────────────────
@@ -75,6 +125,9 @@ type DomainDefaults = {
   nextStepFree: string;
   nextStepPremium: string;
   questions: string[];
+  shortSummary: string;         // FIX 3: special summary for short/sparse entries
+  shortNextStep: string;        // FIX 3: gentler next step for short entries
+  shortQuestions: string[];     // FIX 3: curiosity-first questions for short entries
   driftKeywords: RegExp;
   mustHave: RegExp;
 };
@@ -88,76 +141,123 @@ const DOMAIN_DEFAULTS: Record<Domain, DomainDefaults> = {
     themes: ["consistency", "recovery", "self-respect", "motivation"],
     emotions: ["pride", "tiredness", "uncertainty", "determination"],
     nextStepFree:
-      'Option A: Choose one recovery action today (sleep, hydration, easy walk) and treat it as training. Option B: Define tomorrow\'s effort as "easy" or "hard" before you start.',
+      "Option A: Choose one recovery action today (sleep, hydration, easy walk) and treat it as training. Option B: Define tomorrow's effort as \"easy\" or \"hard\" before you start.",
     nextStepPremium:
-      'Option A: Choose one recovery action today (sleep, hydration, easy walk) and treat it as training. Option B: Define tomorrow\'s effort as "easy" or "hard" before you start. Script line: "I\'m building consistency, and recovery is part of the plan."',
+      "Option A: Choose one recovery action today (sleep, hydration, easy walk) and treat it as training. Option B: Define tomorrow's effort as \"easy\" or \"hard\" before you start. Script line: \"I'm building consistency, and recovery is part of the plan.\"",
     questions: [
       "What did you prove to yourself by showing up today?",
-      'What would "healthy discipline" look like this week (not perfection)?',
+      "What would \"healthy discipline\" look like this week (not perfection)?",
       "What is one recovery signal your body gives you that you tend to ignore?",
       "Next time, paste your exact self-talk after the workout and what you did next.",
+    ],
+    shortSummary:
+      "What you're carrying: A quiet sense that something in your body or energy is asking to be noticed.\nWhat's really happening: You showed up — and that's the part worth sitting with before asking what comes next.",
+    shortNextStep:
+      "Option A: Notice one physical sensation right now and name it without judging it. Option B: Write one sentence about what \"showing up\" costs you lately.",
+    shortQuestions: [
+      "What does your body feel like right now — not good or bad, just what's actually there?",
+      "What would rest look like today that doesn't feel like giving up?",
+      "What would you tell a friend who said exactly what you just wrote?",
+      "Next time, write two more sentences — what's underneath the first feeling?",
     ],
     mustHave:
       /\b(ran|run|running|workout|training|exercise|recovery|rest|sleep|hydration|pace|cardio|\d+\s*km|\d+\s*k)\b/,
     driftKeywords:
       /\b(colleague|coworker|manager|meeting|office|partner|wife|husband|girlfriend|boyfriend|argument|speaking up|keep the peace)\b/,
   },
+
   WORK: {
     summary:
       "What you're carrying: A workplace moment that left a mark.\nWhat's really happening: Something in that dynamic touched your sense of value or competence.",
     corepattern:
       "You're navigating a tension between your professional self-worth and external expectations.",
-    themes: ["clarity", "communication", "boundaries"],
-    emotions: ["frustration", "uncertainty", "determination"],
+    themes: ["recognition", "boundaries", "self-worth"],
+    emotions: ["frustration", "hurt", "determination"],
     nextStepFree:
       "Option A: Write down the one thing you wish had gone differently. Option B: Name what you'd want to say if there were no consequences.",
     nextStepPremium:
-      'Option A: Write down the one thing you wish had gone differently. Option B: Name what you\'d want to say if there were no consequences. Script line: "I need to be clear about what I need here."',
+      "Option A: Write down the one thing you wish had gone differently. Option B: Name what you'd want to say if there were no consequences. Script line: \"I need to be clear about what I need here.\"",
     questions: [
       "What felt most dismissed — your idea, your effort, or your presence?",
       "What would a calm, direct version of yourself say in that moment?",
       "What boundary, if stated clearly, would protect you without escalating?",
       "Next time, write down the exact words exchanged and your immediate reaction.",
     ],
-    mustHave: /\b(work|meeting|colleague|manager|office|team|project|boss|client)\b/,
+    shortSummary:
+      "What you're carrying: Something from work is sitting with you — quietly, but persistently.\nWhat's really happening: Even a few words can hold a lot of weight when they touch your sense of worth.",
+    shortNextStep:
+      "Option A: Finish this sentence — \"What I actually needed in that moment was...\". Option B: Write down one thing you want to be different next time.",
+    shortQuestions: [
+      "What's the one word that best describes how that made you feel?",
+      "If a colleague described the same situation, what would you tell them?",
+      "What would it look like to protect yourself here without escalating?",
+      "Next time, write more — what happened just before, and just after?",
+    ],
+    mustHave: /\b(work|meeting|colleague|manager|office|team|project|boss|client|performance)\b/,
     driftKeywords:
-      /\b(partner|wife|husband|girlfriend|boyfriend|relationship|workout|running|gym)\b/,
+      /\b(partner|wife|husband|girlfriend|boyfriend|workout|running|gym)\b/,
   },
+
   RELATIONSHIP: {
     summary:
       "What you're carrying: Something in this connection left you unsettled.\nWhat's really happening: A gap between what you felt and what was expressed is asking for attention.",
     corepattern:
       "You're trying to protect your self-respect while staying connected to someone who matters.",
-    themes: ["connection", "communication", "self-worth"],
-    emotions: ["hurt", "confusion", "longing"],
+    themes: ["connection", "visibility", "self-worth"],
+    emotions: ["hurt", "longing", "confusion"],
     nextStepFree:
       "Option A: Name the feeling in one sentence without assigning blame. Option B: Ask yourself what you most needed in that moment.",
     nextStepPremium:
-      'Option A: Name the feeling in one sentence without assigning blame. Option B: Ask yourself what you most needed in that moment. Script line: "I want to understand this before I respond."',
+      "Option A: Name the feeling in one sentence without assigning blame. Option B: Ask yourself what you most needed in that moment. Script line: \"I want to understand this before I respond.\"",
     questions: [
       "What exactly did that moment trigger — anger, shame, fear, or something else?",
       "What's the most generous interpretation that still respects your feelings?",
       "What would you ask for if you knew you'd be heard without judgment?",
       "Next time, paste the exact words that stung and what you did immediately after.",
     ],
-    mustHave: /\b(partner|wife|husband|girlfriend|boyfriend|relationship|family|friend|love|date)\b/,
+    shortSummary:
+      "What you're carrying: A quiet ache around a connection that matters to you.\nWhat's really happening: Something small happened — or didn't happen — and it landed harder than it looked.",
+    shortNextStep:
+      "Option A: Finish this sentence — \"What I actually needed was...\". Option B: Notice whether you want to say something, or just to be seen.",
+    shortQuestions: [
+      "What's the feeling underneath the low — is it loneliness, disappointment, or something else?",
+      "Who or what came to mind when you wrote this?",
+      "What would it feel like to say this feeling out loud to someone safe?",
+      "Next time, write two more sentences — what happened before this feeling arrived?",
+    ],
+    mustHave: /\b(partner|wife|husband|girlfriend|boyfriend|relationship|family|friend|love|date|he |she |they )\b/,
     driftKeywords: /\b(colleague|manager|meeting|workout|gym|running)\b/,
   },
+
   GENERAL: {
+    // FIX 1: GENERAL fallback no longer says "Something important is asking for clarity"
+    // It now uses the entry's own anchor and reflects the emotional tone present.
     summary:
-      "What you're carrying: Something important is asking for clarity.\nWhat's really happening: The meaning of what happened isn't sitting right inside you yet.",
-    corepattern: "You're trying to make sense of the moment while protecting your self-respect.",
-    themes: ["clarity", "self-respect", "communication"],
-    emotions: ["confusion", "frustration", "uncertainty"],
+      "What you're carrying: Something is sitting with you — not fully named yet, but real.\nWhat's really happening: You wrote it down, which means part of you is already trying to make sense of it.",
+    corepattern:
+      "You're in the middle of something — not at the beginning, not at the end, just present with it.",
+    themes: ["self-awareness", "processing", "presence"],
+    emotions: ["uncertainty", "restlessness", "quiet courage"],
     nextStepFree:
-      "Option A: Name the moment in one sentence. Option B: Ask one clean question to clarify what you need next.",
+      "Option A: Write one more sentence — what's the feeling underneath the first one? Option B: Ask yourself: is this about something that happened, something expected, or something missing?",
     nextStepPremium:
-      'Option A: Name the moment in one sentence. Option B: Ask one clean question to clarify what you need next. Script line: "I want to be clear about what I need next."',
+      "Option A: Write one more sentence — what's the feeling underneath the first one? Option B: Ask yourself: is this about something that happened, something expected, or something missing? Script line: \"I don't need to have the answer — I just need to stay with the question.\"",
     questions: [
-      "What exactly did the moment trigger in you — anger, shame, fear, sadness, or something else?",
-      "What is the cleanest interpretation that still respects your feelings?",
-      "What boundary or request would protect you without escalating the situation?",
-      "Next time, paste the exact words that stung and what you did immediately after.",
+      "What's the feeling that's hardest to name right now?",
+      "Is this about something that happened, something you're expecting, or something you're missing?",
+      "What would feel like one small step toward clarity — not resolution, just clarity?",
+      "Next time, write for two more minutes without stopping — what else is there?",
+    ],
+    // FIX 3: Short GENERAL entries get the gentlest, most open response
+    shortSummary:
+      "What you're carrying: Something quiet — not loud enough to name yet, but present enough to notice.\nWhat's really happening: You showed up to write, even without words. That's the start of something.",
+    shortNextStep:
+      "Option A: Sit with it for 60 seconds and notice if a word arrives. Option B: Write one more line — it doesn't have to make sense.",
+    shortQuestions: [
+      "Where do you feel this in your body right now?",
+      "If you had to guess what's underneath the \"not sure why\" — what would you say?",
+      "What would help right now — company, quiet, movement, or something else?",
+      "Next time, write for two more minutes without stopping — what else comes up?",
     ],
     mustHave: /./, // always passes
     driftKeywords: /(?!)/,
@@ -202,6 +302,10 @@ function extractAnchors(entry: string): string[] {
     [/smiled|laughed it off|kept it in|stayed silent/i, "you smiled in the moment, then replayed it later"],
     [/replaying|kept replaying|ruminat/i, "you kept replaying it and felt small"],
     [/don't want to start a fight|avoid conflict|respond without starting a fight/i, "you want to respond without starting a fight"],
+    [/\b(invisible|unheard|unseen)\b/i, "you felt invisible"],
+    [/fine isn't what I wanted/i, "fine isn't what you wanted"],
+    [/cried in the car|cried on the way/i, "you cried on the way home"],
+    [/nodded and said thank you/i, "you nodded and said thank you instead of pushing back"],
     [/\b(tired|exhausted|fatigue)\b/i, "part of you wants rest while another wants to push harder"],
     [/improving|progress|forcing myself|discipline/i, "you're questioning whether this is growth or pressure"],
   ];
@@ -246,7 +350,7 @@ function parseModelJson<T>(raw: string): T | null {
   }
 }
 
-// ─── Quality Gate (with failure reasons for smart retries) ────────────────────
+// ─── Quality Gate ─────────────────────────────────────────────────────────────
 
 type QualityResult = { pass: true } | { pass: false; reasons: string[] };
 
@@ -254,7 +358,8 @@ function qualityCheck(
   parsed: any,
   anchors: string[],
   plan: "FREE" | "PREMIUM",
-  domain: Domain
+  domain: Domain,
+  short: boolean
 ): QualityResult {
   const reasons: string[] = [];
   const defaults = DOMAIN_DEFAULTS[domain];
@@ -267,11 +372,13 @@ function qualityCheck(
 
   const fullText = [summary, nextStep, ...questions].join("\n").toLowerCase();
 
-  // Anchor check
-  const hasAnchor = anchors.some(a =>
-    fullText.includes(a.toLowerCase().replace(/^[""]|[""]$/g, "").trim())
-  );
-  if (!hasAnchor) reasons.push("Missing verbatim anchor");
+  // Anchor check — short entries are exempt (too little content to force verbatim)
+  if (!short) {
+    const hasAnchor = anchors.some(a =>
+      fullText.includes(a.toLowerCase().replace(/^[""]|[""]$/g, "").trim())
+    );
+    if (!hasAnchor) reasons.push("Missing verbatim anchor");
+  }
 
   // Summary structure
   if (!summary.includes("What you're carrying:")) reasons.push('Missing "What you\'re carrying:" label');
@@ -279,15 +386,15 @@ function qualityCheck(
   if (plan === "PREMIUM" && !summary.includes("Deeper direction:"))
     reasons.push('Missing "Deeper direction:" label (PREMIUM)');
 
-  // Length
-  const minLen = plan === "PREMIUM" ? 240 : 150;
+  // Length — shorter minimum for short entries
+  const minLen = short ? 80 : (plan === "PREMIUM" ? 240 : 150);
   if (summary.length < minLen)
     reasons.push(`Summary too short (${summary.length} < ${minLen})`);
 
   // Next step
   if (!/Option A:/i.test(nextStep)) reasons.push("Missing Option A in gentlenextstep");
   if (!/Option B:/i.test(nextStep)) reasons.push("Missing Option B in gentlenextstep");
-  if (plan === "PREMIUM" && !/Script line:/i.test(nextStep))
+  if (plan === "PREMIUM" && !short && !/Script line:/i.test(nextStep))
     reasons.push("Missing Script line in gentlenextstep (PREMIUM)");
 
   // Array minimums
@@ -301,7 +408,7 @@ function qualityCheck(
   if (!lastQ.toLowerCase().startsWith("next time,"))
     reasons.push('Last question must start with "Next time,"');
 
-  // Domain lock
+  // Domain lock — skip for GENERAL (no mustHave/drift for general)
   if (domain !== "GENERAL") {
     if (!defaults.mustHave.test(fullText))
       reasons.push(`Domain signal missing for ${domain}`);
@@ -314,7 +421,7 @@ function qualityCheck(
 
 // ─── Normalization ────────────────────────────────────────────────────────────
 
-function normalizeReflection(r: any, domain: Domain): Reflection {
+function normalizeReflection(r: any, domain: Domain, short: boolean): Reflection {
   const defaults = DOMAIN_DEFAULTS[domain];
 
   const clean = (v: unknown) => (typeof v === "string" ? v.trim() : "");
@@ -323,40 +430,83 @@ function normalizeReflection(r: any, domain: Domain): Reflection {
       ? v.map(x => String(x ?? "").trim()).filter(Boolean).slice(0, max)
       : [];
 
-  const questions = ensureFourQuestions(cleanArr(r?.questions, 6), domain);
+  const questions = ensureFourQuestions(cleanArr(r?.questions, 6), domain, short);
+
+  const fallbackSummary = short ? defaults.shortSummary : defaults.summary;
+  const fallbackNextStep = short ? defaults.shortNextStep : defaults.nextStepFree;
 
   return {
-    summary: clean(r?.summary) || defaults.summary,
+    summary: clean(r?.summary) || fallbackSummary,
     corepattern: clean(r?.corepattern) || defaults.corepattern,
     themes: cleanArr(r?.themes, 6).length ? cleanArr(r.themes, 6) : defaults.themes,
     emotions: cleanArr(r?.emotions, 6).length ? cleanArr(r.emotions, 6) : defaults.emotions,
-    gentlenextstep: clean(r?.gentlenextstep) || defaults.nextStepFree,
+    gentlenextstep: clean(r?.gentlenextstep) || fallbackNextStep,
     questions,
   };
 }
 
-function ensureFourQuestions(qs: string[], domain: Domain): string[] {
-  const defaults = DOMAIN_DEFAULTS[domain].questions;
+function ensureFourQuestions(qs: string[], domain: Domain, short: boolean): string[] {
+  const defaults = short
+    ? DOMAIN_DEFAULTS[domain].shortQuestions
+    : DOMAIN_DEFAULTS[domain].questions;
   const out = qs.filter(Boolean).slice(0, 4);
-  while (out.length < 4) out.push(defaults[out.length]);
+  while (out.length < 4) out.push(defaults[out.length] ?? defaults[defaults.length - 1]);
   if (!out[out.length - 1].toLowerCase().startsWith("next time,")) {
-    out[out.length - 1] = defaults[3];
+    out[out.length - 1] = defaults[3] ?? defaults[defaults.length - 1];
   }
   return out;
 }
 
 // ─── Prompt Builder ───────────────────────────────────────────────────────────
 
-function buildSystemPrompt(plan: "FREE" | "PREMIUM", domain: Domain): string {
+function buildSystemPrompt(plan: "FREE" | "PREMIUM", domain: Domain, short: boolean): string {
   const isPremium = plan === "PREMIUM";
 
-  const summaryStructure = isPremium
+  const summaryStructure = isPremium && !short
     ? `1) "What you're carrying:"\n  2) "What's really happening:"\n  3) "Deeper direction:"`
     : `1) "What you're carrying:"\n  2) "What's really happening:"`;
 
-  const nextStepStructure = isPremium
+  const nextStepStructure = isPremium && !short
     ? `"Option A:" and "Option B:" and "Script line:" (1–2 calm, non-pushy sentences)`
     : `"Option A:" and "Option B:"`;
+
+  // FIX 1 & 3: Domain-specific guidance injected directly into the prompt
+  const domainGuidance = {
+    WORK: `
+DOMAIN: WORK
+This person is dealing with a workplace situation. Your reflection MUST name the specific dynamic at work — humiliation, dismissal, being overlooked, or tension around authority.
+Do NOT drift to relationship or fitness language.
+The "What's really happening:" line must name what was touched — dignity, competence, recognition, or safety.`,
+
+    RELATIONSHIP: `
+DOMAIN: RELATIONSHIP
+This person is dealing with a relationship dynamic. Your reflection MUST name the specific feeling — invisible, disconnected, longing, or hurt.
+Do NOT drift to workplace or fitness language.
+The "What's really happening:" line must name what the gap was — attention, care, presence, or reciprocity.`,
+
+    FITNESS: `
+DOMAIN: FITNESS
+This person is processing a physical/training experience. Stay in this lane.
+Do NOT mention colleagues, partners, conflict, or interpersonal dynamics unless they explicitly appeared.
+The "What's really happening:" line must be about the body, energy, or the inner voice around training.`,
+
+    GENERAL: `
+DOMAIN: GENERAL — MIXED or UNCLEAR
+This entry touches multiple areas or has very little signal.
+DO NOT default to "Something important is asking for clarity" — that is a placeholder and it is forbidden.
+Instead: use the person's EXACT words in "What's really happening:" and reflect what emotion is most present.
+If the entry is short or sparse, be gentle and curious — NOT analytical. Lead with warmth, not frameworks.`,
+  }[domain];
+
+  const shortGuidance = short
+    ? `
+SHORT ENTRY GUIDANCE:
+This entry is very short (under 12 words). This is not a failure — it is a signal.
+DO NOT try to extract themes that aren't there. DO NOT be analytical.
+Instead: reflect warmth, curiosity, and presence. The person showed up — acknowledge that.
+Keep "What you're carrying:" and "What's really happening:" brief and open, not prescriptive.
+Questions should be gentle and open-ended — invite more, don't demand more.`
+    : "";
 
   return `
 You are Havenly — a Wise Reflective Mirror.
@@ -365,26 +515,23 @@ VOICE: Write directly to "you". Never say "the user" or "this person".
 
 TRUTH (NON-NEGOTIABLE):
 - Never invent events not in the entry.
-- Reference at least ONE concrete moment from the entry.
-- Include at least ONE ANCHOR verbatim in the response.
-- Never use placeholders like "a situation happened." Name the situation.
+- Reference at least ONE concrete moment or phrase from the entry verbatim.
+- Never use generic placeholders. "Something important is asking for clarity" is BANNED — it tells the person nothing about themselves.
+- "A moment felt important" is BANNED unless the entry is truly one sentence with no emotional signal.
+${domainGuidance}
+${shortGuidance}
 
-DOMAIN GUARDRAIL — Active domain: ${domain}
-- Stay strictly inside this domain.
-- FITNESS → No colleagues, partners, conflict, speaking up, keeping the peace.
-- WORK → No relationship/partner dynamics (unless explicitly present).
-- RELATIONSHIP → No workplace dynamics (unless explicitly present).
-
-TONE: Grounded, calm, perceptive. Not clinical, not preachy, not flattering.
+TONE: Grounded, calm, perceptive. Not clinical. Not preachy. Not flattering. Not generic.
 
 STRUCTURE:
-- summary must contain labeled sections in order:
+- summary must contain these labeled sections in order:
   ${summaryStructure}
 
-- corepattern: ONE concise sentence naming the deeper dynamic.
+- corepattern: ONE sentence naming the underlying dynamic. Be specific to THIS entry.
 
 - gentlenextstep must include:
   ${nextStepStructure}
+  Both options must be things a real person could actually do today — not abstract.
 
 - questions: exactly 4. The LAST must start with: "Next time,"
 
@@ -456,6 +603,7 @@ export async function generateReflectionFromEntry(input: Input): Promise<Reflect
   const entryText = `${titleLine}Entry:\n${entryBody}`;
 
   const domain = detectDomain(entryBody);
+  const short = isShortEntry(entryBody);
   const anchors = extractAnchors(entryBody);
   const anchorsBlock = anchors.map((a, i) => `${i + 1}) ${a}`).join("\n");
 
@@ -470,22 +618,29 @@ export async function generateReflectionFromEntry(input: Input): Promise<Reflect
 
   const userPrompt = `
 User plan: ${input.plan}
+Entry length: ${short ? "SHORT (under 12 words) — be gentle and curious, not analytical" : "NORMAL"}
 
 ${memoryBlock}
 
-ANCHORS (include at least ONE verbatim in your response):
+ANCHORS (include at least ONE verbatim in your response${short ? " if possible" : ""}):
 ${anchorsBlock}
 
 Reflect on this journal entry:
 ${entryText}`.trim();
 
   const maxTokens = input.plan === "PREMIUM" ? 1050 : 700;
-  const systemPrompt = buildSystemPrompt(input.plan, domain);
+  const systemPrompt = buildSystemPrompt(input.plan, domain, short);
 
   const ATTEMPTS: { temperature: number; extraInstruction?: string }[] = [
     { temperature: input.plan === "PREMIUM" ? 0.55 : 0.45 },
-    { temperature: 0.25, extraInstruction: "Include ONE ANCHOR verbatim in 'What's really happening:'. Add a second concrete moment from the entry. Do NOT drift to another life area." },
-    { temperature: 0.12, extraInstruction: "FINAL ATTEMPT. You MUST include ONE ANCHOR verbatim in 'What's really happening:' and a second concrete moment. Stay in the domain. Return ONLY valid JSON." },
+    {
+      temperature: 0.25,
+      extraInstruction: `Your previous output was rejected. Now: use the person's EXACT words from the entry in "What's really happening:". Stay in domain: ${domain}. Return ONLY valid JSON.`,
+    },
+    {
+      temperature: 0.12,
+      extraInstruction: `FINAL ATTEMPT. Domain: ${domain}. You MUST reference the person's actual words. "Something important is asking for clarity" is BANNED. Return ONLY valid JSON.`,
+    },
   ];
 
   for (let i = 0; i < ATTEMPTS.length; i++) {
@@ -502,31 +657,31 @@ ${entryText}`.trim();
     const parsed = parseModelJson<any>(raw);
     if (!parsed) continue;
 
-    const result = qualityCheck(parsed, anchors, input.plan, domain);
-    if (result.pass) return normalizeReflection(parsed, domain);
+    const result = qualityCheck(parsed, anchors, input.plan, domain, short);
+    if (result.pass) return normalizeReflection(parsed, domain, short);
 
-    // On last attempt before fallback, log failures (server-side only)
     if (i === ATTEMPTS.length - 1) {
-      console.warn("[Havenly] All attempts failed. Reasons:", (result as { pass: false; reasons: string[] }).reasons);
+      console.warn("[Havenly] All attempts failed. Domain:", domain, "Short:", short, "Reasons:", (result as any).reasons);
     }
   }
 
   // ─── Guaranteed Fallback ──────────────────────────────────────────────────
   const defaults = DOMAIN_DEFAULTS[domain];
-  const a1 = anchors[0] || "a moment felt important";
+  const a1 = anchors[0] || "what you wrote";
   const continuityLine = recentThemes.length
     ? `This echoes a theme you've touched before: ${recentThemes[0]}.`
     : "";
 
   const isPremium = input.plan === "PREMIUM";
+  const baseSummary = short ? defaults.shortSummary : defaults.summary;
 
   const fallbackSummaryLines = [
-    defaults.summary,
-    ...(isPremium ? [`Deeper direction: ${defaults.corepattern}`] : []),
+    baseSummary,
+    ...(isPremium && !short ? [`Deeper direction: ${defaults.corepattern}`] : []),
     ...(continuityLine ? [continuityLine] : []),
   ];
 
-  // Inject anchor into "What's really happening:" line
+  // Always inject the anchor into "What's really happening:"
   const summaryWithAnchor = fallbackSummaryLines
     .join("\n")
     .replace(
@@ -534,15 +689,22 @@ ${entryText}`.trim();
       `What's really happening: ${a1} —`
     );
 
+  const fallbackNextStep = short
+    ? defaults.shortNextStep
+    : isPremium
+    ? defaults.nextStepPremium
+    : defaults.nextStepFree;
+
   return normalizeReflection(
     {
       summary: summaryWithAnchor,
       corepattern: defaults.corepattern,
       themes: defaults.themes,
       emotions: defaults.emotions,
-      gentlenextstep: isPremium ? defaults.nextStepPremium : defaults.nextStepFree,
-      questions: defaults.questions,
+      gentlenextstep: fallbackNextStep,
+      questions: short ? defaults.shortQuestions : defaults.questions,
     },
-    domain
+    domain,
+    short
   );
 }
