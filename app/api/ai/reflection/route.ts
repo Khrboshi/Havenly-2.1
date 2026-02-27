@@ -104,10 +104,6 @@ function noStoreHeaders() {
   };
 }
 
-/**
- * Lightweight request fingerprint (debugging only).
- * Not cryptographic. Used to confirm request/response integrity.
- */
 function contentFingerprint(s: string) {
   let h = 2166136261;
   for (let i = 0; i < s.length; i++) {
@@ -117,61 +113,40 @@ function contentFingerprint(s: string) {
   return (h >>> 0).toString(16);
 }
 
-/** Debug-only domain detection (server-side) */
 type Domain = "WORK" | "RELATIONSHIP" | "FITNESS" | "GENERAL";
 function detectDomain(text: string): Domain {
   const s = (text || "").toLowerCase();
-
   const fitness =
-    /run|running|\bkm\b|workout|training|exercise|gym|lift|lifting|cardio|pace|steps|sore|recovery|rest|sleep|hydration/.test(
-      s
-    );
+    /run|running|\bkm\b|workout|training|exercise|gym|lift|lifting|cardio|pace|steps|sore|recovery|rest|sleep|hydration/.test(s);
   const work = /colleague|coworker|manager|team|meeting|work|office|client|boss/.test(s);
-  const rel = /partner|wife|husband|girlfriend|boyfriend|relationship|love|date|argue|fight|gift/.test(
-    s
-  );
-
+  const rel = /partner|wife|husband|girlfriend|boyfriend|relationship|love|date|argue|fight|gift/.test(s);
   if (fitness && !work && !rel) return "FITNESS";
   if (work && !fitness && !rel) return "WORK";
   if (rel && !fitness && !work) return "RELATIONSHIP";
   return "GENERAL";
 }
 
-/** Debug-only anchors extraction (kept simple to avoid breaking prod logic) */
 function extractAnchorsForDebug(entry: string): string[] {
   const t = (entry || "").trim();
   const anchors: string[] = [];
-
   const add = (v: string) => {
     const s = String(v || "").trim();
-    if (!s) return;
-    if (anchors.includes(s)) return;
+    if (!s || anchors.includes(s)) return;
     anchors.push(s);
   };
-
-  // quoted phrases first
-  const quoteMatches = t.match(/[“"][^”"]+[”"]/g) || [];
+  const quoteMatches = t.match(/[""][^""]+[""]/g) || [];
   for (const q of quoteMatches) {
-    const cleaned = q.replace(/^[“"]|[”"]$/g, "").trim();
-    if (cleaned.length >= 4 && cleaned.length <= 90) add(`“${cleaned}”`);
+    const cleaned = q.replace(/^[""]|[""]$/g, "").trim();
+    if (cleaned.length >= 4 && cleaned.length <= 90) add(`"${cleaned}"`);
     if (anchors.length >= 3) break;
   }
-
-  // then first 1–2 sentences
   if (anchors.length < 2) {
-    const sentences = t
-      .split(/\n|[.!?]/)
-      .map((s) => s.trim())
-      .filter(Boolean)
-      .slice(0, 4);
-
+    const sentences = t.split(/\n|[.!?]/).map((s) => s.trim()).filter(Boolean).slice(0, 4);
     for (const s of sentences) {
-      const short = s.length > 110 ? s.slice(0, 110).trim() : s;
-      add(short);
+      add(s.length > 110 ? s.slice(0, 110).trim() : s);
       if (anchors.length >= 2) break;
     }
   }
-
   return anchors.slice(0, 5);
 }
 
@@ -210,13 +185,10 @@ export async function POST(req: Request) {
     );
   }
 
-  // Debug toggle: /api/ai/reflection?debug=1
   const url = new URL(req.url);
   const debugEnabled = url.searchParams.get("debug") === "1";
   const fp = debugEnabled ? contentFingerprint(content) : undefined;
   const snippet = debugEnabled ? content.slice(0, 120) : undefined;
-
-  // Debug-only computed info
   const domain = debugEnabled ? detectDomain(`${title}\n${content}`) : undefined;
   const anchors = debugEnabled ? extractAnchorsForDebug(content) : undefined;
 
@@ -224,7 +196,6 @@ export async function POST(req: Request) {
     console.log("[reflection] entryId=", entryId, "fp=", fp, "domain=", domain, "anchors=", anchors);
   }
 
-  // Ensure monthly credits row exists / is up to date
   await ensureCreditsFresh({ supabase, userId });
 
   const { data: creditsRow, error: creditsErr } = await supabase
@@ -242,7 +213,6 @@ export async function POST(req: Request) {
 
   let remainingAfterConsume: number | null = null;
 
-  // Consume 1 credit for FREE plan only
   if (!isUnlimited) {
     const consumed = await consumeOneCredit(supabase, userId);
     if (isConsumeFail(consumed)) {
@@ -255,13 +225,38 @@ export async function POST(req: Request) {
   }
 
   try {
+    // ─── Cross-journal memory — fetch themes from last 5 reflections ──────────
+    let recentThemes: string[] = [];
+    try {
+      const { data: recentEntries } = await supabase
+        .from("journal_entries")
+        .select("ai_response")
+        .eq("user_id", userId)
+        .not("ai_response", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(5);
+
+      if (recentEntries) {
+        for (const row of recentEntries) {
+          try {
+            const parsed = JSON.parse(row.ai_response);
+            if (Array.isArray(parsed?.themes)) {
+              recentThemes.push(...parsed.themes.slice(0, 2));
+            }
+          } catch {}
+        }
+        recentThemes = [...new Set(recentThemes)].slice(0, 5);
+      }
+    } catch {}
+    // ─────────────────────────────────────────────────────────────────────────
+
     const reflection = await generateReflectionFromEntry({
       content,
       title,
       plan: isUnlimited ? "PREMIUM" : "FREE",
+      recentThemes,
     });
 
-    // Persist reflection on the entry
     const { error: updErr } = await supabase
       .from("journal_entries")
       .update({ ai_response: JSON.stringify(reflection) })
@@ -272,10 +267,9 @@ export async function POST(req: Request) {
       console.error("[reflection] journal_entries update failed:", updErr);
     }
 
-    // Log reflection usage (ONLY on success)
     const { error: usageErr } = await supabase.from("reflection_usage").insert({
       user_id: userId,
-      date: new Date().toISOString().slice(0, 10), // YYYY-MM-DD
+      date: new Date().toISOString().slice(0, 10),
     });
 
     if (usageErr) {
@@ -295,7 +289,6 @@ export async function POST(req: Request) {
   } catch (err) {
     console.error("[reflection] generation failed:", err);
 
-    // Best-effort refund if we consumed a credit
     if (!isUnlimited && remainingAfterConsume !== null) {
       try {
         await supabase
