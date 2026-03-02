@@ -10,6 +10,9 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const runtime = "nodejs";
 
+// Keep this in sync with your FREE tier limit:
+const FREE_MONTHLY_CREDITS = 3;
+
 type PlanType = "FREE" | "TRIAL" | "PREMIUM";
 
 function normalizePlan(v: unknown): PlanType {
@@ -180,7 +183,7 @@ async function hasActiveStripeSubscription(stripeCustomerId: string | null): Pro
     return subs.data.some((s) => s.status === "active" || s.status === "trialing");
   } catch (err) {
     console.error("[reflection] Stripe subscription check failed:", err);
-    // Fail closed: if Stripe check fails, do NOT grant Premium.
+    // Fail closed
     return false;
   }
 }
@@ -245,14 +248,7 @@ export async function POST(req: Request) {
   const domain = debugEnabled ? detectDomain(`${title}\n${content}`) : undefined;
   const anchors = debugEnabled ? extractAnchorsForDebug(content) : undefined;
 
-  if (debugEnabled) {
-    console.log("[reflection] entryId=", entryId, "fp=", fp, "domain=", domain, "anchors=", anchors);
-  }
-
-  // Credits bookkeeping (FREE reset etc.)
-  await ensureCreditsFresh({ supabase, userId });
-
-  // Load plan type (still used for TRIAL behavior and UI, but NOT authoritative for Premium unlimited)
+  // Load current plan row
   const { data: creditsRow, error: creditsErr } = await supabase
     .from("user_credits")
     .select("plan_type")
@@ -263,9 +259,9 @@ export async function POST(req: Request) {
     console.error("[reflection] failed to read user_credits:", creditsErr);
   }
 
-  const planType = normalizePlan((creditsRow as any)?.plan_type);
+  let planType = normalizePlan((creditsRow as any)?.plan_type);
 
-  // Load Stripe customer id (server-side)
+  // Load Stripe customer id
   const { data: profileRow, error: profileErr } = await supabase
     .from("profiles")
     .select("stripe_customer_id")
@@ -281,8 +277,31 @@ export async function POST(req: Request) {
       ? String((profileRow as any).stripe_customer_id)
       : null;
 
-  // ✅ Stripe-authoritative Premium
   const stripePremium = await hasActiveStripeSubscription(stripeCustomerId);
+
+  // ✅ If Stripe is NOT premium, force downgrade any stale PREMIUM credits row.
+  // This prevents leftover 9999 credits from acting as unlimited.
+  if (!stripePremium && planType === "PREMIUM") {
+    const nowIso = new Date().toISOString();
+    const { error: downgradeErr } = await supabase
+      .from("user_credits")
+      .update({
+        plan_type: "FREE",
+        remaining_credits: FREE_MONTHLY_CREDITS,
+        updated_at: nowIso,
+        renewal_date: null,
+      } as any)
+      .eq("user_id", userId);
+
+    if (downgradeErr) {
+      console.error("[reflection] failed to downgrade stale PREMIUM:", downgradeErr);
+    } else {
+      planType = "FREE";
+    }
+  }
+
+  // Credits bookkeeping (FREE reset etc.)
+  await ensureCreditsFresh({ supabase, userId });
 
   // TRIAL remains unlimited if you use it internally.
   // Premium unlimited is ONLY when Stripe says active/trialing.
