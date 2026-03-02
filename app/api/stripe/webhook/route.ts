@@ -7,7 +7,7 @@ import { setUserPlan } from "@/lib/creditRules";
 export const dynamic = "force-dynamic";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2023-10-16",
+  apiVersion: "2024-11-20.acacia",
 });
 
 function createAdminSupabase() {
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
   try {
     switch (event.type) {
       case "checkout.session.completed": {
-        const session = event.data.object as Stripe.CheckoutSession;
+        const session = event.data.object as Stripe.Checkout.Session;
         const userId = session.client_reference_id;
 
         if (!userId) {
