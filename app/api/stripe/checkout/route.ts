@@ -6,7 +6,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-06-20",
+  apiVersion: "2023-10-16",
 });
 
 export async function POST() {
@@ -42,7 +42,6 @@ export async function POST() {
           quantity: 1,
         },
       ],
-      // Pass user ID so the webhook knows who paid
       client_reference_id: user.id,
       customer_email: user.email,
       success_url: `${siteUrl}/upgrade/confirmed?session_id={CHECKOUT_SESSION_ID}`,
