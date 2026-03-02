@@ -1,56 +1,60 @@
 // app/api/ai/insights/route.ts
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { ensureCreditsFresh } from "@/lib/creditRules";
+
+export const dynamic = "force-dynamic";
 
 type PlanType = "FREE" | "TRIAL" | "PREMIUM";
+
+function normalizePlan(v: unknown): PlanType {
+  const p = String(v ?? "FREE").toUpperCase();
+  return p === "PREMIUM" || p === "TRIAL" ? (p as PlanType) : "FREE";
+}
 
 async function getUserPlanType(
   supabase: ReturnType<typeof createServerSupabase>,
   userId: string
 ): Promise<PlanType> {
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("plan_type, plan, tier")
-    .eq("id", userId)
+  // ✅ FIX: read from user_credits (the single source of truth for plan status)
+  // Previously this read from profiles, which was never updated on upgrade
+  await ensureCreditsFresh({ supabase, userId });
+
+  const { data } = await supabase
+    .from("user_credits")
+    .select("plan_type")
+    .eq("user_id", userId)
     .maybeSingle();
 
-  const raw = (profile?.plan_type || profile?.plan || profile?.tier || "")
-    .toString()
-    .toUpperCase();
-
-  if (raw === "PREMIUM") return "PREMIUM";
-  if (raw === "TRIAL") return "TRIAL";
-  return "FREE";
+  return normalizePlan((data as any)?.plan_type);
 }
-
-export const dynamic = "force-dynamic";
 
 export async function GET() {
   const supabase = createServerSupabase();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
 
-  if (!session?.user) {
+  const {
+    data: { user },
+    error: userErr,
+  } = await supabase.auth.getUser();
+
+  if (userErr || !user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const planType = await getUserPlanType(supabase, session.user.id);
-  if (planType !== "PREMIUM") {
+  const planType = await getUserPlanType(supabase, user.id);
+  if (planType !== "PREMIUM" && planType !== "TRIAL") {
     return NextResponse.json({ error: "Premium required" }, { status: 402 });
   }
 
-  // ---- Query reflections (EDIT HERE if your schema differs) ----
-  // Expected: journal_entries has user_id + reflection(json)
+  // Query ai_response column (where reflections are stored as JSON)
   const { data: rows, error } = await supabase
     .from("journal_entries")
-    .select("reflection")
-    .eq("user_id", session.user.id)
-    .not("reflection", "is", null)
+    .select("ai_response")
+    .eq("user_id", user.id)
+    .not("ai_response", "is", null)
     .limit(2000);
 
   if (error) {
-    // Safe failure (won't crash UI)
     return NextResponse.json(
       { error: "Insights data not available yet." },
       { status: 500 }
@@ -61,9 +65,20 @@ export async function GET() {
   const emotions: Record<string, number> = {};
 
   for (const row of rows || []) {
-    const r: any = (row as any).reflection;
-    const t = Array.isArray(r?.themes) ? r.themes : [];
-    const e = Array.isArray(r?.emotions) ? r.emotions : [];
+    let parsed: any = null;
+
+    try {
+      // ai_response is stored as a JSON string
+      parsed =
+        typeof (row as any).ai_response === "string"
+          ? JSON.parse((row as any).ai_response)
+          : (row as any).ai_response;
+    } catch {
+      continue;
+    }
+
+    const t = Array.isArray(parsed?.themes) ? parsed.themes : [];
+    const e = Array.isArray(parsed?.emotions) ? parsed.emotions : [];
 
     for (const item of t) {
       const k = String(item || "").trim();
@@ -78,5 +93,8 @@ export async function GET() {
     }
   }
 
-  return NextResponse.json({ themes, emotions });
+  return NextResponse.json(
+    { themes, emotions },
+    { headers: { "Cache-Control": "no-store, max-age=0" } }
+  );
 }
