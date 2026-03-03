@@ -20,14 +20,9 @@ export async function middleware(req: NextRequest) {
   const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnon) return NextResponse.next();
-
-  // Never redirect on auth routes — pass through immediately
   if (isAuthPath(pathname)) return NextResponse.next();
-
-  // Non-protected routes — pass through immediately, no Supabase call
   if (!isProtectedPath(pathname)) return NextResponse.next();
 
-  // Only create Supabase client and check auth for protected routes
   const res = NextResponse.next();
 
   const supabase = createServerClient(supabaseUrl, supabaseAnon, {
@@ -48,10 +43,12 @@ export async function middleware(req: NextRequest) {
     },
   });
 
-  // Single auth check — no redundant getSession() call
-  const { data } = await supabase.auth.getUser();
+  // ✅ Use getSession() in middleware — reads JWT from cookie locally,
+  // no network call to Supabase Auth servers. Fast on every navigation.
+  // Individual page routes still call getUser() for secure server actions.
+  const { data: { session } } = await supabase.auth.getSession();
 
-  if (!data?.user) {
+  if (!session) {
     const to = req.nextUrl.clone();
     to.pathname = "/magic-login";
     to.searchParams.set("redirected", "1");
