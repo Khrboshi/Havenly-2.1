@@ -1,4 +1,3 @@
-// middleware.ts
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
@@ -9,6 +8,7 @@ const PROTECTED_PREFIXES = ["/dashboard", "/journal", "/tools", "/insights", "/s
 function isAuthPath(pathname: string) {
   return AUTH_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
+
 function isProtectedPath(pathname: string) {
   return PROTECTED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
@@ -19,10 +19,15 @@ export async function middleware(req: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  // If env missing, do nothing
   if (!supabaseUrl || !supabaseAnon) return NextResponse.next();
 
-  // Create a response we can mutate with cookies
+  // Never redirect on auth routes — pass through immediately
+  if (isAuthPath(pathname)) return NextResponse.next();
+
+  // Non-protected routes — pass through immediately, no Supabase call
+  if (!isProtectedPath(pathname)) return NextResponse.next();
+
+  // Only create Supabase client and check auth for protected routes
   const res = NextResponse.next();
 
   const supabase = createServerClient(supabaseUrl, supabaseAnon, {
@@ -43,15 +48,7 @@ export async function middleware(req: NextRequest) {
     },
   });
 
-  // Refresh cookies silently (only runs on matched routes)
-  await supabase.auth.getSession();
-
-  // Never redirect on auth routes
-  if (isAuthPath(pathname)) return res;
-
-  // Protect only protected prefixes
-  if (!isProtectedPath(pathname)) return res;
-
+  // Single auth check — no redundant getSession() call
   const { data } = await supabase.auth.getUser();
 
   if (!data?.user) {
@@ -65,10 +62,6 @@ export async function middleware(req: NextRequest) {
   return res;
 }
 
-/**
- * CRITICAL: This is the actual cost-saving change.
- * Middleware runs ONLY on protected + auth routes now.
- */
 export const config = {
   matcher: [
     "/dashboard/:path*",
