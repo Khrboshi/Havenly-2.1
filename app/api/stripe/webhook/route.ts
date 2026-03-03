@@ -74,13 +74,21 @@ export async function POST(req: Request) {
         const session = event.data.object as Stripe.Checkout.Session;
         const userId = session.client_reference_id;
 
+        // IMPORTANT: fail loudly so Stripe can retry / you can diagnose config issues
         if (!userId) {
           console.error("[webhook] checkout.session.completed - no user ID");
-          break;
+          return NextResponse.json(
+            { error: "Missing client_reference_id (userId)" },
+            { status: 400 }
+          );
         }
 
         const supabase = createAdminSupabase();
-        await setUserPlan({ supabase: supabase as any, userId, planType: "PREMIUM" });
+        await setUserPlan({
+          supabase: supabase as any,
+          userId,
+          planType: "PREMIUM",
+        });
 
         if (session.customer) {
           await supabase
@@ -107,7 +115,11 @@ export async function POST(req: Request) {
         }
 
         const supabase = createAdminSupabase();
-        await setUserPlan({ supabase: supabase as any, userId, planType: "PREMIUM" });
+        await setUserPlan({
+          supabase: supabase as any,
+          userId,
+          planType: "PREMIUM",
+        });
         console.log("[webhook] renewed PREMIUM for user:", userId);
         break;
       }
@@ -134,7 +146,11 @@ export async function POST(req: Request) {
         }
 
         const supabase = createAdminSupabase();
-        await setUserPlan({ supabase: supabase as any, userId, planType: "FREE" });
+        await setUserPlan({
+          supabase: supabase as any,
+          userId,
+          planType: "FREE",
+        });
         console.log("[webhook] downgraded user to FREE:", userId);
         break;
       }
@@ -143,8 +159,12 @@ export async function POST(req: Request) {
         break;
     }
   } catch (err) {
+    // IMPORTANT: return non-2xx so Stripe retries instead of silently dropping the event
     console.error("[webhook] handler error:", err);
-    return NextResponse.json({ received: true });
+    return NextResponse.json(
+      { error: "Webhook handler failed" },
+      { status: 500 }
+    );
   }
 
   return NextResponse.json({ received: true });
