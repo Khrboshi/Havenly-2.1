@@ -6,9 +6,12 @@ import { useUserPlan } from "@/app/components/useUserPlan";
 
 export default function SettingsPage() {
   const { session } = useSupabase();
-  const { plan, credits } = useUserPlan();
+  const { planType, credits } = useUserPlan();
 
   const userEmail = session?.user?.email || "Unknown user";
+
+  const readablePlan =
+    planType === "PREMIUM" ? "Premium" : planType === "TRIAL" ? "Trial" : "Free";
 
   return (
     <div className="mx-auto max-w-3xl px-6 pt-24 pb-20 text-slate-200">
@@ -40,25 +43,29 @@ export default function SettingsPage() {
       </div>
 
       {/* Plan */}
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+      <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-6">
         <h2 className="mb-2 text-lg font-semibold">Plan</h2>
         <p className="mb-4 text-sm text-slate-400">
-          Current plan: <span className="text-slate-200">{plan ?? "Free"}</span>
-          {typeof credits === "number" ? (
+          Current plan:{" "}
+          <span className="text-slate-200 font-medium">{readablePlan}</span>
+          {planType !== "PREMIUM" && typeof credits === "number" ? (
             <>
-              {" "}
-              — credits: <span className="text-slate-200">{credits}</span>
+              {" "}— credits:{" "}
+              <span className="text-slate-200">{credits}</span>
             </>
           ) : null}
         </p>
 
-        <Link href="/upgrade" className="text-sm text-emerald-400 hover:text-emerald-300">
+        <Link
+          href="/settings/billing"
+          className="text-sm text-emerald-400 hover:text-emerald-300"
+        >
           Manage subscription →
         </Link>
       </div>
 
-      {/* Install (discoverable entry point for iPhone Safari users) */}
-      <section className="mt-6">
+      {/* Install */}
+      <section>
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
