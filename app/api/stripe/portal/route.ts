@@ -1,96 +1,128 @@
-// app/api/stripe/portal/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { createServerSupabase } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2025-11-17.clover",
+});
 
-function createSupabase() {
-  const cookieStore = cookies();
+async function getOrCreateCustomerId(params: {
+  userId: string;
+  email?: string | null;
+}) {
+  const supabase = createServerSupabase();
 
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          } catch {
-            // Server Components might block setting cookies; safe to ignore here.
-          }
-        },
+  // Ensure profile exists
+  const { data: existingProfile, error: selectErr } = await supabase
+    .from("profiles")
+    .select("id, stripe_customer_id, email")
+    .eq("id", params.userId)
+    .maybeSingle();
+
+  if (selectErr) {
+    throw new Error(selectErr.message);
+  }
+
+  // If no profile row, create one
+  if (!existingProfile) {
+    const { error: upsertErr } = await supabase.from("profiles").upsert(
+      {
+        id: params.userId,
+        email: params.email ?? null,
+        stripe_customer_id: null,
       },
-    }
-  );
+      { onConflict: "id" }
+    );
+    if (upsertErr) throw new Error(upsertErr.message);
+  }
+
+  // Re-read to get current customer id
+  const { data: profile, error: profileErr } = await supabase
+    .from("profiles")
+    .select("stripe_customer_id, email")
+    .eq("id", params.userId)
+    .single();
+
+  if (profileErr) throw new Error(profileErr.message);
+
+  // If already has Stripe customer, return it
+  if (profile?.stripe_customer_id) {
+    return String(profile.stripe_customer_id);
+  }
+
+  // Create Stripe customer
+  const customer = await stripe.customers.create({
+    email: params.email ?? profile?.email ?? undefined,
+    metadata: {
+      supabase_user_id: params.userId,
+    },
+  });
+
+  // Persist it
+  const { error: updateErr } = await supabase
+    .from("profiles")
+    .update({ stripe_customer_id: customer.id })
+    .eq("id", params.userId);
+
+  if (updateErr) throw new Error(updateErr.message);
+
+  return customer.id;
 }
 
-export async function GET(req: Request) {
+async function createPortalUrl(req: NextRequest) {
+  const supabase = createServerSupabase();
+
+  const {
+    data: { user },
+    error: userErr,
+  } = await supabase.auth.getUser();
+
+  if (userErr || !user) {
+    return { status: 401 as const, body: { error: "Unauthorized" } };
+  }
+
+  const returnUrlFromQuery = req.nextUrl.searchParams.get("returnUrl");
+  const return_url =
+    returnUrlFromQuery ||
+    process.env.STRIPE_PORTAL_RETURN_URL ||
+    `${req.nextUrl.origin}/settings/billing`;
+
+  const customerId = await getOrCreateCustomerId({
+    userId: user.id,
+    email: user.email,
+  });
+
+  const session = await stripe.billingPortal.sessions.create({
+    customer: customerId,
+    return_url,
+  });
+
+  return { status: 200 as const, body: { url: session.url } };
+}
+
+// For browser navigation: /api/stripe/portal?returnUrl=...
+export async function GET(req: NextRequest) {
   try {
-    const supabase = createSupabase();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return NextResponse.redirect(new URL("/magic-login", req.url), 303);
+    const result = await createPortalUrl(req);
+    if (result.status !== 200) {
+      return NextResponse.json(result.body, { status: result.status });
     }
-
-    // Read the entire row so we don't fail if a specific column doesn't exist.
-    const { data: profile, error: profErr } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    if (profErr || !profile) {
-      return NextResponse.json({ error: "Profile not found." }, { status: 400 });
-    }
-
-    // Try common field names (use whichever exists in your schema)
-    const stripeCustomerId =
-      (profile as any).stripe_customer_id ||
-      (profile as any).stripeCustomerId ||
-      (profile as any).stripe_customer ||
-      (profile as any).customer_id ||
-      (profile as any).stripeCustomer;
-
-    if (!stripeCustomerId) {
-      return NextResponse.json(
-        {
-          error:
-            "No Stripe customer id stored for this user. Add profiles.stripe_customer_id and re-run checkout (or backfill the value).",
-        },
-        { status: 400 }
-      );
-    }
-
-    const url = new URL(req.url);
-    const returnUrlParam = url.searchParams.get("returnUrl") || undefined;
-
-    const return_url =
-      returnUrlParam ||
-      process.env.STRIPE_PORTAL_RETURN_URL ||
-      "https://havenly-2-1.vercel.app/settings/billing";
-
-    const session = await stripe.billingPortal.sessions.create({
-      customer: String(stripeCustomerId),
-      return_url,
-    });
-
-    // IMPORTANT: redirect the browser to Stripe portal
-    return NextResponse.redirect(session.url!, 303);
+    return NextResponse.redirect(result.body.url, 302);
   } catch (e: any) {
-    console.error("[portal] error:", e?.message || e);
+    console.error("[portal][GET] error:", e?.message || e);
+    return NextResponse.json({ error: "Portal error" }, { status: 500 });
+  }
+}
+
+// For fetch() calls: POST /api/stripe/portal
+export async function POST(req: NextRequest) {
+  try {
+    const result = await createPortalUrl(req);
+    return NextResponse.json(result.body, { status: result.status });
+  } catch (e: any) {
+    console.error("[portal][POST] error:", e?.message || e);
     return NextResponse.json({ error: "Portal error" }, { status: 500 });
   }
 }
