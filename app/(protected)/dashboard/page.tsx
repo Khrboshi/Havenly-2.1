@@ -7,10 +7,9 @@ export const dynamic = "force-dynamic";
 export default async function DashboardPage() {
   const supabase = createServerSupabase();
 
-  const { data } = await supabase.auth.getUser();
-  const userId = data?.user?.id;
+  // ✅ getSession reads from cookie locally — no network call
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) redirect("/magic-login?reason=not_authenticated");
 
-  if (!userId) redirect("/magic-login?reason=not_authenticated");
-
-  return <DashboardClient userId={userId} />;
+  return <DashboardClient userId={session.user.id} />;
 }
