@@ -1,8 +1,9 @@
-export const dynamic = "force-dynamic";
-
+import React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
+
+export const dynamic = "force-dynamic";
 
 export default async function BillingPage() {
   const supabase = createServerSupabase();
