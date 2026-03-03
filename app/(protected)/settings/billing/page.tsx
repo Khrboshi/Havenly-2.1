@@ -1,14 +1,20 @@
 import React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import Stripe from "stripe";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
 export default async function BillingPage() {
   const supabase = createServerSupabase();
 
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
   if (!session?.user) redirect("/magic-login");
 
   const { data } = await supabase
@@ -19,6 +25,30 @@ export default async function BillingPage() {
 
   const planType = String((data as any)?.plan_type ?? "FREE").toUpperCase();
   const isPremium = planType === "PREMIUM";
+
+  // Get stripe_customer_id
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("stripe_customer_id")
+    .eq("id", session.user.id)
+    .maybeSingle();
+
+  async function createPortalSession() {
+    "use server";
+
+    if (!profile?.stripe_customer_id) {
+      redirect("/settings");
+    }
+
+    const portalSession = await stripe.billingPortal.sessions.create({
+      customer: String(profile.stripe_customer_id),
+      return_url:
+        process.env.STRIPE_PORTAL_RETURN_URL ||
+        "https://havenly-2-1.vercel.app/settings/billing",
+    });
+
+    redirect(portalSession.url);
+  }
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-16 text-slate-200">
@@ -32,7 +62,9 @@ export default async function BillingPage() {
       <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-slate-100">Current plan</h2>
+            <h2 className="text-sm font-semibold text-slate-100">
+              Current plan
+            </h2>
             <p className="mt-1 text-sm text-slate-300">
               {isPremium ? (
                 <span className="text-emerald-400 font-medium">Premium</span>
@@ -42,13 +74,22 @@ export default async function BillingPage() {
             </p>
           </div>
 
-          {!isPremium && (
+          {!isPremium ? (
             <Link
               href="/upgrade"
               className="rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
             >
               Upgrade to Premium
             </Link>
+          ) : (
+            <form action={createPortalSession}>
+              <button
+                type="submit"
+                className="rounded-full bg-slate-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-700"
+              >
+                Manage subscription
+              </button>
+            </form>
           )}
         </div>
 
@@ -72,7 +113,7 @@ export default async function BillingPage() {
                   Need help?
                 </h3>
                 <p className="mt-2 text-sm text-slate-400">
-                  For billing questions or cancellations, contact us at support@havenly.app
+                  You can cancel or update payment details from the subscription portal.
                 </p>
               </div>
             </>
