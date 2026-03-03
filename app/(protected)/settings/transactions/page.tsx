@@ -1,9 +1,39 @@
-// app/(protected)/settings/transactions/page.tsx
 "use client";
 
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { useSupabase } from "@/components/SupabaseSessionProvider";
 import { useUserPlan } from "@/app/components/useUserPlan";
+
+type InvoiceItem = {
+  id: string;
+  number: string | null;
+  status: string | null;
+  amount_paid: number | null;
+  amount_due: number | null;
+  currency: string | null;
+  created: number; // unix seconds
+  hosted_invoice_url: string | null;
+  invoice_pdf: string | null;
+};
+
+function formatMoney(cents: number | null | undefined, currency: string | null | undefined) {
+  const cur = (currency || "usd").toUpperCase();
+  const value = (cents ?? 0) / 100;
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: cur,
+    }).format(value);
+  } catch {
+    return `${value.toFixed(2)} ${cur}`;
+  }
+}
+
+function formatDateFromUnixSeconds(sec: number) {
+  const d = new Date(sec * 1000);
+  return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" });
+}
 
 export default function TransactionsPage() {
   const { session } = useSupabase();
@@ -12,42 +42,77 @@ export default function TransactionsPage() {
   const email = session?.user?.email ?? "Unknown user";
 
   const readablePlan =
-    planType === "PREMIUM"
-      ? "Premium"
-      : planType === "TRIAL"
-      ? "Trial"
-      : "Free";
+    planType === "PREMIUM" ? "Premium" : planType === "TRIAL" ? "Trial" : "Free";
 
-  const isPremium = planType === "PREMIUM";
+  const [invLoading, setInvLoading] = useState(true);
+  const [invError, setInvError] = useState<string | null>(null);
+  const [invoices, setInvoices] = useState<InvoiceItem[]>([]);
+
+  useEffect(() => {
+    let alive = true;
+
+    async function load() {
+      try {
+        setInvLoading(true);
+        setInvError(null);
+
+        const res = await fetch("/api/stripe/invoices", {
+          method: "GET",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body?.error || `Invoices request failed (${res.status})`);
+        }
+
+        const data = await res.json();
+        const items = Array.isArray(data?.items) ? (data.items as InvoiceItem[]) : [];
+        if (alive) setInvoices(items);
+      } catch (e: any) {
+        if (alive) setInvError(e?.message || "Failed to load invoices.");
+      } finally {
+        if (alive) setInvLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const showUpgrade = !loading && planType !== "PREMIUM";
+
+  const totalPaid = useMemo(() => {
+    return invoices.reduce((sum, inv) => sum + (inv.amount_paid ?? 0), 0);
+  }, [invoices]);
 
   return (
-    <div className="mx-auto max-w-4xl px-6 pt-24 pb-20 text-slate-200">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between mb-8">
+    <div className="mx-auto max-w-5xl px-6 pt-24 pb-20 text-slate-200">
+      <div className="flex items-end justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight mb-2">
-            Transactions
-          </h1>
+          <h1 className="text-3xl font-semibold tracking-tight mb-2">Transactions</h1>
           <p className="text-slate-400 text-sm">{email}</p>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex items-center gap-3">
           <Link
             href="/settings"
-            className="rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
+            className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
           >
             Back to Settings
           </Link>
           <Link
             href="/settings/billing"
-            className="rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
+            className="rounded-md bg-emerald-500 px-3 py-2 text-sm font-medium text-black hover:bg-emerald-400"
           >
             Billing
           </Link>
         </div>
       </div>
 
-      {/* Cards grid */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Subscription */}
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
@@ -56,36 +121,33 @@ export default function TransactionsPage() {
           {loading ? (
             <p className="text-slate-400">Loading…</p>
           ) : (
-            <div className="space-y-2">
-              <p className="text-slate-400">
-                Plan: <span className="text-slate-200">{readablePlan}</span>
-              </p>
-
-              {!isPremium && (
-                <p className="text-slate-400">
-                  Credits:{" "}
-                  <span className="text-slate-200">{credits ?? 0}</span>
-                </p>
-              )}
-            </div>
+            <p className="text-slate-400">
+              Plan: <span className="text-slate-200">{readablePlan}</span>
+              {planType !== "PREMIUM" ? (
+                <>
+                  {" "}
+                  — credits: <span className="text-slate-200">{credits ?? 0}</span>
+                </>
+              ) : null}
+            </p>
           )}
 
           <div className="mt-5 flex flex-wrap gap-3">
-            {isPremium ? (
-              <a
-                href="/api/stripe/portal?returnUrl=/settings/transactions"
-                className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
-              >
-                Manage subscription
-              </a>
-            ) : (
+            <Link
+              href="/api/stripe/portal?returnUrl=/settings/transactions"
+              className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
+            >
+              Manage subscription
+            </Link>
+
+            {showUpgrade ? (
               <Link
                 href="/upgrade"
-                className="rounded-md bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
+                className="rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
               >
                 Upgrade
               </Link>
-            )}
+            ) : null}
 
             <Link
               href="/dashboard"
@@ -96,44 +158,94 @@ export default function TransactionsPage() {
           </div>
 
           <p className="mt-4 text-xs text-slate-500">
-            Premium billing is managed securely in Stripe. Use “Manage
-            subscription” to view invoices, update payment method, or cancel.
+            Billing is managed securely by Stripe.
           </p>
         </div>
 
         {/* Payment history */}
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-          <h2 className="text-lg font-semibold mb-2">Payment history</h2>
-
-          <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-            <p className="text-slate-300 text-sm font-medium mb-1">
-              Invoices and receipts
-            </p>
-            <p className="text-slate-400 text-sm">
-              For now, invoices are available in the Stripe customer portal.
-            </p>
-
-            <div className="mt-4 flex flex-wrap gap-3">
-              <a
-                href="/api/stripe/portal?returnUrl=/settings/transactions"
-                className="rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
-              >
-                Open Stripe portal
-              </a>
-
-              <Link
-                href="/settings/billing"
-                className="rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
-              >
-                Go to Billing page
-              </Link>
+          <div className="flex items-center justify-between gap-4 mb-2">
+            <h2 className="text-lg font-semibold">Payment history</h2>
+            <div className="text-xs text-slate-400">
+              Total paid:{" "}
+              <span className="text-slate-200">
+                {formatMoney(totalPaid, invoices[0]?.currency || "usd")}
+              </span>
             </div>
           </div>
 
-          <div className="mt-5 text-xs text-slate-500">
-            If you want invoices to appear here (inside Havenly), we can add an
-            API endpoint that lists Stripe invoices for the logged-in user and
-            render them as a table.
+          {invLoading ? (
+            <p className="text-slate-400">Loading invoices…</p>
+          ) : invError ? (
+            <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-200">
+              {invError}
+            </div>
+          ) : invoices.length === 0 ? (
+            <p className="text-slate-400">No invoices yet.</p>
+          ) : (
+            <div className="mt-4 overflow-hidden rounded-xl border border-white/10">
+              <table className="w-full text-sm">
+                <thead className="bg-white/5 text-slate-400">
+                  <tr>
+                    <th className="text-left font-medium px-4 py-3">Date</th>
+                    <th className="text-left font-medium px-4 py-3">Status</th>
+                    <th className="text-right font-medium px-4 py-3">Amount</th>
+                    <th className="text-right font-medium px-4 py-3">Receipt</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {invoices.map((inv) => {
+                    const url = inv.hosted_invoice_url || inv.invoice_pdf;
+                    const amount =
+                      (inv.amount_paid && inv.amount_paid > 0 ? inv.amount_paid : inv.amount_due) ??
+                      0;
+
+                    return (
+                      <tr key={inv.id} className="border-t border-white/10">
+                        <td className="px-4 py-3 text-slate-200">
+                          {formatDateFromUnixSeconds(inv.created)}
+                        </td>
+                        <td className="px-4 py-3 text-slate-300 capitalize">
+                          {inv.status || "-"}
+                        </td>
+                        <td className="px-4 py-3 text-right text-slate-200">
+                          {formatMoney(amount, inv.currency)}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {url ? (
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-emerald-400 hover:text-emerald-300"
+                            >
+                              View
+                            </a>
+                          ) : (
+                            <span className="text-slate-500">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <div className="mt-4 flex gap-3">
+            <Link
+              href="/api/stripe/portal?returnUrl=/settings/transactions"
+              className="rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
+            >
+              Open Stripe portal
+            </Link>
+            <Link
+              href="/settings/billing"
+              className="rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
+            >
+              Go to Billing page
+            </Link>
           </div>
         </div>
       </div>
