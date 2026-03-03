@@ -1,115 +1,104 @@
-import { NextRequest, NextResponse } from "next/server";
+// app/api/stripe/portal/route.ts
+import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-06-20",
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!); // do NOT set apiVersion here
 
-async function getOrCreateCustomerId(params: {
-  userId: string;
-  email?: string | null;
-}) {
-  const supabase = createServerSupabase();
-
-  // Ensure profile exists
-  const { data: existingProfile, error: selectErr } = await supabase
-    .from("profiles")
-    .select("id, stripe_customer_id, email")
-    .eq("id", params.userId)
-    .maybeSingle();
-
-  if (selectErr) throw new Error(selectErr.message);
-
-  if (!existingProfile) {
-    const { error: upsertErr } = await supabase.from("profiles").upsert(
-      {
-        id: params.userId,
-        email: params.email ?? null,
-        stripe_customer_id: null,
-      },
-      { onConflict: "id" }
-    );
-    if (upsertErr) throw new Error(upsertErr.message);
-  }
-
-  const { data: profile, error: profileErr } = await supabase
-    .from("profiles")
-    .select("stripe_customer_id, email")
-    .eq("id", params.userId)
-    .single();
-
-  if (profileErr) throw new Error(profileErr.message);
-
-  if (profile?.stripe_customer_id) return String(profile.stripe_customer_id);
-
-  const customer = await stripe.customers.create({
-    email: params.email ?? profile?.email ?? undefined,
-    metadata: { supabase_user_id: params.userId },
-  });
-
-  const { error: updateErr } = await supabase
-    .from("profiles")
-    .update({ stripe_customer_id: customer.id })
-    .eq("id", params.userId);
-
-  if (updateErr) throw new Error(updateErr.message);
-
-  return customer.id;
+function absUrl(input: string) {
+  // Allows relative paths like "/settings/billing"
+  if (input.startsWith("http://") || input.startsWith("https://")) return input;
+  const base =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.VERCEL_URL?.startsWith("http")
+      ? process.env.VERCEL_URL
+      : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000";
+  return new URL(input, base).toString();
 }
 
-async function createPortalUrl(req: NextRequest) {
-  const supabase = createServerSupabase();
-
-  const {
-    data: { user },
-    error: userErr,
-  } = await supabase.auth.getUser();
-
-  if (userErr || !user) {
-    return { status: 401 as const, body: { error: "Unauthorized" } };
-  }
-
-  const returnUrlFromQuery = req.nextUrl.searchParams.get("returnUrl");
-  const return_url =
-    returnUrlFromQuery ||
-    process.env.STRIPE_PORTAL_RETURN_URL ||
-    `${req.nextUrl.origin}/settings/billing`;
-
-  const customerId = await getOrCreateCustomerId({
-    userId: user.id,
-    email: user.email,
-  });
-
-  const session = await stripe.billingPortal.sessions.create({
-    customer: customerId,
-    return_url,
-  });
-
-  return { status: 200 as const, body: { url: session.url } };
-}
-
-export async function GET(req: NextRequest) {
+// GET /api/stripe/portal?returnUrl=/settings/billing
+export async function GET(req: Request) {
   try {
-    const result = await createPortalUrl(req);
-    if (result.status !== 200) {
-      return NextResponse.json(result.body, { status: result.status });
+    const supabase = createServerSupabase();
+
+    const {
+      data: { user },
+      error: userErr,
+    } = await supabase.auth.getUser();
+
+    if (userErr || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    return NextResponse.redirect(result.body.url, 302);
+
+    // 1) Read existing stripe_customer_id from profiles (if present)
+    const { data: profile, error: profErr } = await supabase
+      .from("profiles")
+      .select("stripe_customer_id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (profErr) {
+      console.error("[portal] profiles read error:", profErr);
+      return NextResponse.json({ error: "Portal error" }, { status: 500 });
+    }
+
+    let customerId = profile?.stripe_customer_id ?? null;
+
+    // 2) If missing, create Stripe customer and store it on profiles
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: user.email ?? undefined,
+        metadata: { supabase_uid: user.id },
+      });
+
+      customerId = customer.id;
+
+      // Upsert profile row (requires RLS policy allowing insert/update for own row)
+      const { error: upsertErr } = await supabase
+        .from("profiles")
+        .upsert(
+          { id: user.id, stripe_customer_id: customerId },
+          { onConflict: "id" }
+        );
+
+      if (upsertErr) {
+        console.error("[portal] profiles upsert error:", upsertErr);
+        return NextResponse.json(
+          { error: "Could not save Stripe customer id." },
+          { status: 500 }
+        );
+      }
+    }
+
+    // 3) Create billing portal session
+    const urlObj = new URL(req.url);
+    const returnUrlParam = urlObj.searchParams.get("returnUrl");
+    const return_url = absUrl(
+      returnUrlParam ||
+        process.env.STRIPE_PORTAL_RETURN_URL ||
+        "/settings/billing"
+    );
+
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url,
+    });
+
+    // Redirect straight to Stripe portal
+    return NextResponse.redirect(session.url, { status: 303 });
   } catch (e: any) {
-    console.error("[portal][GET] error:", e?.message || e);
+    console.error("[portal] error:", e?.message || e);
     return NextResponse.json({ error: "Portal error" }, { status: 500 });
   }
 }
 
-export async function POST(req: NextRequest) {
-  try {
-    const result = await createPortalUrl(req);
-    return NextResponse.json(result.body, { status: result.status });
-  } catch (e: any) {
-    console.error("[portal][POST] error:", e?.message || e);
-    return NextResponse.json({ error: "Portal error" }, { status: 500 });
-  }
+// Optional: if your UI calls POST instead of GET, keep this too.
+export async function POST(req: Request) {
+  const url = new URL(req.url);
+  // Reuse GET behavior (same auth + redirect)
+  return GET(new Request(url.toString(), { method: "GET", headers: req.headers }));
 }
