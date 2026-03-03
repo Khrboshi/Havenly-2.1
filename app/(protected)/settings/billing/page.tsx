@@ -62,7 +62,7 @@ export default async function BillingPage() {
                 <ul className="mt-3 space-y-2 text-sm text-slate-300">
                   <li>• Unlimited AI reflections</li>
                   <li>• Pattern clarity across time</li>
-                  <li>• Weekly &amp; monthly summaries</li>
+                  <li>• Weekly and monthly summaries</li>
                   <li>• Deeper insights without writing more</li>
                 </ul>
               </div>
@@ -72,13 +72,7 @@ export default async function BillingPage() {
                   Need help?
                 </h3>
                 <p className="mt-2 text-sm text-slate-400">
-                  For billing questions or cancellations, contact us at{" "}
-                  
-                    href="mailto:support@havenly.app"
-                    className="text-emerald-400 hover:underline"
-                  >
-                    support@havenly.app
-                  </a>
+                  For billing questions or cancellations, contact us at support@havenly.app
                 </p>
               </div>
             </>
@@ -103,7 +97,7 @@ export default async function BillingPage() {
                 <ul className="mt-3 space-y-2 text-sm text-slate-300">
                   <li>• Unlimited AI reflections</li>
                   <li>• Pattern clarity across time</li>
-                  <li>• Weekly &amp; monthly summaries</li>
+                  <li>• Weekly and monthly summaries</li>
                   <li>• Deeper insights without writing more</li>
                 </ul>
               </div>
