@@ -5,7 +5,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-11-17.clover",
+  apiVersion: "2024-06-20",
 });
 
 async function getOrCreateCustomerId(params: {
@@ -21,11 +21,8 @@ async function getOrCreateCustomerId(params: {
     .eq("id", params.userId)
     .maybeSingle();
 
-  if (selectErr) {
-    throw new Error(selectErr.message);
-  }
+  if (selectErr) throw new Error(selectErr.message);
 
-  // If no profile row, create one
   if (!existingProfile) {
     const { error: upsertErr } = await supabase.from("profiles").upsert(
       {
@@ -38,7 +35,6 @@ async function getOrCreateCustomerId(params: {
     if (upsertErr) throw new Error(upsertErr.message);
   }
 
-  // Re-read to get current customer id
   const { data: profile, error: profileErr } = await supabase
     .from("profiles")
     .select("stripe_customer_id, email")
@@ -47,20 +43,13 @@ async function getOrCreateCustomerId(params: {
 
   if (profileErr) throw new Error(profileErr.message);
 
-  // If already has Stripe customer, return it
-  if (profile?.stripe_customer_id) {
-    return String(profile.stripe_customer_id);
-  }
+  if (profile?.stripe_customer_id) return String(profile.stripe_customer_id);
 
-  // Create Stripe customer
   const customer = await stripe.customers.create({
     email: params.email ?? profile?.email ?? undefined,
-    metadata: {
-      supabase_user_id: params.userId,
-    },
+    metadata: { supabase_user_id: params.userId },
   });
 
-  // Persist it
   const { error: updateErr } = await supabase
     .from("profiles")
     .update({ stripe_customer_id: customer.id })
@@ -102,7 +91,6 @@ async function createPortalUrl(req: NextRequest) {
   return { status: 200 as const, body: { url: session.url } };
 }
 
-// For browser navigation: /api/stripe/portal?returnUrl=...
 export async function GET(req: NextRequest) {
   try {
     const result = await createPortalUrl(req);
@@ -116,7 +104,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// For fetch() calls: POST /api/stripe/portal
 export async function POST(req: NextRequest) {
   try {
     const result = await createPortalUrl(req);
