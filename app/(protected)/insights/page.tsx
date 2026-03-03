@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
-import { ensureCreditsFresh, PlanType } from "@/lib/creditRules";
+import { PlanType } from "@/lib/creditRules";
 import InsightsClient from "./InsightsClient";
 
 export const dynamic = "force-dynamic";
@@ -13,23 +13,20 @@ function normalizePlan(v: unknown): PlanType {
 export default async function InsightsPage() {
   const supabase = createServerSupabase();
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  // ✅ Use getUser() once — middleware already validated session
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/magic-login");
 
-  if (!session?.user) redirect("/magic-login");
-
-  await ensureCreditsFresh({ supabase, userId: session.user.id });
-
+  // ✅ Single query, no ensureCreditsFresh — saves 2 round trips
   const { data } = await supabase
     .from("user_credits")
     .select("plan_type")
-    .eq("user_id", session.user.id)
+    .eq("user_id", user.id)
     .maybeSingle();
 
   const planType = normalizePlan((data as any)?.plan_type);
 
-  if (planType !== "PREMIUM") {
+  if (planType !== "PREMIUM" && planType !== "TRIAL") {
     redirect("/insights/preview");
   }
 
