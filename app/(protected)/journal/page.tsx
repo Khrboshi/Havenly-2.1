@@ -1,4 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -15,13 +16,10 @@ function formatDate(date: string) {
 
 export default async function JournalPage() {
   const supabase = createServerSupabase();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
 
-  if (!session) {
-    return null;
-  }
+  // ✅ getSession reads from cookie locally — no network call
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) redirect("/magic-login");
 
   const { data: entries } = await supabase
     .from("journal_entries")
@@ -43,7 +41,7 @@ export default async function JournalPage() {
 
       {entries?.length === 0 && (
         <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-slate-400 text-sm">
-          You haven’t written any reflections yet. Start with your first one.
+          You haven't written any reflections yet. Start with your first one.
         </div>
       )}
 
@@ -57,11 +55,9 @@ export default async function JournalPage() {
             <p className="text-xs text-slate-500 mb-2">
               {formatDate(entry.created_at)}
             </p>
-
             <p className="text-sm leading-relaxed text-slate-200 line-clamp-4">
               {entry.content}
             </p>
-
             <p className="mt-3 text-emerald-400 text-sm hover:underline">
               Read more →
             </p>
