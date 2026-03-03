@@ -5,19 +5,29 @@ import { createServerSupabase } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!); // do NOT set apiVersion here
+// Do NOT manually set apiVersion (avoids TS type issues)
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-function absUrl(input: string) {
-  // Allows relative paths like "/settings/billing"
-  if (input.startsWith("http://") || input.startsWith("https://")) return input;
-  const base =
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.VERCEL_URL?.startsWith("http")
+function getBaseUrl() {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL;
+  }
+
+  if (process.env.VERCEL_URL) {
+    return process.env.VERCEL_URL.startsWith("http")
       ? process.env.VERCEL_URL
-      : process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3000";
-  return new URL(input, base).toString();
+      : `https://${process.env.VERCEL_URL}`;
+  }
+
+  return "http://localhost:3000";
+}
+
+function toAbsoluteUrl(path: string) {
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+
+  return new URL(path, getBaseUrl()).toString();
 }
 
 // GET /api/stripe/portal?returnUrl=/settings/billing
@@ -34,7 +44,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // 1) Read existing stripe_customer_id from profiles (if present)
+    // Read stripe_customer_id
     const { data: profile, error: profErr } = await supabase
       .from("profiles")
       .select("stripe_customer_id")
@@ -48,7 +58,7 @@ export async function GET(req: Request) {
 
     let customerId = profile?.stripe_customer_id ?? null;
 
-    // 2) If missing, create Stripe customer and store it on profiles
+    // Create Stripe customer if missing
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: user.email ?? undefined,
@@ -57,7 +67,6 @@ export async function GET(req: Request) {
 
       customerId = customer.id;
 
-      // Upsert profile row (requires RLS policy allowing insert/update for own row)
       const { error: upsertErr } = await supabase
         .from("profiles")
         .upsert(
@@ -74,11 +83,12 @@ export async function GET(req: Request) {
       }
     }
 
-    // 3) Create billing portal session
+    // Create billing portal session
     const urlObj = new URL(req.url);
-    const returnUrlParam = urlObj.searchParams.get("returnUrl");
-    const return_url = absUrl(
-      returnUrlParam ||
+    const returnParam = urlObj.searchParams.get("returnUrl");
+
+    const return_url = toAbsoluteUrl(
+      returnParam ||
         process.env.STRIPE_PORTAL_RETURN_URL ||
         "/settings/billing"
     );
@@ -88,17 +98,14 @@ export async function GET(req: Request) {
       return_url,
     });
 
-    // Redirect straight to Stripe portal
     return NextResponse.redirect(session.url, { status: 303 });
-  } catch (e: any) {
-    console.error("[portal] error:", e?.message || e);
+  } catch (err: any) {
+    console.error("[portal] error:", err?.message || err);
     return NextResponse.json({ error: "Portal error" }, { status: 500 });
   }
 }
 
-// Optional: if your UI calls POST instead of GET, keep this too.
+// Allow POST to behave the same as GET
 export async function POST(req: Request) {
-  const url = new URL(req.url);
-  // Reuse GET behavior (same auth + redirect)
-  return GET(new Request(url.toString(), { method: "GET", headers: req.headers }));
+  return GET(req);
 }
