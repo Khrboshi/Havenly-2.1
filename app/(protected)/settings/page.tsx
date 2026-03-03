@@ -1,4 +1,4 @@
-// app/settings/page.tsx
+// app/(protected)/settings/page.tsx
 import React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -49,7 +49,11 @@ function Card({
   );
 }
 
-function ActionButton({
+/**
+ * Use <a> for the Stripe portal routes to avoid any client-side fetch/prefetch
+ * and to guarantee a full navigation (most reliable).
+ */
+function ActionLink({
   href,
   children,
   variant = "secondary",
@@ -63,8 +67,18 @@ function ActionButton({
       ? "rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
       : "rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/15";
 
+  const isPortal = href.startsWith("/api/stripe/portal");
+
+  if (isPortal) {
+    return (
+      <a href={href} className={cls}>
+        {children}
+      </a>
+    );
+  }
+
   return (
-    <Link href={href} className={cls}>
+    <Link href={href} className={cls} prefetch={false}>
       {children}
     </Link>
   );
@@ -92,6 +106,7 @@ export default async function SettingsPage() {
     | "FREE";
 
   const isPremium = plan === "PREMIUM";
+  const portalReturn = encodeURIComponent("/settings");
 
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-14 text-slate-200">
@@ -107,16 +122,16 @@ export default async function SettingsPage() {
           <div className="flex items-center gap-3">
             <PlanBadge plan={plan} />
             {isPremium ? (
-              <a
-                href="/api/stripe/portal?returnUrl=/settings"
-                className="rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/15"
+              <ActionLink
+                href={`/api/stripe/portal?returnUrl=${portalReturn}`}
+                variant="secondary"
               >
                 Manage subscription
-              </a>
+              </ActionLink>
             ) : (
-              <ActionButton href="/upgrade" variant="primary">
+              <ActionLink href="/upgrade" variant="primary">
                 Upgrade
-              </ActionButton>
+              </ActionLink>
             )}
           </div>
         </div>
@@ -129,9 +144,9 @@ export default async function SettingsPage() {
             title="Account"
             subtitle="Your login and billing email."
             right={
-              <ActionButton href="/settings/transactions" variant="secondary">
+              <ActionLink href="/settings/transactions" variant="secondary">
                 Transactions
-              </ActionButton>
+              </ActionLink>
             }
           >
             <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-5">
@@ -155,16 +170,13 @@ export default async function SettingsPage() {
             }
             right={
               isPremium ? (
-                <Link
-                  href="/settings/billing"
-                  className="rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/15"
-                >
+                <ActionLink href="/settings/billing" variant="secondary">
                   Billing
-                </Link>
+                </ActionLink>
               ) : (
-                <ActionButton href="/upgrade" variant="primary">
+                <ActionLink href="/upgrade" variant="primary">
                   View Premium
-                </ActionButton>
+                </ActionLink>
               )
             }
           >
@@ -188,20 +200,17 @@ export default async function SettingsPage() {
                   Manage
                 </div>
                 <div className="mt-3 flex flex-wrap gap-3">
-                  <Link
-                    href="/settings/billing"
-                    className="rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/15"
-                  >
+                  <ActionLink href="/settings/billing" variant="secondary">
                     Billing page
-                  </Link>
+                  </ActionLink>
 
                   {isPremium ? (
-                    <a
-                      href="/api/stripe/portal?returnUrl=/settings"
-                      className="rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/15"
+                    <ActionLink
+                      href={`/api/stripe/portal?returnUrl=${portalReturn}`}
+                      variant="secondary"
                     >
                       Stripe portal
-                    </a>
+                    </ActionLink>
                   ) : null}
                 </div>
               </div>
@@ -217,16 +226,14 @@ export default async function SettingsPage() {
           >
             <Link
               href="/install"
+              prefetch={false}
               className="inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
             >
               Install
             </Link>
           </Card>
 
-          <Card
-            title="Support"
-            subtitle="Help with billing or account issues."
-          >
+          <Card title="Support" subtitle="Help with billing or account issues.">
             <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-5">
               <div className="text-xs font-semibold text-slate-400">Email</div>
               <div className="mt-1 text-sm text-slate-200">
