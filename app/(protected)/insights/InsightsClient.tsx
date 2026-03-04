@@ -1,7 +1,9 @@
 // app/(protected)/insights/InsightsClient.tsx
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useUserPlan } from "@/app/components/useUserPlan";
 
 type InsightData = {
   themes: Record<string, number>;
@@ -17,6 +19,9 @@ export default function InsightsClient() {
   const [data, setData] = useState<InsightData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const { planType, loading: planLoading } = useUserPlan();
+  const isPremium = planType === "PREMIUM" || planType === "TRIAL";
+
   useEffect(() => {
     async function load() {
       setError(null);
@@ -31,8 +36,8 @@ export default function InsightsClient() {
 
         const j = (await res.json()) as InsightData;
 
-        // Best-effort fallback until API includes entryCount.
-        // Uses max occurrence count across themes/emotions as an approximate “enough data” signal.
+        // Best-effort fallback until API includes entryCount:
+        // Use max occurrence count across themes/emotions as an approximate “enough data” signal.
         const derivedCount = Math.max(
           ...Object.values(j.themes || {}),
           ...Object.values(j.emotions || {}),
@@ -59,13 +64,15 @@ export default function InsightsClient() {
   const topEmotionCount = topEmotions[0]?.[1];
 
   const hasAnyInsights = topThemes.length > 0 || topEmotions.length > 0;
-  const showUpgradePrompt = (data?.entryCount ?? 0) >= 5;
+
+  // Show upsell only for FREE users (never for Premium/Trial), and avoid flicker while plan is loading.
+  const showUpgradePrompt = !planLoading && !isPremium && (data?.entryCount ?? 0) >= 5;
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-semibold text-slate-100">Insights</h1>
-        <p className="mt-2 text-sm text-slate-400 max-w-2xl">
+        <p className="mt-2 max-w-2xl text-sm text-slate-400">
           These patterns are generated across multiple entries — never from a single moment.
         </p>
       </div>
@@ -77,7 +84,7 @@ export default function InsightsClient() {
       )}
 
       {!error && !data && (
-        <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-6 text-slate-400 text-sm">
+        <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-6 text-sm text-slate-400">
           Loading insights…
         </div>
       )}
@@ -93,27 +100,21 @@ export default function InsightsClient() {
                 No patterns yet. Add a few more entries and Havenly will start noticing themes and emotions over time.
               </p>
             ) : (
-              <div className="mt-3 space-y-2 text-sm text-slate-300 max-w-2xl">
+              <div className="mt-3 max-w-2xl space-y-2 text-sm text-slate-300">
                 {topEmotion && (
                   <p>
                     Recently,{" "}
-                    <span className="text-slate-100 font-medium">{topEmotion}</span>{" "}
+                    <span className="font-medium text-slate-100">{topEmotion}</span>{" "}
                     shows up most often
-                    {typeof topEmotionCount === "number" ? (
-                      <> ({topEmotionCount} times)</>
-                    ) : null}
-                    .
+                    {typeof topEmotionCount === "number" ? <> ({topEmotionCount} times)</> : null}.
                   </p>
                 )}
 
                 {topTheme && (
                   <p>
                     A recurring theme is{" "}
-                    <span className="text-slate-100 font-medium">{topTheme}</span>
-                    {typeof topThemeCount === "number" ? (
-                      <> ({topThemeCount} times)</>
-                    ) : null}
-                    .
+                    <span className="font-medium text-slate-100">{topTheme}</span>
+                    {typeof topThemeCount === "number" ? <> ({topThemeCount} times)</> : null}.
                   </p>
                 )}
 
@@ -124,25 +125,23 @@ export default function InsightsClient() {
             )}
           </section>
 
-          {/* Milestone upgrade prompt */}
+          {/* Milestone upgrade prompt (FREE only) */}
           {showUpgradePrompt && (
             <section className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h3 className="text-sm font-semibold text-emerald-100">
-                    Ready for deeper patterns?
-                  </h3>
-                  <p className="mt-1 text-sm text-emerald-200/80 max-w-2xl">
+                  <h3 className="text-sm font-semibold text-emerald-100">Ready for deeper patterns?</h3>
+                  <p className="mt-1 max-w-2xl text-sm text-emerald-200/80">
                     Premium Insights adds deeper multi-entry themes, weekly “how have I really been?” summaries, and richer reflections.
                   </p>
                 </div>
 
-                <a
+                <Link
                   href="/upgrade"
-                  className="inline-flex items-center justify-center rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-300 transition"
+                  className="inline-flex items-center justify-center rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-emerald-300"
                 >
                   See Premium →
-                </a>
+                </Link>
               </div>
             </section>
           )}
@@ -150,7 +149,7 @@ export default function InsightsClient() {
           {/* Existing lists */}
           <div className="grid gap-6 md:grid-cols-2">
             <section className="rounded-2xl border border-slate-800 bg-slate-950/50 p-6">
-              <h2 className="text-sm font-semibold text-slate-200 mb-4">Top themes</h2>
+              <h2 className="mb-4 text-sm font-semibold text-slate-200">Top themes</h2>
               {topThemes.length === 0 ? (
                 <p className="text-sm text-slate-500">No theme data yet.</p>
               ) : (
@@ -169,7 +168,7 @@ export default function InsightsClient() {
             </section>
 
             <section className="rounded-2xl border border-slate-800 bg-slate-950/50 p-6">
-              <h2 className="text-sm font-semibold text-slate-200 mb-4">Top emotions</h2>
+              <h2 className="mb-4 text-sm font-semibold text-slate-200">Top emotions</h2>
               {topEmotions.length === 0 ? (
                 <p className="text-sm text-slate-500">No emotion data yet.</p>
               ) : (
