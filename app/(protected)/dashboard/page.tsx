@@ -18,8 +18,21 @@ const FALLBACK_EMOTIONS = new Set([
   "frustration", "hurt", "longing", "confusion",
 ]);
 
+// All 4 domain template fallback corepatterns (prefix match, case-insensitive)
+const FALLBACK_CP_PREFIXES = [
+  "you're in the middle of something",
+  "you're proud of progress, but still learning the line",
+  "you're navigating a tension between your professional self-worth",
+  "you're trying to protect your self-respect while staying connected",
+];
+
 function isFallback(set: Set<string>, k: string) {
   return set.has((k || "").toLowerCase().trim());
+}
+
+function isFallbackCorepattern(k: string): boolean {
+  const lower = k.toLowerCase().trim();
+  return FALLBACK_CP_PREFIXES.some((p) => lower.startsWith(p));
 }
 
 function parseAiResponse(raw: any) {
@@ -152,8 +165,7 @@ export default async function DashboardPage() {
     // Find most recent non-fallback corepattern
     if (!lastCorepattern) {
       const cp = typeof parsed.corepattern === "string" ? parsed.corepattern.trim() : "";
-      const FALLBACK_CP = "you're in the middle of something";
-      if (cp.length >= 20 && !cp.toLowerCase().startsWith(FALLBACK_CP)) {
+      if (cp.length >= 20 && !isFallbackCorepattern(cp)) {
         lastCorepattern = cp.charAt(0).toUpperCase() + cp.slice(1);
       }
     }
