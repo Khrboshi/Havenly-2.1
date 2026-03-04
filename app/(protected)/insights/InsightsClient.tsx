@@ -8,8 +8,6 @@ import { useUserPlan } from "@/app/components/useUserPlan";
 type InsightData = {
   themes: Record<string, number>;
   emotions: Record<string, number>;
-
-  // Optional (safe to ignore if API doesn't return them yet)
   corepatterns?: Record<string, number>;
   entryCount?: number;
   trend?: { up: string[]; down: string[] };
@@ -24,7 +22,12 @@ function maxVal(map: Record<string, number>): number {
   return vals.length ? Math.max(...vals) : 1;
 }
 
-// ── Bar row used in theme/emotion lists ─────────────────────────────────────
+// Normalize display labels to avoid "Curiosity" + "curiosity" looking like different items.
+function normalizeLabel(label: string) {
+  const trimmed = (label || "").trim();
+  if (!trimmed) return trimmed;
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+}
 
 function BarRow({
   label,
@@ -43,19 +46,35 @@ function BarRow({
   return (
     <li className="group space-y-1.5">
       <div className="flex items-center justify-between text-sm">
-        <span
-          className={
-            isTop
-              ? "font-medium text-slate-100"
-              : "text-slate-300 transition-colors group-hover:text-slate-100"
-          }
-        >
-          {label}
-        </span>
+        <div className="flex items-center gap-2 min-w-0">
+          <span
+            className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border text-[10px] tabular-nums ${
+              isTop
+                ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-200"
+                : "border-slate-800 bg-slate-950/40 text-slate-500"
+            }`}
+            aria-hidden="true"
+          >
+            {rank + 1}
+          </span>
+
+          <span
+            className={`truncate ${
+              isTop
+                ? "font-medium text-slate-100"
+                : "text-slate-300 transition-colors group-hover:text-slate-100"
+            }`}
+            title={label}
+          >
+            {label}
+          </span>
+        </div>
+
         <span className="tabular-nums text-xs text-slate-500">{count}</span>
       </div>
 
-      <div className="h-1 w-full overflow-hidden rounded-full bg-slate-800">
+      {/* Thinner bar reads more like “distribution” than “progress.” */}
+      <div className="h-[3px] w-full overflow-hidden rounded-full bg-slate-800">
         <div
           className={`h-full rounded-full transition-all duration-700 ${
             isTop ? "bg-emerald-400" : "bg-slate-600 group-hover:bg-slate-500"
@@ -67,19 +86,15 @@ function BarRow({
   );
 }
 
-// ── Skeleton loader ──────────────────────────────────────────────────────────
-
 function Skeleton() {
   return (
     <div className="animate-pulse space-y-6">
-      {/* Summary skeleton */}
       <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950/50 p-6">
         <div className="h-3.5 w-20 rounded bg-slate-800" />
         <div className="h-3 w-3/4 rounded bg-slate-800" />
         <div className="h-3 w-1/2 rounded bg-slate-800" />
       </div>
 
-      {/* Grid skeleton */}
       <div className="grid gap-6 md:grid-cols-2">
         {[0, 1].map((i) => (
           <div
@@ -93,7 +108,7 @@ function Skeleton() {
                   <div className="h-3 w-28 rounded bg-slate-800" />
                   <div className="h-3 w-6 rounded bg-slate-800" />
                 </div>
-                <div className="h-1 w-full rounded-full bg-slate-800" />
+                <div className="h-[3px] w-full rounded-full bg-slate-800" />
               </div>
             ))}
           </div>
@@ -102,8 +117,6 @@ function Skeleton() {
     </div>
   );
 }
-
-// ── Trend badge ──────────────────────────────────────────────────────────────
 
 function TrendBadge({ label, direction }: { label: string; direction: "up" | "down" }) {
   return (
@@ -114,12 +127,10 @@ function TrendBadge({ label, direction }: { label: string; direction: "up" | "do
           : "border-slate-700 bg-slate-700/40 text-slate-400"
       }`}
     >
-      {direction === "up" ? "↑" : "↓"} {label}
+      {direction === "up" ? "↑" : "↓"} {normalizeLabel(label)}
     </span>
   );
 }
-
-// ── Main component ───────────────────────────────────────────────────────────
 
 export default function InsightsClient() {
   const [data, setData] = useState<InsightData | null>(null);
@@ -127,6 +138,9 @@ export default function InsightsClient() {
 
   const { planType, loading: planLoading } = useUserPlan();
   const isPremium = planType === "PREMIUM" || planType === "TRIAL";
+
+  const [showAllThemes, setShowAllThemes] = useState(false);
+  const [showAllEmotions, setShowAllEmotions] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -144,15 +158,16 @@ export default function InsightsClient() {
 
         const j = (await res.json()) as InsightData;
 
-        // Best-effort fallback until API includes entryCount:
-        // Use the max occurrence count across themes/emotions as a rough “enough data” signal.
         const derivedCount = Math.max(
           ...Object.values(j.themes || {}),
           ...Object.values(j.emotions || {}),
           0
         );
 
-        setData({ ...j, entryCount: typeof j.entryCount === "number" ? j.entryCount : derivedCount });
+        setData({
+          ...j,
+          entryCount: typeof j.entryCount === "number" ? j.entryCount : derivedCount,
+        });
       } catch {
         setError("Failed to load insights.");
         setData(null);
@@ -162,8 +177,27 @@ export default function InsightsClient() {
     load();
   }, []);
 
-  const topThemes = useMemo(() => (data ? sortMap(data.themes) : []), [data]);
-  const topEmotions = useMemo(() => (data ? sortMap(data.emotions) : []), [data]);
+  const topThemesAll = useMemo(() => {
+    if (!data) return [];
+    // normalize keys by display while keeping counts; prefer original keys in data but unify display
+    return sortMap(data.themes).map(([k, v]) => [normalizeLabel(k), v] as const);
+  }, [data]);
+
+  const topEmotionsAll = useMemo(() => {
+    if (!data) return [];
+    return sortMap(data.emotions).map(([k, v]) => [normalizeLabel(k), v] as const);
+  }, [data]);
+
+  const topThemes = useMemo(
+    () => (showAllThemes ? topThemesAll : topThemesAll.slice(0, 6)),
+    [topThemesAll, showAllThemes]
+  );
+
+  const topEmotions = useMemo(
+    () => (showAllEmotions ? topEmotionsAll : topEmotionsAll.slice(0, 6)),
+    [topEmotionsAll, showAllEmotions]
+  );
+
   const topCorepatterns = useMemo(
     () => (data?.corepatterns ? sortMap(data.corepatterns).slice(0, 5) : []),
     [data]
@@ -173,24 +207,22 @@ export default function InsightsClient() {
   const maxEmotion = useMemo(() => (data ? maxVal(data.emotions) : 1), [data]);
   const maxPattern = useMemo(() => (data?.corepatterns ? maxVal(data.corepatterns) : 1), [data]);
 
-  const topEmotion = topEmotions[0]?.[0];
-  const topEmotionCount = topEmotions[0]?.[1];
+  const topEmotion = topEmotionsAll[0]?.[0];
+  const topEmotionCount = topEmotionsAll[0]?.[1];
 
-  const topTheme = topThemes[0]?.[0];
-  const topThemeCount = topThemes[0]?.[1];
+  const topTheme = topThemesAll[0]?.[0];
+  const topThemeCount = topThemesAll[0]?.[1];
 
   const entryCount = data?.entryCount ?? 0;
-  const hasAnyInsights = topThemes.length > 0 || topEmotions.length > 0;
+  const hasAnyInsights = topThemesAll.length > 0 || topEmotionsAll.length > 0;
 
   const hasTrend =
     (data?.trend?.up?.length ?? 0) > 0 || (data?.trend?.down?.length ?? 0) > 0;
 
-  // Upsell: FREE only, and avoid flicker while plan is loading.
   const showUpgradePrompt = !planLoading && !isPremium && (data?.entryCount ?? 0) >= 5;
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div>
         <h1 className="text-3xl font-semibold text-slate-100">Insights</h1>
         <p className="mt-2 max-w-2xl text-sm text-slate-400">
@@ -203,20 +235,16 @@ export default function InsightsClient() {
         </p>
       </div>
 
-      {/* Error */}
       {error && (
         <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-sm text-red-200">
           {error}
         </div>
       )}
 
-      {/* Loading */}
       {!error && !data && <Skeleton />}
 
-      {/* Content */}
       {data && (
         <div className="space-y-6">
-          {/* Summary */}
           <section className="rounded-2xl border border-slate-800 bg-slate-950/50 p-6">
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
               Summary
@@ -231,20 +259,15 @@ export default function InsightsClient() {
                 <div className="max-w-2xl space-y-2 text-sm text-slate-300 leading-relaxed">
                   {topEmotion && (
                     <p>
-                      Recently,{" "}
-                      <span className="font-medium text-slate-100">{topEmotion}</span>{" "}
+                      Recently, <span className="font-medium text-slate-100">{topEmotion}</span>{" "}
                       shows up most often
-                      {typeof topEmotionCount === "number" ? (
-                        <> ({topEmotionCount} times)</>
-                      ) : null}
-                      .
+                      {typeof topEmotionCount === "number" ? <> ({topEmotionCount} times)</> : null}.
                     </p>
                   )}
 
                   {topTheme && (
                     <p>
-                      A recurring theme is{" "}
-                      <span className="font-medium text-slate-100">{topTheme}</span>
+                      A recurring theme is <span className="font-medium text-slate-100">{topTheme}</span>
                       {typeof topThemeCount === "number" ? <> ({topThemeCount} times)</> : null}.
                     </p>
                   )}
@@ -254,7 +277,6 @@ export default function InsightsClient() {
                   </p>
                 </div>
 
-                {/* Trend badges */}
                 {hasTrend && (
                   <div className="flex flex-wrap gap-2 pt-1">
                     {data.trend?.up?.map((e) => (
@@ -269,7 +291,6 @@ export default function InsightsClient() {
             )}
           </section>
 
-          {/* Upsell (FREE only) */}
           {showUpgradePrompt && (
             <section className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -292,7 +313,6 @@ export default function InsightsClient() {
             </section>
           )}
 
-          {/* Core patterns */}
           {topCorepatterns.length > 0 && (
             <section className="rounded-2xl border border-slate-800 bg-slate-950/50 p-6">
               <h2 className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -325,9 +345,7 @@ export default function InsightsClient() {
                         className={`h-full rounded-full transition-all duration-700 ${
                           i === 0 ? "bg-emerald-400/60" : "bg-slate-700"
                         }`}
-                        style={{
-                          width: `${Math.round((count / maxPattern) * 100)}%`,
-                        }}
+                        style={{ width: `${Math.round((count / maxPattern) * 100)}%` }}
                       />
                     </div>
                   </li>
@@ -336,35 +354,58 @@ export default function InsightsClient() {
             </section>
           )}
 
-          {/* Themes + Emotions */}
           <div className="grid gap-6 md:grid-cols-2">
             <section className="rounded-2xl border border-slate-800 bg-slate-950/50 p-6">
-              <h2 className="mb-4 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Recurring themes
-              </h2>
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Recurring themes
+                </h2>
 
-              {topThemes.length === 0 ? (
+                {topThemesAll.length > 6 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllThemes((v) => !v)}
+                    className="text-xs text-slate-500 hover:text-slate-300 transition"
+                  >
+                    {showAllThemes ? "Show top" : "Show all"}
+                  </button>
+                )}
+              </div>
+
+              {topThemesAll.length === 0 ? (
                 <p className="text-sm text-slate-600">No theme data yet.</p>
               ) : (
                 <ul className="space-y-4">
                   {topThemes.map(([k, v], i) => (
-                    <BarRow key={k} label={k} count={v} max={maxTheme} rank={i} />
+                    <BarRow key={`${k}-${i}`} label={k} count={v} max={maxTheme} rank={i} />
                   ))}
                 </ul>
               )}
             </section>
 
             <section className="rounded-2xl border border-slate-800 bg-slate-950/50 p-6">
-              <h2 className="mb-4 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Emotions over time
-              </h2>
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Emotions over time
+                </h2>
 
-              {topEmotions.length === 0 ? (
+                {topEmotionsAll.length > 6 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllEmotions((v) => !v)}
+                    className="text-xs text-slate-500 hover:text-slate-300 transition"
+                  >
+                    {showAllEmotions ? "Show top" : "Show all"}
+                  </button>
+                )}
+              </div>
+
+              {topEmotionsAll.length === 0 ? (
                 <p className="text-sm text-slate-600">No emotion data yet.</p>
               ) : (
                 <ul className="space-y-4">
                   {topEmotions.map(([k, v], i) => (
-                    <BarRow key={k} label={k} count={v} max={maxEmotion} rank={i} />
+                    <BarRow key={`${k}-${i}`} label={k} count={v} max={maxEmotion} rank={i} />
                   ))}
                 </ul>
               )}
