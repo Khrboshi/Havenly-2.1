@@ -20,11 +20,19 @@ const FALLBACK_EMOTIONS = new Set([
   "pride", "tiredness", "determination",
   "frustration", "hurt", "longing", "confusion",
 ]);
-const FALLBACK_CP_PREFIX = "you're in the middle of something";
+const FALLBACK_CP_PREFIXES = [
+  "you're in the middle of something",
+  "you're proud of progress, but still learning the line",
+  "you're navigating a tension between your professional self-worth",
+  "you're trying to protect your self-respect while staying connected",
+];
 
 const isFallbackT = (k: string) => FALLBACK_THEMES.has(k.toLowerCase().trim());
 const isFallbackE = (k: string) => FALLBACK_EMOTIONS.has(k.toLowerCase().trim());
-const isFallbackCP = (k: string) => k.toLowerCase().trim().startsWith(FALLBACK_CP_PREFIX);
+const isFallbackCP = (k: string) => {
+  const lower = k.toLowerCase().trim();
+  return FALLBACK_CP_PREFIXES.some((prefix) => lower.startsWith(prefix));
+};
 
 type PlanType = "FREE" | "TRIAL" | "PREMIUM";
 
