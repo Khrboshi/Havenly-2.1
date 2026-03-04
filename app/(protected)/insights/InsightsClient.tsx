@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 type InsightData = {
   themes: Record<string, number>;
   emotions: Record<string, number>;
+  entryCount?: number; // optional; if API doesn't provide it we derive a best-effort value
 };
 
 function sortMap(map: Record<string, number>) {
@@ -27,13 +28,24 @@ export default function InsightsClient() {
           setData(null);
           return;
         }
+
         const j = (await res.json()) as InsightData;
-        setData(j);
+
+        // Best-effort fallback until API includes entryCount.
+        // Uses max occurrence count across themes/emotions as an approximate “enough data” signal.
+        const derivedCount = Math.max(
+          ...Object.values(j.themes || {}),
+          ...Object.values(j.emotions || {}),
+          0
+        );
+
+        setData({ ...j, entryCount: j.entryCount ?? derivedCount });
       } catch {
         setError("Failed to load insights.");
         setData(null);
       }
     }
+
     load();
   }, []);
 
@@ -47,6 +59,7 @@ export default function InsightsClient() {
   const topEmotionCount = topEmotions[0]?.[1];
 
   const hasAnyInsights = topThemes.length > 0 || topEmotions.length > 0;
+  const showUpgradePrompt = (data?.entryCount ?? 0) >= 5;
 
   return (
     <div className="space-y-8">
@@ -83,15 +96,24 @@ export default function InsightsClient() {
               <div className="mt-3 space-y-2 text-sm text-slate-300 max-w-2xl">
                 {topEmotion && (
                   <p>
-                    Recently, <span className="text-slate-100 font-medium">{topEmotion}</span> shows up most often
-                    {typeof topEmotionCount === "number" ? <> ({topEmotionCount} times)</> : null}.
+                    Recently,{" "}
+                    <span className="text-slate-100 font-medium">{topEmotion}</span>{" "}
+                    shows up most often
+                    {typeof topEmotionCount === "number" ? (
+                      <> ({topEmotionCount} times)</>
+                    ) : null}
+                    .
                   </p>
                 )}
 
                 {topTheme && (
                   <p>
-                    A recurring theme is <span className="text-slate-100 font-medium">{topTheme}</span>
-                    {typeof topThemeCount === "number" ? <> ({topThemeCount} times)</> : null}.
+                    A recurring theme is{" "}
+                    <span className="text-slate-100 font-medium">{topTheme}</span>
+                    {typeof topThemeCount === "number" ? (
+                      <> ({topThemeCount} times)</>
+                    ) : null}
+                    .
                   </p>
                 )}
 
@@ -101,6 +123,29 @@ export default function InsightsClient() {
               </div>
             )}
           </section>
+
+          {/* Milestone upgrade prompt */}
+          {showUpgradePrompt && (
+            <section className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-6">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-emerald-100">
+                    Ready for deeper patterns?
+                  </h3>
+                  <p className="mt-1 text-sm text-emerald-200/80 max-w-2xl">
+                    Premium Insights adds deeper multi-entry themes, weekly “how have I really been?” summaries, and richer reflections.
+                  </p>
+                </div>
+
+                <a
+                  href="/upgrade"
+                  className="inline-flex items-center justify-center rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-300 transition"
+                >
+                  See Premium →
+                </a>
+              </div>
+            </section>
+          )}
 
           {/* Existing lists */}
           <div className="grid gap-6 md:grid-cols-2">
