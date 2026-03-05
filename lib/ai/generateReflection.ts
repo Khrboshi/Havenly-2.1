@@ -273,14 +273,15 @@ function extractAnchors(entry: string): string[] {
   for (const s of sentences) {
     if (anchors.length >= 4) break;
     if (emotionalSignals.test(s)) {
-      add(s.length > 120 ? s.slice(0, 120).trim() : s);
+      // Never truncate mid-sentence — use full sentence or skip if too long
+      if (s.length <= 150) add(s);
     }
   }
 
-  // 3. Fill with opening sentences if still short
+  // 3. Fill with opening sentences if still short — use full sentences only
   if (anchors.length < 2) {
     for (const s of sentences.slice(0, 4)) {
-      add(s.length > 110 ? s.slice(0, 110).trim() : s);
+      if (s.length <= 150) add(s);
       if (anchors.length >= 2) break;
     }
   }
@@ -466,8 +467,27 @@ function repairCarryingLine(
       .replace(/\bI feel\b/gi, "you feel")
       .replace(/\bI have\b/gi, "you have")
       .replace(/\bI was\b/gi, "you were")
+      .replace(/\bI can't\b/gi, "you can't")
+      .replace(/\bI won't\b/gi, "you won't")
+      .replace(/\bI should\b/gi, "you should")
+      .replace(/\bI would\b/gi, "you would")
+      .replace(/\bI could\b/gi, "you could")
+      .replace(/\bI need\b/gi, "you need")
+      .replace(/\bI want\b/gi, "you want")
+      .replace(/\bI told\b/gi, "you told")
+      .replace(/\bI said\b/gi, "you said")
+      .replace(/\bI did\b/gi, "you did")
+      .replace(/\bI went\b/gi, "you went")
+      .replace(/\bI came\b/gi, "you came")
+      .replace(/\bI got\b/gi, "you got")
+      .replace(/\bI noticed\b/gi, "you noticed")
       .replace(/\bmy\b/g, "your")
-      .replace(/\bmyself\b/g, "yourself");
+      .replace(/\bmine\b/g, "yours")
+      .replace(/\bmyself\b/g, "yourself")
+      // Fix "drain me" → "drain you", "thank me" → "thank you" etc.
+      .replace(/\b(drain|thank|ask|hear|see|notice|help|stop|push|pull|hurt|love|need|want|ignore|dismiss|leave|forget)\s+me\b/gi, "$1 you")
+      .replace(/\bme\b(?=\s*[,.\-—])/g, "you")  // "me," "me." "me—" at end of clause
+      .replace(/\bme\s*$/g, "you");               // "me" at end of string
     newCarrying = converted.charAt(0).toUpperCase() + converted.slice(1);
   } else {
     newCarrying = domainCarrying[domain];
