@@ -778,15 +778,20 @@ function ensurePremiumSummary(summary: string, domain: Domain, anchors: string[]
   }
 
   if (!s.includes("Deeper direction:")) {
-    const a = anchors.find(x => normalizeForMatch(x).length >= 10) ?? anchors[0] ?? "";
-    const clean = String(a).replace(/^["""]|["""]$/g, "").trim();
-    // Convert anchor to second-person before embedding in Deeper direction
-    const converted = toSecondPerson(clean);
-    const ddAnchor = converted.charAt(0).toUpperCase() + converted.slice(1);
-    const dd = ddAnchor.length >= 8
-      ? `Deeper direction: "${ddAnchor}" — naming it clearly is the first move. One small honest action today is enough.`
-      : `Deeper direction: Naming what's here is the first move. One small honest action today reduces pressure without forcing certainty.`;
-    s = `${s}\n${dd}`;
+    // DD adds a NEW domain-specific perspective — never re-quotes the carrying line.
+    const domainDD: Record<Domain, string> = {
+      WORK:         "Deeper direction: The need underneath this isn't about the task — it's about respect. One clear, calm conversation is worth ten accommodations made in silence.",
+      RELATIONSHIP: "Deeper direction: What you didn't say is still shaping the distance. Naming what you needed — even just to yourself — is the first honest move.",
+      FITNESS:      "Deeper direction: Your body's resistance is data, not failure. What it's asking for is probably simpler than what you're demanding of it.",
+      MONEY:        "Deeper direction: The anxiety isn't about the number — it's about what the number represents. Separating the fact from the story is the first move.",
+      HEALTH:       "Deeper direction: Sitting with uncertainty is its own form of courage. Write down one thing you actually know right now — separate from what you fear — and let that be enough for today.",
+      GRIEF:        "Deeper direction: You're not supposed to be over this. Carrying it differently over time isn't the same as letting it go — and that's okay.",
+      PARENTING:    "Deeper direction: The gap between the parent you want to be and the moment you had is where growth happens. One simple repair — said without excuses — means more than you think.",
+      CREATIVE:     "Deeper direction: The block isn't about the work — it's about what you think the work will say about you. Making something imperfect today is the only way through.",
+      IDENTITY:     "Deeper direction: You don't need to know who you're becoming — you need to notice which version of yourself costs the most energy to maintain. Start there.",
+      GENERAL:      "Deeper direction: The clearest fact in what you wrote is the thing most worth staying with. Name it in one plain sentence before deciding what to do next.",
+    };
+    s = `${s}\n${domainDD[domain]}`;
   }
 
   // FIX 2: domain guard only fires if BOTH mustHave fails AND driftKeywords fires
@@ -882,6 +887,12 @@ function qualityCheck(
   const lastQ = String(questions[questions.length - 1] ?? "");
   if (!lastQ.toLowerCase().startsWith("next time,")) reasons.push('Last question must start with "Next time,"');
 
+  // Corepattern must be a complete sentence (has a verb)
+  const corepattern = String(parsed?.corepattern ?? "").trim();
+  if (corepattern && !/\b(is|are|was|were|has|have|had|do|does|did|can|could|will|would|should|may|might|feel|feels|shows|shapes|drives|means|reveals|creates|keeps|holds|sits|lives|runs|makes|takes|turns|points|touches|pulls|pushes|navigates|manages|carries|defines|reflects)\b/i.test(corepattern)) {
+    reasons.push("Corepattern appears to be a fragment — needs a verb");
+  }
+
   if (domain !== "GENERAL") {
     const summaryOnly = `${carrying} ${wrh} ${extractSummaryLine(summary, "Deeper direction:")}`;
     if (!defaults.mustHave.test(summaryOnly)) reasons.push(`Domain signal missing for ${domain}`);
@@ -958,7 +969,7 @@ function buildSystemPrompt(plan: "FREE" | "PREMIUM", domain: Domain, short: bool
     : "";
 
   const domainSpecific: Partial<Record<Domain, string>> = {
-    HEALTH: `DOMAIN: HEALTH\nHARD RULE: Questions must reference the specific fear (pain, test results, doctor) from this entry — not generic health advice.\nBANNED Q4 patterns: "prioritize your emotional well-being", "take care of yourself", "manage your health".\nGood Q4 example: "Next time, write down the specific question you most want answered before your appointment."`,
+    HEALTH: `DOMAIN: HEALTH\nHARD RULE: Questions must reference the specific fear or situation from this entry — not generic health advice.\nBANNED question patterns: "what could be causing your pain" (self-diagnosis), "how can you prepare yourself" (advice-y), "prioritize your emotional well-being", "take care of yourself", "manage your health".\nGood questions focus on feelings, fears, and what the person needs — NOT on medical speculation or preparation tips.\nGood Q4 example: "Next time, write down the specific question you most want answered before your appointment."\nGood Q1 example: "What part of waiting feels the hardest — the not knowing, or what the answer might mean?"`,
     GRIEF: `DOMAIN: GRIEF\nHARD RULE: Never suggest moving on or finding closure. Grief questions should deepen connection to the person/thing lost — not push toward resolution.\nQ4 must reference something specific from this entry (the Sunday phone habit, the anniversary, etc).`,
     PARENTING: `DOMAIN: PARENTING\nHARD RULE: Always separate the action from the person's character. A hard moment ≠ a bad parent.\nQ4 must reference the specific child, moment, or trigger from this entry.`,
     CREATIVE: `DOMAIN: CREATIVE\nHARD RULE: Creative blocks are about identity and fear of judgment, not productivity.\nQ4 must reference the specific creative work or block described (blank page, writing, etc).`,
