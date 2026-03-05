@@ -10,50 +10,62 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-hvn-bg text-hvn-text-primary bg-hvn-page-gradient">
 
-      <section className="relative overflow-hidden pt-10 pb-14 sm:pt-24 sm:pb-28">
+      <section className="relative overflow-hidden pt-12 pb-10 sm:pt-20 sm:pb-16 md:pt-24 md:pb-28">
 
-        {/* Ambient glow - reduced on mobile for perf */}
+        {/* Ambient glow */}
         <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 h-[300px] w-[500px] rounded-full bg-emerald-500/[0.05] blur-3xl sm:h-[500px] sm:w-[800px]" />
 
         <div className="mx-auto flex max-w-6xl flex-col gap-10 px-5 md:flex-row md:items-center md:gap-16">
 
-          {/* Left copy */}
-          <div className="space-y-6 md:max-w-lg">
+          {/* Copy &mdash; full width on mobile, half on desktop */}
+          <div className="space-y-5 md:max-w-lg md:space-y-7">
 
             <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-emerald-500/70">
               Private &middot; Calm &middot; Yours
             </p>
 
-            {/* Headline &mdash; larger on mobile than before, no forced line break */}
-            <h1 className="text-[2.1rem] font-semibold leading-[1.15] tracking-tight sm:text-5xl">
+            <h1 className="text-[2.25rem] font-semibold leading-[1.12] tracking-tight sm:text-5xl">
               Stop carrying it all{" "}
               <span className="text-emerald-400">in your head.</span>
             </h1>
 
             <p className="text-[15px] leading-relaxed text-slate-400 sm:text-[17px]">
-              Havenly is the private journal that listens, remembers, and helps
-              you connect the dots. No advice. No noise. Just clarity &mdash;
+              The private journal that listens, remembers, and helps you
+              connect the dots. No advice. No noise. Just clarity &mdash;
               at your own pace.
             </p>
 
-            {/* CTAs &mdash; full width on mobile, row on sm+ */}
-            <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:items-center">
+            {/* PRIMARY CTA only on mobile &mdash; no second button cluttering the screen */}
+            <div className="flex flex-col gap-3 pt-1 sm:hidden">
               <Link
                 href="/magic-login"
-                className="inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-6 py-3.5 text-[15px] font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 hover:bg-emerald-400 transition-colors sm:w-auto sm:py-3 sm:text-sm"
+                className="inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-6 py-4 text-base font-semibold text-slate-950 shadow-lg shadow-emerald-500/25 hover:bg-emerald-400 transition-colors"
+              >
+                Start free &mdash; no card needed
+              </Link>
+              <p className="text-center text-xs text-slate-600">
+                Free forever &middot; Private by default &middot; No AI training
+              </p>
+            </div>
+
+            {/* BOTH CTAs on sm+ */}
+            <div className="hidden sm:flex sm:flex-row sm:items-center sm:gap-3 pt-1">
+              <Link
+                href="/magic-login"
+                className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 hover:bg-emerald-400 transition-colors"
               >
                 Start free &mdash; no card needed
               </Link>
               <Link
                 href="/insights/preview"
-                className="inline-flex w-full items-center justify-center rounded-full border border-slate-700 px-6 py-3.5 text-[15px] font-medium text-slate-300 hover:bg-slate-900 transition-colors sm:w-auto sm:py-3 sm:text-sm"
+                className="inline-flex items-center justify-center rounded-full border border-slate-700 px-6 py-3 text-sm font-medium text-slate-300 hover:bg-slate-900 transition-colors"
               >
                 See how it works
               </Link>
             </div>
 
-            {/* Trust signals &mdash; stacked on mobile */}
-            <div className="flex flex-col gap-2 pt-1 text-xs text-slate-600 sm:flex-row sm:flex-wrap sm:gap-x-4 sm:gap-y-1.5">
+            {/* Trust signals &mdash; inline on sm+, hidden on mobile (shown in CTA block above) */}
+            <div className="hidden sm:flex sm:flex-wrap sm:items-center sm:gap-x-4 sm:gap-y-1.5 text-xs text-slate-600">
               <span className="flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
                 Your entries never train AI models
@@ -69,15 +81,14 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Reflection card &mdash; hidden on very small screens, shown from sm */}
-          {/* On mobile we show a simplified version without overflow issues */}
-          <div className="relative mx-auto w-full max-w-[360px] shrink-0 sm:block">
+          {/* Reflection card &mdash; HIDDEN on mobile, shown md+ only */}
+          <div className="relative mx-auto hidden w-full max-w-[360px] shrink-0 md:block">
 
             <div className="pointer-events-none absolute -inset-4 rounded-3xl bg-emerald-500/[0.06] blur-2xl" />
 
-            <div className="relative rounded-2xl border border-white/[0.07] bg-slate-950/95 p-4 shadow-2xl shadow-black/60 backdrop-blur sm:rounded-3xl sm:p-5">
+            <div className="relative rounded-3xl border border-white/[0.07] bg-slate-950/95 p-5 shadow-2xl shadow-black/60 backdrop-blur">
 
-              <div className="mb-3 flex items-center justify-between">
+              <div className="mb-4 flex items-center justify-between">
                 <span className="flex items-center gap-2 text-[11px] text-slate-500">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50" />
                   March 4 &middot; Evening check-in
@@ -85,14 +96,14 @@ export default function HomePage() {
                 <span className="text-[10px] text-slate-700">Private &middot; Just for you</span>
               </div>
 
-              <div className="rounded-xl border border-slate-800/60 bg-slate-900/60 p-3 sm:rounded-2xl sm:p-4">
+              <div className="rounded-2xl border border-slate-800/60 bg-slate-900/60 p-4">
                 <p className="text-[13px] leading-relaxed text-slate-200">
                   &ldquo;I keep saying I&rsquo;m fine but I don&rsquo;t think I mean it anymore.
                   I&rsquo;m tired in a way that sleep doesn&rsquo;t fix.&rdquo;
                 </p>
               </div>
 
-              <div className="my-3 flex items-center gap-3 sm:my-4">
+              <div className="my-4 flex items-center gap-3">
                 <div className="h-px flex-1 bg-slate-800/60" />
                 <span className="text-[10px] text-slate-700 uppercase tracking-widest">Havenly noticed</span>
                 <div className="h-px flex-1 bg-slate-800/60" />
@@ -117,9 +128,37 @@ export default function HomePage() {
                 </p>
               </div>
 
-              <div className="mt-3 border-t border-slate-800/40 pt-3 text-[11px] text-slate-600 sm:mt-4">
+              <div className="mt-4 border-t border-slate-800/40 pt-3 text-[11px] text-slate-600">
                 Patterns across 3 weeks &rarr;
                 <span className="ml-1 text-emerald-600">Curiosity &middot; Communication &middot; Clarity</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile-only: mini social proof strip below CTA */}
+          <div className="sm:hidden -mt-2 rounded-2xl border border-slate-800/40 bg-slate-900/30 p-4">
+            <p className="mb-3 text-[11px] font-medium uppercase tracking-widest text-slate-600">
+              What Havenly notices
+            </p>
+            <div className="space-y-2">
+              <div className="flex items-start gap-2.5">
+                <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-violet-400" />
+                <p className="text-[13px] leading-snug text-slate-400">
+                  <span className="text-slate-200">Curiosity</span> showing up 14 times this month
+                </p>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
+                <p className="text-[13px] leading-snug text-slate-400">
+                  <span className="text-slate-200">Communication</span> in 10 of your last 15 entries
+                </p>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
+                <p className="text-[13px] leading-snug text-slate-400 italic">
+                  &ldquo;You&rsquo;re trying to make sense of the moment while
+                  protecting your self-respect.&rdquo;
+                </p>
               </div>
             </div>
           </div>
