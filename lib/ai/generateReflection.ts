@@ -266,8 +266,28 @@ function extractAnchors(entry: string): string[] {
     if (anchors.length >= 3) break;
   }
 
-  // 2. Emotionally vivid sentences — prioritise these over structural sentences
-  const sentences = t.split(/\n|(?<=[.!?])\s+/).map(s => s.trim()).filter(Boolean);
+  // Join soft line breaks (mid-sentence wrapping) before splitting.
+  // Only treat actual sentence-ending punctuation as boundaries.
+  const joined = t
+    .split("\n")
+    .map(l => l.trim())
+    .filter(Boolean)
+    .reduce((acc, line) => {
+      // If previous line ends with sentence-ending punctuation, start new sentence
+      if (acc.length === 0) return line;
+      const prev = acc[acc.length - 1];
+      if (/[.!?]$/.test(prev)) {
+        return acc + " " + line; // still join — we'll split properly below
+      }
+      // Otherwise it's a soft wrap — join with space
+      return acc + " " + line;
+    }, "");
+
+  // Split only on sentence-ending punctuation followed by whitespace
+  const sentences = joined
+    .split(/(?<=[.!?])\s+/)
+    .map(s => s.trim())
+    .filter(Boolean);
   const emotionalSignals = /\b(but|just|still|keep|always|never|again|somehow|quiet|ache|miss|wish|pretend|perform|smile|nod|sat|floor|nothing|empty|disappear|invisible|mask|mirror|watching|gap|distance|wanted|needed|tired|exhausted|fine|okay|somewhere|underneath)\b/i;
 
   for (const s of sentences) {
