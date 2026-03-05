@@ -17,21 +17,22 @@ export default function HomePage() {
 
         <div className="mx-auto flex max-w-6xl flex-col gap-12 px-4 md:flex-row md:items-center md:gap-16">
 
+          {/* Left copy */}
           <div className="max-w-lg space-y-7">
 
             <p className="text-xs font-medium uppercase tracking-[0.2em] text-emerald-500/70">
-              Private · Calm · Yours
+              Private &middot; Calm &middot; Yours
             </p>
 
             <h1 className="text-balance text-4xl font-semibold leading-[1.15] tracking-tight sm:text-5xl">
-              Finally understand<br />
-              <span className="text-emerald-400">how you've really been.</span>
+              Stop carrying it all<br />
+              <span className="text-emerald-400">in your head.</span>
             </h1>
 
             <p className="text-base leading-relaxed text-slate-400 sm:text-[17px]">
-              Havenly is a private journal that notices what you keep coming
-              back to -- and quietly reflects it back to you. No advice.
-              No pressure. Just clarity.
+              Havenly is the private journal that listens, remembers, and helps
+              you connect the dots. No advice. No noise. Just clarity &mdash;
+              at your own pace.
             </p>
 
             {/* CTAs */}
@@ -40,7 +41,7 @@ export default function HomePage() {
                 href="/magic-login"
                 className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 hover:bg-emerald-400 transition-colors"
               >
-                Start for free -- no card needed
+                Start free &mdash; no card needed
               </Link>
               <Link
                 href="/insights/preview"
@@ -67,42 +68,38 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Right: reflection card */}
           <div className="relative mx-auto w-full max-w-[360px] shrink-0">
 
-            {/* Glow behind card */}
             <div className="pointer-events-none absolute -inset-4 rounded-3xl bg-emerald-500/[0.06] blur-2xl" />
 
             <div className="relative rounded-3xl border border-white/[0.07] bg-slate-950/95 p-5 shadow-2xl shadow-black/60 backdrop-blur">
 
-              {/* Card header */}
               <div className="mb-4 flex items-center justify-between">
                 <span className="flex items-center gap-2 text-[11px] text-slate-500">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50" />
-                  March 4 · Evening check-in
+                  March 4 &middot; Evening check-in
                 </span>
-                <span className="text-[10px] text-slate-700">Private · Just for you</span>
+                <span className="text-[10px] text-slate-700">Private &middot; Just for you</span>
               </div>
 
-              {/* Entry */}
               <div className="rounded-2xl border border-slate-800/60 bg-slate-900/60 p-4">
                 <p className="text-[13px] leading-relaxed text-slate-200">
-                  "I keep saying I'm fine but I don't think I mean it anymore.
-                  I'm tired in a way that sleep doesn't fix."
+                  &ldquo;I keep saying I&rsquo;m fine but I don&rsquo;t think I mean it anymore.
+                  I&rsquo;m tired in a way that sleep doesn&rsquo;t fix.&rdquo;
                 </p>
               </div>
 
-              {/* Divider */}
               <div className="my-4 flex items-center gap-3">
                 <div className="h-px flex-1 bg-slate-800/60" />
                 <span className="text-[10px] text-slate-700 uppercase tracking-widest">Havenly noticed</span>
                 <div className="h-px flex-1 bg-slate-800/60" />
               </div>
 
-              {/* Reflection */}
               <div className="space-y-3">
                 <p className="text-[13px] leading-relaxed text-slate-300">
-                  This tiredness sounds like it's been building quietly for a
-                  while -- not just this week, but longer. There's a difference
+                  This tiredness sounds like it&rsquo;s been building quietly for a
+                  while &mdash; not just this week, but longer. There&rsquo;s a difference
                   between being tired <em>from</em> things and being tired
                   <em> of</em> things.
                 </p>
@@ -114,14 +111,13 @@ export default function HomePage() {
                 </div>
 
                 <p className="text-[12px] text-slate-500 italic">
-                  What would it mean to stop saying you're fine -- just for today?
+                  What would it mean to stop saying you&rsquo;re fine &mdash; just for today?
                 </p>
               </div>
 
-              {/* Footer */}
               <div className="mt-4 border-t border-slate-800/40 pt-3 text-[11px] text-slate-600">
-                Patterns across 3 weeks of entries →
-                <span className="ml-1 text-emerald-600">Curiosity · Communication · Clarity</span>
+                Patterns across 3 weeks of entries &rarr;
+                <span className="ml-1 text-emerald-600">Curiosity &middot; Communication &middot; Clarity</span>
               </div>
             </div>
           </div>
