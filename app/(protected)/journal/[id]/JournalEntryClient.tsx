@@ -90,14 +90,14 @@ export default function JournalEntryClient({
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
-    if (initialReflection) setRevealed(true);
   }, []);
 
   const [busy, setBusy] = useState(false);
   const [reflection, setReflection] = useState<Reflection | null>(initialReflection ?? null);
   const [error, setError] = useState<string | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
-  const [revealed, setRevealed] = useState(false);
+  // `revealed` removed — caused React #425 hydration mismatch.
+  // reflection content renders whenever `reflection` is non-null.
 
   const readablePlan = useMemo(() => {
     if (planType === "PREMIUM") return "Premium";
@@ -140,7 +140,6 @@ export default function JournalEntryClient({
       }
       const j = await res.json().catch(() => ({}));
       setReflection(j?.reflection || null);
-      setRevealed(true);
       await refresh();
     } catch {
       setError("We couldn't generate a reflection right now.");
@@ -248,7 +247,7 @@ export default function JournalEntryClient({
         )}
 
         {/* ── Reflection body ───────────────────────────────────────────── */}
-        {reflection && revealed && (
+        {reflection && (
           <div className="divide-y divide-white/5">
 
             {/* ── What you're carrying ─────────────────────────────────── */}
