@@ -410,9 +410,85 @@ function qualityCheck(
   return reasons.length === 0 ? { pass: true } : { pass: false, reasons };
 }
 
+// ─── Carrying Line Repair ─────────────────────────────────────────────────────
+// If the model's "What you're carrying:" line is generic/banned, replace it
+// with one built directly from the entry's anchor phrases.
+// This is a guaranteed fix — no model involvement, 100% specific to the entry.
+
+function repairCarryingLine(
+  summary: string,
+  anchors: string[],
+  domain: Domain,
+  entryTitle?: string
+): string {
+  if (!summary.includes("What you're carrying:")) return summary;
+
+  // Extract just the carrying line value
+  const carryingMatch = summary.match(/What you're carrying:\s*([^\n]+)/);
+  if (!carryingMatch) return summary;
+  const carryingValue = carryingMatch[1].trim().toLowerCase();
+
+  // Check if it's a banned generic opener
+  const isBanned = BANNED_SUMMARY_OPENERS.some(b => carryingValue.includes(b));
+  if (!isBanned) return summary; // already specific — leave it alone
+
+  // Build a specific carrying line from anchors + entry context
+  const anchor = anchors[0] || anchors[1] || "";
+  const cleanAnchor = anchor.replace(/^[""]|[""]$/g, "").trim();
+
+  // Domain-specific carrying line templates — filled with real anchor content
+  const domainCarrying: Record<Domain, string> = {
+    WORK: `You ${cleanAnchor.toLowerCase().startsWith("you ") ? cleanAnchor.slice(3) : cleanAnchor} — and the silence afterward is still with you.`,
+    RELATIONSHIP: `You ${cleanAnchor.toLowerCase().startsWith("you ") ? cleanAnchor.slice(3) : cleanAnchor} — and what you didn't say is still there.`,
+    FITNESS: `You ${cleanAnchor.toLowerCase().startsWith("you ") ? cleanAnchor.slice(3) : cleanAnchor} — and part of you is still sitting with what that means.`,
+    GENERAL: `You ${cleanAnchor.toLowerCase().startsWith("you ") ? cleanAnchor.slice(3) : cleanAnchor} — and that's what's underneath everything else right now.`,
+  };
+
+  // If anchor already starts with "I " or is a full sentence, use it directly
+  let newCarrying: string;
+  if (cleanAnchor.length > 20 && /^(I |you |skipped|ran|wrote|said|did|felt|kept|came|slept|noticed|nobody|we )/i.test(cleanAnchor)) {
+    // Convert to second-person BEFORE capitalising to avoid "You i've" type bugs
+    const converted = cleanAnchor
+      .replace(/^I've\b/, "You've")   // must come before generic ^I→You
+      .replace(/^I'm\b/, "You're")
+      .replace(/^I'd\b/, "You'd")
+      .replace(/^I'll\b/, "You'll")
+      .replace(/^I\b/, "You")
+      .replace(/\bI'm\b/g, "you're")
+      .replace(/\bI've\b/g, "you've")
+      .replace(/\bI'd\b/g, "you'd")
+      .replace(/\bI'll\b/g, "you'll")
+      .replace(/\bI don't\b/gi, "you don't")
+      .replace(/\bI just\b/gi, "you just")
+      .replace(/\bI keep\b/gi, "you keep")
+      .replace(/\bI still\b/gi, "you still")
+      .replace(/\bI know\b/gi, "you know")
+      .replace(/\bI feel\b/gi, "you feel")
+      .replace(/\bI have\b/gi, "you have")
+      .replace(/\bI was\b/gi, "you were")
+      .replace(/\bmy\b/g, "your")
+      .replace(/\bmyself\b/g, "yourself");
+    newCarrying = converted.charAt(0).toUpperCase() + converted.slice(1);
+  } else {
+    newCarrying = domainCarrying[domain];
+  }
+
+  // Replace just the carrying line value, preserve the rest of the summary
+  return summary.replace(
+    /What you're carrying:\s*[^\n]+/,
+    `What you're carrying: ${newCarrying}`
+  );
+}
+
 // ─── Normalization ────────────────────────────────────────────────────────────
 
-function normalizeReflection(r: any, domain: Domain, short: boolean): Reflection {
+function normalizeReflection(
+  r: any,
+  domain: Domain,
+  short: boolean,
+  anchors: string[] = [],
+  entryTitle?: string
+): Reflection {
   const defaults = DOMAIN_DEFAULTS[domain];
   const clean = (v: unknown) => (typeof v === "string" ? v.trim() : "");
   const cleanArr = (v: unknown, max: number): string[] =>
@@ -420,8 +496,12 @@ function normalizeReflection(r: any, domain: Domain, short: boolean): Reflection
 
   const questions = ensureFourQuestions(cleanArr(r?.questions, 6), domain, short);
 
+  const rawSummary = clean(r?.summary) || (short ? defaults.shortSummary : defaults.summary);
+  // Repair the carrying line if it's generic — guaranteed to be entry-specific
+  const summary = short ? rawSummary : repairCarryingLine(rawSummary, anchors, domain, entryTitle);
+
   return {
-    summary: clean(r?.summary) || (short ? defaults.shortSummary : defaults.summary),
+    summary,
     corepattern: clean(r?.corepattern) || defaults.corepattern,
     themes: cleanArr(r?.themes, 6).length ? cleanArr(r.themes, 6) : defaults.themes,
     emotions: cleanArr(r?.emotions, 6).length ? cleanArr(r.emotions, 6) : defaults.emotions,
@@ -696,11 +776,11 @@ ${entryText}`.trim();
     bestParsed = parsed;
 
     const result = qualityCheck(parsed, anchors, input.plan, domain, short);
-    if (result.pass) return normalizeReflection(parsed, domain, short);
+    if (result.pass) return normalizeReflection(parsed, domain, short, anchors, input.title);
 
     if (i === ATTEMPTS.length - 1) {
       console.warn("[Havenly] Quality gate failed after 3 attempts. Domain:", domain, "Reasons:", (result as any).reasons);
-      return normalizeReflection(parsed, domain, short);
+      return normalizeReflection(parsed, domain, short, anchors, input.title);
     }
   }
 
@@ -735,6 +815,8 @@ ${entryText}`.trim();
       questions: short ? defaults.shortQuestions : defaults.questions,
     },
     domain,
-    short
+    short,
+    anchors,
+    input.title
   );
 }
