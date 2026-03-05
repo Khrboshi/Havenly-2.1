@@ -1,10 +1,6 @@
 // app/page.tsx
 import Link from "next/link";
-import dynamic from "next/dynamic";
-
-const HomeBelowFold = dynamic(() => import("./(home)/HomeBelowFold"), {
-  ssr: false,
-});
+import HomeBelowFold from "./(home)/HomeBelowFold";
 
 export default function HomePage() {
   return (
