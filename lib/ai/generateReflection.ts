@@ -1145,9 +1145,8 @@ export async function generateReflectionFromEntry(input: Input): Promise<Reflect
   const carryingStarter = (() => {
     const clean = toSecondPerson(bestAnchor.replace(/^["""]|["""]$/g, "").trim());
     if (!clean || clean.length < 8) return "";
-    const words = clean.split(/\s+/);
-    const starter = words.slice(0, Math.min(6, Math.floor(words.length * 0.6))).join(" ");
-    return starter.length >= 6 ? starter : "";
+    // Use full sentence as the carrying seed — model refines it, not truncates
+    return clean;
   })();
 
   const carryingInstruction = carryingStarter
