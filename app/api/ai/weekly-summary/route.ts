@@ -6,10 +6,8 @@ import { ensureCreditsFresh } from "@/lib/creditRules";
 
 export const dynamic = "force-dynamic";
 
-// ── Cache duration: regenerate once per week ──────────────────────────────────
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
-// ── Fallback filter (mirrors insights API) ────────────────────────────────────
 const FALLBACK_THEMES = new Set([
   "self-awareness", "processing", "presence",
   "consistency", "recovery", "self-respect", "motivation",
@@ -51,11 +49,12 @@ function parseAI(raw: any) {
   catch { return null; }
 }
 
-// ── Groq caller (same pattern as generateReflection) ─────────────────────────
 async function callGroq(system: string, user: string): Promise<string> {
   const apiKey = process.env.GROQAPIKEY || process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("Missing GROQAPIKEY");
-  const model = process.env.GROQMODEL || "llama-3.3-70b-versatile";
+
+  // Matches the model used in generateReflection.ts
+  const model = process.env.GROQMODEL || "meta-llama/llama-4-scout-17b-16e-instruct";
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 25_000);
@@ -88,7 +87,6 @@ async function callGroq(system: string, user: string): Promise<string> {
   }
 }
 
-// ── Build the Groq prompt from real insight data ──────────────────────────────
 function buildSummaryPrompt(opts: {
   entryCount: number;
   topThemes: string[];
@@ -112,7 +110,7 @@ function buildSummaryPrompt(opts: {
 Your job is to write a short, warm, personal summary of what you've noticed across a user's journal entries.
 
 Rules:
-- Write 2–3 short paragraphs. No more.
+- Write 2-3 short paragraphs. No more.
 - Speak directly to the user ("you", "your") but gently — not clinically.
 - Be specific about their actual patterns — don't be vague or generic.
 - Do NOT use therapy-speak, jargon, or prescriptive advice.
@@ -154,7 +152,6 @@ Rules:
   return { system, user };
 }
 
-// ── Main handler ──────────────────────────────────────────────────────────────
 export async function GET() {
   const supabase = createServerSupabase();
 
@@ -165,7 +162,6 @@ export async function GET() {
 
   const userId = session.user.id;
 
-  // Plan check
   await ensureCreditsFresh({ supabase, userId });
   const { data: credits } = await supabase
     .from("user_credits")
@@ -178,7 +174,6 @@ export async function GET() {
     return NextResponse.json({ error: "Premium required" }, { status: 402 });
   }
 
-  // ── Check cache in profiles ───────────────────────────────────────────────
   const { data: profile } = await supabase
     .from("profiles")
     .select("weekly_summary, weekly_summary_generated_at")
@@ -200,7 +195,6 @@ export async function GET() {
     );
   }
 
-  // ── Build insight data from entries ──────────────────────────────────────
   const { data: rows } = await supabase
     .from("journal_entries")
     .select("ai_response, created_at")
@@ -274,7 +268,6 @@ export async function GET() {
     if (oc > (recentEm[e] ?? 0) + 1) trendDown.push(e);
   }
 
-  // Momentum
   const POSITIVE = new Set(["calm", "hope", "hopeful", "joy", "grateful", "relief",
     "excited", "contentment", "clarity", "motivated", "open", "curious", "optimistic"]);
   const HEAVY = new Set(["dread", "despair", "hopeless", "numb", "exhausted",
@@ -297,16 +290,9 @@ export async function GET() {
     );
   }
 
-  // ── Generate summary ──────────────────────────────────────────────────────
   const { system, user } = buildSummaryPrompt({
-    entryCount,
-    topThemes,
-    topEmotions,
-    topCorepatterns,
-    momentum,
-    trendUp,
-    trendDown,
-    firstEntryDate,
+    entryCount, topThemes, topEmotions, topCorepatterns,
+    momentum, trendUp, trendDown, firstEntryDate,
   });
 
   let summary: string;
@@ -327,8 +313,6 @@ export async function GET() {
     );
   }
 
-  // ── Cache in profiles (upsert) ────────────────────────────────────────────
-  // Uses service role key so it can write to profiles without RLS issues
   const adminClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -348,8 +332,6 @@ export async function GET() {
   );
 }
 
-// ── Force regenerate (POST) ───────────────────────────────────────────────────
-// Called when user clicks "Regenerate"
 export async function POST() {
   const supabase = createServerSupabase();
 
@@ -358,7 +340,6 @@ export async function POST() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Clear cache then delegate to GET logic by clearing the stored summary
   const adminClient = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -375,6 +356,5 @@ export async function POST() {
       { onConflict: "id" }
     );
 
-  // Return 204 — client calls GET next
   return new Response(null, { status: 204 });
 }
