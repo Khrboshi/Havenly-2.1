@@ -32,7 +32,8 @@ export default function Navbar() {
 
   useEffect(() => {
     if (!isLoggedIn) return;
-    const routes = ["/dashboard", "/journal", "/tools", "/insights", "/settings"];
+    // Tools removed from prefetch -- no working pages yet
+    const routes = ["/dashboard", "/journal", "/insights", "/settings"];
     routes.forEach((r) => router.prefetch(r));
   }, [isLoggedIn, router]);
 
@@ -48,10 +49,10 @@ export default function Navbar() {
     { href: "/magic-login", label: "Log in" },
   ];
 
+  // Tools removed until at least one tool page is real
   const authLinks: NavLink[] = [
     { href: "/dashboard", label: "Dashboard" },
     { href: "/journal", label: "Journal" },
-    { href: "/tools", label: "Tools" },
     { href: "/insights", label: "Insights" },
     { href: "/settings", label: "Settings" },
     { href: "/install", label: "Install" },
