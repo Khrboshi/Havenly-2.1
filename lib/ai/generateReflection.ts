@@ -479,6 +479,13 @@ const DOMAIN_DEFAULTS: Record<Domain, DomainDefaults> = {
 
 const BANNED_SUMMARY_PATTERNS: RegExp[] = [
   /\ba workplace moment that left a mark\b/i,
+  /\bthere'?s a financial pressure sitting on you\b/i,
+  /\ba financial pressure sitting on you\b/i,
+  /\ba creative block is sitting with you\b/i,
+  /\ba parenting moment is sitting heavily\b/i,
+  /\ba grief that doesn't follow a straight line\b/i,
+  /\byour body is asking for your attention\b/i,
+  /\ba question about who you are is sitting\b/i,
   /\bsomething from work got under your skin\b/i,
   /\bsomething happened at work\b/i,
   /\bsomething from work is still with you\b/i,
@@ -907,6 +914,13 @@ function qualityCheck(
     /what do you think (is|could be) causing/i,
     /how can you better (manage|cope|handle)/i,
     /what steps can you take to/i,
+    /what (are )?some (specific )?steps (you could|to)/i,
+    /what (are )?some strategies/i,
+    /small,? achievable goals/i,
+    /specific support or resources/i,
+    /seek out (to help|support)/i,
+    /reconnecting with your own desires/i,
+    /address your financial situation/i,
     /what (strategies|techniques|tools) (can|could|might) you/i,
     /how (can|could|might) you (better|more effectively)/i,
   ];
@@ -998,10 +1012,10 @@ function buildSystemPrompt(plan: "FREE" | "PREMIUM", domain: Domain, short: bool
   const domainSpecific: Partial<Record<Domain, string>> = {
     HEALTH: `DOMAIN: HEALTH\nHARD RULE: Questions must reference the specific fear or situation from this entry — not generic health advice.\nBANNED question patterns: "what could be causing your pain" (self-diagnosis), "how can you prepare yourself" (advice-y), "prioritize your emotional well-being", "take care of yourself", "manage your health".\nGood questions focus on feelings, fears, and what the person needs — NOT on medical speculation or preparation tips.\nGood Q4 example: "Next time, write down the specific question you most want answered before your appointment."\nGood Q1 example: "What part of waiting feels the hardest — the not knowing, or what the answer might mean?"`,
     GRIEF: `DOMAIN: GRIEF\nHARD RULE: Never suggest moving on or finding closure. Grief questions should deepen connection to the person/thing lost — not push toward resolution.\nQ4 must reference something specific from this entry (the Sunday phone habit, the anniversary, etc).`,
-    PARENTING: `DOMAIN: PARENTING\nHARD RULE: Always separate the action from the person's character. A hard moment ≠ a bad parent.\nQ4 must reference the specific child, moment, or trigger from this entry.`,
-    CREATIVE: `DOMAIN: CREATIVE\nHARD RULE: Creative blocks are about identity and fear of judgment, not productivity.\nQ4 must reference the specific creative work or block described (blank page, writing, etc).`,
+    PARENTING: `DOMAIN: PARENTING\nHARD RULE: The carrying line MUST use a specific detail from this entry (son, yelled, the look on his face, failing him). 'A parenting moment is sitting with you' is BANNED.\nA hard moment ≠ a bad parent. Questions must be reflective, not advice-dispensing.`,
+    CREATIVE: `DOMAIN: CREATIVE\nHARD RULE: The carrying line MUST use a specific detail from this entry (blank page, three weeks, staring, used to love writing). 'A creative block is sitting with you' is BANNED.\nBlocks are about identity and fear, not productivity. Questions must explore feeling, not goal-setting.`,
     IDENTITY: `DOMAIN: IDENTITY\nHARD RULE: Use the person's exact language — "performing", "version of myself", etc.\nQ4 must reference a specific situation or moment from this entry.`,
-    MONEY: `DOMAIN: MONEY\nHARD RULE: Money stress touches shame and safety — name which is louder.\nQ4 must reference a concrete element from this entry (rent, paycheck-to-paycheck, etc).`,
+    MONEY: `DOMAIN: MONEY\nHARD RULE: The carrying line MUST use a specific detail from this entry (rent, bank account, paycheck to paycheck, tired of pretending). Do NOT open with 'There's a financial pressure'.\nQuestions must be reflective (feelings/fears/meaning) — never advice-dispensing (steps/strategies/goals)`,
   };
 
   const domainHint = domainSpecific[domain]
@@ -1113,10 +1127,57 @@ export async function generateReflectionFromEntry(input: Input): Promise<Reflect
     ? `RECENT PATTERN CONTEXT (use only if genuinely relevant):\n${recentThemes.map((t, i) => `${i + 1}) ${t}`).join("\n")}\n\n`
     : "";
 
+  // Pre-fill the carrying line start so the model completes it — not invents it.
+  // This structurally prevents generic openers like "There's a financial pressure sitting on you."
+  const carryingStarter = (() => {
+    const a = anchors[0] ?? "";
+    const clean = toSecondPerson(a.replace(/^["""]|["""]$/g, "").trim());
+    if (!clean || clean.length < 8) return "";
+    // Truncate to first ~6 words so model has room to complete naturally
+    const words = clean.split(/\s+/);
+    const starter = words.slice(0, Math.min(6, Math.floor(words.length * 0.6))).join(" ");
+    return starter.length >= 6 ? starter : "";
+  })();
+
+  const carryingInstruction = carryingStarter
+    ? `COMPLETE THIS CARRYING LINE (do not change the start, complete naturally in 1 sentence):
+"What you're carrying: ${carryingStarter}..."`
+    : `"What you're carrying:" must open with a concrete detail from this entry.`;
+
+  // Question stems — model completes them, can't produce generic advice
+  const QUESTION_STEMS: Partial<Record<Domain, string[]>> = {
+    MONEY:     ["What does 'can't afford rent' feel like in your body — is it closer to fear or shame?",
+                "When you say you're tired of pretending you're managing, what are you actually hiding from?",
+                "What would it feel like to tell one person the real number?"],
+    PARENTING: ["When you think about the look on his face, what do you most wish he'd understood in that moment?",
+                "What was happening in you just before you yelled — what were you already carrying?",
+                "What would a repair look like that you could actually say out loud?"],
+    CREATIVE:  ["When you say the blank page feels like proof — proof of what, exactly?",
+                "What was different about the last time writing felt easy?",
+                "What would you make today if it could never be read by anyone?"],
+    IDENTITY:  ["Which version of yourself do you perform most — and what does it protect you from?",
+                "When you say you don't know what's underneath, is that frightening or relieving?",
+                "What's one small choice this week that would be more true to you?"],
+    GRIEF:     ["What does picking up the phone to call her on Sundays tell you about what you still need?",
+                "When you say you don't want to feel better — what are you protecting by holding onto this?",
+                "What's one specific thing you want to remember about her right now?"],
+    HEALTH:    ["What part of waiting feels the hardest — the not knowing, or what the answer might mean?",
+                "What do you actually know for certain right now, separate from what you fear?",
+                "What would you want to say to the doctor that you haven't said yet?"],
+  };
+
+  const stems = (!short && QUESTION_STEMS[domain]) ? QUESTION_STEMS[domain]! : [];
+  const stemsBlock = stems.length
+    ? `\nSTARTING POINTS for your questions (use these as Q1-Q3 seeds, adapt to fit — Q4 must start "Next time,"):
+${stems.map((s, i) => `Q${i+1} seed: "${s}"`).join("\n")}`
+    : "";
+
   const userPrompt = `${memoryBlock}THE PERSON'S EXACT WORDS — use at least one verbatim phrase in your SUMMARY:
 ${anchorsBlock}
 
-REMINDER: "What you're carrying:" must open with a concrete detail from this entry. Stay in DOMAIN: ${domain}.
+${carryingInstruction}${stemsBlock}
+
+Stay in DOMAIN: ${domain}.
 
 ${entryText}`.trim();
 
