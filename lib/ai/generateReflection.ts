@@ -814,16 +814,16 @@ function ensurePremiumStep(step: string, domain: Domain): string {
   }
   if (!/Script line:/i.test(s)) {
     const scriptByDomain: Record<Domain, string> = {
-      WORK: 'Script line: "I want to be clear about what I need here."',
-      RELATIONSHIP: 'Script line: "I want to understand what I needed before I respond."',
-      FITNESS: 'Script line: "I'm building consistency — recovery counts."',
-      MONEY: 'Script line: "I'm dealing with one thing at a time — today's thing is clear."',
-      HEALTH: 'Script line: "I can hold uncertainty without solving it today."',
-      GRIEF: 'Script line: "I'm allowed to miss this — and I'm allowed to still be here."',
-      PARENTING: 'Script line: "I'm sorry I snapped. I love you, and I'm working on it."',
-      CREATIVE: 'Script line: "The work doesn't have to be good yet — it just has to exist."',
-      IDENTITY: 'Script line: "I'm allowed to be honest about what's true for me."',
-      GENERAL: 'Script line: "I don't need the answer yet — I need to stay honest."',
+      WORK: `Script line: "I want to be clear about what I need here."`,
+      RELATIONSHIP: `Script line: "I want to understand what I needed before I respond."`,
+      FITNESS: `Script line: "I'm building consistency — recovery counts."`,
+      MONEY: `Script line: "I'm dealing with one thing at a time — today's thing is clear."`,
+      HEALTH: `Script line: "I can hold uncertainty without solving it today."`,
+      GRIEF: `Script line: "I'm allowed to miss this — and I'm allowed to still be here."`,
+      PARENTING: `Script line: "I'm sorry I snapped. I love you, and I'm working on it."`,
+      CREATIVE: `Script line: "The work doesn't have to be good yet — it just has to exist."`,
+      IDENTITY: `Script line: "I'm allowed to be honest about what's true for me."`,
+      GENERAL: `Script line: "I don't need the answer yet — I need to stay honest."`,
     };
     s = `${s}${s.endsWith(".") ? "" : "."} ${scriptByDomain[domain]}`;
   }
