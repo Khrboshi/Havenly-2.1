@@ -10,7 +10,7 @@ export default function HomeBelowFold() {
           <p className="font-medium text-slate-500">Written for people who are:</p>
           <div className="flex flex-wrap gap-2">
             {[
-              "Always "on", rarely checked in with themselves",
+              "Always \"on\", rarely checked in with themselves",
               "Good at caring for others, hard on themselves",
               "Wanting to understand themselves, not optimise",
             ].map((label) => (
@@ -33,7 +33,7 @@ export default function HomeBelowFold() {
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-slate-500">
               No streaks to maintain. No goals to set. Just a quiet place to be
-              honest — and something that pays attention.
+              honest -- and something that pays attention.
             </p>
           </div>
 
@@ -42,19 +42,19 @@ export default function HomeBelowFold() {
               {
                 step: "1",
                 title: "Write what's actually happening",
-                body: "Open Havenly and write for a few minutes — messy, incomplete, honest. This space is for you, not for an audience.",
+                body: "Open Havenly and write for a few minutes -- messy, incomplete, honest. This space is for you, not for an audience.",
                 accent: "text-emerald-400",
               },
               {
                 step: "2",
                 title: "Havenly reflects it back",
-                body: "Havenly reads what you wrote and offers a gentler version of what it heard — the emotions underneath, the patterns surfacing.",
+                body: "Havenly reads what you wrote and offers a gentler version of what it heard -- the emotions underneath, the patterns surfacing.",
                 accent: "text-violet-400",
               },
               {
                 step: "3",
                 title: "Start seeing what repeats",
-                body: "Over weeks, Havenly shows you what keeps coming up — what drains you, what lifts you, what you keep circling back to.",
+                body: "Over weeks, Havenly shows you what keeps coming up -- what drains you, what lifts you, what you keep circling back to.",
                 accent: "text-amber-400",
               },
             ].map(({ step, title, body, accent }) => (
@@ -89,13 +89,13 @@ export default function HomeBelowFold() {
             {[
               {
                 label: "Your top emotion this month",
-                example: "Curiosity — 14 times across 22 entries",
+                example: "Curiosity -- 14 times across 22 entries",
                 color: "border-violet-500/20 bg-violet-500/5",
                 tag: "text-violet-400",
               },
               {
                 label: "The theme that keeps appearing",
-                example: "Communication — in 10 of your last 15 entries",
+                example: "Communication -- in 10 of your last 15 entries",
                 color: "border-emerald-500/20 bg-emerald-500/5",
                 tag: "text-emerald-400",
               },
@@ -113,13 +113,13 @@ export default function HomeBelowFold() {
               },
               {
                 label: "Your weekly pattern summary",
-                example: "A personal paragraph written just for you — what Havenly noticed this week",
+                example: "A personal paragraph written just for you -- what Havenly noticed this week",
                 color: "border-rose-500/20 bg-rose-500/5",
                 tag: "text-rose-400",
               },
               {
                 label: "Questions worth sitting with",
-                example: "\"What would it mean to stop saying you're fine — just for today?\"",
+                example: "\"What would it mean to stop saying you're fine -- just for today?\"",
                 color: "border-slate-500/20 bg-slate-500/5",
                 tag: "text-slate-400",
               },
@@ -157,7 +157,7 @@ export default function HomeBelowFold() {
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-slate-500">
               The free plan is genuinely useful on its own. Premium adds
-              deeper patterns and weekly summaries — only worth it if it
+              deeper patterns and weekly summaries -- only worth it if it
               genuinely helps you.
             </p>
           </div>
@@ -173,7 +173,7 @@ export default function HomeBelowFold() {
                 Always free
               </p>
               <p className="mt-2 text-sm text-slate-500">
-                A private space to write and reflect — no commitment needed.
+                A private space to write and reflect -- no commitment needed.
               </p>
 
               <ul className="mt-5 space-y-2.5 text-sm text-slate-400">
@@ -203,7 +203,7 @@ export default function HomeBelowFold() {
               </div>
             </div>
 
-            {/* Premium — early access, no price shown */}
+            {/* Premium -- early access, no price shown */}
             <div className="relative flex flex-col rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.04] p-6">
               <div className="absolute right-4 top-4 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest text-emerald-400">
                 Early access
@@ -217,7 +217,7 @@ export default function HomeBelowFold() {
               </p>
               <p className="mt-2 text-sm text-slate-400">
                 For people who want to genuinely understand their patterns
-                — not just track them.
+                -- not just track them.
               </p>
 
               <ul className="mt-5 space-y-2.5 text-sm text-slate-300">
@@ -270,7 +270,7 @@ export default function HomeBelowFold() {
             {[
               {
                 q: "Is this therapy?",
-                a: "No. Havenly is a journaling companion — it can sit alongside therapy, coaching, or your own personal practices, but it is not a clinical tool and can't replace professional support.",
+                a: "No. Havenly is a journaling companion -- it can sit alongside therapy, coaching, or your own personal practices, but it is not a clinical tool and can't replace professional support.",
               },
               {
                 q: "Do I have to write every day?",
@@ -278,11 +278,11 @@ export default function HomeBelowFold() {
               },
               {
                 q: "What happens to my journal entries?",
-                a: "They're yours. Stored securely, never used to train AI models, never shared. Havenly is built around the idea that your inner life belongs to you — not the internet.",
+                a: "They're yours. Stored securely, never used to train AI models, never shared. Havenly is built around the idea that your inner life belongs to you -- not the internet.",
               },
               {
                 q: "What makes Premium worth it?",
-                a: "The free plan gives you good reflections. Premium gives you the full picture — what repeats across weeks and months, a personal weekly summary written just for you, and deeper pattern insights. Worth it if you genuinely want to understand yourself better.",
+                a: "The free plan gives you good reflections. Premium gives you the full picture -- what repeats across weeks and months, a personal weekly summary written just for you, and deeper pattern insights. Worth it if you genuinely want to understand yourself better.",
               },
             ].map(({ q, a }) => (
               <div key={q} className="border-b border-slate-800/60 pb-5">
@@ -314,7 +314,7 @@ export default function HomeBelowFold() {
               href="/magic-login"
               className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-7 py-3 text-sm font-semibold text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/20 transition-colors"
             >
-              Start for free — no card needed
+              Start for free -- no card needed
             </Link>
             <Link
               href="/about"
