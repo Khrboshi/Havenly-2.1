@@ -780,9 +780,12 @@ function ensurePremiumSummary(summary: string, domain: Domain, anchors: string[]
   if (!s.includes("Deeper direction:")) {
     const a = anchors.find(x => normalizeForMatch(x).length >= 10) ?? anchors[0] ?? "";
     const clean = String(a).replace(/^["""]|["""]$/g, "").trim();
-    const dd = clean.length >= 8
-      ? `Deeper direction: The fact that you wrote "${clean}" points to a real need — one small honest action today reduces pressure without forcing certainty.`
-      : `Deeper direction: Pick one small, honest action that reduces pressure without forcing certainty.`;
+    // Convert anchor to second-person before embedding in Deeper direction
+    const converted = toSecondPerson(clean);
+    const ddAnchor = converted.charAt(0).toUpperCase() + converted.slice(1);
+    const dd = ddAnchor.length >= 8
+      ? `Deeper direction: "${ddAnchor}" — naming it clearly is the first move. One small honest action today is enough.`
+      : `Deeper direction: Naming what's here is the first move. One small honest action today reduces pressure without forcing certainty.`;
     s = `${s}\n${dd}`;
   }
 
@@ -954,10 +957,19 @@ function buildSystemPrompt(plan: "FREE" | "PREMIUM", domain: Domain, short: bool
     ? `\nSHORT ENTRY: Under 12 words. Be warm and curious — not analytical. Invite one more sentence.`
     : "";
 
-  const domainHint =
-    domain === "GENERAL"
+  const domainSpecific: Partial<Record<Domain, string>> = {
+    HEALTH: `DOMAIN: HEALTH\nHARD RULE: Questions must reference the specific fear (pain, test results, doctor) from this entry — not generic health advice.\nBANNED Q4 patterns: "prioritize your emotional well-being", "take care of yourself", "manage your health".\nGood Q4 example: "Next time, write down the specific question you most want answered before your appointment."`,
+    GRIEF: `DOMAIN: GRIEF\nHARD RULE: Never suggest moving on or finding closure. Grief questions should deepen connection to the person/thing lost — not push toward resolution.\nQ4 must reference something specific from this entry (the Sunday phone habit, the anniversary, etc).`,
+    PARENTING: `DOMAIN: PARENTING\nHARD RULE: Always separate the action from the person's character. A hard moment ≠ a bad parent.\nQ4 must reference the specific child, moment, or trigger from this entry.`,
+    CREATIVE: `DOMAIN: CREATIVE\nHARD RULE: Creative blocks are about identity and fear of judgment, not productivity.\nQ4 must reference the specific creative work or block described (blank page, writing, etc).`,
+    IDENTITY: `DOMAIN: IDENTITY\nHARD RULE: Use the person's exact language — "performing", "version of myself", etc.\nQ4 must reference a specific situation or moment from this entry.`,
+    MONEY: `DOMAIN: MONEY\nHARD RULE: Money stress touches shame and safety — name which is louder.\nQ4 must reference a concrete element from this entry (rent, paycheck-to-paycheck, etc).`,
+  };
+
+  const domainHint = domainSpecific[domain]
+    ?? (domain === "GENERAL"
       ? `DOMAIN: GENERAL\nHARD RULE: Do NOT become vague. Use the most specific phrase from the entry.`
-      : `DOMAIN: ${domain}\nHARD RULE: Stay inside this domain. Do not borrow language from other domains.`;
+      : `DOMAIN: ${domain}\nHARD RULE: Stay inside this domain. Do not borrow language from other domains.`);
 
   const depthGuidance =
     isPremium && !short
