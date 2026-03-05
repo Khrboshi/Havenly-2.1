@@ -140,9 +140,9 @@ function extractAnchorsForDebug(entry: string): string[] {
     if (!s || anchors.includes(s)) return;
     anchors.push(s);
   };
-  const quoteMatches = t.match(/[""][^""]+[""]/g) || [];
+  const quoteMatches = t.match(/["""][^"""]+["""]/g) || [];
   for (const q of quoteMatches) {
-    const cleaned = q.replace(/^[""]|[""]$/g, "").trim();
+    const cleaned = q.replace(/^["""]|["""]$/g, "").trim();
     if (cleaned.length >= 4 && cleaned.length <= 90) add(`"${cleaned}"`);
     if (anchors.length >= 3) break;
   }
@@ -192,78 +192,18 @@ function tryParseReflection(aiResponse: unknown) {
   if (typeof aiResponse !== "string") return null;
   try {
     const parsed = JSON.parse(aiResponse);
-    // minimal sanity check
-    if (parsed && typeof parsed === "object" && typeof parsed.summary === "string") return parsed;
+    // minimal sanity check — must have summary and at least themes or emotions
+    if (
+      parsed &&
+      typeof parsed === "object" &&
+      typeof parsed.summary === "string" &&
+      parsed.summary.length > 0
+    ) {
+      return parsed;
+    }
   } catch {}
   return null;
 }
-
-// ---------- NEW: Free vs Premium shaping ----------
-function pickString(v: any) {
-  return typeof v === "string" ? v : "";
-}
-function pickArray(v: any) {
-  return Array.isArray(v) ? v : [];
-}
-
-function toFreeReflection(full: any) {
-  const themes = pickArray(full?.themes).filter((x) => typeof x === "string").slice(0, 2);
-
-  const insight =
-    pickString(full?.keyInsight) ||
-    pickString(full?.insight) ||
-    pickString(full?.emotionalInsight) ||
-    pickString(full?.reflection) ||
-    "";
-
-  const q =
-    pickArray(full?.questions).filter((x) => typeof x === "string")[0] ||
-    pickString(full?.question) ||
-    "";
-
-  return {
-    tier: "FREE" as const,
-    summary: pickString(full?.summary),
-    themes,
-    insight,
-    question: q,
-  };
-}
-
-function premiumLockedPreview(full: any) {
-  const topTheme = pickArray(full?.themes).filter((x) => typeof x === "string")[0] || "a recurring theme";
-
-  return {
-    locked: true,
-    blocks: [
-      {
-        id: "patterns",
-        title: "Recurring patterns over time",
-        teaser: `We’re starting to detect a repeating theme: “${topTheme}”.`,
-      },
-      {
-        id: "trend",
-        title: "Emotional trend timeline",
-        teaser: "See how your emotions shift across entries and what triggers changes.",
-      },
-      {
-        id: "weekly",
-        title: "Weekly clarity summary",
-        teaser: "Get a weekly snapshot of what showed up most—and what helped.",
-      },
-      {
-        id: "monthly",
-        title: "Monthly insight report",
-        teaser: "A clear report of themes, growth markers, and next focus areas.",
-      },
-    ],
-    cta: {
-      label: "Unlock deeper insights",
-      href: "/upgrade",
-    },
-  };
-}
-// -------------------------------------------------
 
 export async function POST(req: Request) {
   const supabase = await createServerSupabase();
@@ -381,16 +321,12 @@ export async function POST(req: Request) {
 
   const effectiveTier: "FREE" | "PREMIUM" = stripePremium ? "PREMIUM" : "FREE";
 
-  // ✅ IDempotency AFTER we know tier:
-  // If reflection already exists, serve shaped version without consuming credits.
+  // ✅ Idempotency AFTER we know tier:
+  // If reflection already exists, serve it without consuming credits.
   const existingFull = tryParseReflection((entry as any)?.ai_response);
   if (existingFull) {
     const payload: any = {
-      reflection:
-        effectiveTier === "FREE"
-          ? toFreeReflection(existingFull)
-          : { ...existingFull, tier: "PREMIUM" as const },
-      premiumPreview: effectiveTier === "FREE" ? premiumLockedPreview(existingFull) : null,
+      reflection: existingFull,
       remainingCredits: null,
     };
 
@@ -454,8 +390,9 @@ export async function POST(req: Request) {
     } catch {}
     // ─────────────────────────────────────────────────────────────────────────
 
-    // Generate full reflection (we save full regardless of tier)
-    const reflectionFull = await generateReflectionFromEntry({
+    // Generate reflection — always use the full shape regardless of tier.
+    // The UI (JournalEntryClient) displays the full Reflection type for all users.
+    const reflection = await generateReflectionFromEntry({
       content,
       title,
       plan: effectiveTier,
@@ -465,7 +402,7 @@ export async function POST(req: Request) {
     // Save full reflection
     const { error: updErr } = await supabase
       .from("journal_entries")
-      .update({ ai_response: JSON.stringify(reflectionFull) })
+      .update({ ai_response: JSON.stringify(reflection) })
       .eq("id", entryId)
       .eq("user_id", userId);
 
@@ -484,11 +421,7 @@ export async function POST(req: Request) {
     }
 
     const payload: any = {
-      reflection:
-        effectiveTier === "FREE"
-          ? toFreeReflection(reflectionFull)
-          : { ...reflectionFull, tier: "PREMIUM" as const },
-      premiumPreview: effectiveTier === "FREE" ? premiumLockedPreview(reflectionFull) : null,
+      reflection,
       remainingCredits: effectiveTier === "FREE" ? remainingAfterConsume : null,
     };
 
