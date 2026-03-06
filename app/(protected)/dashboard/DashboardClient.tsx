@@ -33,7 +33,7 @@ function greetingByHour() {
   return "Good evening";
 }
 
-function friendlyDate(iso: string) {
+function friendlyDate(iso: string, isMounted = false) {
   const d = new Date(iso);
   const today = new Date();
   const yesterday = new Date(today);
@@ -42,7 +42,7 @@ function friendlyDate(iso: string) {
   const isoDate = (x: Date) => x.toISOString().slice(0, 10);
   if (isoDate(d) === isoDate(today)) return "today";
   if (isoDate(d) === isoDate(yesterday)) return "yesterday";
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  return isMounted ? d.toLocaleDateString(undefined, { month: "short", day: "numeric" }) : iso.slice(0, 10);
 }
 
 function startOfNextMonth() {
@@ -296,6 +296,9 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
 
   const [displayName, setDisplayName] = useState<string | null>(null);
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data: d }) => {
       setDisplayName(friendlyNameFromUser(d?.user));
@@ -443,7 +446,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
             {lastEntryDate && (
               <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-400">Last entry</span>
-                <span className="font-medium text-slate-100">{friendlyDate(lastEntryDate)}</span>
+                <span className="font-medium text-slate-100"><span suppressHydrationWarning>{friendlyDate(lastEntryDate, mounted)}</span></span>
               </div>
             )}
             {isPremium && (
