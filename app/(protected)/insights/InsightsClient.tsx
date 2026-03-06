@@ -716,7 +716,7 @@ export default function InsightsClient() {
             <StatCard
               label="Entries"
               value={String(totalEntryCount)}
-              sub={data.firstEntryDate ? `Since $<span suppressHydrationWarning>{mounted ? friendlyDate(data.firstEntryDate) : data.firstEntryDate.slice(0, 7)}</span>` : undefined}
+              sub={data.firstEntryDate ? `Since ${mounted ? friendlyDate(data.firstEntryDate) : data.firstEntryDate.slice(0, 7)}` : undefined}
             />
             <StatCard
               label="Top emotion"
