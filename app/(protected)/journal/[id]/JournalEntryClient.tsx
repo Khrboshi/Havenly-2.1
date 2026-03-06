@@ -157,8 +157,8 @@ export default function JournalEntryClient({
       <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold tracking-tight">{entry.title || "Untitled"}</h1>
-          <p className="mt-0.5 text-xs text-white/35">
-            {new Date(entry.created_at).toLocaleString()}
+          <p className="mt-0.5 text-xs text-white/35" suppressHydrationWarning>
+            {mounted ? new Date(entry.created_at).toLocaleString() : new Date(entry.created_at).toISOString().slice(0, 10)}
           </p>
         </div>
         <Link href="/journal" className="text-xs text-emerald-400/80 hover:text-emerald-300 transition-colors mt-1">
