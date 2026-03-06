@@ -83,9 +83,11 @@ function emotionClass(e: string): string {
 export default function JournalEntryClient({
   entry,
   initialReflection,
+  isFirstEntry = false,
 }: {
   entry: JournalEntry;
   initialReflection?: Reflection | null;
+  isFirstEntry?: boolean;
 }) {
   const { planType, credits, loading, refresh } = useUserPlan();
 
@@ -174,6 +176,16 @@ export default function JournalEntryClient({
       {/* ── Reflection card ─────────────────────────────────────────────── */}
       <section className="rounded-2xl border border-white/8 bg-white/[0.02] overflow-hidden">
 
+        {/* First-entry nudge */}
+        {isFirstEntry && !reflection && (
+          <div className="border-b border-white/6 bg-emerald-500/5 px-6 py-3 flex items-start gap-2">
+            <span className="text-emerald-400 text-sm mt-0.5">✦</span>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              This reflection starts your pattern history — Havenly will notice what repeats across your entries over time.
+            </p>
+          </div>
+        )}
+
         {/* Card header bar */}
         <div className="flex items-center justify-between border-b border-white/6 px-6 py-4">
           <div>
@@ -182,11 +194,11 @@ export default function JournalEntryClient({
               <p className="mt-0.5 text-xs text-white/40">
                 Plan: <span className="text-emerald-300/90">{readablePlan}</span>
                 {!isUnlimited ? (
-                  credits === 0 ? (
-                    <span className="ml-1.5 text-white/30">· reflections reset next month</span>
-                  ) : (
-                    <span className="ml-1.5 text-white/30">· {loading ? "…" : credits} this month</span>
-                  )
+                  <>
+                    {" "}·{" "}
+                    <span className="text-white/50">{loading ? "…" : credits} left</span>
+                    {credits === 0 && <span className="ml-1.5 text-white/30">(resets monthly)</span>}
+                  </>
                 ) : (
                   <span className="text-white/30"> · Unlimited</span>
                 )}
@@ -195,17 +207,6 @@ export default function JournalEntryClient({
           </div>
 
           {!reflection ? (
-            !isUnlimited && credits === 0 ? (
-              <div className="text-right">
-                <p className="text-xs text-white/40">Reflections resume next month</p>
-                <Link
-                  href="/upgrade"
-                  className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-emerald-400 hover:text-emerald-300 transition"
-                >
-                  Upgrade for unlimited →
-                </Link>
-              </div>
-            ) : (
             <button
               onClick={generateReflection}
               disabled={busy}
@@ -218,7 +219,6 @@ export default function JournalEntryClient({
                 </>
               ) : "Generate Reflection"}
             </button>
-            )
           ) : (
             <div className="flex flex-col items-end gap-0.5">
               <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/8 px-3 py-1.5 text-xs font-medium text-emerald-400">
@@ -228,7 +228,6 @@ export default function JournalEntryClient({
               <p className="text-[10px] text-white/20">permanent · keeps patterns accurate</p>
             </div>
           )}
-
         </div>
 
         {error && (
@@ -409,11 +408,11 @@ export default function JournalEntryClient({
       <UpgradeTriggerModal
         open={showUpgrade}
         onClose={() => setShowUpgrade(false)}
-        title="Your reflections for this month are used"
-        message="You can still write freely — your 3 monthly reflections reset at the start of next month. Or upgrade for unlimited access."
+        title="You've reached your reflection limit"
+        message="Upgrade to Premium for unlimited reflections and deeper insights when you need them most."
         source="reflection_limit"
         ctaHref="/upgrade"
-        ctaLabel="Unlock unlimited reflections"
+        ctaLabel="Upgrade to Premium"
       />
     </div>
   );
