@@ -22,6 +22,7 @@ type InsightData = {
   };
   trend?: { up: string[]; down: string[] };
   momentum?: string;
+  domains?: Record<string, number>;
 };
 
 type SummaryState =
@@ -38,7 +39,6 @@ function maxVal(m: Record<string, number>) {
   return v.length ? Math.max(...v) : 1;
 }
 function friendlyDate(iso: string) {
-  if (typeof window === 'undefined') return iso.slice(0, 10);
   return new Date(iso).toLocaleDateString(undefined, {
     month: "short",
     year: "numeric",
@@ -226,7 +226,85 @@ function TrendPill({ label, dir }: { label: string; dir: "up" | "down" }) {
   );
 }
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
+// ─── Domain distribution ─────────────────────────────────────────────────────
+
+const DOMAIN_LABELS: Record<string, { label: string; emoji: string; color: string }> = {
+  MONEY:        { label: "Money",      emoji: "💰", color: "#34d399" },
+  WORK:         { label: "Work",       emoji: "💼", color: "#60a5fa" },
+  RELATIONSHIP: { label: "Relationships", emoji: "🤝", color: "#f472b6" },
+  HEALTH:       { label: "Health",     emoji: "🫀", color: "#fb923c" },
+  GRIEF:        { label: "Grief",      emoji: "🕊️", color: "#a78bfa" },
+  PARENTING:    { label: "Parenting",  emoji: "🌱", color: "#86efac" },
+  CREATIVE:     { label: "Creative",   emoji: "✍️", color: "#fbbf24" },
+  IDENTITY:     { label: "Identity",   emoji: "🪞", color: "#e879f9" },
+  FITNESS:      { label: "Fitness",    emoji: "⚡", color: "#2dd4bf" },
+  GENERAL:      { label: "General",    emoji: "📝", color: "#64748b" },
+};
+
+function DomainSection({ domains }: { domains: Record<string, number> }) {
+  const sorted = Object.entries(domains)
+    .filter(([k]) => k !== "GENERAL")
+    .sort((a, b) => b[1] - a[1]);
+
+  if (!sorted.length) return null;
+
+  const total = sorted.reduce((s, [, v]) => s + v, 0);
+  const top = sorted[0]?.[0];
+  const topMeta = DOMAIN_LABELS[top] ?? { label: top, emoji: "📝", color: "#34d399" };
+
+  return (
+    <section className="rounded-2xl border border-slate-800 bg-slate-950/50 p-6">
+      <div className="mb-1">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+          What you write about most
+        </h2>
+        <p className="mt-0.5 text-xs text-slate-600">
+          Based on domain detection across all reflected entries.
+        </p>
+      </div>
+
+      {/* Top domain callout */}
+      <div className="my-4 flex items-center gap-3 rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-3">
+        <span className="text-2xl">{topMeta.emoji}</span>
+        <div>
+          <p className="text-sm font-semibold" style={{ color: topMeta.color }}>
+            {topMeta.label}
+          </p>
+          <p className="text-xs text-slate-500">
+            {sorted[0][1]} of {total} {total === 1 ? "entry" : "entries"} — your most written-about area
+          </p>
+        </div>
+      </div>
+
+      {/* All domains bar list */}
+      <ul className="space-y-3 mt-2">
+        {sorted.map(([domain, count], i) => {
+          const meta = DOMAIN_LABELS[domain] ?? { label: domain, emoji: "📝", color: "#64748b" };
+          const pct = Math.round((count / sorted[0][1]) * 100);
+          return (
+            <li key={domain} className="space-y-1">
+              <div className="flex items-center justify-between text-xs">
+                <span className="flex items-center gap-1.5 text-slate-300">
+                  <span>{meta.emoji}</span>
+                  <span className={i === 0 ? "font-medium" : "text-slate-400"}>{meta.label}</span>
+                </span>
+                <span className="tabular-nums text-slate-600">{count}</span>
+              </div>
+              <div className="h-[3px] w-full overflow-hidden rounded-full bg-slate-800">
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{ width: `${pct}%`, backgroundColor: i === 0 ? meta.color : "#1e293b" }}
+                />
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+// ─── Skeleton ───────────────────────────────────────────────────────────────────
 
 function Skeleton() {
   return (
@@ -403,9 +481,6 @@ function WeeklySummarySection({ hasRealData }: { hasRealData: boolean }) {
   }
 
   // Auto-fetch on mount if data is ready
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
-
   useEffect(() => {
     if (hasRealData) fetchSummary();
   }, [hasRealData]);
@@ -413,7 +488,7 @@ function WeeklySummarySection({ hasRealData }: { hasRealData: boolean }) {
   const generatedLabel = useMemo(() => {
     if (state.status !== "ready") return null;
     const d = new Date(state.generatedAt);
-    return typeof window !== 'undefined' ? d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : d.toISOString().slice(0, 10);
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
   }, [state]);
 
   return (
@@ -503,6 +578,8 @@ function WeeklySummarySection({ hasRealData }: { hasRealData: boolean }) {
 export default function InsightsClient() {
   const [data, setData] = useState<InsightData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
   const [showAllThemes, setShowAllThemes] = useState(false);
   const [showAllEmotions, setShowAllEmotions] = useState(false);
 
@@ -528,6 +605,10 @@ export default function InsightsClient() {
   const allEmotions = useMemo(() => (data ? sortMap(data.emotions) : []), [data]);
   const topCorepatterns = useMemo(
     () => (data?.corepatterns ? sortMap(data.corepatterns).slice(0, 5) : []),
+    [data]
+  );
+  const hasDomains = useMemo(
+    () => data?.domains && Object.keys(data.domains).filter(k => k !== "GENERAL").length > 0,
     [data]
   );
 
@@ -607,7 +688,7 @@ export default function InsightsClient() {
           )}
           {data?.firstEntryDate && data?.lastEntryDate && (
             <span className="text-slate-600">
-              {" "}· {friendlyDate(data.firstEntryDate)} – {friendlyDate(data.lastEntryDate)}
+              {" "}· <span suppressHydrationWarning>{mounted ? friendlyDate(data.firstEntryDate) : data.firstEntryDate.slice(0, 7)}</span> – <span suppressHydrationWarning>{mounted ? friendlyDate(data.lastEntryDate) : data.lastEntryDate.slice(0, 7)}</span>
             </span>
           )}
         </p>
@@ -635,7 +716,7 @@ export default function InsightsClient() {
             <StatCard
               label="Entries"
               value={String(totalEntryCount)}
-              sub={data.firstEntryDate ? `Since ${friendlyDate(data.firstEntryDate)}` : undefined}
+              sub={data.firstEntryDate ? `Since $<span suppressHydrationWarning>{mounted ? friendlyDate(data.firstEntryDate) : data.firstEntryDate.slice(0, 7)}</span>` : undefined}
             />
             <StatCard
               label="Top emotion"
@@ -660,10 +741,13 @@ export default function InsightsClient() {
           {/* ── Weekly AI summary ── */}
           <WeeklySummarySection hasRealData={hasRealData} />
 
+          {/* ── Domain distribution ── */}
+          {hasDomains && <DomainSection domains={data.domains!} />}
+
           {/* ── Narrative headline ── */}
           <section className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-950 to-slate-900/40 p-7">
             <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-slate-600">
-              What this shows
+              The pattern underneath
             </p>
 
             <p className="text-lg leading-relaxed text-slate-300">{headline}</p>
@@ -695,38 +779,43 @@ export default function InsightsClient() {
                 The specific dynamic Havenly noticed most often beneath your entries.
               </p>
 
-              <ul className="space-y-5">
-                {topCorepatterns.map(([pattern, count], i) => (
-                  <li key={pattern} className="group space-y-2">
-                    <div className="flex items-start justify-between gap-4">
-                      <p
-                        className={`text-sm leading-relaxed ${
-                          i === 0
-                            ? "font-medium text-slate-100"
-                            : "text-slate-400 group-hover:text-slate-300 transition-colors"
-                        }`}
-                      >
-                        {i === 0 && (
-                          <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 align-middle" />
-                        )}
-                        {pattern}
-                      </p>
-                      <span className="shrink-0 tabular-nums text-xs text-slate-700 pt-0.5">
-                        {count}×
-                      </span>
-                    </div>
-                    <div className="h-[2px] w-full overflow-hidden rounded-full bg-slate-800">
-                      <div
-                        className="h-full rounded-full transition-all duration-700"
-                        style={{
-                          width: `${Math.round((count / maxPattern) * 100)}%`,
-                          backgroundColor: i === 0 ? "rgba(52,211,153,0.5)" : "#1e293b",
-                        }}
-                      />
-                    </div>
-                  </li>
-                ))}
-              </ul>
+              {/* Top pattern — featured */}
+              <div className="mb-4 rounded-xl border border-emerald-500/15 bg-emerald-500/5 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-sm font-medium leading-relaxed text-slate-100">
+                    <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 align-middle" />
+                    {topCorepatterns[0][0]}
+                  </p>
+                  <span className="shrink-0 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs tabular-nums text-emerald-400">
+                    {topCorepatterns[0][1]}×
+                  </span>
+                </div>
+                <p className="mt-2 text-xs text-slate-600 pl-4">
+                  Your most recurring underlying pattern
+                </p>
+              </div>
+
+              {/* Secondary patterns */}
+              {topCorepatterns.length > 1 && (
+                <ul className="space-y-3">
+                  {topCorepatterns.slice(1).map(([pattern, count]) => (
+                    <li key={pattern} className="group space-y-1.5">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="text-xs leading-relaxed text-slate-400 group-hover:text-slate-300 transition-colors">
+                          {pattern}
+                        </p>
+                        <span className="shrink-0 tabular-nums text-xs text-slate-700 pt-0.5">{count}×</span>
+                      </div>
+                      <div className="h-[2px] w-full overflow-hidden rounded-full bg-slate-800">
+                        <div
+                          className="h-full rounded-full bg-slate-700 transition-all duration-700"
+                          style={{ width: `${Math.round((count / maxPattern) * 100)}%` }}
+                        />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </section>
           )}
 
