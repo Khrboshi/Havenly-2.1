@@ -38,6 +38,7 @@ function maxVal(m: Record<string, number>) {
   return v.length ? Math.max(...v) : 1;
 }
 function friendlyDate(iso: string) {
+  if (typeof window === 'undefined') return iso.slice(0, 10);
   return new Date(iso).toLocaleDateString(undefined, {
     month: "short",
     year: "numeric",
@@ -402,6 +403,9 @@ function WeeklySummarySection({ hasRealData }: { hasRealData: boolean }) {
   }
 
   // Auto-fetch on mount if data is ready
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   useEffect(() => {
     if (hasRealData) fetchSummary();
   }, [hasRealData]);
@@ -409,7 +413,7 @@ function WeeklySummarySection({ hasRealData }: { hasRealData: boolean }) {
   const generatedLabel = useMemo(() => {
     if (state.status !== "ready") return null;
     const d = new Date(state.generatedAt);
-    return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+    return typeof window !== 'undefined' ? d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : d.toISOString().slice(0, 10);
   }, [state]);
 
   return (
