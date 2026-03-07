@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { Session, SupabaseClient } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { identify, resetIdentity } from "@/app/components/telemetry";
 
 type SupabaseContextType = {
   supabase: SupabaseClient;
@@ -27,7 +28,6 @@ export function SupabaseSessionProvider({ children }: { children: React.ReactNod
         if (!alive) return;
 
         if (error) {
-          // Treat as logged out (and stop spinner)
           setSession(null);
           setLoading(false);
           return;
@@ -42,21 +42,23 @@ export function SupabaseSessionProvider({ children }: { children: React.ReactNod
       }
     }
 
-    // Initial load
     syncSession();
 
-    // Keep React state in sync with auth changes
-    const { data } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    const { data } = supabase.auth.onAuthStateChange((event, newSession) => {
       if (!alive) return;
       setSession(newSession ?? null);
-      setLoading(false); // important: never get stuck in loading after auth events
+      setLoading(false);
+
+      // PostHog: link events to the logged-in user
+      if (newSession?.user) {
+        identify(newSession.user.id, { email: newSession.user.email });
+      } else if (event === "SIGNED_OUT") {
+        resetIdentity();
+      }
     });
 
-    // iOS/PWA reliability: re-check on resume / tab focus
     const onVis = () => {
-      if (document.visibilityState === "visible") {
-        syncSession();
-      }
+      if (document.visibilityState === "visible") syncSession();
     };
     window.addEventListener("focus", syncSession);
     document.addEventListener("visibilitychange", onVis);
