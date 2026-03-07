@@ -42,19 +42,17 @@ export default function Navbar() {
   const inactiveLink = "text-slate-300";
 
   const publicLinks: NavLink[] = [
-    { href: "/", label: "Home" },
     { href: "/about", label: "About" },
     { href: "/blog", label: "Blog" },
+    { href: "/upgrade", label: "Premium" },
     { href: "/install", label: "Install" },
-    { href: "/magic-login", label: "Log in" },
   ];
 
-  // Tools removed until at least one tool page is real
   const authLinks: NavLink[] = [
     { href: "/dashboard", label: "Dashboard" },
     { href: "/journal", label: "Journal" },
     { href: "/insights", label: "Insights" },
-    { href: "/settings", label: "Settings" },
+    { href: "/upgrade", label: "Premium" },
     { href: "/install", label: "Install" },
   ];
 
