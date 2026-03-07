@@ -6,9 +6,15 @@ import DeepLinkBootstrap from "./components/DeepLinkBootstrap";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import InstallPrompt from "@/app/components/InstallPrompt";
 
+const SITE_URL = "https://havenly-2-1.vercel.app";
+
 export const metadata: Metadata = {
-  title: "Havenly",
-  description: "A calm, private journaling companion with gentle AI reflections.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "Havenly — Private AI Journal",
+    template: "%s | Havenly",
+  },
+  description: "A calm, private journaling companion with gentle AI reflections. Write freely, spot patterns, understand yourself.",
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -21,7 +27,19 @@ export const metadata: Metadata = {
     capable: true,
     title: "Havenly",
     statusBarStyle: "black-translucent"
-  }
+  },
+  openGraph: {
+    type: "website",
+    siteName: "Havenly",
+    title: "Havenly — Private AI Journal",
+    description: "A calm, private journaling companion with gentle AI reflections. Write freely, spot patterns, understand yourself.",
+    url: SITE_URL,
+  },
+  twitter: {
+    card: "summary",
+    title: "Havenly — Private AI Journal",
+    description: "A calm, private journaling companion with gentle AI reflections.",
+  },
 };
 
 export const viewport: Viewport = {
