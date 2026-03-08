@@ -1,11 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import { useInstallAvailability } from "@/app/hooks/useInstallAvailability";
 
 export default function InstallPage() {
-  // Do NOT capture here (no preventDefault).
-  // This page is for instructions and browser-native install UI.
   const { isStandalone, isIOS, isSafariIOS, canPromptNative, promptInstall } =
     useInstallAvailability({ allowPreventDefault: false });
 
@@ -16,77 +15,207 @@ export default function InstallPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 pt-10 md:pt-16">
-      <h1 className="text-3xl font-semibold text-white">Install</h1>
-      <p className="mt-2 text-slate-300">
-        Installing creates an app icon and improves the login experience from email links.
-      </p>
+    <main className="min-h-screen bg-slate-950 text-white">
+      <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:grid lg:grid-cols-[1.02fr_0.98fr] lg:gap-10 lg:px-8 lg:py-14">
+        <section className="hidden lg:block">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-400/80">
+            Install Havenly
+          </p>
+          <h1 className="mt-4 max-w-xl text-5xl font-semibold leading-[1.05] tracking-tight text-white">
+            Keep Havenly one tap away.
+          </h1>
+          <p className="mt-5 max-w-lg text-base leading-relaxed text-slate-400">
+            Installing Havenly creates an app icon and usually makes returning to your
+            journal faster, cleaner, and more reliable.
+          </p>
 
-      {isStandalone ? (
-        <div className="mt-8 rounded-xl border border-white/10 bg-white/5 p-6">
-          <h2 className="text-lg font-semibold text-white">Already installed</h2>
-          <p className="mt-2 text-slate-300">This device already has Havenly installed.</p>
-        </div>
-      ) : (
-        <div className="mt-8 rounded-xl border border-white/10 bg-white/5 p-6">
-          <h2 className="text-lg font-semibold text-white">Install on this device</h2>
-
-          {canPromptNative ? (
-            <>
-              <p className="mt-2 text-slate-300">Your browser supports one-click install.</p>
-              <button
-                onClick={handleInstallClick}
-                className="mt-4 rounded-lg bg-emerald-500 px-4 py-3 text-sm font-medium text-black hover:bg-emerald-400"
-              >
-                Install Havenly
-              </button>
-              <p className="mt-3 text-xs text-slate-400">
-                If you don’t see install in Incognito, open a normal browser window.
+          <div className="mt-8 space-y-4">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+              <p className="text-sm font-medium text-white">Faster access</p>
+              <p className="mt-1 text-sm leading-relaxed text-slate-400">
+                Open Havenly like an app instead of finding it again in your browser tabs.
               </p>
-            </>
-          ) : (
-            <>
-              {platformHint === "ios" && isSafariIOS ? (
-                <div className="mt-4 text-slate-300">
-                  <p className="text-sm text-slate-400 mb-4">Follow these steps in Safari:</p>
-                  <ol className="space-y-3">
-                    {[
-                      { step: "1", text: <>Tap the <b className="text-white">Share</b> button — the box with an arrow pointing up, at the bottom of your screen.</> },
-                      { step: "2", text: <>Scroll down and tap <b className="text-white">Add to Home Screen</b>.</> },
-                      { step: "3", text: <>Tap <b className="text-white">Add</b> in the top right corner.</> },
-                      { step: "4", text: <>Open Havenly from your Home Screen — sign-in links will now open directly in the app.</> },
-                    ].map(({ step, text }) => (
-                      <li key={step} className="flex items-start gap-3">
-                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center justify-center mt-0.5">
-                          {step}
-                        </span>
-                        <span className="text-sm leading-relaxed">{text}</span>
-                      </li>
-                    ))}
-                  </ol>
-                  <p className="mt-4 text-xs text-slate-500">
-                    Not seeing the Share button? Make sure you&apos;re using Safari, not Chrome or another browser.
-                  </p>
-                </div>
-              ) : (
-                <div className="mt-2 text-slate-300">
-                  <p className="font-medium text-white">Desktop (Chrome/Edge)</p>
-                  <ol className="mt-2 list-decimal space-y-2 pl-5">
-                    <li>Open this site in a normal (non-Incognito) window.</li>
-                    <li>
-                      Click the install icon in the address bar (if shown) <b>or</b> open the
-                      browser menu (⋮).
-                    </li>
-                    <li>
-                      Select <b>Install Havenly…</b>
-                    </li>
-                  </ol>
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      )}
+            </div>
+
+            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.05] p-4">
+              <p className="text-sm font-medium text-white">Better sign-in flow</p>
+              <p className="mt-1 text-sm leading-relaxed text-slate-300">
+                Installation can improve how email sign-in behaves, especially when you
+                regularly return to Havenly on the same device.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+              <p className="text-sm font-medium text-white">More focused feel</p>
+              <p className="mt-1 text-sm leading-relaxed text-slate-400">
+                A cleaner, app-like experience that feels more intentional and less like
+                another browser task.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto w-full max-w-2xl">
+          <div className="rounded-[1.75rem] border border-white/10 bg-slate-900/60 p-6 shadow-2xl shadow-black/40 backdrop-blur sm:p-7">
+            <div className="lg:hidden">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-400/80">
+                Install Havenly
+              </p>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white">
+                Install Havenly
+              </h1>
+              <p className="mt-3 text-sm leading-relaxed text-slate-400">
+                Add Havenly to your device for faster access and a smoother return to your
+                journal.
+              </p>
+            </div>
+
+            <div className="hidden lg:block">
+              <h2 className="text-2xl font-semibold text-white">Install on this device</h2>
+              <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                Follow the option below that matches your current browser.
+              </p>
+            </div>
+
+            {isStandalone ? (
+              <div className="mt-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.06] p-5">
+                <h3 className="text-lg font-semibold text-white">Already installed</h3>
+                <p className="mt-2 text-sm leading-relaxed text-emerald-100">
+                  This device already has Havenly installed. You can open it from your Home
+                  Screen or app launcher.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                <h3 className="text-lg font-semibold text-white">Install on this device</h3>
+
+                {canPromptNative ? (
+                  <>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-400">
+                      Your browser supports one-click installation.
+                    </p>
+
+                    <button
+                      onClick={handleInstallClick}
+                      className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-4 py-3.5 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400"
+                    >
+                      Install Havenly
+                    </button>
+
+                    <p className="mt-3 text-center text-xs leading-relaxed text-slate-500">
+                      If installation does not appear in Incognito, open a normal browser
+                      window.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    {platformHint === "ios" && isSafariIOS ? (
+                      <div className="mt-4">
+                        <p className="mb-4 text-sm text-slate-400">
+                          Follow these steps in Safari:
+                        </p>
+
+                        <ol className="space-y-3">
+                          {[
+                            {
+                              step: "1",
+                              text: (
+                                <>
+                                  Tap the <b className="text-white">Share</b> button — the
+                                  box with an arrow pointing up, at the bottom of your screen.
+                                </>
+                              ),
+                            },
+                            {
+                              step: "2",
+                              text: (
+                                <>
+                                  Scroll down and tap{" "}
+                                  <b className="text-white">Add to Home Screen</b>.
+                                </>
+                              ),
+                            },
+                            {
+                              step: "3",
+                              text: (
+                                <>
+                                  Tap <b className="text-white">Add</b> in the top right corner.
+                                </>
+                              ),
+                            },
+                            {
+                              step: "4",
+                              text: (
+                                <>
+                                  Open Havenly from your Home Screen for the more app-like
+                                  experience.
+                                </>
+                              ),
+                            },
+                          ].map(({ step, text }) => (
+                            <li key={step} className="flex items-start gap-3">
+                              <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/20 text-xs font-bold text-emerald-400">
+                                {step}
+                              </span>
+                              <span className="text-sm leading-relaxed text-slate-300">
+                                {text}
+                              </span>
+                            </li>
+                          ))}
+                        </ol>
+
+                        <p className="mt-4 text-xs leading-relaxed text-slate-500">
+                          Not seeing the Share button? Make sure you are using Safari, not
+                          Chrome or another browser.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="mt-4">
+                        <p className="text-sm font-medium text-white">
+                          Desktop or Android (Chrome / Edge)
+                        </p>
+
+                        <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-slate-300">
+                          <li>Open this site in a normal, non-Incognito window.</li>
+                          <li>
+                            Click the install icon in the address bar, if shown, or open the
+                            browser menu.
+                          </li>
+                          <li>
+                            Select <b className="text-white">Install Havenly</b>.
+                          </li>
+                        </ol>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
+            <div className="mt-6 rounded-2xl border border-white/10 bg-slate-950/50 p-4">
+              <p className="text-sm font-medium text-white">Helpful note</p>
+              <p className="mt-1 text-sm leading-relaxed text-slate-400">
+                Installation improves convenience, but you can still use Havenly in your
+                browser whenever you prefer.
+              </p>
+            </div>
+
+            <div className="mt-6 flex flex-col items-center gap-3 text-center">
+              <Link
+                href="/"
+                className="text-sm font-medium text-emerald-400 transition-colors hover:text-emerald-300"
+              >
+                ← Back to Home
+              </Link>
+
+              <p className="max-w-md text-xs leading-relaxed text-slate-600">
+                Havenly works in the browser too. Installing it simply makes returning feel
+                quicker and more app-like.
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
     </main>
   );
 }
