@@ -563,7 +563,7 @@ function WeeklySummarySection({ hasRealData }: { hasRealData: boolean }) {
           ))}
 
           <div className="flex items-center gap-3 pt-1 border-t border-slate-800">
-            <span className="text-xs text-slate-700">
+            <span className="text-xs text-slate-700" suppressHydrationWarning>
               Generated {generatedLabel}{state.cached ? " · cached" : ""}
             </span>
           </div>
@@ -644,8 +644,8 @@ export default function InsightsClient() {
   };
   const mColor = momentumColor[data?.momentum ?? "Steady"] ?? "#64748b";
 
-  // Personal headline
-  const headline = useMemo(() => {
+  // Personal headline — plain function, not useMemo returning JSX (avoids hydration mismatch #418/#423)
+  function renderHeadline() {
     if (!topEmotion && !topTheme) return null;
     if (topEmotion && topTheme) {
       return (
@@ -670,7 +670,7 @@ export default function InsightsClient() {
         theme that keeps appearing across your entries.
       </>
     );
-  }, [topEmotion, topTheme]);
+  }
 
   return (
     <div className="space-y-8 pb-10">
@@ -712,7 +712,7 @@ export default function InsightsClient() {
         <div className="space-y-6">
 
           {/* ── Stat bar ── */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4" suppressHydrationWarning>
             <StatCard
               label="Entries"
               value={String(totalEntryCount)}
@@ -750,7 +750,7 @@ export default function InsightsClient() {
               The pattern underneath
             </p>
 
-            <p className="text-lg leading-relaxed text-slate-300">{headline}</p>
+            <p className="text-lg leading-relaxed text-slate-300" suppressHydrationWarning>{renderHeadline()}</p>
 
             {hasTrend && (
               <div className="mt-4 flex flex-wrap items-center gap-2">
