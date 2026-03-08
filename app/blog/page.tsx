@@ -3,122 +3,137 @@ import { ARTICLES } from "./articles";
 
 export const metadata = {
   title: "Havenly Journal — Articles for Overloaded Minds",
-  description: "Gentle articles about emotional load, rest, journaling, and self-awareness. No productivity hacks — just softer ways to understand what you're feeling.",
+  description:
+    "Gentle articles about emotional load, rest, journaling, and self-awareness. No productivity hacks — just softer ways to understand what you're feeling.",
   openGraph: {
     title: "Havenly Journal — Articles for Overloaded Minds",
-    description: "Gentle articles about emotional load, rest, and self-awareness. No productivity hacks.",
+    description:
+      "Gentle articles about emotional load, rest, and self-awareness. No productivity hacks.",
     url: "https://havenly-2-1.vercel.app/blog",
   },
 };
 
-
+const featuredTopics = ["Emotional load", "Journaling", "Rest & burnout"];
 
 export default function BlogPage() {
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
-      <section className="mx-auto max-w-6xl px-6 pb-16 pt-24">
-        {/* Header */}
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">
-          Havenly Journal
-        </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-          Gentle articles for overloaded minds.
-        </h1>
-        <p className="mt-3 max-w-2xl text-sm text-slate-300">
-          These pieces are for people who are doing their best with a lot on
-          their plate. No productivity hacks, no optimization — just softer
-          ways to understand what you&apos;re feeling and why it makes sense.
-        </p>
+      <section className="relative overflow-hidden border-b border-slate-800/60 bg-slate-950">
+        <div className="pointer-events-none absolute left-0 top-0 h-[320px] w-[420px] rounded-full bg-emerald-500/[0.05] blur-3xl" />
+        <div className="pointer-events-none absolute right-[-80px] top-0 h-[320px] w-[360px] rounded-full bg-cyan-500/[0.04] blur-3xl" />
 
-        {/* Trust strip */}
-        <p className="mt-4 max-w-2xl text-xs text-slate-400">
-          Havenly articles are written to be read quietly. Nothing here is
-          clinical, diagnostic, or designed to push you into action.
-          Reflection is allowed to stay slow.
-        </p>
+        <div className="relative mx-auto max-w-6xl px-6 pb-14 pt-12 sm:pb-16 sm:pt-16">
+          <div className="max-w-4xl">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-400/80">
+              Havenly Journal
+            </p>
 
-        {/* Tags */}
-        <div className="mt-6 flex flex-wrap gap-2 text-xs">
-          <span className="rounded-full border border-slate-700 px-3 py-1 text-slate-300">
-            Emotional load
-          </span>
-          <span className="rounded-full border border-slate-700 px-3 py-1 text-slate-300">
-            Journaling
-          </span>
-          <span className="rounded-full border border-slate-700 px-3 py-1 text-slate-300">
-            Rest &amp; burnout
-          </span>
+            <h1 className="mt-4 text-[2.2rem] font-semibold leading-[1.08] tracking-tight text-white sm:text-5xl">
+              Gentle articles for overloaded minds.
+            </h1>
+
+            <p className="mt-5 max-w-3xl text-[15px] leading-relaxed text-slate-300 sm:text-[17px]">
+              These pieces are for people who are doing their best with a lot on
+              their plate. No productivity hacks, no optimization — just softer
+              ways to understand what you&apos;re feeling and why it makes sense.
+            </p>
+
+            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-400">
+              Havenly articles are written to be read quietly. Nothing here is
+              clinical, diagnostic, or designed to push you into action.
+              Reflection is allowed to stay slow.
+            </p>
+
+            <div className="mt-6 flex flex-wrap gap-2 text-xs">
+              {featuredTopics.map((topic) => (
+                <span
+                  key={topic}
+                  className="rounded-full border border-slate-700/80 bg-slate-900/50 px-3 py-1.5 text-slate-300"
+                >
+                  {topic}
+                </span>
+              ))}
+            </div>
+
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link
+                href="/magic-login"
+                className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-emerald-400"
+              >
+                Start a free private journal
+              </Link>
+              <Link
+                href="/upgrade"
+                className="inline-flex items-center justify-center rounded-full border border-slate-700 bg-slate-950/40 px-5 py-3 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-900"
+              >
+                See what Premium adds
+              </Link>
+            </div>
+          </div>
         </div>
+      </section>
 
-        {/* Primary CTAs */}
-        <div className="mt-6 flex flex-wrap gap-3 text-sm">
-          <Link
-            href="/magic-login"
-            className="rounded-full bg-emerald-400 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-300"
-          >
-            Start a free private journal
-          </Link>
-          <Link
-            href="/upgrade"
-            className="rounded-full border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-100 hover:border-slate-500 hover:bg-slate-900"
-          >
-            See what Premium adds
-          </Link>
-        </div>
-
-        {/* Articles */}
-        <div className="mt-10 grid gap-5 md:grid-cols-2">
+      <section className="mx-auto max-w-6xl px-6 py-10 sm:py-12">
+        <div className="grid gap-5 md:grid-cols-2">
           {ARTICLES.map((article) => (
             <article
               key={article.slug}
-              className="flex flex-col justify-between rounded-2xl border border-slate-800 bg-slate-900/40 p-5 text-sm"
+              className="group flex h-full flex-col justify-between rounded-[1.6rem] border border-slate-800/80 bg-slate-900/35 p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-700 hover:bg-slate-900/55"
             >
               <div>
-                <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-emerald-300">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-400/80">
                   {article.category}
                 </p>
-                <h2 className="mt-2 text-base font-semibold text-slate-100">
+
+                <h2 className="mt-3 text-xl font-semibold leading-snug text-white">
                   {article.title}
                 </h2>
-                <p className="mt-2 text-xs text-slate-300">
+
+                <p className="mt-3 text-sm leading-relaxed text-slate-300">
                   {article.summary}
                 </p>
               </div>
-              <div className="mt-4 flex items-center justify-between text-xs text-slate-400">
-                <span>{article.minutes} min read</span>
+
+              <div className="mt-6 flex items-center justify-between gap-4">
+                <span className="text-xs text-slate-500">{article.minutes} min read</span>
+
                 <Link
                   href={`/blog/${article.slug}`}
-                  className="text-emerald-300 hover:text-emerald-200"
+                  className="text-sm font-medium text-emerald-400 transition-colors group-hover:text-emerald-300"
                 >
-                  Read article →
+                  Read article &rarr;
                 </Link>
               </div>
             </article>
           ))}
         </div>
+      </section>
 
-        {/* Conversion block */}
-        <div className="mt-12 rounded-2xl border border-slate-800 bg-slate-900/40 p-6 text-sm">
-          <p className="font-semibold text-slate-100">
+      <section className="mx-auto max-w-6xl px-6 pb-16 sm:pb-20">
+        <div className="rounded-[1.8rem] border border-slate-800/80 bg-slate-900/40 p-6 sm:p-7">
+          <h2 className="text-xl font-semibold text-white sm:text-2xl">
             Reading can clarify things. Writing often clarifies them more.
-          </p>
-          <p className="mt-2 max-w-xl text-xs text-slate-300">
+          </h2>
+
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-300">
             Havenly gives you a private place to put what you&apos;re carrying.
             The AI does not judge, diagnose, or rush you — it reflects patterns
             back gently, only when you ask.
           </p>
-          <div className="mt-4 flex flex-wrap gap-3 text-xs">
+
+          <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="/magic-login"
-              className="rounded-full bg-emerald-400 px-4 py-2 font-semibold text-slate-950 hover:bg-emerald-300"
+              className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-emerald-400"
             >
               Start free reflection
             </Link>
+
             <Link
               href="/privacy"
-              className="rounded-full border border-slate-700 px-4 py-2 font-semibold text-slate-100 hover:border-slate-500 hover:bg-slate-900"
+              className="inline-flex items-center justify-center rounded-full border border-slate-700 bg-slate-950/40 px-5 py-3 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-900"
             >
-              How your data is protected →
+              How your data is protected &rarr;
             </Link>
           </div>
         </div>
