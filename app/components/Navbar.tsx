@@ -14,7 +14,6 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { session, supabase } = useSupabase();
-
   const { isStandalone } = useInstallAvailability();
 
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -25,20 +24,32 @@ export default function Navbar() {
   }, [pathname]);
 
   useEffect(() => {
-    if (mobileOpen) document.body.classList.add("overflow-hidden");
-    else document.body.classList.remove("overflow-hidden");
-    return () => document.body.classList.remove("overflow-hidden");
+    if (mobileOpen) {
+      document.body.classList.add("overflow-hidden");
+    } else {
+      document.body.classList.remove("overflow-hidden");
+    }
+
+    return () => {
+      document.body.classList.remove("overflow-hidden");
+    };
   }, [mobileOpen]);
 
   useEffect(() => {
-    if (!isLoggedIn) return;
-    const routes = ["/dashboard", "/journal", "/insights", "/settings"];
-    routes.forEach((r) => router.prefetch(r));
-  }, [isLoggedIn, router]);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileOpen(false);
+    };
 
-  const linkBase = "text-sm font-medium transition-colors hover:text-emerald-400";
-  const activeLink = "text-emerald-400";
-  const inactiveLink = "text-slate-300";
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    ["/dashboard", "/journal", "/insights", "/settings"].forEach((route) => {
+      router.prefetch(route);
+    });
+  }, [isLoggedIn, router]);
 
   const publicLinks: NavLink[] = [
     { href: "/about", label: "About" },
@@ -47,8 +58,6 @@ export default function Navbar() {
     { href: "/install", label: "Install" },
   ];
 
-  // FIX: removed /upgrade "Premium", added /settings "Settings"
-  // Spec: Dashboard · Journal · Insights · Settings · Install · Logout
   const authLinks: NavLink[] = [
     { href: "/dashboard", label: "Dashboard" },
     { href: "/journal", label: "Journal" },
@@ -61,137 +70,169 @@ export default function Navbar() {
 
   const links = useMemo(() => {
     const base = isLoggedIn ? authLinks : publicLinks;
-    if (shouldShowInstall) return base;
-    return base.filter((l) => l.href !== "/install");
+    return shouldShowInstall ? base : base.filter((link) => link.href !== "/install");
   }, [isLoggedIn, shouldShowInstall]);
+
+  const isActiveLink = (href: string) =>
+    pathname === href || (href !== "/" && pathname.startsWith(href));
 
   async function handleLogout() {
     try {
       await supabase.auth.signOut();
       await fetch("/logout", { method: "GET" });
       window.location.href = "/magic-login?logged_out=1";
-    } catch (err) {
-      console.error("Logout failed:", err);
+    } catch (error) {
+      console.error("Logout failed:", error);
       window.location.href = "/magic-login";
     }
   }
 
-  const HeaderInner = ({ mode }: { mode: "desktop" | "mobile" }) => (
-    <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-      <Link href="/" prefetch className="flex items-center gap-2 text-lg font-semibold text-white">
-        <Image
-          src="/pwa/icon-192.png"
-          alt="Havenly"
-          width={24}
-          height={24}
-          className="rounded-md"
-          priority
-          unoptimized
-        />
-        <span>Havenly</span>
-      </Link>
-
-      {mode === "desktop" ? (
-        <div className="flex items-center gap-6">
-          {links.map((link) => {
-            const isActive =
-              pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
-
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                prefetch
-                className={`${linkBase} ${isActive ? activeLink : inactiveLink}`}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-
-          {!isLoggedIn ? (
-            <Link
-              href="/magic-login"
-              prefetch
-              className="rounded-full bg-emerald-500 px-4 py-2 text-sm font-medium text-black hover:bg-emerald-400"
-            >
-              Start free journal
-            </Link>
-          ) : (
-            <button
-              onClick={handleLogout}
-              className="text-sm font-medium text-red-400 hover:text-red-300"
-            >
-              Logout
-            </button>
-          )}
-        </div>
-      ) : (
-        <button
-          className="text-slate-200"
-          onClick={() => setMobileOpen((v) => !v)}
-          aria-label="Toggle menu"
-        >
-          {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
-      )}
-    </nav>
-  );
-
   return (
     <>
-      <header className="hidden md:block fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-[#020617]/80 backdrop-blur">
-        <HeaderInner mode="desktop" />
-      </header>
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#020617]/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-4">
+          <Link
+            href="/"
+            prefetch
+            className="flex items-center gap-2 text-lg font-semibold text-white transition-opacity hover:opacity-90"
+            aria-label="Havenly home"
+          >
+            <Image
+              src="/pwa/icon-192.png"
+              alt="Havenly"
+              width={24}
+              height={24}
+              className="rounded-md"
+              priority
+              unoptimized
+            />
+            <span>Havenly</span>
+          </Link>
 
-      <header className="md:hidden fixed top-0 left-0 right-0 z-50 w-full border-b border-white/10 bg-[#020617]/80 backdrop-blur">
-        <HeaderInner mode="mobile" />
+          <div className="hidden items-center gap-6 md:flex">
+            {links.map((link) => {
+              const active = isActiveLink(link.href);
 
-        {mobileOpen && (
-          <div className="border-t border-white/10 bg-[#020617] px-4 pb-4 pt-2">
-            <div className="flex flex-col gap-4">
-              {links.map((link) => {
-                const isActive =
-                  pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
-
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    prefetch
-                    onClick={() => setMobileOpen(false)}
-                    className={`rounded-md px-2 py-2 text-base ${
-                      isActive ? "bg-white/5 text-emerald-400" : "text-slate-300"
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                );
-              })}
-
-              {!isLoggedIn ? (
+              return (
                 <Link
-                  href="/magic-login"
+                  key={link.href}
+                  href={link.href}
                   prefetch
-                  onClick={() => setMobileOpen(false)}
-                  className="mt-2 rounded-md bg-emerald-500 px-4 py-3 text-center text-sm font-medium text-black"
+                  className={`text-sm font-medium transition-colors ${
+                    active ? "text-emerald-400" : "text-slate-300 hover:text-emerald-400"
+                  }`}
                 >
-                  Start free journal
+                  {link.label}
                 </Link>
-              ) : (
-                <button
-                  onClick={handleLogout}
-                  className="mt-2 rounded-md bg-red-500/10 px-4 py-3 text-sm font-medium text-red-400"
-                >
-                  Logout
-                </button>
-              )}
-            </div>
+              );
+            })}
+
+            {!isLoggedIn ? (
+              <Link
+                href="/magic-login"
+                prefetch
+                className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-colors hover:bg-emerald-400"
+              >
+                Start free
+              </Link>
+            ) : (
+              <button
+                onClick={handleLogout}
+                className="text-sm font-medium text-red-400 transition-colors hover:text-red-300"
+              >
+                Logout
+              </button>
+            )}
           </div>
-        )}
+
+          <button
+            type="button"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-200 transition-colors hover:bg-white/5 md:hidden"
+            onClick={() => setMobileOpen((value) => !value)}
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-menu"
+          >
+            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+        </div>
       </header>
 
       <div className="h-[72px]" />
+
+      {mobileOpen && (
+        <div className="md:hidden">
+          <button
+            type="button"
+            aria-label="Close menu backdrop"
+            onClick={() => setMobileOpen(false)}
+            className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm"
+          />
+
+          <div
+            id="mobile-menu"
+            className="fixed inset-x-0 top-[72px] bottom-0 z-50 flex flex-col bg-[#020617]"
+          >
+            <div className="flex-1 overflow-y-auto px-5 pb-8 pt-6">
+              <div className="mx-auto flex max-w-xl flex-col">
+                <p className="mb-6 text-[11px] font-medium uppercase tracking-[0.2em] text-emerald-500/70">
+                  {isLoggedIn ? "Your space" : "Private journaling, without the noise"}
+                </p>
+
+                <nav className="flex flex-col gap-2">
+                  {links.map((link) => {
+                    const active = isActiveLink(link.href);
+
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        prefetch
+                        onClick={() => setMobileOpen(false)}
+                        className={`rounded-2xl border px-4 py-4 text-base font-medium transition-colors ${
+                          active
+                            ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                            : "border-white/10 bg-white/[0.02] text-slate-200 hover:bg-white/[0.04]"
+                        }`}
+                      >
+                        {link.label}
+                      </Link>
+                    );
+                  })}
+                </nav>
+
+                {!isLoggedIn ? (
+                  <div className="mt-6 rounded-3xl border border-white/10 bg-white/[0.03] p-4">
+                    <p className="text-sm font-medium text-white">
+                      Start with a private journal entry.
+                    </p>
+                    <p className="mt-1 text-sm leading-relaxed text-slate-400">
+                      No feed, no pressure, no card required. Just a calmer place to put
+                      what is on your mind.
+                    </p>
+
+                    <Link
+                      href="/magic-login"
+                      prefetch
+                      onClick={() => setMobileOpen(false)}
+                      className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-5 py-3.5 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-colors hover:bg-emerald-400"
+                    >
+                      Start free journal
+                    </Link>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleLogout}
+                    className="mt-6 inline-flex w-full items-center justify-center rounded-full border border-red-500/20 bg-red-500/10 px-5 py-3.5 text-sm font-semibold text-red-300 transition-colors hover:bg-red-500/15"
+                  >
+                    Logout
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
