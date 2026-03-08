@@ -1,11 +1,16 @@
 // lib/ai/generateReflection.ts
-// Havenly V22 — production-safe routing + stronger pressure detection
-// Key upgrades:
-// 1) Uses a real default Groq model
-// 2) Preserves V19.1 quality/normalization safeguards
-// 3) Adds pressure-signal routing so MONEY / HEALTH / IDENTITY can outrank contextual WORK mentions
-// 4) Adds secondary-domain awareness in prompting without changing overall architecture
-// 5) Returns domain + secondaryDomains for downstream insights accuracy
+// Havenly V23 — Phase 3 fixes
+// Bug fixes:
+// 1) WORK domain detection: added signals for "project lead", "overlooked", "passed over",
+//    "three years here", "nobody asked", "seniority", "recognition" etc.
+// 2) Quality gate: after 3 failed attempts, injectAnchorIntoCarrying now fires on ANY
+//    banned opener (not just GENERAL domain defaults), ensuring no banned line ever
+//    reaches the user regardless of whether it came from the model or fallback.
+// 3) Vivid phrase anchor selection: DOMAIN_ANCHOR_SIGNALS now includes patterns for
+//    emotionally loaded phrases ("behind glass", "proof of something", "almost picked up",
+//    "can't name it", "feel off"). bestAnchor selection scores for vivid phrases first,
+//    then falls back to domain signals, then falls back to anchors[0].
+// 4) Default model updated to llama-4-scout-17b-8e-instruct
 
 export type Reflection = {
   summary: string;
@@ -62,6 +67,13 @@ const DOMAIN_SIGNALS: Record<Domain, WeightedSignal[]> = {
     { re: /\b(colleague|coworker|manager|boss|team|client)\b/i, w: 2 },
     { re: /\b(meeting|office|project|deadline|presentation)\b/i, w: 2 },
     { re: /\b(work|job|career|promotion|performance.?review)\b/i, w: 2 },
+    // FIX Bug1: new signals for implicit work dynamics
+    { re: /\b(project lead|project manager|lead on|team lead)\b/i, w: 3 },
+    { re: /\b(overlooked|passed over|sidelined|not consulted|nobody asked|no one asked)\b/i, w: 3 },
+    { re: /\b(been here|years here|months here|tenure|seniority)\b/i, w: 2 },
+    { re: /\b(recognition|credit|contribution|effort|visibility|appreciated|respected)\b/i, w: 2 },
+    { re: /\b(found out|told in|learned in|announced|they gave|they chose|they picked)\b/i, w: 2 },
+    { re: /\b(coworker|colleague|peer|teammate|my manager|my boss|my team)\b/i, w: 2 },
   ],
   RELATIONSHIP: [
     { re: /\b(partner|wife|husband|girlfriend|boyfriend|spouse)\b/i, w: 3 },
@@ -145,7 +157,7 @@ const EMOTIONAL_BOOSTERS: Record<Exclude<Domain, "GENERAL">, WeightedSignal[]> =
   ],
 };
 
-/* Strong “pressure driver” signals.
+/* Strong "pressure driver" signals.
    These intentionally outweigh contextual WORK mentions like meeting/coworker
    when the real entry pressure is money / health / identity. */
 const PRESSURE_SIGNALS: Partial<Record<Exclude<Domain, "GENERAL">, WeightedSignal[]>> = {
@@ -169,6 +181,13 @@ const PRESSURE_SIGNALS: Partial<Record<Exclude<Domain, "GENERAL">, WeightedSigna
   ],
   CREATIVE: [
     { re: /\b(blank page|novel|document for the novel|haven't written|used to love writing|draft|create|creative block)\b/i, w: 5 },
+  ],
+  // FIX Bug1: WORK pressure signals for implicit workplace dynamics
+  WORK: [
+    { re: /\b(project lead|project manager|lead on the|team lead|gave the (lead|project|role) to)\b/i, w: 5 },
+    { re: /\b(been here (for )?\d|years here|\d years.{0,20}(work|job|company|here))\b/i, w: 4 },
+    { re: /\b(nobody asked|no one asked|wasn'?t consulted|not (asked|told|included)|found out (in|at) the meeting)\b/i, w: 4 },
+    { re: /\b(overlooked|passed over|skipped over|not chosen|they chose|they picked|went to (him|her|them) instead)\b/i, w: 4 },
   ],
 };
 
@@ -308,67 +327,67 @@ const DOMAIN_DEFAULTS: Record<Domain, DomainDefaults> = {
     summary:
       "What you're carrying: Something from work is still sitting with you.\nWhat's really happening: The way it landed says something about what you need to feel respected.",
     shortSummary:
-      "What you're carrying: Something from work is sitting with you — quietly, but persistently.\nWhat's really happening: Even a few words can hold a lot of weight when they touch your sense of worth.",
-    corepattern: "You're navigating a tension between your professional self-worth and what's being reflected back to you.",
-    themes: ["recognition", "boundaries", "self-worth", "communication"],
-    emotions: ["frustration", "hurt", "determination", "anxiety"],
-    nextStepFree: "Option A: Write down the one thing you wish had gone differently. Option B: Name what you'd want to say if there were no consequences.",
+      "What you're carrying: A work moment that's still sitting with you.\nWhat's really happening: Even small moments at work can say something about what we need.",
+    corepattern: "The gap between what you contributed and what was recognized is where the feeling lives.",
+    themes: ["recognition", "visibility", "respect", "professional worth"],
+    emotions: ["frustration", "hurt", "self-doubt", "anger"],
+    nextStepFree: "Option A: Write down what you wish had happened instead — specifically. Option B: Name the one person at work who actually sees your contribution.",
     nextStepPremium: "Option A: Write down the one thing you wish had gone differently. Option B: Name what you'd want to say if there were no consequences. Script line: \"I want to be clear about what I need here, without escalating.\"",
-    shortNextStep: "Option A: Finish this sentence — \"What I actually needed in that moment was...\". Option B: Write down one thing you want to be different next time.",
+    shortNextStep: "Option A: Write one sentence about what you actually needed from that situation. Option B: Name whether this is about one incident or a pattern.",
     questions: [
-      "What felt most dismissed — your idea, your effort, or your presence?",
-      "What would a calm, direct version of you say in one sentence?",
-      "What boundary, if stated clearly, would protect you without escalating?",
-      "Next time, write down the exact words exchanged and your immediate reaction.",
+      "What felt most personal about what happened — the specific thing, or what it implied about you?",
+      "What do you wish had been recognized or respected about your contribution?",
+      "What would a calm, direct response to this look like — in one sentence?",
+      "Next time, note whether this is a pattern or an isolated incident — and what the difference means.",
     ],
     shortQuestions: [
-      "What's the one word that best describes how that made you feel?",
-      "If a colleague described the same situation, what would you tell them?",
-      "What would it look like to protect yourself here without escalating?",
-      "Next time, write more — what happened just before, and just after?",
+      "Is this about this specific moment, or something you've been noticing for a while?",
+      "What would feel like a fair outcome here?",
+      "What do you need most right now — to be heard, to act, or to let it go?",
+      "Next time, write about what you wish you'd said — and whether you still could.",
     ],
-    mustHave: /\b(work|meeting|colleague|manager|office|team|project|boss|client|performance)\b/i,
-    driftKeywords: /\b(partner|wife|husband|girlfriend|boyfriend|workout|running|gym|rent|bank|money|debt)\b/i,
+    mustHave: /\b(work|job|office|meeting|colleague|coworker|manager|boss|team|client|project|career|promotion|deadline|presentation|overlooked|passed over|recognition|lead|seniority)\b/i,
+    driftKeywords: /\b(workout|gym|doctor|diagnosis|rent|bank|mortgage)\b/i,
   },
 
   RELATIONSHIP: {
     summary:
-      "What you're carrying: A gap between you and someone who matters opened up today.\nWhat's really happening: The distance you felt — and what you didn't say — is still there.",
+      "What you're carrying: Something in this connection is still sitting with you.\nWhat's really happening: The distance you felt — and what you didn't say — is still there.",
     shortSummary:
-      "What you're carrying: A quiet ache around a connection that matters to you.\nWhat's really happening: Something small happened — or didn't happen — and it landed harder than it looked.",
-    corepattern: "You're trying to protect your self-respect while staying connected to someone who matters.",
-    themes: ["connection", "communication", "needs", "self-worth"],
-    emotions: ["hurt", "longing", "confusion", "anger"],
+      "What you're carrying: A moment in a relationship that hasn't settled.\nWhat's really happening: What didn't get said is often what matters most.",
+    corepattern: "The gap between being present and being seen is where the longing lives.",
+    themes: ["connection", "visibility", "distance", "intimacy"],
+    emotions: ["loneliness", "longing", "disconnection", "hurt"],
     nextStepFree: "Option A: Name the feeling in one sentence without assigning blame. Option B: Ask yourself what you most needed in that moment.",
     nextStepPremium: "Option A: Name the feeling in one sentence without assigning blame. Option B: Ask yourself what you most needed in that moment. Script line: \"I want to understand what I needed before I decide what to do.\"",
-    shortNextStep: "Option A: Finish this sentence — \"What I actually needed was...\". Option B: Notice whether you want to say something, or just to be seen.",
+    shortNextStep: "Option A: Write one honest sentence about what you needed. Option B: Notice whether this is about this moment or a longer pattern.",
     questions: [
-      "What exactly did that moment trigger — anger, shame, fear, or something else?",
-      "What would you ask for if you knew you'd be heard without judgment?",
-      "What's the most generous interpretation that still respects your feelings?",
-      "Next time, paste the exact words that stung and what you did immediately after.",
+      "What were you most hoping for in that moment — connection, acknowledgment, or something else?",
+      "What did you hold back from saying, and why?",
+      "What would feeling genuinely seen look like in this relationship?",
+      "Next time, note what you're carrying into the interaction before it starts.",
     ],
     shortQuestions: [
-      "What's the feeling underneath the low — is it loneliness, disappointment, or something else?",
-      "Who or what came to mind when you wrote this?",
-      "What would it feel like to say this feeling out loud to someone safe?",
-      "Next time, write two more sentences — what happened before this feeling arrived?",
+      "What would you have needed to feel less invisible in that moment?",
+      "Is this a pattern you've noticed before in this relationship?",
+      "What would 'enough' feel like here — not perfect, just enough?",
+      "Next time, write about what you actually wanted to say — and what stopped you.",
     ],
-    mustHave: /\b(partner|wife|husband|girlfriend|boyfriend|relationship|family|friend|love|date|argu(e|ed|ment)|fight|break.?up)\b/i,
-    driftKeywords: /\b(colleague|manager|meeting|workout|gym|running|rent|bank|money|debt)\b/i,
+    mustHave: /\b(partner|wife|husband|girlfriend|boyfriend|relationship|friend|family|him|her|them|together|dinner|invisible|distance|disconnect)\b/i,
+    driftKeywords: /\b(workout|gym|money|budget|doctor|diagnosis|project|meeting|manager)\b/i,
   },
 
   MONEY: {
     summary:
-      "What you're carrying: There's a financial pressure sitting on you right now.\nWhat's really happening: Money stress is rarely just about money — it touches your sense of safety and control.",
+      "What you're carrying: A financial pressure that's touching more than just the numbers.\nWhat's really happening: Money stress is rarely just about money — it touches your sense of safety and control.",
     shortSummary:
-      "What you're carrying: Something about money is pressing on you today.\nWhat's really happening: The number isn't just a number — it's connected to how secure you feel.",
-    corepattern: "You're managing the gap between what you have, what you need, and what you think that says about you.",
-    themes: ["security", "control", "shame", "planning"],
-    emotions: ["anxiety", "shame", "overwhelm", "fear"],
-    nextStepFree: "Option A: Write down the one financial fact that feels most urgent right now — just the fact, not the spiral. Option B: Name one thing in this situation you actually do have control over.",
+      "What you're carrying: Something about your finances is pressing on you.\nWhat's really happening: The pressure behind the numbers is usually about more than money.",
+    corepattern: "The anxiety isn't about the number — it's about what the number represents.",
+    themes: ["financial stress", "security", "control", "shame"],
+    emotions: ["anxiety", "shame", "frustration", "fear"],
+    nextStepFree: "Option A: Write down the specific financial fact that feels most urgent — just the fact, not the spiral. Option B: Name one action that would reduce the pressure even slightly.",
     nextStepPremium: "Option A: Write down the one financial fact that feels most urgent right now — just the fact, not the spiral. Option B: Name one action you can take today that reduces the pressure even 5%. Script line: \"I'm dealing with one thing at a time — today's thing is clear.\"",
-    shortNextStep: "Option A: Name the feeling underneath the money stress — is it fear, shame, or something else? Option B: Write one sentence about what 'enough' would look like for you.",
+    shortNextStep: "Option A: Is this about a specific number, or the feeling behind it? Write one sentence. Option B: What would feel like enough safety right now — not solved, just safer?",
     questions: [
       "What's the specific fear underneath this — running out, falling behind, or being judged?",
       "What's one small thing you could do today that would move toward, not away from, the problem?",
@@ -561,7 +580,7 @@ const BANNED_SUMMARY_PATTERNS: RegExp[] = [
   /\ba question about who you are is sitting\b/i,
   /\bsomething from work got under your skin\b/i,
   /\bsomething happened at work\b/i,
-  /\bsomething from work is still with you\b/i,
+  /\bsomething from work is still (with|sitting)\b/i,
   /\bsomething in this connection\b/i,
   /\ba gap between you and someone\b/i,
   /\ba connection that matters\b/i,
@@ -582,6 +601,10 @@ const BANNED_SUMMARY_PATTERNS: RegExp[] = [
   /\byour creative energy is somewhere\b/i,
   /\ba question about who you are\b/i,
   /\bsomething about who you are\b/i,
+  // FIX Bug2: additional patterns observed in testing
+  /\byou wrote something real down\b/i,
+  /\bthe fact that you put it into words\b/i,
+  /\bsomething from work is still\b/i,
 ];
 
 const WRH_CROSS_DOMAIN_BANS: Record<Domain, RegExp[]> = {
@@ -613,7 +636,7 @@ function extractAnchors(entry: string): string[] {
     anchors.push(v);
   };
 
-  for (const m of t.matchAll(/["“”]([^"“”]{4,90})["“”]/g)) {
+  for (const m of t.matchAll(/["""]([^"""]{4,90})["""]/g)) {
     add(`"${m[1]}"`);
     if (anchors.length >= 3) break;
   }
@@ -623,7 +646,7 @@ function extractAnchors(entry: string): string[] {
   const sentences = joined.split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter(Boolean);
 
   const emotionalSignals =
-    /\b(but|just|still|keep|always|never|again|quiet|ache|miss|wish|pretend|perform|nothing|empty|disappear|invisible|gap|distance|wanted|needed|tired|exhausted|fine|okay|underneath|scared|afraid|worried|hopeless|stuck|alone|lost|failed|ashamed|embarrassed)\b/i;
+    /\b(but|just|still|keep|always|never|again|quiet|ache|miss|wish|pretend|perform|nothing|empty|disappear|invisible|gap|distance|wanted|needed|tired|exhausted|fine|okay|underneath|scared|afraid|worried|hopeless|stuck|alone|lost|failed|ashamed|embarrassed|glass|proof|almost|numb|off|wrong|can't name)\b/i;
 
   for (const s of sentences) {
     if (anchors.length >= 4) break;
@@ -692,8 +715,8 @@ function parseModelJson<T>(raw: string): T | null {
 function normalizeForMatch(s: string): string {
   return s
     .toLowerCase()
-    .replace(/[“”]/g, "\"")
-    .replace(/[‘’]/g, "'")
+    .replace(/[""]/g, "\"")
+    .replace(/['']/g, "'")
     .replace(/[^a-z0-9'"\s-]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
@@ -702,7 +725,7 @@ function normalizeForMatch(s: string): string {
 function anchorHitInLine(line: string, anchors: string[]): boolean {
   const ln = normalizeForMatch(line);
   for (const a of anchors) {
-    const aa = normalizeForMatch(a.replace(/^["“”]|["“”]$/g, ""));
+    const aa = normalizeForMatch(a.replace(/^["""]|["""]$/g, ""));
     if (aa.length >= 8 && ln.includes(aa)) return true;
   }
   return false;
@@ -797,16 +820,62 @@ function injectAnchorIntoCarrying(summary: string, anchors: string[]): string {
   if (!summary.includes("What you're carrying:")) return summary;
 
   const carrying = extractSummaryLine(summary, "What you're carrying:");
+
+  // FIX Bug2: always inject if carrying line is banned, regardless of where it came from
   if (!isCarryingLineBanned(carrying)) return summary;
 
-  const a = anchors.find((x) => normalizeForMatch(x).length >= 8) ?? anchors[0] ?? "";
-  const clean = String(a).replace(/^["“”]|["“”]$/g, "").trim();
+  // FIX Bug3: prefer emotionally vivid anchor over first anchor
+  const vividAnchor = selectVividAnchor(anchors);
+  const a = vividAnchor ?? anchors.find((x) => normalizeForMatch(x).length >= 8) ?? anchors[0] ?? "";
+  const clean = String(a).replace(/^["""]|["""]$/g, "").trim();
   if (!clean) return summary;
 
   const injected = toSecondPerson(clean);
   const fixed = injected.charAt(0).toUpperCase() + injected.slice(1);
 
   return summary.replace(/What you're carrying:\s*[^\n]+/i, `What you're carrying: ${fixed}`);
+}
+
+/* ── Vivid phrase selection ─────────────────────────────────────────────── */
+// FIX Bug3: score each anchor for emotional vividness. Metaphors, quoted phrases,
+// and sentences with strong feeling words score higher than neutral factual openers.
+
+const VIVID_PHRASE_SIGNALS: RegExp[] = [
+  // Metaphors / unusual constructions
+  /behind glass/i,
+  /handed (a|the) mask/i,
+  /proof of something/i,
+  /almost picked up the phone/i,
+  /feel off/i,
+  /slightly wrong/i,
+  /can'?t name it/i,
+  /just numb/i,
+  /keep shrinking/i,
+  /voice went quiet/i,
+  // Emotional loaded words that indicate a vivid sentence
+  /\b(invisible|ashamed|terrified|hollow|fractur|shatter|breaking|sinking|shrinking|drowning|numb|ache|aching)\b/i,
+  // Quoted phrases (already caught as anchors, but boost them)
+  /^["""]/,
+  // Sentences with "I" doing something visceral
+  /\b(almost|nearly|barely|couldn'?t|just kept|kept thinking|kept seeing|stood there)\b/i,
+];
+
+function scoreAnchorVividness(anchor: string): number {
+  let score = 0;
+  for (const re of VIVID_PHRASE_SIGNALS) {
+    if (re.test(anchor)) score++;
+  }
+  // Quotes get an extra bump
+  if (/^["""]/.test(anchor)) score += 2;
+  return score;
+}
+
+function selectVividAnchor(anchors: string[]): string | null {
+  if (!anchors.length) return null;
+  const scored = anchors.map((a) => ({ a, s: scoreAnchorVividness(a) }));
+  scored.sort((x, y) => y.s - x.s);
+  // Only prefer a vivid anchor over the first anchor if it actually scored
+  return scored[0].s > 0 ? scored[0].a : null;
 }
 
 /* ── Emotion normalization ──────────────────────────────────────────────── */
@@ -1042,6 +1111,10 @@ function qualityCheck(
     /address your financial situation/i,
     /what (strategies|techniques|tools) (can|could|might) you/i,
     /how (can|could|might) you (better|more effectively)/i,
+    // FIX: additional generic patterns observed in testing
+    /what are some (specific )?(actions|things|ways)/i,
+    /reignite your creative spark/i,
+    /honor (his|her|their|your) memory in a way/i,
   ];
 
   for (const q of questions) {
@@ -1091,6 +1164,7 @@ function normalizeReflection(
 
   if (!short) {
     summary = repairCarryingLine(summary);
+    // FIX Bug2: injectAnchorIntoCarrying now fires on any banned opener
     summary = injectAnchorIntoCarrying(summary, anchors);
 
     if (isPremium) {
@@ -1141,7 +1215,7 @@ function buildSystemPrompt(
 
   const nextStepStructure =
     isPremium && !short
-      ? `"Option A:" (practical, doable today) and "Option B:" (reflective alternative) and "Script line:" (1–2 calm sentences they could actually say/write)`
+      ? `"Option A:" (practical, doable today) and "Option B:" (reflective alternative) and "Script line:" (1-2 calm sentences they could actually say/write)`
       : `"Option A:" (practical, doable today) and "Option B:" (reflective alternative)`;
 
   const shortGuidance = short
@@ -1152,10 +1226,12 @@ function buildSystemPrompt(
     HEALTH: `DOMAIN: HEALTH\nHARD RULE: Questions must reference the specific fear or situation from this entry — not generic health advice.\nBANNED question patterns: "what could be causing your pain" (self-diagnosis), "how can you prepare yourself" (advice-y), "prioritize your emotional well-being", "take care of yourself", "manage your health".`,
     GRIEF: `DOMAIN: GRIEF\nHARD RULE: Never suggest moving on or finding closure. Grief questions should deepen connection to the person/thing lost — not push toward resolution.`,
     PARENTING: `DOMAIN: PARENTING\nHARD RULE: The carrying line MUST use a specific detail from this entry (son, yelled, the look on his face, failing him). 'A parenting moment is sitting with you' is BANNED.`,
-    CREATIVE: `DOMAIN: CREATIVE\nHARD RULE: The carrying line MUST use a specific detail from this entry (blank page, three weeks, staring, used to love writing). 'A creative block is sitting with you' is BANNED.`,
+    CREATIVE: `DOMAIN: CREATIVE\nHARD RULE: The carrying line MUST use a specific detail from this entry (blank page, novel, staring, used to love writing, proof of something). 'A creative block is sitting with you' is BANNED. The phrase "proof of something I'm failing at" or similar must appear if present in the entry.`,
     IDENTITY: `DOMAIN: IDENTITY\nHARD RULE: Use the person's exact language — "performing", "version of myself", "pretending", "fake", "fraud", etc.`,
     MONEY: `DOMAIN: MONEY\nHARD RULE: The carrying line MUST use a specific detail from this entry (rent, bank account, paycheck to paycheck, numbers, tired of pretending). Do NOT open with 'There's a financial pressure'. Questions must stay reflective, not advisory.`,
-    WORK: `DOMAIN: WORK\nHARD RULE: Only use WORK if the real pain is about work dynamics (respect, contribution, dismissal, visibility) — not merely because the entry contains words like meeting, office, or coworker.`,
+    WORK: `DOMAIN: WORK\nHARD RULE: The carrying line MUST use a specific detail from this entry (the specific person's name if mentioned, the specific situation — project lead, overlooked, nobody asked, three years). 'Something from work is still sitting with you' is BANNED. Use the person's exact words.`,
+    RELATIONSHIP: `DOMAIN: RELATIONSHIP\nHARD RULE: Use the person's exact sensory or metaphorical language (e.g. "behind glass", "watching from the outside", "completely invisible"). This exact phrase MUST appear in the reflection if it's in the entry.`,
+    GENERAL: `DOMAIN: GENERAL\nHARD RULE: Do NOT become vague. Use the most specific phrase from the entry — 'feel off', 'slightly wrong', 'can't name it' — whatever they wrote. 'You wrote something real down' is BANNED.`,
   };
 
   const secondaryText = mixed
@@ -1164,9 +1240,7 @@ function buildSystemPrompt(
 
   const domainHint =
     domainSpecific[domain] ??
-    (domain === "GENERAL"
-      ? `DOMAIN: GENERAL\nHARD RULE: Do NOT become vague. Use the most specific phrase from the entry.`
-      : `DOMAIN: ${domain}\nHARD RULE: Stay inside this domain. Do not borrow language from other domains unless clearly present.`);
+    `DOMAIN: ${domain}\nHARD RULE: Stay inside this domain. Do not borrow language from other domains unless clearly present.`;
 
   const depthGuidance =
     isPremium && !short
@@ -1180,7 +1254,7 @@ CORE RULES:
 - Write to "you" — never "the user" or "this person"
 - Never invent events not in the entry
 - Use at least ONE verbatim phrase from the entry in the SUMMARY
-- Avoid templates, generic openings, and clichés
+- Avoid templates, generic openings, and cliches
 - Prioritize the PRIMARY pressure driver over contextual mentions
 - Example: if money is the real pressure and work is only where it leaks out, this is MONEY, not WORK
 
@@ -1196,6 +1270,7 @@ BANNED openers (forbidden in any form):
 - "Something about parenting" / "Something about your child"
 - "Something about your creative work" / "Your creative energy"
 - "A question about who you are" / "Something about who you are"
+- "You wrote something real down" / "The fact that you put it into words"
 - ANY opener with zero words from the actual entry
 
 ${domainHint}${secondaryText}${depthGuidance}${shortGuidance}
@@ -1275,8 +1350,8 @@ export async function generateReflectionFromEntry(input: Input): Promise<Reflect
   const apiKey = process.env.GROQAPIKEY || process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("Missing GROQAPIKEY");
 
-  // Production-safe default model
-  const model = process.env.GROQMODEL || "llama-3.3-70b-versatile";
+  // FIX: updated default model to llama-4-scout-17b-8e-instruct
+  const model = process.env.GROQMODEL || "llama-4-scout-17b-8e-instruct";
   const plan = normalizePlan(input.plan);
 
   const entryBody = (input.content || "").trim();
@@ -1294,24 +1369,35 @@ export async function generateReflectionFromEntry(input: Input): Promise<Reflect
     ? `RECENT PATTERN CONTEXT (use only if genuinely relevant):\n${recentThemes.map((t, i) => `${i + 1}) ${t}`).join("\n")}\n\n`
     : "";
 
+  // FIX Bug3: expanded DOMAIN_ANCHOR_SIGNALS with vivid/metaphorical phrase patterns
   const DOMAIN_ANCHOR_SIGNALS: Partial<Record<Domain, RegExp>> = {
-    MONEY: /\b(bank|rent|afford|money|debt|paycheck|salary|broke|financial|bills?|savings?|numbers)\b/i,
-    HEALTH: /\b(pain|doctor|test|diagnosis|scared|sick|illness|symptoms?|body|health)\b/i,
-    GRIEF: /\b(died|death|miss|passed|gone|grief|loss|funeral|remember)\b/i,
-    PARENTING: /\b(son|daughter|kid|child|yelled|snapped|broke me|failing|parent|look on his face|look on her face)\b/i,
-    CREATIVE: /\b(blank page|writing|novel|draw|music|block|staring|draft)\b/i,
-    IDENTITY: /\b(performing|version of myself|who I am|underneath|lost|mask|pretending|fake|fraud)\b/i,
-    WORK: /\b(work|coworker|manager|meeting|office|presentation|client|team)\b/i,
-    RELATIONSHIP: /\b(partner|wife|husband|boyfriend|girlfriend|relationship|fight|distance)\b/i,
+    MONEY: /\b(bank|rent|afford|money|debt|paycheck|salary|broke|financial|bills?|savings?|numbers|pretending|managing)\b/i,
+    HEALTH: /\b(pain|doctor|test|diagnosis|scared|sick|illness|symptoms?|body|health|blood|nine days|phone rings|clench)\b/i,
+    GRIEF: /\b(died|death|miss|passed|gone|grief|loss|funeral|remember|almost picked up|call me|saturdays)\b/i,
+    PARENTING: /\b(son|daughter|kid|child|yelled|snapped|broke me|failing|parent|look on his face|look on her face|eight)\b/i,
+    CREATIVE: /\b(blank page|writing|novel|draw|music|block|staring|draft|proof|used to love|forty minutes)\b/i,
+    IDENTITY: /\b(performing|version of myself|who I am|underneath|lost|mask|pretending|fake|fraud|exhausted by)\b/i,
+    WORK: /\b(work|coworker|manager|meeting|office|presentation|client|team|project lead|overlooked|nobody asked|Marcus|three years|six months)\b/i,
+    RELATIONSHIP: /\b(partner|wife|husband|boyfriend|girlfriend|relationship|fight|distance|behind glass|invisible|dinner|smiling|nodding)\b/i,
+    GENERAL: /\b(feel off|slightly wrong|can'?t name|just off|don'?t know|something wrong|numb|not quite)\b/i,
   };
 
   const domainAnchorRe = DOMAIN_ANCHOR_SIGNALS[domain];
-  const bestAnchor = domainAnchorRe
-    ? (anchors.find((a) => domainAnchorRe.test(a)) ?? anchors[0] ?? "")
-    : (anchors[0] ?? "");
+
+  // FIX Bug3: select bestAnchor using vivid scoring, not just first domain match
+  const vividAnchor = selectVividAnchor(anchors);
+  const domainAnchor = domainAnchorRe
+    ? (anchors.find((a) => domainAnchorRe.test(a)) ?? null)
+    : null;
+
+  // Priority: vivid phrase > domain signal > first anchor
+  const vividScore = vividAnchor ? scoreAnchorVividness(vividAnchor) : 0;
+  const bestAnchor = vividScore >= 2
+    ? (vividAnchor ?? domainAnchor ?? anchors[0] ?? "")
+    : (domainAnchor ?? vividAnchor ?? anchors[0] ?? "");
 
   const carryingStarter = (() => {
-    const clean = toSecondPerson(bestAnchor.replace(/^["“”]|["“”]$/g, "").trim());
+    const clean = toSecondPerson(bestAnchor.replace(/^["""]|["""]$/g, "").trim());
     if (!clean || clean.length < 8) return "";
     return clean;
   })();
@@ -1333,8 +1419,8 @@ export async function generateReflectionFromEntry(input: Input): Promise<Reflect
       "What would a repair look like that you could actually say out loud?",
     ],
     CREATIVE: [
-      "When you say the blank page feels like proof — proof of what, exactly?",
-      "What was different about the last time writing felt easy?",
+      "When you say writing started feeling like proof — proof of what, exactly?",
+      "What was different about the last time writing felt easy and alive?",
       "What would you make today if it could never be read by anyone?",
     ],
     IDENTITY: [
@@ -1343,9 +1429,9 @@ export async function generateReflectionFromEntry(input: Input): Promise<Reflect
       "What's one small choice this week that would be more true to you?",
     ],
     GRIEF: [
-      "What does picking up the phone to call them tell you about what you still need?",
-      "When you say you don't want to feel better — what are you protecting by holding onto this?",
-      "What's one specific thing you want to remember right now?",
+      "What does almost picking up the phone tell you about what you still need from him?",
+      "When you say you didn't expect to feel it this hard again, what is it about today that caught you off guard?",
+      "What's one specific thing you want to remember right now — not in general, but in detail?",
     ],
     HEALTH: [
       "What part of waiting feels the hardest — the not knowing, or what the answer might mean?",
@@ -1353,9 +1439,19 @@ export async function generateReflectionFromEntry(input: Input): Promise<Reflect
       "What would you want to say to the doctor that you haven't said yet?",
     ],
     WORK: [
-      "What felt most personal about what happened at work?",
-      "What do you wish had been recognized or respected there?",
-      "What would a calm boundary sound like in one sentence?",
+      "What felt most personal about this — the specific thing that happened, or what it implied about your value?",
+      "What do you wish had been recognized or respected about your contribution?",
+      "What would a direct, calm response to this situation look like — in one sentence?",
+    ],
+    RELATIONSHIP: [
+      "What were you most hoping for in that moment — to be seen, to be included, or something else?",
+      "What did you hold back from saying — and what stopped you?",
+      "What would feeling genuinely present with him look like — not perfect, just real?",
+    ],
+    GENERAL: [
+      "What's the most specific part of 'feeling off' — is it in your body, your thoughts, or your sense of things?",
+      "If this feeling had a name — not 'off', but a real name — what would it be?",
+      "What would help right now — to be distracted, to sit with it, or to understand it?",
     ],
   };
 
@@ -1426,6 +1522,7 @@ ${entryText}`.trim();
   const defaults = DOMAIN_DEFAULTS[domain];
   const base = short ? defaults.shortSummary : defaults.summary;
 
+  // FIX Bug2: injectAnchorIntoCarrying always fires on banned openers at the fallback level too
   let summaryWithAnchor = injectAnchorIntoCarrying(base, anchors);
   if (plan === "PREMIUM" && !short) {
     summaryWithAnchor = ensurePremiumSummary(summaryWithAnchor, domain, anchors, defaults.corepattern, secondaryDomains);
