@@ -241,15 +241,16 @@ const DOMAIN_LABELS: Record<string, { label: string; emoji: string; color: strin
   GENERAL:      { label: "General",    emoji: "📝", color: "#64748b" },
 };
 
-function DomainSection({ domains }: { domains: Record<string, number> }) {
+function DomainSection({ domains, entryCount }: { domains: Record<string, number>; entryCount: number }) {
   const sorted = Object.entries(domains)
     .filter(([k]) => k !== "GENERAL")
     .sort((a, b) => b[1] - a[1]);
 
   if (!sorted.length) return null;
 
-  // Include GENERAL in total so the denominator matches actual entry count
-  const total = Object.values(domains).reduce((s, v) => s + v, 0);
+  // Use entryCount (all reflected entries) as denominator so the count is always accurate
+  // regardless of whether entries landed in GENERAL or a named domain
+  const total = entryCount > 0 ? entryCount : Object.values(domains).reduce((s, v) => s + v, 0);
   const top = sorted[0]?.[0];
   const topMeta = DOMAIN_LABELS[top] ?? { label: top, emoji: "📝", color: "#34d399" };
 
@@ -750,7 +751,7 @@ export default function InsightsClient() {
           <WeeklySummarySection hasRealData={hasRealData} />
 
           {/* ── Domain distribution ── */}
-          {hasDomains && <DomainSection domains={data.domains!} />}
+          {hasDomains && <DomainSection domains={data.domains!} entryCount={entryCount} />}
 
           {/* ── Narrative headline ── */}
           <section className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-950 to-slate-900/40 p-7">
