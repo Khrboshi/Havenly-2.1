@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function HomeBelowFold() {
   return (
     <>
-      {/* WHO IT'S FOR — emotional vignettes */}
+      {/* WHO IT'S FOR &mdash; emotional vignettes */}
       <section className="border-y border-slate-800/60 bg-slate-950/80 py-10 sm:py-14">
         <div className="mx-auto max-w-6xl px-5">
           <p className="mb-6 text-xs font-medium uppercase tracking-widest text-slate-500">
@@ -23,7 +23,7 @@ export default function HomeBelowFold() {
                 dot: "bg-emerald-400",
               },
               {
-                quote: "You've tried journaling before. You want to — but you never know what to say.",
+                quote: "You've tried journaling before. You want to &mdash; but you never know what to say.",
                 accent: "border-amber-500/20 bg-amber-500/[0.04]",
                 dot: "bg-amber-400",
               },
@@ -98,7 +98,7 @@ export default function HomeBelowFold() {
                 detail: "6 weeks in",
               },
               {
-                quote: "I've tried journaling apps before and always stopped after a week. This one feels different — it actually responds to what I write instead of just storing it.",
+                quote: "I've tried journaling apps before and always stopped after a week. This one feels different &mdash; it actually responds to what I write instead of just storing it.",
                 name: "T.A.",
                 detail: "3 months in",
               },
@@ -122,8 +122,8 @@ export default function HomeBelowFold() {
               </div>
             ))}
           </div>
-          {/* placeholder notice — invisible, for your reference */}
-          <p className="mt-2 text-[0px] text-transparent select-none">placeholder quotes — replace before launch</p>
+          {/* placeholder notice &mdash; invisible, for your reference */}
+          <p className="mt-2 text-[0px] text-transparent select-none">placeholder quotes &mdash; replace before launch</p>
         </div>
       </section>
 
@@ -284,7 +284,7 @@ export default function HomeBelowFold() {
               {/* Before / After */}
               <div className="mt-4 rounded-xl border border-slate-700/60 bg-slate-900/50 p-3 text-xs text-slate-400 space-y-1">
                 <p><span className="text-slate-600">Before:</span> You know something keeps happening. You can't quite see what.</p>
-                <p><span className="text-emerald-500/80">After:</span> Havenly shows you the pattern — and how long it's been there.</p>
+                <p><span className="text-emerald-500/80">After:</span> Havenly shows you the pattern &mdash; and how long it's been there.</p>
               </div>
 
               <ul className="mt-4 space-y-2.5 text-sm text-slate-300">
