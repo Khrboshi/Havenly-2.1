@@ -1,5 +1,6 @@
 // app/(protected)/journal/[id]/page.tsx
-import { createClient } from "@/lib/supabase/server";
+
+import { createServerClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 
 type PageProps = {
@@ -7,7 +8,7 @@ type PageProps = {
 };
 
 async function getEntry(id: string) {
-  const supabase = createClient();
+  const supabase = createServerClient();
 
   const { data, error } = await supabase
     .from("journal_entries")
