@@ -19,31 +19,33 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const isLoggedIn = !!session;
 
+  // Close menu on route change
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
 
+  // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (mobileOpen) {
       document.body.classList.add("overflow-hidden");
     } else {
       document.body.classList.remove("overflow-hidden");
     }
-
     return () => {
       document.body.classList.remove("overflow-hidden");
     };
   }, [mobileOpen]);
 
+  // Escape key closes menu
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setMobileOpen(false);
     };
-
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  // Prefetch authenticated routes
   useEffect(() => {
     if (!isLoggedIn) return;
     ["/dashboard", "/journal", "/insights", "/settings"].forEach((route) => {
@@ -51,26 +53,30 @@ export default function Navbar() {
     });
   }, [isLoggedIn, router]);
 
+  // ─── Nav link definitions ─────────────────────────────────────────────────
+  // "Premium" renamed to "Pricing" — clearer for cold visitors
   const publicLinks: NavLink[] = [
-    { href: "/about", label: "About" },
-    { href: "/blog", label: "Blog" },
-    { href: "/upgrade", label: "Premium" },
+    { href: "/about",   label: "About"   },
+    { href: "/blog",    label: "Blog"    },
+    { href: "/upgrade", label: "Pricing" }, // ← was "Premium"
     { href: "/install", label: "Install" },
   ];
 
   const authLinks: NavLink[] = [
     { href: "/dashboard", label: "Dashboard" },
-    { href: "/journal", label: "Journal" },
-    { href: "/insights", label: "Insights" },
-    { href: "/settings", label: "Settings" },
-    { href: "/install", label: "Install" },
+    { href: "/journal",   label: "Journal"   },
+    { href: "/insights",  label: "Insights"  },
+    { href: "/settings",  label: "Settings"  },
+    { href: "/install",   label: "Install"   },
   ];
 
   const shouldShowInstall = useMemo(() => !isStandalone, [isStandalone]);
 
   const links = useMemo(() => {
     const base = isLoggedIn ? authLinks : publicLinks;
-    return shouldShowInstall ? base : base.filter((link) => link.href !== "/install");
+    return shouldShowInstall
+      ? base
+      : base.filter((link) => link.href !== "/install");
   }, [isLoggedIn, shouldShowInstall]);
 
   const isActiveLink = (href: string) =>
@@ -89,8 +95,11 @@ export default function Navbar() {
 
   return (
     <>
+      {/* ── Desktop / shared header ─────────────────────────────────────── */}
       <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#020617]/80 backdrop-blur-xl">
         <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-4">
+
+          {/* Logo */}
           <Link
             href="/"
             prefetch
@@ -109,10 +118,10 @@ export default function Navbar() {
             <span>Havenly</span>
           </Link>
 
+          {/* Desktop nav links */}
           <div className="hidden items-center gap-2 md:flex">
             {links.map((link) => {
               const active = isActiveLink(link.href);
-
               return (
                 <Link
                   key={link.href}
@@ -133,7 +142,7 @@ export default function Navbar() {
               <Link
                 href="/magic-login"
                 prefetch
-                className="ml-2 inline-flex items-center justify-center rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-colors hover:bg-emerald-400"
+                className="ml-2 inline-flex items-center justify-center rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:-translate-y-px"
               >
                 Start free
               </Link>
@@ -147,10 +156,11 @@ export default function Navbar() {
             )}
           </div>
 
+          {/* Mobile hamburger */}
           <button
             type="button"
             className="inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-200 transition-colors hover:bg-white/5 md:hidden"
-            onClick={() => setMobileOpen((value) => !value)}
+            onClick={() => setMobileOpen((v) => !v)}
             aria-label={mobileOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileOpen}
             aria-controls="mobile-menu"
@@ -160,10 +170,13 @@ export default function Navbar() {
         </div>
       </header>
 
+      {/* Spacer so content isn't hidden under fixed header */}
       <div className="h-[72px]" />
 
+      {/* ── Mobile menu ─────────────────────────────────────────────────── */}
       {mobileOpen && (
         <div className="md:hidden">
+          {/* Backdrop */}
           <button
             type="button"
             aria-label="Close menu backdrop"
@@ -171,6 +184,7 @@ export default function Navbar() {
             className="fixed inset-0 z-40 bg-black/70 backdrop-blur-sm"
           />
 
+          {/* Slide-down panel */}
           <div
             id="mobile-menu"
             className="fixed inset-x-0 top-[72px] bottom-0 z-50 flex flex-col bg-[#020617]/95"
@@ -178,13 +192,14 @@ export default function Navbar() {
             <div className="flex-1 overflow-y-auto px-5 pb-8 pt-5">
               <div className="mx-auto flex max-w-xl flex-col">
                 <p className="mb-5 text-[11px] font-medium uppercase tracking-[0.2em] text-emerald-500/70">
-                  {isLoggedIn ? "Your space" : "Private journaling that reflects back"}
+                  {isLoggedIn
+                    ? "Your space"
+                    : "Private journaling that reflects back"}
                 </p>
 
                 <nav className="flex flex-col gap-2">
                   {links.map((link) => {
                     const active = isActiveLink(link.href);
-
                     return (
                       <Link
                         key={link.href}
@@ -209,17 +224,17 @@ export default function Navbar() {
                       Start with a private journal entry.
                     </p>
                     <p className="mt-1 text-sm leading-relaxed text-slate-400">
-                      No feed, no pressure, no card required. Just a calmer place to put
-                      what is on your mind.
+                      No feed, no pressure, no card required. Just a calmer
+                      place to put what is on your mind.
                     </p>
 
                     <Link
                       href="/magic-login"
                       prefetch
                       onClick={() => setMobileOpen(false)}
-                      className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-5 py-3.5 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-colors hover:bg-emerald-400"
+                      className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-5 py-3.5 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-400"
                     >
-                      Start free journal
+                      Write your first entry free →
                     </Link>
                   </div>
                 ) : (
@@ -232,7 +247,8 @@ export default function Navbar() {
                 )}
 
                 <p className="mt-5 text-center text-xs leading-relaxed text-slate-600">
-                  Havenly is built for quiet, private reflection — not performance.
+                  Havenly is built for quiet, private reflection — not
+                  performance.
                 </p>
               </div>
             </div>
