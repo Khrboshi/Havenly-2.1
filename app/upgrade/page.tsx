@@ -10,26 +10,79 @@ const premiumFeatures = [
   {
     title: "Unlimited reflections",
     body: "Reflect on every entry, not just a few each month.",
+    accent: "border-emerald-500/20",
+    tag: "text-emerald-400",
   },
   {
     title: "Full pattern insights",
-    body: "See what repeats across weeks and months, not only what stands out today.",
+    body: "See what repeats across weeks and months — not only what stands out today.",
+    accent: "border-violet-500/20",
+    tag: "text-violet-400",
   },
   {
     title: "Weekly personal summary",
-    body: "Get a concise written mirror of what Havenly noticed across the week.",
+    body: "A concise written mirror of what Havenly noticed across your week.",
+    accent: "border-amber-500/20",
+    tag: "text-amber-400",
   },
   {
     title: "Why-this-keeps-happening insight",
     body: "Go beyond surface description and get closer to the recurring emotional loop underneath.",
+    accent: "border-sky-500/20",
+    tag: "text-sky-400",
   },
   {
     title: "Everything in Free",
     body: "Keep the private writing space, gentle prompts, and all core journaling features.",
+    accent: "border-slate-700/40",
+    tag: "text-slate-500",
+  },
+];
+
+const insightExamples = [
+  {
+    label: "What you feel most",
+    text: "Emotional load appears in 14 of your last 22 entries.",
+    labelClass: "text-violet-300",
+    border: "border-violet-500/15 bg-violet-500/[0.04]",
+  },
+  {
+    label: "What keeps coming back",
+    text: "Responsibility and communication are the two themes most often linked together.",
+    labelClass: "text-emerald-300",
+    border: "border-emerald-500/15 bg-emerald-500/[0.04]",
+  },
+  {
+    label: "Your hidden pattern right now",
+    text: "You may be moving into a cycle of emotional over-functioning and self-silencing.",
+    labelClass: "text-amber-300",
+    border: "border-amber-500/15 bg-amber-500/[0.04]",
+  },
+  {
+    label: "What is shifting in you",
+    text: "Curiosity and honesty are rising in recent entries, which often means something important is becoming clearer.",
+    labelClass: "text-sky-300",
+    border: "border-sky-500/15 bg-sky-500/[0.04]",
+  },
+  {
+    label: "Your weekly mirror",
+    text: "A personal summary of what Havenly noticed this week across your entries.",
+    labelClass: "text-rose-300",
+    border: "border-rose-500/15 bg-rose-500/[0.04]",
+  },
+  {
+    label: "A question worth sitting with",
+    text: "What keeps making you say you are fine before you have had a chance to ask whether you are?",
+    labelClass: "text-slate-300",
+    border: "border-slate-700/40 bg-slate-900/30",
   },
 ];
 
 const faqs = [
+  {
+    q: "What does Havenly actually show me with Premium?",
+    a: "Premium unlocks the layer that reads across all your entries over time — not just the one you wrote today. You start seeing which emotional themes appear most often, how they connect to each other, what has been shifting, and why something may keep happening. The weekly summary pulls it all together into one personal read each week.",
+  },
   {
     q: "What if I do not write very often?",
     a: "Premium can still be worthwhile. Patterns can begin emerging from a small number of entries, and the weekly summary reflects whatever you have written, even if it was a lighter week.",
@@ -44,18 +97,21 @@ const faqs = [
   },
   {
     q: "Why is Premium $30/month?",
-    a: "Free helps you write and reflect. Premium adds the layer that connects your entries across time so you can see recurring patterns, weekly shifts, and the deeper thread behind what keeps happening.",
+    a: "Think of it this way: most journaling tools charge for cloud storage or prettier templates. Havenly charges for the AI layer that reads across weeks of entries and surfaces what you couldn't see from inside it. That work is genuinely expensive to run — and $30/month keeps it sustainable without ads or selling your data.",
   },
 ];
 
 export default function UpgradePage() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      <section className="relative overflow-hidden border-b border-slate-800/60 bg-slate-950">
-        <div className="pointer-events-none absolute left-1/2 top-0 h-[360px] w-[700px] -translate-x-1/2 rounded-full bg-emerald-500/[0.06] blur-3xl" />
-        <div className="pointer-events-none absolute right-[-120px] top-24 h-72 w-72 rounded-full bg-cyan-500/[0.04] blur-3xl" />
 
-        <div className="relative mx-auto max-w-6xl px-5 pb-12 pt-12 sm:pb-16 sm:pt-16">
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden border-b border-slate-800/60 bg-slate-950">
+        {/* Stronger glow blobs */}
+        <div className="pointer-events-none absolute left-1/2 top-0 h-[380px] w-[700px] -translate-x-1/2 rounded-full bg-emerald-500/[0.14] blur-[110px]" />
+        <div className="pointer-events-none absolute right-[-100px] top-20 h-72 w-72 rounded-full bg-cyan-500/[0.10] blur-[80px]" />
+
+        <div className="relative mx-auto max-w-6xl px-5 pb-14 pt-12 sm:pb-18 sm:pt-16">
           <div className="max-w-4xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-400/80">
               Havenly Premium
@@ -64,7 +120,7 @@ export default function UpgradePage() {
             <h1 className="mt-4 max-w-4xl text-[2.2rem] font-semibold leading-[1.05] tracking-tight sm:text-5xl md:text-[3.4rem]">
               Start seeing the deeper pattern,
               <br />
-              <span className="text-emerald-400">not just today’s entry.</span>
+              <span className="text-emerald-400">not just today&apos;s entry.</span>
             </h1>
 
             <p className="mt-5 max-w-3xl text-[15px] leading-relaxed text-slate-400 sm:text-[17px]">
@@ -76,23 +132,24 @@ export default function UpgradePage() {
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
                 href="/api/stripe/checkout"
-                className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-4 text-base font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-colors hover:bg-emerald-400 sm:px-6 sm:py-3.5 sm:text-sm"
+                className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-4 text-base font-semibold text-slate-950 shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-400 hover:-translate-y-px sm:px-6 sm:py-3.5 sm:text-sm"
               >
                 Upgrade to Premium
               </Link>
 
               <Link
                 href="/insights/preview"
-                className="inline-flex items-center justify-center rounded-full border border-slate-700 bg-slate-950/40 px-6 py-4 text-base font-medium text-slate-300 transition-colors hover:bg-slate-900 sm:px-6 sm:py-3.5 sm:text-sm"
+                className="inline-flex items-center justify-center rounded-full border border-slate-700/60 px-6 py-4 text-base font-medium text-slate-400 transition-colors hover:border-slate-600 hover:text-white sm:px-6 sm:py-3.5 sm:text-sm"
               >
                 Preview Premium insights
               </Link>
             </div>
 
+            {/* Trust micro-signals */}
             <div className="mt-5 flex flex-col gap-2.5 text-xs text-slate-500 sm:flex-row sm:flex-wrap sm:gap-x-4 sm:gap-y-2">
               <span className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                $30 / month
+                $30 / month — less than one therapy session
               </span>
               <span className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -107,15 +164,19 @@ export default function UpgradePage() {
         </div>
       </section>
 
+      {/* ── What changes with Premium ─────────────────────────────────────── */}
       <section className="border-b border-slate-800/60 bg-slate-950/95 py-12 sm:py-16">
         <div className="mx-auto max-w-6xl px-5">
-          <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
+          <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
+
+            {/* Left — feature grid */}
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-400/70">
                 What changes with Premium
               </p>
               <h2 className="mt-3 text-2xl font-semibold text-white sm:text-3xl">
-                The value is not more journaling. It is more understanding.
+                The value is not more journaling.{" "}
+                <span className="text-emerald-400">It is more understanding.</span>
               </h2>
               <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-400">
                 Free gives you a private space to write and a few reflections each month.
@@ -124,52 +185,54 @@ export default function UpgradePage() {
               </p>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                {premiumFeatures.map(({ title, body }) => (
+                {premiumFeatures.map(({ title, body, accent, tag }) => (
                   <div
                     key={title}
-                    className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+                    className={`rounded-2xl border bg-white/[0.02] p-4 ${accent}`}
                   >
-                    <p className="text-sm font-medium text-white">{title}</p>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-500">{body}</p>
+                    <p className={`text-[10px] font-semibold uppercase tracking-[0.18em] ${tag}`}>
+                      {title}
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-400">{body}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-[1.75rem] border border-emerald-500/20 bg-emerald-500/[0.04] p-5 sm:p-6">
+            {/* Right — premium pricing card */}
+            <div className="rounded-[1.75rem] border border-emerald-500/25 bg-emerald-500/[0.04] p-5 sm:p-6">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-400/80">
                     Premium
                   </p>
                   <h3 className="mt-1 text-xl font-semibold text-white sm:text-2xl">
-                    The roadmap to understanding yourself
+                    The full picture, not just today&apos;s entry
                   </h3>
                 </div>
 
-                <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-400">
-                  Early access
+                {/* ✅ Fixed: "Founding price" replaces "Early access" */}
+                <span className="shrink-0 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-400">
+                  Founding price
                 </span>
               </div>
 
-              <div className="mt-4 flex items-end gap-1.5">
+              {/* ✅ Price with therapy anchor on same row */}
+              <div className="mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-1">
                 <span className="text-4xl font-bold text-white">$30</span>
-                <span className="pb-1 text-sm text-slate-400">/ month</span>
+                <span className="pb-0.5 text-sm text-slate-400">/ month</span>
+                <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-400">
+                  Less than one therapy session
+                </span>
               </div>
 
-              <p className="mt-1 text-xs text-slate-600">
-                Less than one therapy co-pay • cancel anytime
-              </p>
+              <p className="mt-1 text-xs text-slate-600">Cancel anytime · no questions asked</p>
 
-              <p className="mt-4 text-sm leading-relaxed text-slate-300">
-                For people who want to genuinely understand their patterns, not just track
-                events.
-              </p>
-
+              {/* Before / After contrast box */}
               <div className="mt-4 rounded-xl border border-slate-700/60 bg-slate-900/50 p-3 text-xs text-slate-400">
                 <p>
-                  <span className="text-slate-600">Before:</span> “I know something keeps
-                  happening, but I still cannot quite see what.”
+                  <span className="text-slate-600">Before:</span>{" "}
+                  &ldquo;I know something keeps happening, but I still cannot quite see what.&rdquo;
                 </p>
                 <p className="mt-1">
                   <span className="text-emerald-500/80">After:</span> Havenly shows what
@@ -196,7 +259,7 @@ export default function UpgradePage() {
                     sub: "A written mirror of the week",
                   },
                   {
-                    label: "“Why does this keep happening?” insights",
+                    label: "\u201cWhy does this keep happening?\u201d insights",
                     sub: "A clearer view of recurring loops and emotional drivers",
                   },
                   {
@@ -205,7 +268,7 @@ export default function UpgradePage() {
                   },
                 ].map(({ label, sub }) => (
                   <li key={label} className="flex items-start gap-2">
-                    <span className="mt-0.5 shrink-0 text-emerald-400">&#10003;</span>
+                    <span className="mt-0.5 shrink-0 text-emerald-400">✓</span>
                     <div>
                       <p>{label}</p>
                       <p className="text-xs text-slate-500">{sub}</p>
@@ -217,7 +280,7 @@ export default function UpgradePage() {
               <div className="mt-6 flex flex-col gap-2">
                 <Link
                   href="/api/stripe/checkout"
-                  className="inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-colors hover:bg-emerald-400"
+                  className="inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:-translate-y-px"
                 >
                   Upgrade to Premium
                 </Link>
@@ -231,13 +294,14 @@ export default function UpgradePage() {
               </div>
 
               <p className="mt-3 text-center text-xs text-slate-700">
-                Secure checkout via Stripe • cancel anytime
+                Secure checkout via Stripe
               </p>
             </div>
           </div>
         </div>
       </section>
 
+      {/* ── What Premium surfaces ─────────────────────────────────────────── */}
       <section className="border-b border-slate-800/60 bg-slate-950 py-12 sm:py-16">
         <div className="mx-auto max-w-6xl px-5">
           <div className="mb-8 max-w-2xl">
@@ -245,44 +309,14 @@ export default function UpgradePage() {
               What Premium starts surfacing
             </p>
             <h2 className="mt-3 text-2xl font-semibold text-white sm:text-3xl">
-              The patterns are easier to trust when you can finally see them.
+              The patterns are easier to trust{" "}
+              <span className="text-emerald-400">when you can finally see them.</span>
             </h2>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {[
-              {
-                label: "What you feel most",
-                text: "Emotional load appears in 14 of your last 22 entries.",
-                labelClass: "text-violet-300",
-              },
-              {
-                label: "What keeps coming back",
-                text: "Responsibility and communication are the two themes most often linked together.",
-                labelClass: "text-emerald-300",
-              },
-              {
-                label: "Your hidden pattern right now",
-                text: "You may be moving into a cycle of emotional over-functioning and self-silencing.",
-                labelClass: "text-amber-300",
-              },
-              {
-                label: "What is shifting in you",
-                text: "Curiosity and honesty are rising in recent entries, which often means something important is becoming clearer.",
-                labelClass: "text-sky-300",
-              },
-              {
-                label: "Your weekly mirror",
-                text: "A personal summary of what Havenly noticed this week across your entries.",
-                labelClass: "text-rose-300",
-              },
-              {
-                label: "A question worth sitting with",
-                text: "What keeps making you say you are fine before you have had a chance to ask whether you are?",
-                labelClass: "text-slate-300",
-              },
-            ].map(({ label, text, labelClass }) => (
-              <div key={label} className="rounded-2xl border border-white/10 bg-slate-900/30 p-4">
+            {insightExamples.map(({ label, text, labelClass, border }) => (
+              <div key={label} className={`rounded-2xl border p-4 ${border}`}>
                 <p className={`text-[10px] font-semibold uppercase tracking-[0.18em] ${labelClass}`}>
                   {label}
                 </p>
@@ -302,6 +336,7 @@ export default function UpgradePage() {
         </div>
       </section>
 
+      {/* ── Free vs Premium comparison ────────────────────────────────────── */}
       <section className="border-b border-slate-800/60 bg-slate-950/95 py-12 sm:py-16">
         <div className="mx-auto max-w-6xl px-5">
           <div className="mb-8 max-w-2xl">
@@ -318,6 +353,8 @@ export default function UpgradePage() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 md:gap-5">
+
+            {/* Free card */}
             <div className="flex flex-col rounded-2xl border border-slate-800 bg-slate-900/40 p-5 sm:p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
                 Free
@@ -336,14 +373,17 @@ export default function UpgradePage() {
 
               <ul className="mt-5 space-y-3 text-sm text-slate-300">
                 {[
-                  "Write anytime, entries stay private",
-                  "3 AI reflections per month",
-                  "Gentle daily prompts",
-                  "Basic pattern insights",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2">
-                    <span className="mt-0.5 shrink-0 text-emerald-600">&#10003;</span>
-                    <span>{item}</span>
+                  { label: "Write anytime", sub: "Entries stay private" },
+                  { label: "3 AI reflections to start", sub: "Enough to discover if this is for you" },
+                  { label: "Gentle daily prompts", sub: "Helpful when you don't know how to begin" },
+                  { label: "Basic pattern insights", sub: "A first layer of what keeps showing up" },
+                ].map(({ label, sub }) => (
+                  <li key={label} className="flex items-start gap-2">
+                    <span className="mt-0.5 shrink-0 text-emerald-600">✓</span>
+                    <div>
+                      <p>{label}</p>
+                      <p className="text-xs text-slate-600">{sub}</p>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -361,13 +401,15 @@ export default function UpgradePage() {
               </div>
             </div>
 
+            {/* Premium card */}
             <div className="flex flex-col rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.04] p-5 sm:p-6">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-400/80">
                   Premium
                 </p>
-                <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-400">
-                  Early access
+                {/* ✅ Fixed: "Founding price" replaces "Early access" */}
+                <span className="shrink-0 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-400">
+                  Founding price
                 </span>
               </div>
 
@@ -375,9 +417,13 @@ export default function UpgradePage() {
                 The deeper layer of understanding
               </p>
 
-              <div className="mt-2 flex items-baseline gap-1.5">
+              {/* ✅ Therapy anchor next to price */}
+              <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-1">
                 <span className="text-3xl font-bold text-white">$30</span>
                 <span className="text-sm text-slate-400">/ month</span>
+                <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-400">
+                  Less than one therapy session
+                </span>
               </div>
 
               <p className="mt-3 text-sm text-slate-300">
@@ -386,15 +432,18 @@ export default function UpgradePage() {
 
               <ul className="mt-5 space-y-3 text-sm text-slate-200">
                 {[
-                  "Unlimited reflections",
-                  "Full pattern insights",
-                  "Weekly personal summary",
-                  "Why-this-keeps-happening insights",
-                  "Everything in Free",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2">
-                    <span className="mt-0.5 shrink-0 text-emerald-400">&#10003;</span>
-                    <span>{item}</span>
+                  { label: "Unlimited reflections", sub: "Reflect on every entry" },
+                  { label: "Full pattern insights", sub: "See what repeats across weeks and months" },
+                  { label: "Weekly personal summary", sub: "A written mirror of the week" },
+                  { label: "Why-this-keeps-happening insights", sub: "A clearer view of recurring emotional loops" },
+                  { label: "Everything in Free", sub: "Nothing removed, just deeper" },
+                ].map(({ label, sub }) => (
+                  <li key={label} className="flex items-start gap-2">
+                    <span className="mt-0.5 shrink-0 text-emerald-400">✓</span>
+                    <div>
+                      <p>{label}</p>
+                      <p className="text-xs text-slate-500">{sub}</p>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -402,7 +451,7 @@ export default function UpgradePage() {
               <div className="mt-auto flex flex-col gap-2 pt-6">
                 <Link
                   href="/api/stripe/checkout"
-                  className="inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-colors hover:bg-emerald-400"
+                  className="inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:-translate-y-px"
                 >
                   Upgrade to Premium
                 </Link>
@@ -422,6 +471,7 @@ export default function UpgradePage() {
         </div>
       </section>
 
+      {/* ── FAQ ───────────────────────────────────────────────────────────── */}
       <section className="border-b border-slate-800/60 bg-slate-950 py-12 sm:py-14">
         <div className="mx-auto max-w-3xl px-5">
           <h2 className="text-xl font-semibold text-white sm:text-2xl">
@@ -448,10 +498,13 @@ export default function UpgradePage() {
         </div>
       </section>
 
-      <section className="bg-slate-950 py-14 sm:py-16">
+      {/* ── Closing CTA ───────────────────────────────────────────────────── */}
+      <section className="bg-slate-950 py-14 sm:py-18">
         <div className="mx-auto max-w-4xl px-5 text-center">
           <h2 className="text-2xl font-semibold text-white sm:text-4xl">
-            Your thoughts deserve a clearer mirror.
+            Something is trying to become clear.
+            <br />
+            <span className="text-emerald-400">Let&apos;s help you hear it.</span>
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-slate-500 sm:text-base">
             Start with a single entry. When you want the deeper picture, Premium helps
@@ -461,18 +514,22 @@ export default function UpgradePage() {
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Link
               href="/api/stripe/checkout"
-              className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-7 py-3.5 text-[15px] font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-colors hover:bg-emerald-400 sm:py-3 sm:text-sm"
+              className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-7 py-3.5 text-[15px] font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:-translate-y-px sm:py-3 sm:text-sm"
             >
               Upgrade to Premium
             </Link>
 
             <Link
               href="/magic-login"
-              className="inline-flex items-center justify-center rounded-full border border-slate-700 px-7 py-3.5 text-[15px] font-medium text-slate-300 transition-colors hover:bg-slate-900 sm:py-3 sm:text-sm"
+              className="inline-flex items-center justify-center rounded-full border border-slate-700/60 px-7 py-3.5 text-[15px] font-medium text-slate-400 transition-colors hover:border-slate-600 hover:text-white sm:py-3 sm:text-sm"
             >
               Start free first
             </Link>
           </div>
+
+          <p className="mt-5 text-xs text-slate-700">
+            Private by default · Entries never train AI models · Cancel anytime
+          </p>
         </div>
       </section>
     </div>
