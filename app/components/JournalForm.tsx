@@ -36,6 +36,8 @@ export default function JournalForm(_props: Props) {
   );
   const [error, setError] = useState<string>("");
 
+  const [entryProgress, setEntryProgress] = useState(0);
+
   const didPrefillRef = useRef(false);
 
   useEffect(() => {
@@ -54,6 +56,13 @@ export default function JournalForm(_props: Props) {
 
     didPrefillRef.current = true;
   }, [searchParams]);
+
+  useEffect(() => {
+    try {
+      const stage = Number(sessionStorage.getItem("havenly:insight_stage") || "0");
+      setEntryProgress(Math.min(3, stage));
+    } catch {}
+  }, []);
 
   const canSave = useMemo(
     () => content.trim().length > 0 && status !== "saving",
@@ -137,7 +146,26 @@ export default function JournalForm(_props: Props) {
 
   return (
     <form onSubmit={onSubmit} className="w-full pb-24">
-      <div className="space-y-3">
+      <div className="space-y-4">
+
+        {/* Insights progress indicator */}
+        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+          <div className="text-sm text-emerald-300 font-medium">
+            Insights improve after 3 entries
+          </div>
+
+          <div className="text-xs text-slate-400 mt-1">
+            You have written: {entryProgress} / 3
+          </div>
+
+          <div className="mt-2 h-2 w-full bg-white/10 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-emerald-400 transition-all"
+              style={{ width: `${(entryProgress / 3) * 100}%` }}
+            />
+          </div>
+        </div>
+
         <div>
           <div className="text-sm font-medium text-white/80 mb-2">
             Write your thoughts
@@ -170,7 +198,6 @@ export default function JournalForm(_props: Props) {
             </div>
           </div>
 
-          {/* Privacy reassurance */}
           <div className="mt-4 text-xs text-slate-400">
             Your journal is private. No one else can read what you write.
           </div>
