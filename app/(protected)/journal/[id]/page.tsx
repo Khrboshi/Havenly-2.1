@@ -1,15 +1,18 @@
 // app/(protected)/journal/[id]/page.tsx
 
-import { createServerClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
 import { notFound } from "next/navigation";
 
 type PageProps = {
   params: { id: string };
 };
 
-async function getEntry(id: string) {
-  const supabase = createServerClient();
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
+async function getEntry(id: string) {
   const { data, error } = await supabase
     .from("journal_entries")
     .select("*")
@@ -17,7 +20,6 @@ async function getEntry(id: string) {
     .single();
 
   if (error || !data) return null;
-
   return data;
 }
 
@@ -51,7 +53,6 @@ export default async function JournalEntryPage({ params }: PageProps) {
 
   return (
     <div className="mx-auto max-w-3xl space-y-8 pb-16">
-
       {/* Entry */}
       <section className="rounded-2xl border border-slate-800 bg-slate-950/50 p-6">
         {entry.title && (
@@ -70,7 +71,6 @@ export default async function JournalEntryPage({ params }: PageProps) {
         <ReflectionSkeleton />
       ) : (
         <section className="rounded-2xl border border-emerald-500/15 bg-emerald-500/[0.05] p-6 space-y-4">
-
           <div className="text-xs font-semibold uppercase tracking-widest text-emerald-400/80">
             Havenly reflection
           </div>
