@@ -1,55 +1,100 @@
-import { redirect } from "next/navigation";
-import { createServerSupabase } from "@/lib/supabase/server";
-import JournalEntryClient from "./JournalEntryClient";
+// app/(protected)/journal/[id]/page.tsx
+import { createClient } from "@/lib/supabase/server";
+import { notFound } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export default async function Page({
-  params,
-}: {
+type PageProps = {
   params: { id: string };
-}) {
-  const supabase = createServerSupabase();
+};
 
-  // ✅ getSession reads from cookie locally — no network call
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.user) redirect("/magic-login");
+async function getEntry(id: string) {
+  const supabase = createClient();
 
-  const { data: entry } = await supabase
+  const { data, error } = await supabase
     .from("journal_entries")
-    .select("id,title,content,created_at,ai_response")
-    .eq("id", params.id)
-    .eq("user_id", session.user.id)
-    .maybeSingle();
+    .select("*")
+    .eq("id", id)
+    .single();
 
-  if (!entry) {
-    return (
-      <div className="p-10 text-white">Entry not found</div>
-    );
-  }
+  if (error || !data) return null;
 
-  let initialReflection = null;
-  try {
-    initialReflection = entry.ai_response
-      ? JSON.parse(entry.ai_response)
-      : null;
-  } catch {
-    initialReflection = null;
-  }
+  return data;
+}
 
-  // Cheap count to detect first-entry moment
-  const { count: entryCount } = await supabase
-    .from("journal_entries")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", session.user.id);
+function ReflectionSkeleton() {
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-6 space-y-4">
+      <div className="text-xs font-semibold uppercase tracking-widest text-slate-600">
+        Havenly reflection
+      </div>
 
-  const isFirstEntry = (entryCount ?? 0) <= 1;
+      <div className="space-y-2 animate-pulse">
+        <div className="h-3 w-full rounded bg-slate-800" />
+        <div className="h-3 w-11/12 rounded bg-slate-800" />
+        <div className="h-3 w-10/12 rounded bg-slate-800" />
+        <div className="h-3 w-9/12 rounded bg-slate-800" />
+      </div>
+
+      <div className="text-xs text-slate-700">
+        Havenly is reflecting on what you wrote…
+      </div>
+    </div>
+  );
+}
+
+export default async function JournalEntryPage({ params }: PageProps) {
+  const entry = await getEntry(params.id);
+
+  if (!entry) return notFound();
+
+  const reflection = entry.reflection ?? null;
 
   return (
-    <JournalEntryClient
-      entry={entry}
-      initialReflection={initialReflection}
-      isFirstEntry={isFirstEntry}
-    />
+    <div className="mx-auto max-w-3xl space-y-8 pb-16">
+
+      {/* Entry */}
+      <section className="rounded-2xl border border-slate-800 bg-slate-950/50 p-6">
+        {entry.title && (
+          <h1 className="text-xl font-semibold text-slate-100 mb-4">
+            {entry.title}
+          </h1>
+        )}
+
+        <p className="whitespace-pre-wrap text-slate-300 leading-relaxed">
+          {entry.content}
+        </p>
+      </section>
+
+      {/* Reflection */}
+      {!reflection ? (
+        <ReflectionSkeleton />
+      ) : (
+        <section className="rounded-2xl border border-emerald-500/15 bg-emerald-500/[0.05] p-6 space-y-4">
+
+          <div className="text-xs font-semibold uppercase tracking-widest text-emerald-400/80">
+            Havenly reflection
+          </div>
+
+          {reflection
+            .split(/\n\n+/)
+            .filter(Boolean)
+            .map((p: string, i: number) => (
+              <p
+                key={i}
+                className={`leading-relaxed ${
+                  i === 0
+                    ? "text-base text-slate-100"
+                    : "text-sm text-slate-400"
+                }`}
+              >
+                {p}
+              </p>
+            ))}
+
+          <p className="text-xs text-slate-600">
+            Reflections evolve as you keep writing.
+          </p>
+        </section>
+      )}
+    </div>
   );
 }
