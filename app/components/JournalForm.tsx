@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 type Props = {
-  userId?: string; // kept for compatibility with your current import usage
+  userId?: string;
 };
 
 const starterPrompts = [
@@ -60,6 +60,14 @@ export default function JournalForm(_props: Props) {
     [content, status]
   );
 
+  function handleStarterPrompt(prompt: string) {
+    setContent((prev) => {
+      const trimmed = prev.trim();
+      if (!trimmed) return `${prompt}\n\n`;
+      return prev;
+    });
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -100,9 +108,14 @@ export default function JournalForm(_props: Props) {
 
       try {
         sessionStorage.setItem("havenly:show_insight_preview", "1");
-        sessionStorage.setItem("havenly:last_seed", pickSeed(title, contentTrimmed));
+        sessionStorage.setItem(
+          "havenly:last_seed",
+          pickSeed(title, contentTrimmed)
+        );
 
-        const prev = Number(sessionStorage.getItem("havenly:insight_stage") || "0");
+        const prev = Number(
+          sessionStorage.getItem("havenly:insight_stage") || "0"
+        );
         const next = Math.min(3, (Number.isFinite(prev) ? prev : 0) + 1);
         sessionStorage.setItem("havenly:insight_stage", String(next));
       } catch {}
@@ -120,14 +133,6 @@ export default function JournalForm(_props: Props) {
       setStatus("error");
       setError(err?.message || "Network error. Please try again.");
     }
-  }
-
-  function handleStarterPrompt(prompt: string) {
-    setContent((prev) => {
-      const trimmed = prev.trim();
-      if (!trimmed) return `${prompt}\n\n`;
-      return prev;
-    });
   }
 
   return (
@@ -165,11 +170,16 @@ export default function JournalForm(_props: Props) {
             </div>
           </div>
 
+          {/* Privacy reassurance */}
+          <div className="mt-4 text-xs text-slate-400">
+            Your journal is private. No one else can read what you write.
+          </div>
+
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="How are you feeling today?"
-            className="mt-3 w-full min-h-[40vh] rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white placeholder:text-white/40 outline-none focus:border-white/20 focus:bg-white/[0.07] resize-none"
+            className="mt-2 w-full min-h-[40vh] rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white placeholder:text-white/40 outline-none focus:border-white/20 focus:bg-white/[0.07] resize-none"
           />
         </div>
 
