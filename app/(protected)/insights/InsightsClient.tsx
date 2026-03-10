@@ -35,6 +35,13 @@ function sortMap(m: Record<string, number>) {
   return Object.entries(m).sort((a, b) => b[1] - a[1]);
 }
 
+// Sanitize raw AI Title Case output → sentence case
+// "You're Caught Between X And Y" → "You're caught between x and y"
+function toSentenceCase(str: string): string {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
 function maxVal(m: Record<string, number>) {
   const v = Object.values(m);
   return v.length ? Math.max(...v) : 1;
@@ -772,7 +779,7 @@ export default function InsightsClient() {
   return (
     <div className="space-y-8 pb-10">
       <div>
-        <h1 className="text-3xl font-semibold text-slate-100">Insights</h1>
+        <h1 className="font-display text-3xl font-semibold text-white sm:text-4xl">Insights</h1>
         <p className="mt-1 text-sm text-slate-500">
           What Havenly has noticed across your reflections
           {totalEntryCount > 0 && (
@@ -787,23 +794,16 @@ export default function InsightsClient() {
           {entryCount > 0 && entryCount < totalEntryCount && (
             <span className="text-slate-600"> · {entryCount} reflected</span>
           )}
-          {data?.firstEntryDate && data?.lastEntryDate && (
-            <span className="text-slate-600">
-              {" "}
-              ·{" "}
-              <span suppressHydrationWarning>
-                {mounted
-                  ? friendlyDate(data.firstEntryDate)
-                  : data.firstEntryDate.slice(0, 7)}
-              </span>{" "}
-              –{" "}
-              <span suppressHydrationWarning>
-                {mounted
-                  ? friendlyDate(data.lastEntryDate)
-                  : data.lastEntryDate.slice(0, 7)}
+          {data?.firstEntryDate && data?.lastEntryDate && mounted && (() => {
+            const first = friendlyDate(data.firstEntryDate!);
+            const last = friendlyDate(data.lastEntryDate!);
+            return (
+              <span className="text-slate-600" suppressHydrationWarning>
+                {" · "}
+                {first === last ? first : `${first} – ${last}`}
               </span>
-            </span>
-          )}
+            );
+          })()}
         </p>
       </div>
 
@@ -868,8 +868,9 @@ export default function InsightsClient() {
           {/* ── Weekly AI summary ── */}
           <WeeklySummarySection hasRealData={hasRealData} />
 
-          {/* ── Premium teaser ── */}
-          <PremiumTeaser />
+          {/* Premium teaser intentionally removed — /insights is only reachable
+              by Premium/Trial users (page.tsx redirects free users to /insights/preview).
+              Showing a "See Premium" CTA to paying customers is actively harmful. */}
 
           {/* ── Domain distribution ── */}
           {hasDomains && (
@@ -919,7 +920,7 @@ export default function InsightsClient() {
                 <div className="flex items-start justify-between gap-3">
                   <p className="text-sm font-medium leading-relaxed text-slate-100">
                     <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 align-middle" />
-                    {topCorepatterns[0][0]}
+                    {toSentenceCase(topCorepatterns[0][0])}
                   </p>
                   <span className="shrink-0 rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs tabular-nums text-emerald-400">
                     {topCorepatterns[0][1]}×
@@ -936,7 +937,7 @@ export default function InsightsClient() {
                     <li key={pattern} className="group space-y-1.5">
                       <div className="flex items-start justify-between gap-3">
                         <p className="text-xs leading-relaxed text-slate-400 group-hover:text-slate-300 transition-colors">
-                          {pattern}
+                          {toSentenceCase(pattern)}
                         </p>
                         <span className="shrink-0 tabular-nums text-xs text-slate-700 pt-0.5">
                           {count}×
