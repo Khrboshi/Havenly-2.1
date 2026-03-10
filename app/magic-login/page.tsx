@@ -34,6 +34,15 @@ function safeNext(raw: string | null): string {
   return v;
 }
 
+// Rotating quiet phrases shown on the left — remind the user why they came back
+const SIDE_QUOTES = [
+  { text: "You don't have to have it figured out to write it down.", attr: null },
+  { text: "Something is trying to become clear. Writing helps.", attr: null },
+  { text: "Your journal isn't judging you. It's just listening.", attr: null },
+  { text: "The patterns you can't see yet are already in what you've written.", attr: null },
+  { text: "Coming back is the whole practice.", attr: null },
+];
+
 function MagicLoginInner() {
   const router = useRouter();
   const sp = useSearchParams();
@@ -48,9 +57,12 @@ function MagicLoginInner() {
   const [mode, setMode] = useState<Mode>(ios ? "code" : "link");
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState<string | null>(null);
-
   const [email, setEmail] = useState("");
   const [token, setToken] = useState("");
+
+  // Pick a stable quote for this session
+  const quoteIndex = useMemo(() => Math.floor(Math.random() * SIDE_QUOTES.length), []);
+  const sideQuote = SIDE_QUOTES[quoteIndex];
 
   const goNext = useCallback(
     (target?: string) => {
@@ -77,7 +89,6 @@ function MagicLoginInner() {
 
   useEffect(() => {
     const STORAGE_KEY = "havenly:auth_complete";
-
     const onStorage = (e: StorageEvent) => {
       if (e.key !== STORAGE_KEY || !e.newValue) return;
       try {
@@ -87,44 +98,31 @@ function MagicLoginInner() {
         goNext();
       }
     };
-
     window.addEventListener("storage", onStorage);
-
     let bc: BroadcastChannel | null = null;
     try {
       bc = new BroadcastChannel("havenly_auth");
       bc.onmessage = (ev) => {
-        if (ev?.data?.type === "AUTH_COMPLETE") {
-          goNext(ev.data?.next);
-        }
+        if (ev?.data?.type === "AUTH_COMPLETE") goNext(ev.data?.next);
       };
-    } catch {
-      // storage fallback remains available
-    }
-
+    } catch {}
     return () => {
       window.removeEventListener("storage", onStorage);
-      try {
-        bc?.close();
-      } catch {}
+      try { bc?.close(); } catch {}
     };
   }, [goNext]);
 
   async function onSendEmail() {
     setStatus("loading");
     setMessage(null);
-
     const fd = new FormData();
     fd.set("email", email);
-
     const res = await sendMagicLink(fd);
-
     if (!res.success) {
       setStatus("error");
       setMessage(res.message || "Failed to send email.");
       return;
     }
-
     setStatus("success");
     setMessage(
       mode === "code"
@@ -136,19 +134,15 @@ function MagicLoginInner() {
   async function onVerifyCode() {
     setStatus("loading");
     setMessage(null);
-
     const fd = new FormData();
     fd.set("email", email);
     fd.set("token", token);
-
     const res = await verifyOtp(fd);
-
     if (!res.success) {
       setStatus("error");
       setMessage(res.message || "Invalid code.");
       return;
     }
-
     goNext();
   }
 
@@ -158,78 +152,87 @@ function MagicLoginInner() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      <div className="mx-auto flex min-h-screen w-full max-w-6xl items-center px-4 py-10 sm:px-6 lg:grid lg:grid-cols-[1.05fr_0.95fr] lg:gap-10 lg:px-8">
-        <div className="hidden lg:block">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-400/80">
-            Havenly sign in
-          </p>
-          <h1 className="mt-4 max-w-xl text-5xl font-semibold leading-[1.05] tracking-tight text-white">
-            Return to your private journal without friction.
-          </h1>
-          <p className="mt-5 max-w-lg text-base leading-relaxed text-slate-400">
-            Sign in with a magic link or a one-time code. Havenly is built to feel
-            calm, private, and simple across desktop, mobile, and Home Screen use.
-          </p>
+      <div className="mx-auto flex min-h-screen w-full max-w-6xl items-center px-4 py-10 sm:px-6 lg:grid lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:px-8">
 
-          <div className="mt-8 space-y-4">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-              <p className="text-sm font-medium text-white">Magic link</p>
-              <p className="mt-1 text-sm leading-relaxed text-slate-400">
-                Best on desktop and in a normal mobile browser. Open the email link in
-                the same place you started.
-              </p>
-            </div>
+        {/* ── Left column — warmth, not documentation ── */}
+        <div className="hidden lg:flex lg:flex-col lg:justify-center">
 
-            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.05] p-4">
-              <p className="text-sm font-medium text-white">Code sign-in</p>
-              <p className="mt-1 text-sm leading-relaxed text-slate-300">
-                Best on iPhone Home Screen installations, where email links may open in
-                Safari instead of the app.
-              </p>
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-              <p className="text-sm font-medium text-white">Privacy first</p>
-              <p className="mt-1 text-sm leading-relaxed text-slate-400">
-                Your email is used only for sign-in. Your journal stays private and is
-                never used to train AI models.
-              </p>
-            </div>
+          {/* Logo mark */}
+          <div className="mb-8 flex items-center gap-2.5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icon-192.png" alt="Havenly" className="h-8 w-8 rounded-xl" />
+            <span className="text-sm font-semibold text-slate-300">Havenly</span>
           </div>
+
+          {/* Headline — warm, not functional */}
+          <h1 className="font-display max-w-sm text-4xl font-semibold leading-[1.1] tracking-tight text-white">
+            Welcome back.
+            <br />
+            <span className="text-slate-500">Your journal is waiting.</span>
+          </h1>
+
+          {/* Rotating quiet quote */}
+          <div className="mt-8 max-w-sm rounded-2xl border border-white/[0.07] bg-white/[0.03] px-5 py-5">
+            <p className="text-base leading-relaxed text-slate-300 italic">
+              &ldquo;{sideQuote.text}&rdquo;
+            </p>
+          </div>
+
+          {/* Privacy reminder — one line, not a card */}
+          <p className="mt-8 max-w-xs text-xs leading-relaxed text-slate-600">
+            Your entries are private, never shared, and never used to train AI models.
+          </p>
+
+          {/* Back link */}
+          <Link
+            href="/"
+            className="mt-6 inline-flex items-center gap-1 text-xs font-medium text-slate-600 transition-colors hover:text-slate-400"
+          >
+            ← Back to home
+          </Link>
         </div>
 
+        {/* ── Right column — the actual form ── */}
         <div className="w-full">
           <div className="mx-auto w-full max-w-md rounded-[1.75rem] border border-white/10 bg-slate-900/60 p-6 shadow-2xl shadow-black/40 backdrop-blur sm:p-7">
-            <div className="lg:hidden">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-400/80">
-                Havenly sign in
-              </p>
-              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white">
-                Sign in to Havenly
-              </h1>
-              <p className="mt-3 text-sm leading-relaxed text-slate-400">
-                Your private space to write honestly, without the feed, noise, or pressure.
-              </p>
-            </div>
 
-            <div className="hidden lg:block">
-              <h2 className="text-2xl font-semibold text-white">Sign in to Havenly</h2>
-              <p className="mt-2 text-sm leading-relaxed text-slate-400">
-                Choose the method that fits this device best.
-              </p>
-            </div>
-
-            {standalone ? (
-              <div className="mt-5 rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.06] p-4 text-sm leading-relaxed text-emerald-200">
-                You are using the Home Screen app. On iPhone, email links may open in
-                Safari instead of the app, so <span className="font-semibold">code sign-in</span>{" "}
-                is usually the most reliable choice here.
+            {/* Mobile header */}
+            <div className="mb-5 lg:hidden">
+              <div className="mb-4 flex items-center gap-2">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/icon-192.png" alt="Havenly" className="h-7 w-7 rounded-lg" />
+                <span className="text-sm font-semibold text-slate-300">Havenly</span>
               </div>
-            ) : null}
+              <h1 className="text-2xl font-semibold tracking-tight text-white">
+                Welcome back.
+              </h1>
+              <p className="mt-1.5 text-sm leading-relaxed text-slate-400">
+                Your private space to write honestly, without the noise.
+              </p>
+            </div>
 
-            {message ? (
+            {/* Desktop card header */}
+            <div className="hidden lg:block mb-5">
+              <h2 className="text-xl font-semibold text-white">Sign in to Havenly</h2>
+              <p className="mt-1 text-sm text-slate-500">
+                {ios
+                  ? "Use the code option — it works best on iPhone."
+                  : "Choose the method that fits this device."}
+              </p>
+            </div>
+
+            {/* Standalone / PWA notice */}
+            {standalone && (
+              <div className="mb-5 rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.06] p-4 text-sm leading-relaxed text-emerald-200">
+                You&apos;re using the Home Screen app.{" "}
+                <span className="font-semibold">Code sign-in</span> is usually the most reliable choice here.
+              </div>
+            )}
+
+            {/* Status message */}
+            {message && (
               <div
-                className={`mt-5 rounded-2xl border p-4 text-sm leading-relaxed ${
+                className={`mb-5 rounded-2xl border p-4 text-sm leading-relaxed ${
                   status === "success"
                     ? "border-emerald-500/20 bg-emerald-500/[0.06] text-emerald-200"
                     : status === "error"
@@ -239,9 +242,10 @@ function MagicLoginInner() {
               >
                 {message}
               </div>
-            ) : null}
+            )}
 
-            <div className="mt-5 grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-slate-950/60 p-1.5">
+            {/* Mode toggle */}
+            <div className="grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-slate-950/60 p-1.5">
               <button
                 type="button"
                 onClick={() => setMode("code")}
@@ -256,7 +260,6 @@ function MagicLoginInner() {
                   Best on iPhone
                 </span>
               </button>
-
               <button
                 type="button"
                 onClick={() => setMode("link")}
@@ -273,6 +276,7 @@ function MagicLoginInner() {
               </button>
             </div>
 
+            {/* Email input */}
             <div className="mt-5">
               <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Email address
@@ -282,11 +286,15 @@ function MagicLoginInner() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && email && mode === "link") onSendEmail();
+                }}
                 placeholder="you@example.com"
                 className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500/50"
               />
             </div>
 
+            {/* Magic link flow */}
             {mode === "link" ? (
               <div className="mt-5">
                 <button
@@ -295,14 +303,14 @@ function MagicLoginInner() {
                   disabled={status === "loading" || !email}
                   className="inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-4 py-3.5 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {status === "loading" ? "Sending..." : "Send magic link"}
+                  {status === "loading" ? "Sending…" : "Send magic link"}
                 </button>
-
-                <p className="mt-3 text-center text-xs leading-relaxed text-slate-500">
+                <p className="mt-3 text-center text-xs leading-relaxed text-slate-600">
                   Open the email link in the same browser you started with.
                 </p>
               </div>
             ) : (
+              /* Code flow */
               <div className="mt-5">
                 <button
                   type="button"
@@ -310,9 +318,7 @@ function MagicLoginInner() {
                   disabled={status === "loading" || !email}
                   className="inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-4 py-3.5 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {status === "loading"
-                    ? "Sending..."
-                    : "Send email with sign-in link and code"}
+                  {status === "loading" ? "Sending…" : "Send sign-in email"}
                 </button>
 
                 <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
@@ -324,39 +330,38 @@ function MagicLoginInner() {
                     onChange={(e) =>
                       setToken(e.target.value.replace(/\D/g, "").slice(0, 8))
                     }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && tokenOk) onVerifyCode();
+                    }}
                     inputMode="numeric"
                     placeholder="Enter 6–8 digit code"
                     className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500/50"
                   />
-
                   <button
                     type="button"
                     onClick={onVerifyCode}
                     disabled={status === "loading" || !email || !tokenOk}
                     className="mt-4 inline-flex w-full items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {status === "loading" ? "Verifying..." : "Verify and sign in"}
+                    {status === "loading" ? "Verifying…" : "Verify and sign in"}
                   </button>
-
-                  <p className="mt-3 text-xs leading-relaxed text-slate-500">
-                    Tip: if the email shows spaces between numbers, just paste it. Havenly
-                    removes spaces automatically.
+                  <p className="mt-3 text-xs leading-relaxed text-slate-600">
+                    Tip: if the email shows spaces between numbers, just paste it. Havenly removes spaces automatically.
                   </p>
                 </div>
               </div>
             )}
 
-            <div className="mt-6 flex flex-col items-center gap-3 text-center">
+            {/* Mobile back link */}
+            <div className="mt-6 flex flex-col items-center gap-2 text-center lg:hidden">
               <Link
                 href="/"
                 className="text-sm font-medium text-emerald-400 transition-colors hover:text-emerald-300"
               >
                 ← Back to Home
               </Link>
-
-              <p className="max-w-sm text-xs leading-relaxed text-slate-600">
-                Desktop usually works best with magic link. iPhone Home Screen app usually
-                works best with code sign-in.
+              <p className="text-xs text-slate-700">
+                Desktop → magic link · iPhone Home Screen → code
               </p>
             </div>
           </div>
