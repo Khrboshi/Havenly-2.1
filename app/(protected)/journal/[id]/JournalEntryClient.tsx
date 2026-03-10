@@ -120,6 +120,7 @@ export default function JournalEntryClient({
   }, [planType]);
 
   const isUnlimited = planType === "PREMIUM" || planType === "TRIAL";
+  const isPremiumUser = isUnlimited;
 
   const parsedSummary = useMemo(
     () => (reflection ? parseSummary(reflection.summary) : null),
@@ -168,25 +169,12 @@ export default function JournalEntryClient({
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          {/* ✅ Fraunces serif on entry title — most personal heading in the app */}
-          <h1 className="font-display text-2xl font-semibold leading-snug tracking-tight text-white sm:text-3xl">
-            {entry.title || "Untitled"}
-          </h1>
-          {/* ✅ Human-readable date: "March 8, 2026" not "3/8/2026, 7:56:40 PM" */}
-          <p className="mt-1 text-xs text-white/35" suppressHydrationWarning>
-            {mounted
-              ? new Date(entry.created_at).toLocaleDateString(undefined, {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })
-              : new Date(entry.created_at).toISOString().slice(0, 10)}
+          <h1 className="text-xl font-semibold tracking-tight">{entry.title || "Untitled"}</h1>
+          <p className="mt-0.5 text-xs text-white/35" suppressHydrationWarning>
+            {mounted ? new Date(entry.created_at).toLocaleString() : new Date(entry.created_at).toISOString().slice(0, 10)}
           </p>
         </div>
-        <Link
-          href="/journal"
-          className="mt-1 shrink-0 text-xs text-emerald-400/70 transition-colors hover:text-emerald-300"
-        >
+        <Link href="/journal" className="text-xs text-emerald-400/80 hover:text-emerald-300 transition-colors mt-1">
           &larr; Back to journal
         </Link>
       </header>
@@ -212,16 +200,19 @@ export default function JournalEntryClient({
         {/* Card header bar */}
         <div className="flex items-center justify-between border-b border-white/6 px-6 py-4">
           <div>
-            {/* ✅ "Havenly's reflection" — brand voice, not a system label */}
-            <h2 className="text-sm font-semibold tracking-tight text-white/90">
-              Havenly&apos;s reflection
-            </h2>
-            {/* ✅ Plan/credit info moved to a single unobtrusive line, only shown when relevant */}
-            {mounted && !isUnlimited && (
-              <p className="mt-0.5 text-xs text-white/30">
-                {loading ? "…" : credits}{" "}
-                {credits === 1 ? "reflection" : "reflections"} remaining
-                {credits === 0 && <span className="ml-1"> · resets monthly</span>}
+            <h2 className="text-sm font-semibold tracking-tight">AI Reflection</h2>
+            {mounted && (
+              <p className="mt-0.5 text-xs text-white/40">
+                Plan: <span className="text-emerald-300/90">{readablePlan}</span>
+                {!isUnlimited ? (
+                  <>
+                    {" "}&middot;{" "}
+                    <span className="text-white/50">{loading ? "..." : credits} left</span>
+                    {credits === 0 && <span className="ml-1.5 text-white/30">(resets monthly)</span>}
+                  </>
+                ) : (
+                  <span className="text-white/30"> &middot; Unlimited</span>
+                )}
               </p>
             )}
           </div>
@@ -230,23 +221,24 @@ export default function JournalEntryClient({
             <button
               onClick={generateReflection}
               disabled={busy}
-              className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 transition-all hover:bg-emerald-400 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 hover:bg-emerald-400 disabled:opacity-50 transition-all"
             >
               {busy ? (
                 <>
-                  <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-slate-950/30 border-t-slate-950" />
+                  <span className="inline-block h-3 w-3 rounded-full border-2 border-slate-950/30 border-t-slate-950 animate-spin" />
                   Reflecting&hellip;
                 </>
-              ) : (
-                "Get reflection"
-              )}
+              ) : "Generate Reflection"}
             </button>
           ) : (
-            // ✅ Softer badge — "Saved to your history" instead of alarming "Permanent"
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/[0.06] px-3 py-1.5 text-xs font-medium text-emerald-400/80">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              Saved to your history
-            </span>
+            // FIX Issue 5: badge text changed from "Saved" to "Reflection saved — Permanent"
+            <div className="flex flex-col items-end gap-0.5">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/8 px-3 py-1.5 text-xs font-medium text-emerald-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                Reflection saved &mdash; Permanent
+              </span>
+              <p className="text-[10px] text-white/20">permanent &middot; keeps patterns accurate</p>
+            </div>
           )}
         </div>
 
@@ -450,6 +442,62 @@ export default function JournalEntryClient({
           </div>
         ) : null}
       </section>
+
+      {/* ── Post-reflection bridge ─────────────────────────────────────────
+           Only shown after a reflection exists. Serves Premium users toward
+           Insights, and Free users toward upgrading. This is the highest-
+           leverage moment in the product for both retention and conversion.
+      ────────────────────────────────────────────────────────────────────── */}
+      {reflection && !reflection.crisis && (
+        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-6 py-5">
+          {isPremiumUser ? (
+            // ── Premium: natural next step toward Insights ──────────────
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-medium text-white/80">
+                  This is now part of your pattern history.
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                  Havenly tracks what keeps showing up across all your entries.
+                  Your insights view shows the thread that connects them.
+                </p>
+              </div>
+              <Link
+                href="/insights"
+                className="shrink-0 inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/[0.06] px-4 py-2.5 text-xs font-semibold text-emerald-400 transition hover:bg-emerald-500/[0.12] hover:text-emerald-300"
+              >
+                See your full pattern →
+              </Link>
+            </div>
+          ) : (
+            // ── Free: upgrade moment, earned and contextual ──────────────
+            <div>
+              <p className="text-sm font-medium text-white/80">
+                This reflection is now part of your pattern history.
+              </p>
+              <p className="mt-1.5 text-xs leading-relaxed text-slate-500">
+                With Premium, Havenly reads across all your entries and shows you
+                what keeps repeating — the emotional thread you can&apos;t always
+                see from inside it. Less than one therapy session per month.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link
+                  href="/upgrade"
+                  className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2.5 text-xs font-semibold text-slate-950 shadow-sm shadow-emerald-500/20 transition hover:bg-emerald-400"
+                >
+                  Unlock your pattern history →
+                </Link>
+                <Link
+                  href="/insights/preview"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] px-4 py-2.5 text-xs font-medium text-slate-400 transition hover:border-white/[0.15] hover:text-slate-200"
+                >
+                  See an example
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <UpgradeTriggerModal
         open={showUpgrade}
