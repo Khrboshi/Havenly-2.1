@@ -117,7 +117,7 @@ export default function Footer() {
         <div className="mt-8 border-t border-white/[0.05] pt-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-slate-700">
           <p>© {year} Havenly. All rights reserved.</p>
           <p className="text-emerald-900/60">
-            No ads. No data sales. Built for your privacy.
+            No ads · No data sales · 7-day refund guarantee
           </p>
         </div>
       </div>
