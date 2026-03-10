@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ARTICLES, getArticle } from "../articles";
+import EmailCapture from "@/app/components/EmailCapture";
 
 const SITE_URL = "https://havenly-2-1.vercel.app";
 
@@ -116,6 +117,8 @@ export default function BlogArticlePage({ params }: BlogArticlePageProps) {
             </Link>
           </div>
         </div>
+
+        <EmailCapture source={`blog-article-${article.slug}`} variant="article-inline" />
 
         <div className="mt-6 border-t border-slate-800 pt-6 text-center text-xs text-slate-400">
           <Link
