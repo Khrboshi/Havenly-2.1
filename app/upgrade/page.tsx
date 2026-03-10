@@ -87,6 +87,8 @@ const faqs = [
     q: "What is your refund policy?",
     a: "If Havenly Premium is not what you expected, email support@havenly.app within 7 days of your first charge and we will issue a full refund — no questions asked. This applies to your first subscription period only.",
   },
+  {
+    q: "What if I do not write very often?",
     a: "Premium can still be worthwhile. Patterns can begin emerging from a small number of entries, and the weekly summary reflects whatever you have written, even if it was a lighter week.",
   },
   {
