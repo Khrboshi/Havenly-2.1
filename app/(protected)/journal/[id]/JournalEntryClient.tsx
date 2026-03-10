@@ -503,6 +503,7 @@ export default function JournalEntryClient({
                   See an example
                 </Link>
               </div>
+              <p className="mt-3 text-[11px] text-slate-700">🛡️ 7-day full refund · Cancel anytime</p>
             </div>
           )}
         </div>
