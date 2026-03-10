@@ -162,7 +162,7 @@ export default async function InsightsPreviewPage() {
           {[
             { label: "Entries", value: String(entryCount || 13), sub: "Since this month", accent: undefined },
             { label: "Top emotion", value: displayEmotion, sub: hasData ? `${sortedEmotions[0]?.[1] ?? 2} times` : "2 times", accent: "#a78bfa" },
-            { label: "Top theme", value: displayTheme, sub: hasData ? `${sortedThemes[0]?.[1] ?? 1} entries` : "1 entries", accent: "#34d399" },
+            { label: "Top theme", value: displayTheme, sub: hasData ? `${sortedThemes[0]?.[1] ?? 1} ${sortedThemes[0]?.[1] === 1 ? "entry" : "entries"}` : "1 entry", accent: "#34d399" },
             { label: "Momentum", value: "Shifting", sub: "Based on today", accent: "#fbbf24" },
           ].map(({ label, value, sub, accent }) => (
             <div key={label} className="rounded-xl border border-slate-800 bg-slate-950/60 p-4 space-y-1">
@@ -248,8 +248,8 @@ export default async function InsightsPreviewPage() {
         {/* ── The pattern underneath ────────────────────────────────────── */}
         <div className="rounded-2xl border border-slate-800 bg-gradient-to-br from-slate-950 to-slate-900/40 p-7">
           <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-slate-600">The pattern underneath</p>
-          <p className="text-lg leading-relaxed text-slate-300 capitalize">
-            <span className="font-semibold text-slate-100">{displayEmotion}</span>{" "}
+          <p className="text-lg leading-relaxed text-slate-300">
+            <span className="font-semibold text-slate-100" style={{ textTransform: "capitalize" }}>{displayEmotion}</span>{" "}
             keeps showing up — often alongside{" "}
             <span className="font-semibold text-slate-100">{displayTheme}</span>.
           </p>
@@ -324,7 +324,7 @@ export default async function InsightsPreviewPage() {
                     <div className="flex items-center justify-between gap-3 text-sm">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <span className="shrink-0 tabular-nums text-[10px] w-4 text-right" style={{ color: isTop ? "#34d399" : "#475569" }}>{i + 1}</span>
-                        <span className={`truncate capitalize transition-colors ${isTop ? "font-medium text-slate-100" : "text-slate-400"}`}>{label}</span>
+                        <span className={`truncate transition-colors ${isTop ? "font-medium text-slate-100" : "text-slate-400"}`}>{label.charAt(0).toUpperCase() + label.slice(1)}</span>
                       </div>
                       <span className="shrink-0 tabular-nums text-xs text-slate-600">{count}</span>
                     </div>
@@ -352,7 +352,7 @@ export default async function InsightsPreviewPage() {
                     <div className="flex items-center justify-between gap-3 text-sm">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <span className="shrink-0 tabular-nums text-[10px] w-4 text-right" style={{ color: isTop ? "#a78bfa" : "#475569" }}>{i + 1}</span>
-                        <span className={`truncate capitalize transition-colors ${isTop ? "font-medium text-slate-100" : "text-slate-400"}`}>{label}</span>
+                        <span className={`truncate transition-colors ${isTop ? "font-medium text-slate-100" : "text-slate-400"}`}>{label.charAt(0).toUpperCase() + label.slice(1)}</span>
                       </div>
                       <span className="shrink-0 tabular-nums text-xs text-slate-600">{count}</span>
                     </div>
