@@ -140,14 +140,20 @@ function MagicLoginInner() {
   const tokenOk = digitsOnlyToken.length >= 6 && digitsOnlyToken.length <= 8;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      <div className="mx-auto flex min-h-screen w-full max-w-6xl items-center px-4 py-10 sm:px-6 lg:grid lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:px-8">
+    <div className="bg-slate-950 pt-16 text-white">
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl items-center px-4 py-10 sm:px-6 lg:grid lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:px-8">
 
         {/* ── Left column ── */}
         <div className="hidden lg:flex lg:flex-col lg:justify-center">
           <div className="mb-8 flex items-center gap-2.5">
-            {/* FIXED: correct path /pwa/icon-192.png */}
-            <Image src="/pwa/icon-192.png" alt="Havenly" width={32} height={32} className="rounded-xl" priority />
+            <Image
+              src="/pwa/icon-192.png"
+              alt="Havenly"
+              width={32}
+              height={32}
+              className="rounded-xl"
+              priority
+            />
             <span className="text-sm font-semibold text-slate-300">Havenly</span>
           </div>
 
@@ -167,7 +173,10 @@ function MagicLoginInner() {
             Your entries are private, never shared, and never used to train AI models.
           </p>
 
-          <Link href="/" className="mt-6 inline-flex items-center gap-1 text-xs font-medium text-slate-600 transition-colors hover:text-slate-400">
+          <Link
+            href="/"
+            className="mt-6 inline-flex items-center gap-1 text-xs font-medium text-slate-600 transition-colors hover:text-slate-400"
+          >
             ← Back to home
           </Link>
         </div>
@@ -179,8 +188,13 @@ function MagicLoginInner() {
             {/* Mobile header */}
             <div className="mb-5 lg:hidden">
               <div className="mb-4 flex items-center gap-2">
-                {/* FIXED: next/image with correct path */}
-                <Image src="/pwa/icon-192.png" alt="Havenly" width={28} height={28} className="rounded-lg" />
+                <Image
+                  src="/pwa/icon-192.png"
+                  alt="Havenly"
+                  width={28}
+                  height={28}
+                  className="rounded-lg"
+                />
                 <span className="text-sm font-semibold text-slate-300">Havenly</span>
               </div>
               <h1 className="text-2xl font-semibold tracking-tight text-white">Welcome back.</h1>
@@ -193,7 +207,9 @@ function MagicLoginInner() {
             <div className="mb-5 hidden lg:block">
               <h2 className="text-xl font-semibold text-white">Sign in to Havenly</h2>
               <p className="mt-1 text-sm text-slate-500">
-                {ios ? "Use the code option — it works best on iPhone." : "Choose the method that fits this device."}
+                {ios
+                  ? "Use the code option — it works best on iPhone."
+                  : "Choose the method that fits this device."}
               </p>
             </div>
 
@@ -205,11 +221,15 @@ function MagicLoginInner() {
             )}
 
             {message && (
-              <div className={`mb-5 rounded-2xl border p-4 text-sm leading-relaxed ${
-                status === "success" ? "border-emerald-500/20 bg-emerald-500/[0.06] text-emerald-200"
-                : status === "error"  ? "border-red-500/20 bg-red-500/[0.06] text-red-200"
-                : "border-white/10 bg-white/[0.03] text-slate-200"
-              }`}>
+              <div
+                className={`mb-5 rounded-2xl border p-4 text-sm leading-relaxed ${
+                  status === "success"
+                    ? "border-emerald-500/20 bg-emerald-500/[0.06] text-emerald-200"
+                    : status === "error"
+                    ? "border-red-500/20 bg-red-500/[0.06] text-red-200"
+                    : "border-white/10 bg-white/[0.03] text-slate-200"
+                }`}
+              >
                 {message}
               </div>
             )}
@@ -222,7 +242,9 @@ function MagicLoginInner() {
                   type="button"
                   onClick={() => setMode(m)}
                   className={`rounded-xl px-3 py-3 text-sm font-medium transition ${
-                    mode === m ? "bg-white/10 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"
+                    mode === m
+                      ? "bg-white/10 text-white shadow-sm"
+                      : "text-slate-400 hover:text-slate-200"
                   }`}
                 >
                   {m === "code" ? "Code" : "Magic link"}
@@ -243,7 +265,9 @@ function MagicLoginInner() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && email && mode === "link") onSendEmail(); }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && email && mode === "link") onSendEmail();
+                }}
                 placeholder="you@example.com"
                 className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500/50"
               />
@@ -280,8 +304,12 @@ function MagicLoginInner() {
                   </label>
                   <input
                     value={token}
-                    onChange={(e) => setToken(e.target.value.replace(/\D/g, "").slice(0, 8))}
-                    onKeyDown={(e) => { if (e.key === "Enter" && tokenOk) onVerifyCode(); }}
+                    onChange={(e) =>
+                      setToken(e.target.value.replace(/\D/g, "").slice(0, 8))
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && tokenOk) onVerifyCode();
+                    }}
                     inputMode="numeric"
                     placeholder="Enter 6–8 digit code"
                     className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500/50"
@@ -302,7 +330,10 @@ function MagicLoginInner() {
             )}
 
             <div className="mt-6 flex flex-col items-center gap-2 text-center lg:hidden">
-              <Link href="/" className="text-sm font-medium text-emerald-400 transition-colors hover:text-emerald-300">
+              <Link
+                href="/"
+                className="text-sm font-medium text-emerald-400 transition-colors hover:text-emerald-300"
+              >
                 ← Back to Home
               </Link>
               <p className="text-xs text-slate-700">
@@ -318,11 +349,13 @@ function MagicLoginInner() {
 
 export default function MagicLoginPage() {
   return (
-    <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-sm text-slate-300">
-        Loading…
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-sm text-slate-300">
+          Loading…
+        </div>
+      }
+    >
       <MagicLoginInner />
     </Suspense>
   );
