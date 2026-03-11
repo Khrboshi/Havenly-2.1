@@ -9,15 +9,19 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        display: ["Fraunces", "Georgia", "serif"],
-        body: ["DM Sans", "system-ui", "sans-serif"],
-        sans: ["DM Sans", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "Fraunces", "Georgia", "serif"],
+        body:    ["var(--font-body)",    "DM Sans",  "system-ui", "sans-serif"],
+        sans:    ["var(--font-body)",    "DM Sans",  "system-ui", "sans-serif"],
       },
       colors: {
-        brand: {
-          primary: "#4CA7A3",
-          light: "#76C5C0",
-          dark: "#2E837F",
+        // ─── Consolidated Havenly brand palette ───────────────────────────
+        // ONE green accent. Use hvn-mint everywhere instead of emerald-500.
+        hvn: {
+          mint:      "#3ee7b0",  // Primary accent
+          "mint-dim":"#2bc99a",  // Hover state
+          bg:        "#020617",  // Base background
+          elevated:  "#02091a",  // Elevated surfaces
+          soft:      "#0b1220",  // Soft background
         },
       },
       animation: {
