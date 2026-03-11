@@ -1,9 +1,9 @@
-// app/magic-login/page.tsx
 "use client";
 
 export const dynamic = "force-dynamic";
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSupabase } from "@/components/SupabaseSessionProvider";
@@ -34,13 +34,12 @@ function safeNext(raw: string | null): string {
   return v;
 }
 
-// Rotating quiet phrases shown on the left — remind the user why they came back
 const SIDE_QUOTES = [
-  { text: "You don't have to have it figured out to write it down.", attr: null },
-  { text: "Something is trying to become clear. Writing helps.", attr: null },
-  { text: "Your journal isn't judging you. It's just listening.", attr: null },
-  { text: "The patterns you can't see yet are already in what you've written.", attr: null },
-  { text: "Coming back is the whole practice.", attr: null },
+  { text: "You don't have to have it figured out to write it down." },
+  { text: "Something is trying to become clear. Writing helps." },
+  { text: "Your journal isn't judging you. It's just listening." },
+  { text: "The patterns you can't see yet are already in what you've written." },
+  { text: "Coming back is the whole practice." },
 ];
 
 function MagicLoginInner() {
@@ -60,22 +59,18 @@ function MagicLoginInner() {
   const [email, setEmail] = useState("");
   const [token, setToken] = useState("");
 
-  // Pick a stable quote for this session
   const quoteIndex = useMemo(() => Math.floor(Math.random() * SIDE_QUOTES.length), []);
   const sideQuote = SIDE_QUOTES[quoteIndex];
 
   const goNext = useCallback(
     (target?: string) => {
-      const n = safeNext(target ?? next);
-      window.location.assign(n);
+      window.location.assign(safeNext(target ?? next));
     },
     [next]
   );
 
   useEffect(() => {
-    if (session?.user) {
-      router.replace(next);
-    }
+    if (session?.user) router.replace(next);
   }, [session?.user, router, next]);
 
   useEffect(() => {
@@ -91,12 +86,7 @@ function MagicLoginInner() {
     const STORAGE_KEY = "havenly:auth_complete";
     const onStorage = (e: StorageEvent) => {
       if (e.key !== STORAGE_KEY || !e.newValue) return;
-      try {
-        const data = JSON.parse(e.newValue);
-        goNext(data?.next);
-      } catch {
-        goNext();
-      }
+      try { goNext(JSON.parse(e.newValue)?.next); } catch { goNext(); }
     };
     window.addEventListener("storage", onStorage);
     let bc: BroadcastChannel | null = null;
@@ -147,81 +137,66 @@ function MagicLoginInner() {
   }
 
   const digitsOnlyToken = token.replace(/\D/g, "");
-  const tokenLen = digitsOnlyToken.length;
-  const tokenOk = tokenLen >= 6 && tokenLen <= 8;
+  const tokenOk = digitsOnlyToken.length >= 6 && digitsOnlyToken.length <= 8;
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <div className="mx-auto flex min-h-screen w-full max-w-6xl items-center px-4 py-10 sm:px-6 lg:grid lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:px-8">
 
-        {/* ── Left column — warmth, not documentation ── */}
+        {/* ── Left column ── */}
         <div className="hidden lg:flex lg:flex-col lg:justify-center">
-
-          {/* Logo mark */}
           <div className="mb-8 flex items-center gap-2.5">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icon-192.png" alt="Havenly" className="h-8 w-8 rounded-xl" />
+            {/* FIXED: correct path /pwa/icon-192.png */}
+            <Image src="/pwa/icon-192.png" alt="Havenly" width={32} height={32} className="rounded-xl" priority />
             <span className="text-sm font-semibold text-slate-300">Havenly</span>
           </div>
 
-          {/* Headline — warm, not functional */}
           <h1 className="font-display max-w-sm text-4xl font-semibold leading-[1.1] tracking-tight text-white">
             Welcome back.
             <br />
             <span className="text-slate-500">Your journal is waiting.</span>
           </h1>
 
-          {/* Rotating quiet quote */}
           <div className="mt-8 max-w-sm rounded-2xl border border-white/[0.07] bg-white/[0.03] px-5 py-5">
-            <p className="text-base leading-relaxed text-slate-300 italic">
+            <p className="text-base italic leading-relaxed text-slate-300">
               &ldquo;{sideQuote.text}&rdquo;
             </p>
           </div>
 
-          {/* Privacy reminder — one line, not a card */}
           <p className="mt-8 max-w-xs text-xs leading-relaxed text-slate-600">
             Your entries are private, never shared, and never used to train AI models.
           </p>
 
-          {/* Back link */}
-          <Link
-            href="/"
-            className="mt-6 inline-flex items-center gap-1 text-xs font-medium text-slate-600 transition-colors hover:text-slate-400"
-          >
+          <Link href="/" className="mt-6 inline-flex items-center gap-1 text-xs font-medium text-slate-600 transition-colors hover:text-slate-400">
             ← Back to home
           </Link>
         </div>
 
-        {/* ── Right column — the actual form ── */}
+        {/* ── Right column — form ── */}
         <div className="w-full">
           <div className="mx-auto w-full max-w-md rounded-[1.75rem] border border-white/10 bg-slate-900/60 p-6 shadow-2xl shadow-black/40 backdrop-blur sm:p-7">
 
             {/* Mobile header */}
             <div className="mb-5 lg:hidden">
               <div className="mb-4 flex items-center gap-2">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/icon-192.png" alt="Havenly" className="h-7 w-7 rounded-lg" />
+                {/* FIXED: next/image with correct path */}
+                <Image src="/pwa/icon-192.png" alt="Havenly" width={28} height={28} className="rounded-lg" />
                 <span className="text-sm font-semibold text-slate-300">Havenly</span>
               </div>
-              <h1 className="text-2xl font-semibold tracking-tight text-white">
-                Welcome back.
-              </h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-white">Welcome back.</h1>
               <p className="mt-1.5 text-sm leading-relaxed text-slate-400">
                 Your private space to write honestly, without the noise.
               </p>
             </div>
 
             {/* Desktop card header */}
-            <div className="hidden lg:block mb-5">
+            <div className="mb-5 hidden lg:block">
               <h2 className="text-xl font-semibold text-white">Sign in to Havenly</h2>
               <p className="mt-1 text-sm text-slate-500">
-                {ios
-                  ? "Use the code option — it works best on iPhone."
-                  : "Choose the method that fits this device."}
+                {ios ? "Use the code option — it works best on iPhone." : "Choose the method that fits this device."}
               </p>
             </div>
 
-            {/* Standalone / PWA notice */}
             {standalone && (
               <div className="mb-5 rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.06] p-4 text-sm leading-relaxed text-emerald-200">
                 You&apos;re using the Home Screen app.{" "}
@@ -229,51 +204,33 @@ function MagicLoginInner() {
               </div>
             )}
 
-            {/* Status message */}
             {message && (
-              <div
-                className={`mb-5 rounded-2xl border p-4 text-sm leading-relaxed ${
-                  status === "success"
-                    ? "border-emerald-500/20 bg-emerald-500/[0.06] text-emerald-200"
-                    : status === "error"
-                    ? "border-red-500/20 bg-red-500/[0.06] text-red-200"
-                    : "border-white/10 bg-white/[0.03] text-slate-200"
-                }`}
-              >
+              <div className={`mb-5 rounded-2xl border p-4 text-sm leading-relaxed ${
+                status === "success" ? "border-emerald-500/20 bg-emerald-500/[0.06] text-emerald-200"
+                : status === "error"  ? "border-red-500/20 bg-red-500/[0.06] text-red-200"
+                : "border-white/10 bg-white/[0.03] text-slate-200"
+              }`}>
                 {message}
               </div>
             )}
 
             {/* Mode toggle */}
             <div className="grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-slate-950/60 p-1.5">
-              <button
-                type="button"
-                onClick={() => setMode("code")}
-                className={`rounded-xl px-3 py-3 text-sm font-medium transition ${
-                  mode === "code"
-                    ? "bg-white/10 text-white shadow-sm"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                Code
-                <span className="mt-0.5 block text-[11px] font-normal text-slate-500">
-                  Best on iPhone
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setMode("link")}
-                className={`rounded-xl px-3 py-3 text-sm font-medium transition ${
-                  mode === "link"
-                    ? "bg-white/10 text-white shadow-sm"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                Magic link
-                <span className="mt-0.5 block text-[11px] font-normal text-slate-500">
-                  Best on desktop
-                </span>
-              </button>
+              {(["code", "link"] as Mode[]).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setMode(m)}
+                  className={`rounded-xl px-3 py-3 text-sm font-medium transition ${
+                    mode === m ? "bg-white/10 text-white shadow-sm" : "text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  {m === "code" ? "Code" : "Magic link"}
+                  <span className="mt-0.5 block text-[11px] font-normal text-slate-500">
+                    {m === "code" ? "Best on iPhone" : "Best on desktop"}
+                  </span>
+                </button>
+              ))}
             </div>
 
             {/* Email input */}
@@ -286,15 +243,12 @@ function MagicLoginInner() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && email && mode === "link") onSendEmail();
-                }}
+                onKeyDown={(e) => { if (e.key === "Enter" && email && mode === "link") onSendEmail(); }}
                 placeholder="you@example.com"
                 className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500/50"
               />
             </div>
 
-            {/* Magic link flow */}
             {mode === "link" ? (
               <div className="mt-5">
                 <button
@@ -310,7 +264,6 @@ function MagicLoginInner() {
                 </p>
               </div>
             ) : (
-              /* Code flow */
               <div className="mt-5">
                 <button
                   type="button"
@@ -327,12 +280,8 @@ function MagicLoginInner() {
                   </label>
                   <input
                     value={token}
-                    onChange={(e) =>
-                      setToken(e.target.value.replace(/\D/g, "").slice(0, 8))
-                    }
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && tokenOk) onVerifyCode();
-                    }}
+                    onChange={(e) => setToken(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                    onKeyDown={(e) => { if (e.key === "Enter" && tokenOk) onVerifyCode(); }}
                     inputMode="numeric"
                     placeholder="Enter 6–8 digit code"
                     className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500/50"
@@ -352,12 +301,8 @@ function MagicLoginInner() {
               </div>
             )}
 
-            {/* Mobile back link */}
             <div className="mt-6 flex flex-col items-center gap-2 text-center lg:hidden">
-              <Link
-                href="/"
-                className="text-sm font-medium text-emerald-400 transition-colors hover:text-emerald-300"
-              >
+              <Link href="/" className="text-sm font-medium text-emerald-400 transition-colors hover:text-emerald-300">
                 ← Back to Home
               </Link>
               <p className="text-xs text-slate-700">
@@ -373,13 +318,11 @@ function MagicLoginInner() {
 
 export default function MagicLoginPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-sm text-slate-300">
-          Loading…
-        </div>
-      }
-    >
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-sm text-slate-300">
+        Loading…
+      </div>
+    }>
       <MagicLoginInner />
     </Suspense>
   );
