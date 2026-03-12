@@ -8,11 +8,11 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     const supabase = await createServerSupabase();
 
     const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    if (sessionError || !session?.user) {
+    if (userError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -20,7 +20,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
       .from("journal_entries")
       .select("id,title,content,created_at,ai_response")
       .eq("id", params.id)
-      .eq("user_id", session.user.id)
+      .eq("user_id", user.id)
       .single();
 
     if (error || !data) {
