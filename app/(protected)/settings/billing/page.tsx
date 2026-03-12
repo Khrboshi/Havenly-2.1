@@ -2,21 +2,30 @@
 import React from "react";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { ensureCreditsFresh } from "@/lib/creditRules";
 
 export const dynamic = "force-dynamic";
 
-function PlanBadge({ plan }: { plan: "PREMIUM" | "FREE" }) {
-  const isPremium = plan === "PREMIUM";
+type PlanType = "PREMIUM" | "TRIAL" | "FREE";
+
+function PlanBadge({ plan }: { plan: PlanType }) {
+  if (plan === "PREMIUM") {
+    return (
+      <span className="inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-300">
+        Premium
+      </span>
+    );
+  }
+  if (plan === "TRIAL") {
+    return (
+      <span className="inline-flex items-center rounded-full border border-sky-500/30 bg-sky-500/10 px-2.5 py-1 text-xs font-semibold text-sky-300">
+        Trial
+      </span>
+    );
+  }
   return (
-    <span
-      className={[
-        "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold",
-        isPremium
-          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
-          : "border-slate-700 bg-slate-900/40 text-slate-300",
-      ].join(" ")}
-    >
-      {isPremium ? "Premium" : "Free"}
+    <span className="inline-flex items-center rounded-full border border-slate-700 bg-slate-900/40 px-2.5 py-1 text-xs font-semibold text-slate-300">
+      Free
     </span>
   );
 }
@@ -48,18 +57,20 @@ export default async function BillingPage() {
 
   if (userErr || !user) redirect("/magic-login");
 
+  // Ensure credits are fresh before reading plan
+  await ensureCreditsFresh({ supabase, userId: user.id });
+
   const { data: credits } = await supabase
     .from("user_credits")
     .select("plan_type")
     .eq("user_id", user.id)
     .maybeSingle();
 
-  const planType = String((credits as any)?.plan_type ?? "FREE").toUpperCase();
-  const plan = (planType === "PREMIUM" ? "PREMIUM" : "FREE") as
-    | "PREMIUM"
-    | "FREE";
+  const rawPlan = String((credits as any)?.plan_type ?? "FREE").toUpperCase();
+  const plan: PlanType =
+    rawPlan === "PREMIUM" ? "PREMIUM" : rawPlan === "TRIAL" ? "TRIAL" : "FREE";
 
-  const isPremium = plan === "PREMIUM";
+  const isPaid = plan === "PREMIUM" || plan === "TRIAL";
 
   return (
     <main className="mx-auto w-full max-w-5xl px-6 py-14 text-slate-200">
@@ -74,7 +85,7 @@ export default async function BillingPage() {
 
           <div className="flex items-center gap-3">
             <PlanBadge plan={plan} />
-            {isPremium ? (
+            {isPaid ? (
               <a
                 href="/api/stripe/portal?returnUrl=/settings/billing"
                 className="inline-flex items-center justify-center rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/15"
@@ -99,20 +110,22 @@ export default async function BillingPage() {
           <SectionTitle
             title="Plan"
             subtitle={
-              isPremium
+              plan === "PREMIUM"
                 ? "Your Premium plan is active."
-                : "You’re on Free. Upgrade any time."
+                : plan === "TRIAL"
+                ? "You are on a free trial — full Premium access."
+                : "You're on Free. Upgrade any time."
             }
           />
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-5">
               <h3 className="text-sm font-semibold text-white">
-                {isPremium ? "Premium includes" : "Free includes"}
+                {isPaid ? "Premium includes" : "Free includes"}
               </h3>
 
               <ul className="mt-3 space-y-2 text-sm text-slate-300">
-                {isPremium ? (
+                {isPaid ? (
                   <>
                     <li>• Unlimited AI reflections</li>
                     <li>• Pattern clarity across time</li>
@@ -132,10 +145,10 @@ export default async function BillingPage() {
 
             <div className="rounded-xl border border-slate-800 bg-slate-950/40 p-5">
               <h3 className="text-sm font-semibold text-white">
-                {isPremium ? "Cancellations" : "Upgrade"}
+                {isPaid ? "Cancellations" : "Upgrade"}
               </h3>
 
-              {isPremium ? (
+              {isPaid ? (
                 <p className="mt-2 text-sm text-slate-400">
                   Cancel anytime via{" "}
                   <a
@@ -152,7 +165,7 @@ export default async function BillingPage() {
                 </p>
               )}
 
-              {!isPremium ? (
+              {!isPaid ? (
                 <a
                   href="/upgrade"
                   className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
@@ -164,7 +177,7 @@ export default async function BillingPage() {
           </div>
 
           <p className="mt-6 text-xs text-slate-500">
-            {isPremium
+            {isPaid
               ? "Thank you for supporting Havenly."
               : "No pressure. Free remains fully usable."}
           </p>
@@ -189,7 +202,7 @@ export default async function BillingPage() {
             </p>
           </div>
 
-          {isPremium ? (
+          {isPaid ? (
             <a
               href="/api/stripe/portal?returnUrl=/settings/billing"
               className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/15"
