@@ -37,22 +37,22 @@ export default function RequirePremium({ children }: RequirePremiumProps) {
           </h1>
 
           <p className="mt-3 text-sm text-slate-200">
-            Premium gives you deeper reflections, timelines, and a higher credit balance.
+            Premium unlocks deeper reflections, full Insights, and unlimited use.
             No pressure to upgrade — move at your own pace.
           </p>
 
           <ul className="mt-4 space-y-2 text-sm text-slate-100">
             <li className="flex gap-2">
               <span className="mt-1 h-2 w-2 rounded-full bg-emerald-400" />
-              <span>Deeper AI reflections.</span>
+              <span>Deeper AI reflections on every entry.</span>
             </li>
             <li className="flex gap-2">
               <span className="mt-1 h-2 w-2 rounded-full bg-emerald-400" />
-              <span>Timelines and recurring themes.</span>
+              <span>Full Insights — recurring themes, emotions, and patterns over time.</span>
             </li>
             <li className="flex gap-2">
               <span className="mt-1 h-2 w-2 rounded-full bg-emerald-400" />
-              <span>Higher monthly credit balance.</span>
+              <span>Unlimited reflections — no monthly cap.</span>
             </li>
           </ul>
 
