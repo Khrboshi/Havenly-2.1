@@ -167,14 +167,14 @@ export async function GET() {
   const supabase = createServerSupabase();
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session?.user) {
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const userId = session.user.id;
+  const userId = user.id;
 
   await ensureCreditsFresh({ supabase, userId });
   const { data: credits } = await supabase
@@ -352,7 +352,7 @@ export async function GET() {
     );
   }
 
-  const { system, user } = buildSummaryPrompt({
+  const { system, user: userPrompt } = buildSummaryPrompt({
     entryCount,
     topThemes,
     topEmotions,
@@ -366,7 +366,7 @@ export async function GET() {
 
   let summary: string;
   try {
-    summary = await callGroq(system, user);
+    summary = await callGroq(system, userPrompt);
   } catch (err) {
     console.error("[weekly-summary] Groq failed:", err);
     return NextResponse.json(
@@ -405,10 +405,10 @@ export async function POST() {
   const supabase = createServerSupabase();
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session?.user) {
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -421,7 +421,7 @@ export async function POST() {
     .from("profiles")
     .upsert(
       {
-        id: session.user.id,
+        id: user.id,
         weekly_summary: null,
         weekly_summary_generated_at: null,
       },
