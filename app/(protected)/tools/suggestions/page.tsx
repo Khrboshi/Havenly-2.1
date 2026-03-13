@@ -69,7 +69,7 @@ export default function SuggestionsToolPage() {
           {state.status === "loading" && (
             <div className="space-y-4">
               {[0, 1].map((i) => (
-                <div key={i} className="rounded-[1.5rem] border border-slate-800 bg-slate-900/30 px-6 py-6">
+                <div key={i} className="rounded-2xl border border-slate-800 bg-slate-900/30 px-6 py-6">
                   <div className="space-y-3">
                     <div className="h-4 w-24 animate-pulse rounded bg-slate-800" />
                     <div className="h-5 w-3/4 animate-pulse rounded bg-slate-800/80" />
@@ -81,7 +81,7 @@ export default function SuggestionsToolPage() {
           )}
 
           {state.status === "error" && (
-            <div className="rounded-[1.5rem] border border-slate-800 bg-slate-900/30 px-6 py-6">
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/30 px-6 py-6">
               <p className="text-sm text-slate-400">
                 Something went wrong generating your suggestions. Try again in a moment.
               </p>
@@ -104,7 +104,7 @@ export default function SuggestionsToolPage() {
               {state.suggestions.map((suggestion, i) => {
                 const accent = ACCENT_COLORS[i % ACCENT_COLORS.length];
                 return (
-                  <div key={i} className={`rounded-[1.5rem] border ${accent.border} ${accent.bg} px-6 py-6`}>
+                  <div key={i} className={`rounded-2xl border ${accent.border} ${accent.bg} px-6 py-6`}>
                     <p className={`text-[10px] font-semibold uppercase tracking-[0.22em] ${accent.label}`}>
                       {i === 0 ? "First suggestion" : "Second suggestion"}
                     </p>
@@ -134,7 +134,7 @@ export default function SuggestionsToolPage() {
             </div>
           )}
 
-          <div className="rounded-[1.5rem] border border-slate-800 bg-slate-900/30 px-6 py-5">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/30 px-6 py-5">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
               How this works
             </p>
