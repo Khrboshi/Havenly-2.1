@@ -11,8 +11,8 @@ export async function GET() {
 
   if (!user) {
     return NextResponse.json(
-      { credits: 0, renewalDate: null },
-      { headers: { "Cache-Control": "no-store, max-age=0" } }
+      { error: "Unauthorized" },
+      { status: 401, headers: { "Cache-Control": "no-store, max-age=0" } }
     );
   }
 
