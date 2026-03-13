@@ -3,57 +3,132 @@
 
 export const dynamic = "force-dynamic";
 
-import RequirePremium from "@/app/components/RequirePremium";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import RequirePremium from "@/app/components/RequirePremium";
+
+type State =
+  | { status: "loading" }
+  | { status: "ready"; question: string; hasData: boolean }
+  | { status: "error" };
 
 export default function ReflectionToolPage() {
+  const [state, setState] = useState<State>({ status: "loading" });
+
+  const fetchQuestion = useCallback(async () => {
+    setState({ status: "loading" });
+    try {
+      const res = await fetch("/api/ai/tools/reflection", { cache: "no-store" });
+      if (!res.ok) throw new Error(`${res.status}`);
+      const data = await res.json();
+      if (!data?.question) throw new Error("No question returned");
+      setState({ status: "ready", question: data.question, hasData: data.hasData ?? true });
+    } catch {
+      setState({ status: "error" });
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchQuestion();
+  }, [fetchQuestion]);
+
   return (
     <RequirePremium>
       <div className="min-h-screen w-full bg-slate-950 px-6 py-10 text-white">
-        <div className="mx-auto max-w-4xl space-y-8">
+        <div className="mx-auto max-w-2xl space-y-8">
+
           <header className="space-y-3">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-400/80">
-              Coming soon
+              Premium · Guided Reflection
             </p>
-            <h1 className="text-3xl font-semibold tracking-tight">
-              Guided Reflection
+            <h1 className="font-display text-3xl font-semibold tracking-tight">
+              One question worth sitting with.
             </h1>
-            <p className="text-sm leading-relaxed text-slate-400 max-w-xl">
-              A prompt shaped around what has been showing up in your entries lately —
-              not a generic question, but something that fits where you actually are.
+            <p className="max-w-lg text-sm leading-relaxed text-slate-400">
+              Havenly reads what keeps showing up across your entries and shapes a question
+              around what you seem to be carrying. Not a prompt to perform with — just
+              something to sit with honestly.
             </p>
           </header>
 
-          <div className="rounded-2xl border border-emerald-500/15 bg-emerald-500/[0.04] p-6 space-y-3">
-            <p className="text-sm font-medium text-slate-200">What this will be</p>
-            <p className="text-sm leading-relaxed text-slate-400">
-              Havenly will read across your recent entries and offer one focused reflection question —
-              something worth sitting with. It will not summarise or diagnose.
-              Just a quiet question that opens something up.
-            </p>
+          <div className="relative overflow-hidden rounded-[1.75rem] border border-emerald-500/20 bg-emerald-500/[0.03]">
+            <div className="pointer-events-none absolute -inset-px rounded-[1.75rem] bg-gradient-to-b from-emerald-500/[0.06] to-transparent" />
+            <div className="relative px-7 py-8">
+              <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.22em] text-emerald-500/60">
+                Your reflection question
+              </p>
+
+              {state.status === "loading" && (
+                <div className="space-y-3 py-2">
+                  <div className="h-6 w-3/4 animate-pulse rounded-lg bg-slate-800/80" />
+                  <div className="h-6 w-1/2 animate-pulse rounded-lg bg-slate-800/60" />
+                </div>
+              )}
+
+              {state.status === "error" && (
+                <div className="space-y-4">
+                  <p className="text-sm text-slate-400">
+                    Something went wrong generating your question. Try again in a moment.
+                  </p>
+                  <button
+                    onClick={fetchQuestion}
+                    className="text-sm font-medium text-emerald-400 transition-colors hover:text-emerald-300"
+                  >
+                    Try again →
+                  </button>
+                </div>
+              )}
+
+              {state.status === "ready" && (
+                <div className="space-y-6">
+                  <p className="font-display text-xl font-medium leading-relaxed text-white sm:text-2xl">
+                    {state.question}
+                  </p>
+                  {!state.hasData && (
+                    <p className="text-xs text-slate-600">
+                      Write a few entries and generate reflections to get a question shaped around your patterns.
+                    </p>
+                  )}
+                  <div className="flex flex-wrap items-center gap-3 pt-1">
+                    <Link
+                      href={`/journal/new?prompt=${encodeURIComponent(state.question)}`}
+                      className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-md shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:-translate-y-px"
+                    >
+                      Write about this →
+                    </Link>
+                    <button
+                      onClick={fetchQuestion}
+                      className="text-sm text-slate-500 transition-colors hover:text-slate-300"
+                    >
+                      Get a different question
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
-            <p className="text-sm leading-relaxed text-slate-400">
-              Your Insights page already shows patterns across your entries.
-              That is a good place to start while this tool is being built.
+          <div className="rounded-[1.5rem] border border-slate-800 bg-slate-900/30 px-6 py-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+              How this works
             </p>
-            <Link
-              href="/insights"
-              className="mt-4 inline-flex items-center rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-slate-950 transition-colors hover:bg-emerald-400"
-            >
-              See your insights
-            </Link>
+            <p className="mt-3 text-sm leading-relaxed text-slate-400">
+              Havenly reads across your recent entries — the emotions, themes, and patterns
+              that keep returning — and shapes a question around what it notices. The question
+              changes as your writing does. It is not a prompt to answer correctly. Just
+              something honest to sit with.
+            </p>
           </div>
 
           <footer className="flex items-center justify-between pt-2">
-            <Link href="/tools" className="text-sm text-emerald-400 hover:text-emerald-300">
+            <Link href="/tools" className="text-sm text-emerald-400 transition-colors hover:text-emerald-300">
               ← Back to Tools
             </Link>
-            <Link href="/journal" className="text-sm text-slate-400 hover:text-white">
+            <Link href="/journal" className="text-sm text-slate-400 transition-colors hover:text-white">
               Go to journal
             </Link>
           </footer>
+
         </div>
       </div>
     </RequirePremium>
