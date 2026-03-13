@@ -132,9 +132,9 @@ const ACCENT_CLASSES: Record<string, { border: string; label: string; dot: strin
 function StreakBadge({ streak }: { streak: number }) {
   if (streak === 0) return null;
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-300">
-      <span className="text-sm leading-none">🔥</span>
-      {streak} day{streak !== 1 ? "s" : ""} in a row
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-300">
+      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+      {streak} day{streak !== 1 ? "s" : ""} writing
     </span>
   );
 }
@@ -295,11 +295,11 @@ function ThreadCard({
     ? "You wrote today"
     : lastEntryId
     ? "Pick up the thread"
-    : "Begin your story";
+    : "Start here";
 
   // Don't echo the raw entry title into the prompt body — feels broken with test titles
   const body = wroteToday
-    ? "How has the day evolved since you last checked in?"
+    ? "How has the day evolved since you last wrote?"
     : lastEntryId && lastTopEmotion
     ? `You wrote ${when}. ${lastTopEmotion} was present. Has anything shifted?`
     : lastEntryId
@@ -477,7 +477,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
 
   const subline = useMemo(() => {
     if (entryCount === 0) return "Start writing — one sentence is always enough.";
-    if (wroteToday) return "You've checked in today. Keep going.";
+    if (wroteToday) return "You've written today.";
     return "Choose a prompt to begin.";
   }, [entryCount, wroteToday]);
 
@@ -630,9 +630,9 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
               <span className="font-medium text-slate-200">{entryCount}</span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-slate-500">Current streak</span>
+              <span className="text-slate-500">Writing days</span>
               <span className="font-medium text-slate-200">
-                {streak > 0 ? `${streak} day${streak !== 1 ? "s" : ""}` : "Start today"}
+                {streak > 0 ? `${streak} day${streak !== 1 ? "s" : ""}` : "—"}
               </span>
             </div>
             {lastEntryDate && (
