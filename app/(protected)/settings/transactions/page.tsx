@@ -102,7 +102,7 @@ export default function TransactionsPage() {
   }, [invoices]);
 
   return (
-    <div className="mx-auto max-w-5xl px-6 pt-24 pb-20 text-slate-200">
+    <div className="mx-auto max-w-5xl px-6 py-10 text-slate-200">
       <div className="flex items-end justify-between mb-8">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight mb-2">Transactions</h1>
@@ -194,8 +194,8 @@ export default function TransactionsPage() {
           ) : invoices.length === 0 ? (
             <p className="text-slate-400">No invoices yet.</p>
           ) : (
-            <div className="mt-4 overflow-hidden rounded-xl border border-white/10">
-              <table className="w-full text-sm">
+            <div className="mt-4 overflow-x-auto rounded-xl border border-white/10">
+              <table className="w-full min-w-[480px] text-sm">
                 <thead className="bg-white/5 text-slate-400">
                   <tr>
                     <th className="text-left font-medium px-4 py-3">Date</th>
