@@ -288,7 +288,9 @@ function ThreadCard({
   lastTopEmotion: string | null;
   wroteToday: boolean;
 }) {
-  const when = lastEntryDate ? friendlyDate(lastEntryDate) : null;
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  const when = lastEntryDate ? friendlyDate(lastEntryDate, mounted) : null;
   const title = titleOrUntitled(lastEntryTitle);
 
   const sectionLabel = wroteToday
