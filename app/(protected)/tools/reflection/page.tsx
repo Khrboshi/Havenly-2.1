@@ -51,8 +51,8 @@ export default function ReflectionToolPage() {
             </p>
           </header>
 
-          <div className="relative overflow-hidden rounded-[1.75rem] border border-emerald-500/20 bg-emerald-500/[0.03]">
-            <div className="pointer-events-none absolute -inset-px rounded-[1.75rem] bg-gradient-to-b from-emerald-500/[0.06] to-transparent" />
+          <div className="relative overflow-hidden rounded-3xl border border-emerald-500/20 bg-emerald-500/[0.03]">
+            <div className="pointer-events-none absolute -inset-px rounded-3xl bg-gradient-to-b from-emerald-500/[0.06] to-transparent" />
             <div className="relative px-7 py-8">
               <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.22em] text-emerald-500/60">
                 Your reflection question
@@ -108,7 +108,7 @@ export default function ReflectionToolPage() {
             </div>
           </div>
 
-          <div className="rounded-[1.5rem] border border-slate-800 bg-slate-900/30 px-6 py-5">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/30 px-6 py-5">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
               How this works
             </p>
