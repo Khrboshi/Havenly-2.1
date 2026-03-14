@@ -189,11 +189,11 @@ function titleCasePhrase(s: string): string {
     .join(" ");
 }
 
-export function isFallbackTheme(k: string): boolean {
+function isFallbackTheme(k: string): boolean {
   return FALLBACK_THEMES.has(norm(k));
 }
 
-export function isFallbackEmotion(k: string): boolean {
+function isFallbackEmotion(k: string): boolean {
   return FALLBACK_EMOTIONS.has(norm(k));
 }
 
@@ -250,7 +250,7 @@ export function normalizeCorepattern(raw: string): string | null {
   return normalized;
 }
 
-export function normalizeDomain(raw: unknown): string | null {
+function normalizeDomain(raw: unknown): string | null {
   const d = String(raw ?? "").trim().toUpperCase();
   if (!d) return null;
   return d;
