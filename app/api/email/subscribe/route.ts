@@ -1,10 +1,108 @@
 // app/api/email/subscribe/route.ts
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { Resend } from "resend";
 
 export const runtime = "nodejs";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const FROM_ADDRESS = "Havenly <noreply@havenly.app>";
+
+function confirmationEmailHtml(email: string): string {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>You're in — Havenly Letters</title>
+</head>
+<body style="margin:0;padding:0;background-color:#020617;font-family:'DM Sans',system-ui,sans-serif;color:#cbd5e1;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#020617;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
+
+          <!-- Logo / wordmark -->
+          <tr>
+            <td style="padding-bottom:32px;">
+              <span style="font-size:18px;font-weight:700;color:#f8fafc;letter-spacing:-0.02em;">Havenly</span>
+            </td>
+          </tr>
+
+          <!-- Headline -->
+          <tr>
+            <td style="padding-bottom:16px;">
+              <h1 style="margin:0;font-size:26px;font-weight:600;line-height:1.2;color:#f8fafc;letter-spacing:-0.02em;">
+                You're in.
+              </h1>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding-bottom:24px;">
+              <p style="margin:0;font-size:15px;line-height:1.7;color:#94a3b8;">
+                One quiet article a week — about emotional load, rest, self-awareness,
+                and what it's actually like to carry a lot. No noise. No streak guilt.
+                Just something worth reading when it's ready.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding-bottom:24px;">
+              <div style="height:1px;background-color:#1e293b;"></div>
+            </td>
+          </tr>
+
+          <!-- What to expect -->
+          <tr>
+            <td style="padding-bottom:24px;">
+              <p style="margin:0 0 8px 0;font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:#475569;">
+                What to expect
+              </p>
+              <p style="margin:0;font-size:14px;line-height:1.7;color:#64748b;">
+                Articles arrive when they're ready — usually once a week.
+                They're written to be read quietly, without pressure to act on anything.
+                Unsubscribe any time with one click.
+              </p>
+            </td>
+          </tr>
+
+          <!-- CTA -->
+          <tr>
+            <td style="padding-bottom:40px;">
+              <a
+                href="https://havenly.app/blog"
+                style="display:inline-block;background-color:#3ee7b0;color:#020617;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:9999px;"
+              >
+                Read the latest article →
+              </a>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td>
+              <p style="margin:0;font-size:12px;line-height:1.6;color:#334155;">
+                You're receiving this because you signed up at havenly.app.<br />
+                Your email address is never sold or shared.<br />
+                <a href="https://havenly.app/privacy" style="color:#475569;">Privacy Policy</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
 
 export async function POST(req: Request) {
   try {
@@ -21,20 +119,53 @@ export async function POST(req: Request) {
 
     const supabase = createServerSupabase();
 
-    // Upsert — if already subscribed, just update source (don't error or leak)
-    const { error } = await supabase
+    // Upsert into DB — if already subscribed, ignoreDuplicates prevents double-sending
+    const { error: dbError, data: upsertData } = await supabase
       .from("email_subscribers")
       .upsert(
         { email, source, subscribed_at: new Date().toISOString() },
         { onConflict: "email", ignoreDuplicates: true }
-      );
+      )
+      .select();
 
-    if (error) {
-      console.error("[email/subscribe] supabase error", error.message);
-      // Still return 200 — don't expose DB errors to client
+    if (dbError) {
+      console.error("[email/subscribe] supabase error", dbError.message);
+      // Still attempt sending — don't block on DB errors
     }
 
-    console.log("[email/subscribe] new subscriber", { email: email.slice(0, 4) + "***", source });
+    // Only send confirmation if this is a genuinely new subscriber
+    // ignoreDuplicates returns an empty array for existing rows
+    const isNewSubscriber = Array.isArray(upsertData) && upsertData.length > 0;
+
+    if (isNewSubscriber) {
+      const resendKey = process.env.RESEND_API_KEY;
+
+      if (!resendKey) {
+        console.error("[email/subscribe] RESEND_API_KEY not set — skipping confirmation email");
+      } else {
+        const resend = new Resend(resendKey);
+
+        const { error: emailError } = await resend.emails.send({
+          from: FROM_ADDRESS,
+          to: email,
+          subject: "You're in — Havenly Letters",
+          html: confirmationEmailHtml(email),
+        });
+
+        if (emailError) {
+          console.error("[email/subscribe] resend error", emailError);
+          // Don't surface this to the user — they're subscribed, email just failed
+        } else {
+          console.log("[email/subscribe] confirmation sent to", email.slice(0, 4) + "***");
+        }
+      }
+    }
+
+    console.log("[email/subscribe] subscriber processed", {
+      email: email.slice(0, 4) + "***",
+      source,
+      isNew: isNewSubscriber,
+    });
 
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (err) {
