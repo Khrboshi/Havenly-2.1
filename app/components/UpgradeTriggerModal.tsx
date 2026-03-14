@@ -79,7 +79,7 @@ export default function UpgradeTriggerModal({
         <div className="flex gap-3">
           <Link
             href={finalCtaHref}
-            className="flex-1 rounded-md bg-emerald-500 px-4 py-2 text-center text-sm font-medium text-black hover:bg-emerald-400"
+            className="flex-1 rounded-full bg-emerald-500 px-4 py-2 text-center text-sm font-semibold text-slate-950 hover:bg-emerald-400"
           >
             {finalCtaLabel}
           </Link>
@@ -87,7 +87,7 @@ export default function UpgradeTriggerModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
+            className="flex-1 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
           >
             Not now
           </button>
