@@ -32,7 +32,7 @@ export default function RequirePremium({ children }: RequirePremiumProps) {
             Premium feature
           </span>
 
-          <h1 className="mt-4 text-2xl font-semibold">
+          <h1 className="font-display mt-4 text-2xl font-semibold">
             This space is part of Havenly Premium.
           </h1>
 
