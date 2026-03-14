@@ -95,12 +95,12 @@ export default function BlogArticlePage({ params }: BlogArticlePageProps) {
 
         <div className="mt-10 rounded-2xl border border-slate-800 bg-slate-900/40 p-5 text-sm">
           <p className="font-semibold text-slate-100">
-            Want deeper emotional reflections?
+            Want to see what keeps returning?
           </p>
           <p className="mt-2 text-xs text-slate-300">
-            Premium unlocks AI-powered insights, richer analysis, and unlimited
-            journaling—so your reflections don&apos;t just stay as ideas, they
-            become patterns you can act on gently.
+            Premium reads across your entries over time and shows you what
+            quietly repeats — the emotions, themes, and patterns you
+            couldn&apos;t see from inside them.
           </p>
           <div className="mt-4 flex flex-wrap gap-3 text-xs">
             <Link
