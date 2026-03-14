@@ -6,10 +6,48 @@ import { Resend } from "resend";
 export const runtime = "nodejs";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 const FROM_ADDRESS = "Havenly <noreply@havenly.app>";
 
-function confirmationEmailHtml(email: string): string {
+// Rate limit: max 3 subscribe attempts per IP per hour
+const RATE_LIMIT_MAX = 3;
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
+function getClientIp(req: Request): string {
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) return forwarded.split(",")[0].trim();
+  return req.headers.get("x-real-ip") ?? "unknown";
+}
+
+async function isRateLimited(ip: string): Promise<boolean> {
+  try {
+    const supabase = createServerSupabase();
+    const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
+
+    const { count, error } = await supabase
+      .from("email_subscribe_attempts")
+      .select("*", { count: "exact", head: true })
+      .eq("ip", ip)
+      .gte("created_at", windowStart);
+
+    if (error) return false;
+    return (count ?? 0) >= RATE_LIMIT_MAX;
+  } catch {
+    return false;
+  }
+}
+
+async function recordAttempt(ip: string): Promise<void> {
+  try {
+    const supabase = createServerSupabase();
+    await supabase
+      .from("email_subscribe_attempts")
+      .insert({ ip, created_at: new Date().toISOString() });
+  } catch {
+    // best-effort, non-blocking
+  }
+}
+
+function confirmationEmailHtml(): string {
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -23,15 +61,11 @@ function confirmationEmailHtml(email: string): string {
     <tr>
       <td align="center">
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
-
-          <!-- Logo / wordmark -->
           <tr>
             <td style="padding-bottom:32px;">
               <span style="font-size:18px;font-weight:700;color:#f8fafc;letter-spacing:-0.02em;">Havenly</span>
             </td>
           </tr>
-
-          <!-- Headline -->
           <tr>
             <td style="padding-bottom:16px;">
               <h1 style="margin:0;font-size:26px;font-weight:600;line-height:1.2;color:#f8fafc;letter-spacing:-0.02em;">
@@ -39,8 +73,6 @@ function confirmationEmailHtml(email: string): string {
               </h1>
             </td>
           </tr>
-
-          <!-- Body -->
           <tr>
             <td style="padding-bottom:24px;">
               <p style="margin:0;font-size:15px;line-height:1.7;color:#94a3b8;">
@@ -50,41 +82,27 @@ function confirmationEmailHtml(email: string): string {
               </p>
             </td>
           </tr>
-
-          <!-- Divider -->
           <tr>
             <td style="padding-bottom:24px;">
               <div style="height:1px;background-color:#1e293b;"></div>
             </td>
           </tr>
-
-          <!-- What to expect -->
           <tr>
             <td style="padding-bottom:24px;">
-              <p style="margin:0 0 8px 0;font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:#475569;">
-                What to expect
-              </p>
+              <p style="margin:0 0 8px 0;font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:#475569;">What to expect</p>
               <p style="margin:0;font-size:14px;line-height:1.7;color:#64748b;">
                 Articles arrive when they're ready — usually once a week.
-                They're written to be read quietly, without pressure to act on anything.
                 Unsubscribe any time with one click.
               </p>
             </td>
           </tr>
-
-          <!-- CTA -->
           <tr>
             <td style="padding-bottom:40px;">
-              <a
-                href="https://havenly.app/blog"
-                style="display:inline-block;background-color:#3ee7b0;color:#020617;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:9999px;"
-              >
+              <a href="https://havenly.app/blog" style="display:inline-block;background-color:#3ee7b0;color:#020617;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:9999px;">
                 Read the latest article →
               </a>
             </td>
           </tr>
-
-          <!-- Footer -->
           <tr>
             <td>
               <p style="margin:0;font-size:12px;line-height:1.6;color:#334155;">
@@ -94,14 +112,12 @@ function confirmationEmailHtml(email: string): string {
               </p>
             </td>
           </tr>
-
         </table>
       </td>
     </tr>
   </table>
 </body>
-</html>
-  `.trim();
+</html>`.trim();
 }
 
 export async function POST(req: Request) {
@@ -112,14 +128,20 @@ export async function POST(req: Request) {
     const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
     const source = typeof body?.source === "string" ? body.source : "blog";
 
-    // Basic validation
     if (!email || !EMAIL_RE.test(email)) {
       return NextResponse.json({ ok: false, error: "invalid_email" }, { status: 400 });
     }
 
+    // Rate limit by IP
+    const ip = getClientIp(req);
+    const limited = await isRateLimited(ip);
+    if (limited) {
+      return NextResponse.json({ ok: false, error: "too_many_requests" }, { status: 429 });
+    }
+    await recordAttempt(ip);
+
     const supabase = createServerSupabase();
 
-    // Upsert into DB — if already subscribed, ignoreDuplicates prevents double-sending
     const { error: dbError, data: upsertData } = await supabase
       .from("email_subscribers")
       .upsert(
@@ -130,43 +152,31 @@ export async function POST(req: Request) {
 
     if (dbError) {
       console.error("[email/subscribe] supabase error", dbError.message);
-      // Still attempt sending — don't block on DB errors
     }
 
-    // Only send confirmation if this is a genuinely new subscriber
-    // ignoreDuplicates returns an empty array for existing rows
     const isNewSubscriber = Array.isArray(upsertData) && upsertData.length > 0;
 
     if (isNewSubscriber) {
       const resendKey = process.env.RESEND_API_KEY;
-
       if (!resendKey) {
-        console.error("[email/subscribe] RESEND_API_KEY not set — skipping confirmation email");
+        console.error("[email/subscribe] RESEND_API_KEY not set");
       } else {
         const resend = new Resend(resendKey);
-
         const { error: emailError } = await resend.emails.send({
           from: FROM_ADDRESS,
           to: email,
           subject: "You're in — Havenly Letters",
-          html: confirmationEmailHtml(email),
+          html: confirmationEmailHtml(),
         });
-
         if (emailError) {
           console.error("[email/subscribe] resend error", emailError);
-          // Don't surface this to the user — they're subscribed, email just failed
         } else {
           console.log("[email/subscribe] confirmation sent to", email.slice(0, 4) + "***");
         }
       }
     }
 
-    console.log("[email/subscribe] subscriber processed", {
-      email: email.slice(0, 4) + "***",
-      source,
-      isNew: isNewSubscriber,
-    });
-
+    console.log("[email/subscribe] processed", { email: email.slice(0, 4) + "***", source, isNew: isNewSubscriber });
     return NextResponse.json({ ok: true }, { status: 200 });
   } catch (err) {
     console.error("[email/subscribe] unexpected error", err);
