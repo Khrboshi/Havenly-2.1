@@ -4,6 +4,8 @@ export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 
+const MAX_CONTENT_LENGTH = 20000;
+
 export async function POST(req: Request) {
   try {
     const supabase = createServerSupabase();
@@ -28,8 +30,17 @@ export async function POST(req: Request) {
       );
     }
 
+    // Match the same cap enforced by the reflection API.
+    // Rejects at write time rather than failing silently on reflection.
+    if (body.content.trim().length > MAX_CONTENT_LENGTH) {
+      return NextResponse.json(
+        { error: "Entry too long. Please shorten it a bit." },
+        { status: 413 }
+      );
+    }
+
     const { data, error } = await supabase
-      .from("journal_entries") // ✅ CORRECT TABLE
+      .from("journal_entries")
       .insert({
         user_id: user.id,
         title: body.title?.trim() || null,
