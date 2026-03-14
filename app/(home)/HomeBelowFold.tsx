@@ -787,7 +787,7 @@ export default function HomeBelowFold() {
               },
               {
                 q: "Do I need to write every day for it to work?",
-                a: "No. Some people write several times a week. Others only when life feels heavy. The more entries you have, the richer the pattern recognition becomes, but there is no streak to maintain.",
+                a: "No. Some people write several times a week. Others only when life feels heavy. The more entries you have, the more Havenly has to notice — but there is no streak to maintain.",
               },
               {
                 q: "What happens to my entries?",
