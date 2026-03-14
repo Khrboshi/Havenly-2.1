@@ -197,7 +197,7 @@ function MagicLoginInner() {
                 />
                 <span className="text-sm font-semibold text-slate-300">Havenly</span>
               </div>
-              <h1 className="text-2xl font-semibold tracking-tight text-white">Welcome back.</h1>
+              <h1 className="font-display text-3xl font-semibold tracking-tight text-white">Welcome back.</h1>
               <p className="mt-1.5 text-sm leading-relaxed text-slate-400">
                 Your private space to write honestly, without the noise.
               </p>
@@ -205,7 +205,7 @@ function MagicLoginInner() {
 
             {/* Desktop card header */}
             <div className="mb-5 hidden lg:block">
-              <h2 className="text-xl font-semibold text-white">Sign in to Havenly</h2>
+              <h2 className="font-display text-2xl font-semibold text-white">Sign in to Havenly</h2>
               <p className="mt-1 text-sm text-slate-500">
                 {ios
                   ? "Use the code option — it works best on iPhone."
