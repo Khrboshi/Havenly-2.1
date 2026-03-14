@@ -80,7 +80,7 @@ export default function BlogArticlePage({ params }: BlogArticlePageProps) {
         <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-emerald-300">
           {article.category}
         </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight">
+        <h1 className="font-display mt-3 text-3xl font-semibold tracking-tight">
           {article.title}
         </h1>
         <p className="mt-2 text-xs text-slate-400">
