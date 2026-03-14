@@ -124,7 +124,7 @@ export const ARTICLES: BlogArticle[] = [
       "There’s a kind of tiredness that sleep doesn’t touch. You wake up with a full battery physically, but a low battery emotionally. Everything feels heavier than it ‘should’.",
       "Often, that’s emotional backlog—moments you lived through but never had space to process. Conversations you replay. Decisions you postponed. Relief you never fully felt.",
       "When you pour a little of that backlog into Havenly, it stops living entirely in your head. You give those experiences a place to land.",
-      "Premium’s timelines can then highlight when the backlog spikes: after certain meetings, seasons, or relational patterns. That visibility isn’t about blaming yourself; it’s about understanding why your system is so tired.",
+      "With Premium, Havenly reads across your entries over time and starts showing you when the backlog tends to build — after certain meetings, seasons, or relational patterns. That clarity isn’t about blaming yourself; it’s about understanding why your system is so tired.",
       "Why it matters: when exhaustion makes sense, it becomes easier to be kind to yourself—and to choose rest that meets the real need, not the imagined one."
     ]
   }
