@@ -31,8 +31,8 @@ export default function PrivacyPolicyPage() {
             If you have questions, contact us at{" "}
             <span className="font-semibold text-slate-100">
               support@havenly.app
-            </span>{" "}
-            (replace with your real support email when ready).
+            </span>
+            .
           </p>
         </div>
 
