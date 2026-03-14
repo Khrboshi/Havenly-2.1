@@ -108,7 +108,7 @@ export default function MoodToolPage() {
 
           <header className="space-y-3">
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-400/80">
-              Premium · Mood Check
+              Premium · A quiet moment
             </p>
             <h1 className="font-display text-3xl font-semibold tracking-tight">
               How are you, honestly?
