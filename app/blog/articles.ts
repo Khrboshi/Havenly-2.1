@@ -48,7 +48,7 @@ export const ARTICLES: BlogArticle[] = [
       "Distraction has a bad reputation, but most of us reach for it because we’re tired. Our brains are asking for relief, and the fastest relief is whatever helps us not feel so much all at once.",
       "The problem isn’t that you scroll or binge or zone out. The problem is that distraction doesn’t give your nervous system what it actually needs to recover.",
       "Real rest is quieter and less glamorous. It looks like boredom, slower breathing, stretches of time where nothing is demanding a reaction from you.",
-      "Havenly helps by turning your evenings into data you can feel. When you write about how you actually spent your downtime—what you watched, how you felt before and after—patterns start to show up. Which habits leave you more grounded? Which ones leave your body buzzing but still exhausted?",
+      "Havenly helps by giving what you actually did somewhere to land. When you write about how you spent the evening — what you watched, how you felt before and after — patterns start to emerge. What leaves you more grounded? What leaves you buzzing but still exhausted?",
       "Why it matters: when you can see the difference between numbing and exhaling, you can choose rest without shaming yourself for the nights that were just survival."
     ]
   },
