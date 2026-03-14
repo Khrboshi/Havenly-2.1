@@ -3,9 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-type Props = {
-  userId?: string;
-};
+type Props = Record<string, never>;
 
 // Starter prompts — shown as tappable chips before the user begins writing
 const starterPrompts = [
