@@ -700,7 +700,7 @@ export default function HomeBelowFold() {
                 <span className="text-3xl font-bold text-white">$30</span>
                 <span className="text-sm text-slate-400">/ month</span>
                 <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-400">
-                  Less than one therapy session ($150–200/hr)
+                  About $1 a day
                 </span>
               </div>
               <p className="mt-1 text-xs text-slate-600">Cancel anytime</p>
