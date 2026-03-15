@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-const AUTH_PATHS = ["/magic-login", "/auth/callback", "/logout", "/install"];
+const AUTH_PATHS = ["/magic-login", "/auth/callback", "/logout", "/install", "/insights/preview"];
 const PROTECTED_PREFIXES = ["/dashboard", "/journal", "/tools", "/insights", "/settings"];
 
 function isAuthPath(pathname: string) {
