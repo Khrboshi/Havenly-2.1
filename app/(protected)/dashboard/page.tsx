@@ -65,6 +65,7 @@ export type DashboardData = {
   userId: string;
   entryCount: number;
   streak: number;
+  writingDays: number;
   // Last entry info
   lastEntryId: string | null;
   lastEntryTitle: string | null;
@@ -111,6 +112,18 @@ export default async function DashboardPage() {
 
   // ── Compute streak ────────────────────────────────────────────────────────
   const streak = computeStreak(entries.map((e) => e.created_at));
+
+  // ── Writing days — distinct calendar days with at least one entry ─────────
+  // Fetch all created_at timestamps (lightweight — date only, limit 365).
+  const { data: allDates } = await supabase
+    .from("journal_entries")
+    .select("created_at")
+    .eq("user_id", userId)
+    .limit(365);
+
+  const writingDays = new Set(
+    (allDates ?? []).map((e) => new Date(e.created_at).toISOString().slice(0, 10))
+  ).size;
 
   // ── Last entry ────────────────────────────────────────────────────────────
   const last = entries[0] ?? null;
@@ -177,6 +190,7 @@ export default async function DashboardPage() {
     userId,
     entryCount: entryCount ?? entries.length,
     streak,
+    writingDays,
     lastEntryId,
     lastEntryTitle,
     lastEntryDate,
