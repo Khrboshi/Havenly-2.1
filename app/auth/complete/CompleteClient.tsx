@@ -1,53 +1,38 @@
 // app/auth/complete/CompleteClient.tsx
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
-function safeNext(pathname: string) {
-  const v = (pathname || "/dashboard").trim();
-  if (!v.startsWith("/")) return "/dashboard";
-  if (v.startsWith("//")) return "/dashboard";
-  return v;
-}
+const DESTINATION = "/dashboard";
 
-export default function CompleteClient({ next }: { next: string }) {
-  const target = useMemo(() => safeNext(next), [next]);
-
-  // true  = window.close() was blocked, tab is still open → show fallback UI
-  // false = still waiting to know
+export default function CompleteClient() {
   const [closeBlocked, setCloseBlocked] = useState(false);
 
   useEffect(() => {
-    const payload = JSON.stringify({ next: target, t: Date.now() });
-
-    // Signal the original tab via localStorage (fires storage event on other tabs)
+    // Signal the original tab (magic-login page) via both channels.
+    // Always send /dashboard — never rely on URL params which email
+    // clients like Yahoo and Gmail routinely strip or mangle.
+    const payload = JSON.stringify({ next: DESTINATION, t: Date.now() });
     try { localStorage.setItem("havenly:auth_complete", payload); } catch {}
-
-    // Signal via BroadcastChannel (more reliable, same-origin tabs)
     try {
       const bc = new BroadcastChannel("havenly_auth");
-      bc.postMessage({ type: "AUTH_COMPLETE", next: target });
+      bc.postMessage({ type: "AUTH_COMPLETE", next: DESTINATION });
       bc.close();
     } catch {}
 
     // Attempt to close this tab.
-    // window.close() only works when the tab was opened by window.open().
-    // When a user clicks a link in their email client, Chrome blocks it.
-    // We detect whether it worked by checking if this code is still running
-    // 300ms later — if the tab closed, this callback never fires.
+    // window.close() only works when opened via window.open().
+    // For email-client links it will be blocked silently.
+    // We detect whether it worked by checking if JS is still running 400ms later.
     setTimeout(() => {
       window.close();
-
-      // If we reach this point, the tab is still open (close was blocked).
-      // Show the fallback UI so the user has a clear path forward.
-      // We do NOT navigate Tab B to the dashboard — that would cause a
-      // duplicate-tab situation since Tab A already received the broadcast.
       setTimeout(() => {
+        // Still running — tab is still open. Show fallback UI.
         setCloseBlocked(true);
-      }, 200);
+      }, 300);
     }, 100);
-  }, [target]);
+  }, []);
 
   return (
     <div
@@ -85,10 +70,9 @@ export default function CompleteClient({ next }: { next: string }) {
             : ""}
         </div>
 
-        {/* Shown when close is blocked — covers mobile and single-tab users */}
         {closeBlocked && (
           <Link
-            href={target}
+            href={DESTINATION}
             style={{
               display: "inline-block",
               padding: "10px 20px",
@@ -100,7 +84,7 @@ export default function CompleteClient({ next }: { next: string }) {
               fontSize: 14,
             }}
           >
-            Continue to Havenly &rarr;
+            Go to dashboard &rarr;
           </Link>
         )}
       </div>
