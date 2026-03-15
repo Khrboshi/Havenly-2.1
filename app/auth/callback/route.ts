@@ -5,24 +5,13 @@ import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
-function safeNext(pathname: string | null) {
-  if (!pathname) return "/dashboard";
-  const v = pathname.trim();
-  if (!v.startsWith("/")) return "/dashboard";
-  if (v.startsWith("//")) return "/dashboard";
-  return v;
-}
-
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const next = safeNext(url.searchParams.get("next"));
 
   // No code => back to login
   if (!code) {
-    const to = new URL("/magic-login", url.origin);
-    to.searchParams.set("next", next);
-    return NextResponse.redirect(to, { status: 303 });
+    return NextResponse.redirect(new URL("/magic-login", url.origin), { status: 303 });
   }
 
   const cookieStore = cookies();
@@ -50,12 +39,14 @@ export async function GET(request: Request) {
   if (error) {
     const to = new URL("/magic-login", url.origin);
     to.searchParams.set("callback_error", "1");
-    to.searchParams.set("next", next);
     return NextResponse.redirect(to, { status: 303 });
   }
 
-  // Go to a "complete" page that signals Tab A and attempts to close Tab B
-  const done = new URL("/auth/complete", url.origin);
-  done.searchParams.set("next", next);
-  return NextResponse.redirect(done, { status: 303 });
+  // Always go to /auth/complete which signals Tab A and handles tab closing.
+  // Destination is hardcoded to /dashboard — email clients mangle query params
+  // so passing next=/dashboard through the redirect chain is unreliable.
+  return NextResponse.redirect(
+    new URL("/auth/complete", url.origin),
+    { status: 303 }
+  );
 }
