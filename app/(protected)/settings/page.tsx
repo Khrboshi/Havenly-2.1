@@ -158,7 +158,7 @@ export default async function SettingsPage() {
       <header className="mb-10">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-white">Settings</h1>
+            <h1 className="font-display text-2xl font-semibold text-white">Settings</h1>
             <p className="mt-2 text-sm text-slate-400">
               Account, plan, and privacy.
             </p>
