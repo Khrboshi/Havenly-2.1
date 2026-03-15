@@ -1,6 +1,5 @@
 // app/api/ai/reflection/route.ts
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { ensureCreditsFresh } from "@/lib/creditRules";
 import { generateReflectionFromEntry, detectCrisisContent } from "@/lib/ai/generateReflection";
@@ -148,30 +147,6 @@ function extractAnchorsForDebug(entry: string): string[] {
   return anchors.slice(0, 5);
 }
 
-const stripe =
-  process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== "placeholder"
-    ? new Stripe(process.env.STRIPE_SECRET_KEY)
-    : null;
-
-async function hasActiveStripeSubscription(stripeCustomerId: string | null): Promise<boolean> {
-  if (!stripeCustomerId) return false;
-  if (!stripe) {
-    console.error("[reflection] STRIPE_SECRET_KEY not configured; treating as non-premium");
-    return false;
-  }
-  try {
-    const subs = await stripe.subscriptions.list({
-      customer: stripeCustomerId,
-      status: "all",
-      limit: 10,
-    });
-    return subs.data.some((s) => s.status === "active" || s.status === "trialing");
-  } catch (err) {
-    console.error("[reflection] Stripe subscription check failed:", err);
-    return false;
-  }
-}
-
 function tryParseReflection(aiResponse: unknown) {
   if (typeof aiResponse !== "string") return null;
   try {
@@ -280,45 +255,12 @@ export async function POST(req: Request) {
 
   let planType = normalizePlan((creditsRow as any)?.plan_type);
 
-  const { data: profileRow, error: profileErr } = await supabase
-    .from("profiles")
-    .select("stripe_customer_id")
-    .eq("id", userId)
-    .maybeSingle();
-
-  if (profileErr) {
-    console.error("[reflection] failed to read profiles:", profileErr);
-  }
-
-  const stripeCustomerId =
-    profileRow && typeof (profileRow as any).stripe_customer_id === "string"
-      ? String((profileRow as any).stripe_customer_id)
-      : null;
-
-  const stripePremium = await hasActiveStripeSubscription(stripeCustomerId);
-
-  if (!stripePremium && planType === "PREMIUM") {
-    const nowIso = new Date().toISOString();
-    const { error: downgradeErr } = await supabase
-      .from("user_credits")
-      .update({
-        plan_type: "FREE",
-        remaining_credits: FREE_MONTHLY_CREDITS,
-        updated_at: nowIso,
-        renewal_date: null,
-      } as any)
-      .eq("user_id", userId);
-
-    if (downgradeErr) {
-      console.error("[reflection] failed to downgrade stale PREMIUM:", downgradeErr);
-    } else {
-      planType = "FREE";
-    }
-  }
-
   await ensureCreditsFresh({ supabase, userId });
 
-  const effectiveTier: "FREE" | "PREMIUM" = stripePremium ? "PREMIUM" : "FREE";
+  // Trust the plan_type maintained by the Stripe webhook in the DB.
+  // No live Stripe API call needed here — the webhook already handles
+  // subscription changes (active → past_due → cancelled → FREE).
+  const effectiveTier: "FREE" | "PREMIUM" = (planType === "PREMIUM" || planType === "TRIAL") ? "PREMIUM" : "FREE";
 
   const existingFull = tryParseReflection((entry as any)?.ai_response);
   if (existingFull) {
@@ -329,14 +271,13 @@ export async function POST(req: Request) {
     if (debugEnabled) {
       payload.debug = {
         entryId, fp, snippet, domain, anchors,
-        stripeCustomerIdPresent: Boolean(stripeCustomerId),
-        stripePremium, planType, effectiveTier, servedFromCache: true,
+        planType, effectiveTier, servedFromCache: true,
       };
     }
     return NextResponse.json(payload, { headers: noStoreHeaders() });
   }
 
-  const isUnlimited = stripePremium;
+  const isUnlimited = effectiveTier === "PREMIUM";
   let remainingAfterConsume: number | null = null;
 
   if (!isUnlimited) {
@@ -408,8 +349,7 @@ export async function POST(req: Request) {
     if (debugEnabled) {
       payload.debug = {
         entryId, fp, snippet, domain, anchors,
-        stripeCustomerIdPresent: Boolean(stripeCustomerId),
-        stripePremium, planType, effectiveTier, servedFromCache: false,
+        planType, effectiveTier, servedFromCache: false,
       };
     }
 
