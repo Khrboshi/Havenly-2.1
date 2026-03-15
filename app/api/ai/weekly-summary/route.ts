@@ -9,6 +9,7 @@ import {
 } from "@/lib/ai/normalizeInsightSignals";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
