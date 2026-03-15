@@ -6,6 +6,7 @@ import { ensureCreditsFresh } from "@/lib/creditRules";
 import { generateReflectionFromEntry, detectCrisisContent } from "@/lib/ai/generateReflection";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 export const revalidate = 0;
 export const runtime = "nodejs";
 
