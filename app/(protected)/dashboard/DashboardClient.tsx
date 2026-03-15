@@ -472,7 +472,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
   const prompts = useMemo(() => getDailyPrompts(), []);
 
   const {
-    entryCount, streak, lastEntryId, lastEntryTitle, lastEntryDate,
+    entryCount, streak, writingDays, lastEntryId, lastEntryTitle, lastEntryDate,
     lastEntryHasReflection, lastTopEmotion, lastTopTheme, lastCorepattern,
     wroteToday, reflectedThisWeek,
   } = data;
@@ -633,7 +633,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-500">Writing days</span>
-              <span className="font-medium text-slate-200">—</span>
+              <span className="font-medium text-slate-200">{writingDays}</span>
             </div>
             {lastEntryDate && (
               <div className="flex items-center justify-between text-sm">
