@@ -15,8 +15,13 @@ const config: Config = {
       },
       colors: {
         // ─── Havenly brand palette ────────────────────────────────────────
-        // Canonical accent: emerald-500 (#10b981) — used throughout the app.
-        // Background tokens kept here for occasional use in component code.
+        // Primary accent: override emerald-500 to brand mint #3ee7b0.
+        // All bg-emerald-500 CTAs, borders, and text automatically use the
+        // correct brand colour. Hover states (emerald-400 #34d399) remain
+        // slightly darker — correct hover behaviour.
+        emerald: {
+          500: "#3ee7b0",
+        },
         hvn: {
           bg:       "#020617",
           elevated: "#02091a",
