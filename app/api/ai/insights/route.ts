@@ -8,6 +8,7 @@ import {
 } from "@/lib/ai/normalizeInsightSignals";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
 type PlanType = "FREE" | "TRIAL" | "PREMIUM";
 
