@@ -11,7 +11,7 @@ export const metadata = {
     title: "Havenly Journal — Articles for Overloaded Minds",
     description:
       "Gentle articles about emotional load, rest, and self-awareness. No productivity hacks.",
-    url: "https://havenly-2-1.vercel.app/blog",
+    url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://havenly-2-1.vercel.app") + "/blog",
   },
 };
 
