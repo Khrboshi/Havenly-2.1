@@ -14,7 +14,7 @@ export default function PrivacyPolicyPage() {
 
         <p className="mt-3 max-w-2xl text-sm text-slate-300">
           Havenly is designed to be a quiet, private place for reflection. This
-          page explains what we collect, what we don’t, and how your data is
+          page explains what we collect, what we don&apos;t, and how your data is
           handled.
         </p>
 
