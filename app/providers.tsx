@@ -1,6 +1,6 @@
 "use client";
 
-import { SupabaseSessionProvider } from "@/components/SupabaseSessionProvider";
+import { SupabaseSessionProvider } from "@/app/components/SupabaseSessionProvider";
 import ServiceWorkerRegister from "./components/ServiceWorkerRegister";
 import { PostHogProvider } from "./components/PostHogProvider";
 
