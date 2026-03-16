@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
-import JournalForm from "@/components/JournalForm";
+import JournalForm from "@/app/components/JournalForm";
 
 export const dynamic = "force-dynamic";
 
