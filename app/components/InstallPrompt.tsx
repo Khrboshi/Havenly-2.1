@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useInstallAvailability } from "@/app/hooks/useInstallAvailability";
-import { track } from "@/components/telemetry";
+import { track } from "@/app/components/telemetry";
 
 const SNOOZE_KEY = "hvn_install_snooze_until_v1";
 const SNOOZE_DAYS = 5;
