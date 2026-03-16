@@ -120,13 +120,10 @@ export default function PrivacyPolicyPage() {
               Data storage and processors
             </h2>
             <p className="mt-2 text-slate-300">
-              Havenly uses third-party infrastructure to operate (for example,
-              authentication and databases). Your data may be stored and
-              processed by these providers strictly to deliver the service.
-            </p>
-            <p className="mt-2 text-slate-300">
-              If you are using Supabase in your stack, it typically stores
-              authentication and application data on your behalf.
+              Havenly uses third-party infrastructure to operate — including
+              authentication, database storage, and payment processing. Your
+              data is stored and processed by these providers strictly to
+              deliver the service to you, and for no other purpose.
             </p>
           </section>
 
