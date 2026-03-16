@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { PRICING } from "@/app/lib/pricing";
 
 const faqs = [
   {
@@ -26,8 +27,8 @@ const faqs = [
     a: "Yes. Your entries stay private, are never sold, never shared, and are never used to train AI models. Havenly is built around that principle.",
   },
   {
-    q: "Why is Premium $30/month?",
-    a: "Most journaling tools charge for cloud storage or prettier templates. Havenly charges for the AI layer that reads across weeks of entries and surfaces what you couldn't see from inside it. That work is genuinely expensive to run — and $30/month keeps it sustainable without ads or selling your data.",
+    q: `Why is Premium ${PRICING.monthlyCadence}?`,
+    a: `Most journaling tools charge for cloud storage or prettier templates. Havenly charges for the AI layer that reads across weeks of entries and surfaces what you couldn't see from inside it. That work is genuinely expensive to run — and ${PRICING.monthlyCadence} keeps it sustainable without ads or selling your data.`,
   },
 ];
 
@@ -137,10 +138,10 @@ export default function UpgradePage() {
               {/* Price + CTA */}
               <div className="mt-8">
                 <div className="mb-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                  <span className="font-display text-4xl font-bold text-white">$30</span>
+                  <span className="font-display text-4xl font-bold text-white">{PRICING.monthly}</span>
                   <span className="text-sm text-slate-400">/ month</span>
                   <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-400">
-                    About $1 a day
+                    {PRICING.valueLabel}
                   </span>
                 </div>
                 <p className="mb-4 text-xs text-slate-600">Cancel anytime · no questions asked</p>
@@ -423,7 +424,7 @@ export default function UpgradePage() {
           </p>
           <div className="flex flex-col items-center gap-2">
             <UpgradeButton className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-7 py-3.5 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:-translate-y-px disabled:opacity-60" />
-            <p className="text-xs text-slate-600">$30/month · 7-day refund guarantee · Cancel anytime</p>
+            <p className="text-xs text-slate-600">{PRICING.monthlyCadence} · 7-day refund guarantee · Cancel anytime</p>
           </div>
         </div>
       </div>
