@@ -551,52 +551,52 @@ export default function HomeBelowFold() {
         </div>
       </section>
 
-      {/* ── 5. Testimonials ──────────────────────────────────────────────── */}
+      {/* ── 5. Founding members ──────────────────────────────────────────── */}
       <section className="border-b border-slate-800/60 py-12 sm:py-16">
-        <div className="mx-auto max-w-6xl px-5">
-          <ScrollReveal className="mb-8">
-            <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-slate-500">
-              In their own words
+        <div className="mx-auto max-w-4xl px-5">
+          <ScrollReveal className="text-center">
+            <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-emerald-500/60">
+              Early access
             </p>
             <h2 className="mt-3 font-display text-2xl font-semibold text-white sm:text-3xl">
-              The thing they didn&apos;t expect.
+              Havenly is new.{" "}
+              <span className="text-emerald-400">You&apos;d be among the first.</span>
             </h2>
-          </ScrollReveal>
-
-          <ScrollReveal className="mb-6 rounded-[1.75rem] border border-emerald-500/15 bg-emerald-500/[0.03] p-7 sm:p-8">
-            <div className="text-lg text-amber-400">★★★★★</div>
-            <p className="mt-4 font-display text-xl leading-relaxed text-white sm:text-2xl">
-              &ldquo;I expected a nicer journal app. What surprised me was how
-              accurately it reflected the thing underneath what I wrote.&rdquo;
+            <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-slate-400">
+              There are no hundreds of reviews yet. What there is: a product
+              built carefully, a privacy model you can read in full, and a
+              7-day refund guarantee with no questions asked.
             </p>
-            <div className="mt-5 flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-gradient-to-br from-emerald-500/40 to-violet-500/40" />
-              <p className="text-xs text-slate-500">Used Havenly for 6 weeks</p>
-            </div>
           </ScrollReveal>
 
-          <ScrollReveal stagger className="grid gap-4 sm:grid-cols-2">
+          <ScrollReveal stagger className="mt-10 grid gap-4 sm:grid-cols-3">
             {[
               {
-                quote: "This is the first journaling product that made me feel like my entries were going somewhere instead of just piling up.",
-                detail: "Used Havenly for 3 months",
-                gradient: "from-violet-500/40 to-blue-500/40",
+                icon: "🔒",
+                title: "Private by design",
+                body: "Your entries are never used to train AI models, never sold, and never seen by anyone but you. That is not a policy footnote — it is the foundation.",
+                border: "border-emerald-500/20",
+                bg: "bg-emerald-500/[0.03]",
               },
               {
-                quote: "The weekly summary connected entries I thought were unrelated. It made a pattern obvious without feeling intrusive.",
-                detail: "Premium member",
-                gradient: "from-amber-500/40 to-rose-500/40",
+                icon: "🛡️",
+                title: "7-day full refund",
+                body: "If Premium is not what you expected within 7 days of your first charge, email us and we refund in full. No forms, no friction, no questions asked.",
+                border: "border-sky-500/20",
+                bg: "bg-sky-500/[0.03]",
               },
-            ].map(({ quote, detail, gradient }) => (
-              <div key={detail} className="rounded-2xl border border-slate-800/60 bg-slate-900/30 p-5">
-                <div className="mb-3 text-sm text-amber-400">★★★★★</div>
-                <p className="text-sm italic leading-relaxed text-slate-300">
-                  &ldquo;{quote}&rdquo;
-                </p>
-                <div className="mt-4 flex items-center gap-2">
-                  <div className={`h-8 w-8 rounded-full border border-white/10 bg-gradient-to-br ${gradient}`} />
-                  <p className="text-[11px] text-slate-500">{detail}</p>
-                </div>
+              {
+                icon: "✦",
+                title: "No ads, ever",
+                body: "Havenly earns revenue from Premium subscriptions only. That is the entire business model — designed deliberately so your data is never the product.",
+                border: "border-violet-500/20",
+                bg: "bg-violet-500/[0.03]",
+              },
+            ].map(({ icon, title, body, border, bg }) => (
+              <div key={title} className={`rounded-2xl border p-5 ${border} ${bg}`}>
+                <p className="text-2xl">{icon}</p>
+                <p className="mt-3 text-sm font-semibold text-white">{title}</p>
+                <p className="mt-2 text-sm leading-relaxed text-slate-400">{body}</p>
               </div>
             ))}
           </ScrollReveal>
@@ -832,7 +832,7 @@ export default function HomeBelowFold() {
               <span>✓ Private by default</span>
               <span>✓ Never trains AI models</span>
               <span>✓ 7-day refund guarantee</span>
-              <span>✓ 2,400+ quiet writers</span>
+              <span>✓ No ads, ever</span>
             </div>
           </ScrollReveal>
         </div>
