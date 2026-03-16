@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default function PrivacyPolicyPage() {
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
