@@ -92,7 +92,7 @@ export default function HomePage() {
                 "Private by default",
                 "Entries never train AI models",
                 "Free plan, no expiry",
-                "2,400+ quiet writers",
+                "No ads, ever",
               ].map((t) => (
                 <span key={t} className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
