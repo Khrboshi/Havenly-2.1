@@ -477,7 +477,7 @@ export default function UpgradePage() {
             </Link>
           </div>
           <p className="mt-5 text-xs text-slate-700">
-            Private by default · Entries never train AI models · 7-day refund guarantee
+            Private by default · Entries never train AI models · 7-day refund guarantee · No ads, ever
           </p>
         </div>
       </section>
