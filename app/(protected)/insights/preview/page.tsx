@@ -420,7 +420,7 @@ export default async function InsightsPreviewPage() {
           {/* Emotions */}
           <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-6">
             <div className="mb-5">
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500">Emotions over time</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500">What keeps surfacing</h2>
               <p className="mt-0.5 text-xs text-slate-600">
                 {hasData
                   ? `${emotionBars.length} distinct emotions · cleaned + merged`
