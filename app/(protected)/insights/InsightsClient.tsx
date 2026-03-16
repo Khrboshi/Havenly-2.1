@@ -969,7 +969,7 @@ export default function InsightsClient() {
               <div className="mb-5 flex items-center justify-between">
                 <div>
                   <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500">
-                    Emotions over time
+                    What keeps surfacing
                   </h2>
                   <p className="mt-0.5 text-xs text-slate-600">
                     {allEmotions.length} distinct{" "}
