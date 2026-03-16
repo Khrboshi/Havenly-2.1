@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
 import UpgradeIntentTracker from "@/app/components/UpgradeIntentTracker";
+import { PRICING } from "@/app/lib/pricing";
 
 // ── Data fetching ─────────────────────────────────────────────────────────────
 
@@ -486,7 +487,7 @@ export default async function InsightsPreviewPage() {
               href="/upgrade?from=insights-preview"
               className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-6 py-3 text-sm font-semibold text-slate-950 shadow-sm shadow-emerald-500/20 transition hover:bg-emerald-400"
             >
-              Unlock full insights — $30/month →
+              Unlock full insights — {PRICING.monthlyCadence} →
             </Link>
             <Link
               href="/dashboard"
