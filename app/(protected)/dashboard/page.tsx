@@ -41,30 +41,9 @@ function parseAiResponse(raw: any) {
   } catch { return null; }
 }
 
-// Compute streak: consecutive days with at least one entry (ending today or yesterday)
-function computeStreak(dates: string[]): number {
-  if (!dates.length) return 0;
-  const days = new Set(
-    dates.map((d) => new Date(d).toISOString().slice(0, 10))
-  );
-  const today = new Date().toISOString().slice(0, 10);
-  let streak = 0;
-  let cursor = new Date();
-  // Allow streak to start from yesterday if nothing today yet
-  if (!days.has(today)) cursor.setDate(cursor.getDate() - 1);
-  while (true) {
-    const key = cursor.toISOString().slice(0, 10);
-    if (!days.has(key)) break;
-    streak++;
-    cursor.setDate(cursor.getDate() - 1);
-  }
-  return streak;
-}
-
 export type DashboardData = {
   userId: string;
   entryCount: number;
-  streak: number;
   writingDays: number;
   // Last entry info
   lastEntryId: string | null;
@@ -109,9 +88,6 @@ export default async function DashboardPage() {
     .from("journal_entries")
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId);
-
-  // ── Compute streak ────────────────────────────────────────────────────────
-  const streak = computeStreak(entries.map((e) => e.created_at));
 
   // ── Writing days — distinct calendar days with at least one entry ─────────
   // Fetch all created_at timestamps (lightweight — date only, limit 365).
@@ -189,7 +165,6 @@ export default async function DashboardPage() {
   const dashboardData: DashboardData = {
     userId,
     entryCount: entryCount ?? entries.length,
-    streak,
     writingDays,
     lastEntryId,
     lastEntryTitle,
