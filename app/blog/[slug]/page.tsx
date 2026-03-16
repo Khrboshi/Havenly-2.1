@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { ARTICLES, getArticle } from "../articles";
 import EmailCapture from "@/app/components/EmailCapture";
 
-const SITE_URL = "https://havenly-2-1.vercel.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://havenly-2-1.vercel.app";
 
 type BlogArticlePageProps = {
   params: { slug: string };
