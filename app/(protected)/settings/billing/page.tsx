@@ -129,7 +129,7 @@ export default async function BillingPage() {
                   <>
                     <li>• Unlimited AI reflections</li>
                     <li>• Pattern clarity across time</li>
-                    <li>• Weekly and monthly summaries</li>
+                    <li>• Weekly personal summary</li>
                     <li>• Deeper insights without writing more</li>
                   </>
                 ) : (
