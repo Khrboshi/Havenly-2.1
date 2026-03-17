@@ -130,16 +130,25 @@ Rules:
 
 function sanitizeSummaryVoice(text: string): string {
   return text
-    // "As I've been reading your entries, I've noticed..." → "Across your entries..."
+    // "As I read through / As I've been reading your entries..." → "Across your entries..."
+    .replace(/As I read through your entries,?\s*/gi, "Across your entries, ")
     .replace(/As I'?ve been reading your entries,?\s*/gi, "Across your entries, ")
     .replace(/As I'?ve been looking at your entries,?\s*/gi, "Across your entries, ")
     .replace(/As I'?ve gone through your entries,?\s*/gi, "Across your entries, ")
+    .replace(/As I'?ve reviewed your entries,?\s*/gi, "Across your entries, ")
+    .replace(/As I'?ve read your entries,?\s*/gi, "Across your entries, ")
     // "I've noticed that..." → "There's a pattern here:"
     .replace(/I'?ve noticed that\s+/gi, "There's a pattern here: ")
     .replace(/I'?ve noticed\s+/gi, "")
+    // "I've seen..." → remove
+    .replace(/I'?ve seen that\s+/gi, "")
+    .replace(/I'?ve seen\s+/gi, "")
     // "I notice..." → remove the phrase
     .replace(/I notice that\s+/gi, "")
     .replace(/I notice\s+/gi, "")
+    // "I'm curious..." → "What..."
+    .replace(/I'?m curious\s*[—–-]\s*/gi, "")
+    .replace(/I'?m curious\s+/gi, "")
     // "I sense a..." → "There's a..."
     .replace(/I sense a\s+/gi, "There's a ")
     .replace(/I sense\s+/gi, "There's a sense of ")
@@ -152,13 +161,19 @@ function sanitizeSummaryVoice(text: string): string {
     // "I'd also note..." → "Worth noting..."
     .replace(/I'?d also note\s+/gi, "Worth noting: ")
     .replace(/I'?d note\s+/gi, "Worth noting: ")
-    // "I wonder..." → "The question worth sitting with..."
-    .replace(/I wonder\s+/gi, "The question worth sitting with: ")
+    // "I wonder..." → remove the leading phrase, keep the question
+    .replace(/I wonder\s*[—–-]\s*/gi, "")
+    .replace(/I wonder\s+/gi, "")
     // "I think..." → remove
     .replace(/I think that\s+/gi, "")
     .replace(/I think\s+/gi, "")
+    // "I'm also noticing..." → remove
+    .replace(/I'?m also noticing\s+/gi, "")
+    .replace(/I'?m noticing\s+/gi, "")
     // "It's like I'm seeing..." → remove
     .replace(/It'?s like I'?m seeing\s+/gi, "")
+    // Fix sentence capitalisation after removals (e.g. "here: comparison" → "here: Comparison")
+    .replace(/(here:|noted:|pattern:|noting:)\s+([a-z])/g, (_, label, ch) => `${label} ${ch.toUpperCase()}`)
     // Clean up any double spaces left behind
     .replace(/\s{2,}/g, " ")
     .trim();
