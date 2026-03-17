@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PRICING } from "@/app/lib/pricing";
 
 export const metadata = { title: "Welcome to Premium | Havenly" };
 
@@ -116,7 +117,7 @@ export default function UpgradeConfirmedPage() {
             🛡️ Your 7-day free trial has started — no charge today
           </p>
           <p className="mt-1.5 text-xs text-slate-500">
-            $30/month begins after your trial ends. Cancel any time before then in{" "}
+            {PRICING.monthlyCadence} begins after your trial ends. Cancel any time before then in{" "}
             <Link href="/settings/billing" className="text-slate-400 underline underline-offset-2 hover:text-slate-300">
               billing settings
             </Link>

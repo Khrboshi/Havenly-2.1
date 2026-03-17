@@ -172,7 +172,7 @@ export default function UpgradePage() {
                     {PRICING.valueLabel}
                   </span>
                 </div>
-                <p className="mb-4 text-xs text-slate-600">Free for 7 days · then $30/month · Cancel anytime</p>
+                <p className="mb-4 text-xs text-slate-600">Free for 7 days · then {PRICING.monthlyCadence} · Cancel anytime</p>
 
                 <div className="flex flex-col gap-2 sm:max-w-sm">
                   <UpgradeButton className="inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-6 py-4 text-base font-semibold text-slate-950 shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-400 hover:-translate-y-px disabled:opacity-60 sm:py-3.5 sm:text-sm" />

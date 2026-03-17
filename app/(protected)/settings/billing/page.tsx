@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { ensureCreditsFresh } from "@/lib/creditRules";
+import { PRICING } from "@/app/lib/pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -189,7 +190,7 @@ export default async function BillingPage() {
                 <div className="mt-4 space-y-2 border-t border-slate-800 pt-4">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-slate-500">Price</span>
-                    <span className="font-medium text-slate-200">$30 / month</span>
+                    <span className="font-medium text-slate-200">{PRICING.monthlyCadence}</span>
                   </div>
                   {nextBillingLabel && (
                     <div className="flex items-center justify-between text-xs">

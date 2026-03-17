@@ -827,7 +827,7 @@ export default function HomeBelowFold() {
                     🛡️ 7-day free trial — no charge today
                   </p>
                   <p className="mt-0.5 text-[11px] leading-relaxed text-slate-600">
-                    Try free for 7 days · then $30/month · Cancel anytime
+                    Try free for 7 days · then {PRICING.monthlyCadence} · Cancel anytime
                   </p>
                 </div>
                 <Link

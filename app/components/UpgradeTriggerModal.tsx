@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import { PRICING } from "@/app/lib/pricing";
 
 export interface UpgradeTriggerModalProps {
   open: boolean;
@@ -66,7 +67,7 @@ export default function UpgradeTriggerModal({
           <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border border-emerald-500/15 bg-emerald-500/[0.05] px-3 py-2">
             <span className="text-sm font-medium text-emerald-400">Free for 7 days</span>
             <span className="text-slate-700">·</span>
-            <span className="text-sm text-slate-300">then $30<span className="text-slate-500">/month</span></span>
+            <span className="text-sm text-slate-300">then {PRICING.monthly}<span className="text-slate-500">/month</span></span>
             <span className="text-slate-700">·</span>
             <span className="text-xs text-slate-400">Cancel anytime</span>
           </div>
