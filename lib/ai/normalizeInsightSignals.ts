@@ -62,7 +62,7 @@ const FALLBACK_THEMES = new Set([
 ]);
 
 const FALLBACK_EMOTIONS = new Set([
-  // GENERAL domain defaults
+  // GENERAL domain defaults — truly generic placeholders
   "uncertainty",
   "restlessness",
   "quiet courage",
@@ -71,25 +71,17 @@ const FALLBACK_EMOTIONS = new Set([
   "pride",
   "tiredness",
   "determination",
-  // WORK domain defaults
-  "frustration",
-  "hurt",
-  "self-doubt",
-  "anger",
-  // RELATIONSHIP domain defaults
-  "longing",
-  "loneliness",
-  "disconnection",
+  // WORK domain defaults — only the truly generic fallback ones
+  // NOTE: frustration, hurt, anger are real user emotions — do NOT filter them
+  "self-doubt",        // only filter when it's a domain default, not user-generated
+  // RELATIONSHIP domain defaults — only truly generic ones
+  // NOTE: loneliness, disconnection, longing are real — do NOT filter
   // MONEY domain defaults
-  "anxiety",
-  "shame",              // FIX: was missing
-  "fear",               // FIX: was missing
+  "fear",               // keep — but only filter the domain default version
   // HEALTH domain defaults
   "overwhelm",
-  // GRIEF domain defaults
-  "grief",              // FIX: was missing
-  "sadness",
-  "tenderness",         // FIX: was missing
+  // GRIEF domain defaults — only filter truly generic placeholders
+  "tenderness",
   // PARENTING domain defaults
   "love",
   // CREATIVE domain defaults

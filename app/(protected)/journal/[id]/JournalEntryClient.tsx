@@ -346,7 +346,7 @@ export default function JournalEntryClient({
             {reflection.corepattern && (
               <div className="px-6 py-5">
                 <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-white/30">
-                  Key Pattern
+                  {parsedSummary?.happening ? "Key pattern" : "What's really happening"}
                 </p>
                 <p className="text-sm italic leading-relaxed text-white/80">
                   {reflection.corepattern}

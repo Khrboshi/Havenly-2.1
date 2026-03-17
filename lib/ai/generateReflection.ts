@@ -58,10 +58,16 @@ type WeightedSignal = { re: RegExp; w: number };
 
 const DOMAIN_SIGNALS: Record<Domain, WeightedSignal[]> = {
   FITNESS: [
-    { re: /\b(ran|run|running|jog(ged)?|sprint(ed)?)\b/i, w: 2 },
-    { re: /\b(workout|training|exercise|gym|lifting|cardio)\b/i, w: 2 },
+    // Exclude "running through" (mental rumination), "running late", "running on empty",
+    // "run of bad luck", "ran into" (encountered), "ran through my mind" — these are NOT fitness.
+    { re: /\b(ran|run|running|jog(ged)?|sprint(ed)?)\b(?!\s+(through|into|out|late|on empty|of bad|my mind|everything|it all|over))/i, w: 2 },
+    { re: /\b(workout|exercise|gym|lifting|cardio)\b/i, w: 2 },
+    // "training" only counts when paired with a physical context word — not "I've been training myself to..."
+    { re: /\b(training)\b(?=.{0,40}\b(run|gym|race|athlete|sport|fitness|physical|body|strength|endurance)\b)/i, w: 2 },
     { re: /\b(pace|steps?|miles?|kilomet(?:res|ers)?|km|5k|8k|10k)\b/i, w: 2 },
-    { re: /\b(sore|recovery|rest day|hydration|protein|reps|sets)\b/i, w: 1 },
+    { re: /\b(sore|rest day|hydration|protein|reps|sets)\b/i, w: 1 },
+    // "recovery" only in physical context — not "recovery from grief/divorce/burnout"
+    { re: /\b(recovery)\b(?=.{0,40}\b(run|gym|race|athlete|sport|fitness|physical|training|workout|muscle|injury)\b)/i, w: 1 },
   ],
   WORK: [
     { re: /\b(colleague|coworker|manager|boss|team|client)\b/i, w: 2 },
@@ -129,7 +135,7 @@ const EMOTIONAL_BOOSTERS: Record<Exclude<Domain, "GENERAL">, WeightedSignal[]> =
     { re: /\b(cried|crying|hurt|heartbreak|ache|longing|miss)\b/i, w: 1 },
   ],
   FITNESS: [
-    { re: /\b(ran|run|running|workout|gym|cardio|lifting|training|exercise)\b/i, w: 1 },
+    { re: /\b(ran|run|running|workout|gym|cardio|lifting|exercise)\b(?!\s+(through|into|out|late|on empty|over))/i, w: 1 },
     { re: /\b(pace|km|miles|5k|10k|8k|reps|sets|pb|personal best)\b/i, w: 1 },
   ],
   MONEY: [
@@ -172,7 +178,15 @@ const PRESSURE_SIGNALS: Partial<Record<Exclude<Domain, "GENERAL">, WeightedSigna
   ],
   IDENTITY: [
     { re: /\b(who I am|what kind of person|don't recognize myself|version of myself|performing competence|performing|mask|fake|fraud|pretending|authentic|self-worth)\b/i, w: 5 },
-    { re: /\b(i don't know what i want|don't know who i am|not myself|becoming someone i don't respect)\b/i, w: 4 },
+    // Flexible: "I don't know what I want", "I genuinely don't know what I actually want anymore"
+    { re: /\bi\s+(genuinely\s+|really\s+|honestly\s+)?don'?t\s+know\s+what\s+i\s+(actually\s+|even\s+|really\s+)?want\b/i, w: 4 },
+    { re: /\bdon'?t know who i am\b|\bnot myself\b|\bbecoming someone i don'?t respect\b/i, w: 4 },
+    // "I couldn't tell you what I need/want" — key IDENTITY signal from Entry #5
+    { re: /\bcouldn'?t tell you what i\s+(need|want|feel|am)\b/i, w: 5 },
+    // "I've spent so long being [role] for everyone else"
+    { re: /\bspent so long being\b|\bbeing the person who\b|\bholding everything together\b/i, w: 4 },
+    // "I can tell you what X needs but not what I need"
+    { re: /\b(tell you (exactly )?what\s+\w+\s+needs|know what\s+\w+\s+needs).{0,60}(what i need|my own needs)\b/i, w: 5 },
   ],
   PARENTING: [
     { re: /\b(my son|my daughter|my child|my kid|snapped at (him|her|them)|yelled at (him|her|them)|look on (his|her|their) face)\b/i, w: 5 },
@@ -303,7 +317,7 @@ type DomainDefaults = {
 const DOMAIN_DEFAULTS: Record<Domain, DomainDefaults> = {
   FITNESS: {
     summary:
-      "What you're carrying: Something happened in your training that's still with you.\nWhat's really happening: The gap between what your body did and what you felt about it is worth sitting with.",
+      "What you're carrying: Something that happened with your body is still with you.\nWhat's really happening: The gap between what your body did and what you felt about it is worth sitting with.",
     shortSummary:
       "What you're carrying: A quiet signal from your body asking to be noticed.\nWhat's really happening: You showed up — and that's the part worth sitting with before asking what comes next.",
     corepattern: "You're learning to read the difference between pushing toward something and pushing away from discomfort.",
@@ -540,8 +554,8 @@ const DOMAIN_DEFAULTS: Record<Domain, DomainDefaults> = {
       "What would it feel like to not know the answer to this — and be okay with that?",
       "Next time, write about what you want — not what you think you should want.",
     ],
-    mustHave: /\b(identity|who I am|purpose|authentic|real self|mask|performing|version of myself|belong|lost|direction|meaning|transition|pretending|fake|fraud)\b/i,
-    driftKeywords: /\b(colleague|manager|gym|workout|doctor|wife|husband|girlfriend|boyfriend)\b/i,
+    mustHave: /\b(identity|who I am|purpose|authentic|real self|mask|performing|version of myself|belong|lost|direction|meaning|transition|pretending|fake|fraud|holding everything together|don'?t know what i want|couldn'?t tell you what i need)\b/i,
+    driftKeywords: /\b(gym|workout|doctor|diagnosis|symptoms)\b/i,
   },
 
   GENERAL: {
@@ -1142,6 +1156,10 @@ function qualityCheck(
   if (!lastQ.toLowerCase().startsWith("next time,")) reasons.push('Last question must start with "Next time,"');
 
   const corepattern = String(parsed?.corepattern ?? "").trim();
+  // Bug #14 fix: ban third-person corepattern — must always address "you", never "the person"
+  if (corepattern && /\bthe person\b|\bthis person\b|\bthe user\b/i.test(corepattern)) {
+    reasons.push('Corepattern uses third person ("the person") — must use "you"');
+  }
   if (
     corepattern &&
     !/\b(is|are|was|were|has|have|had|do|does|did|can|could|will|would|should|may|might|feel|feels|shows|shapes|drives|means|reveals|creates|keeps|holds|sits|lives|runs|makes|takes|turns|points|touches|pulls|pushes|navigates|manages|carries|defines|reflects)\b/i.test(corepattern)
@@ -1171,6 +1189,13 @@ function qualityCheck(
     /address your financial situation/i,
     /what (strategies|techniques|tools) (can|could|might) you/i,
     /how (can|could|might) you (better|more effectively)/i,
+    // FIX Bug #4: advice-giving patterns observed in testing
+    /\bset a (small |tiny )?(boundary|limit)\b/i,
+    /\btell (one|a|someone|your) person the real\b/i,
+    /\bwhat would it (look|feel) like to set\b/i,
+    /\bhow (can|could|might) you set (a |some )?(boundary|limit)\b/i,
+    /\bwhat (boundaries|limits) (could|can|might|should) you\b/i,
+    /\bwhat (specific )?actions? (can|could|should|might) you take\b/i,
     // FIX: additional generic patterns observed in testing
     /what are some (specific )?(actions|things|ways)/i,
     /reignite your creative spark/i,
@@ -1314,7 +1339,8 @@ function buildSystemPrompt(
 Make the person feel genuinely seen, with precision, leaving them clearer than before.
 
 CORE RULES:
-- Write to "you" — never "the user" or "this person"
+- Write to "you" — never "the user", "this person", or "the person"
+- corepattern MUST start with "You" — never "The person's mind" or "This person"
 - Never invent events not in the entry
 - Use at least ONE verbatim phrase from the entry in the SUMMARY
 - Avoid templates, generic openings, and cliches
@@ -1349,7 +1375,11 @@ themes — short phrases. emotions — single words (prefer nouns: shame not sha
 gentlenextstep:
 ${nextStepStructure}
 
-questions — exactly 4. The LAST must start with exactly: "Next time,"
+questions — exactly 4.
+- Q1–Q3: ONLY explore inner experience — what the person feels, notices, wonders, remembers. Never suggest actions.
+- Q1–Q3: NEVER use "set a boundary", "tell someone", "take a step", "try this", "consider doing"
+- Q3: must NOT presuppose a solution — ask what the person observes, not what they plan
+- Q4: MUST start with exactly "Next time," — no exceptions
 
 OUTPUT: Return ONLY valid JSON. No markdown, no preamble.
 {

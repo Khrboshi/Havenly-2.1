@@ -532,6 +532,19 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
             You can always write freely — reflections return {resetLabel}.
           </p>
         )}
+
+        {/* Bug #23 fix: upgrade CTA at 0-credit wall — highest-intent moment */}
+        {reflectionsPaused && !isPremium && (
+          <div className="mt-3 flex items-center gap-3">
+            <Link
+              href="/upgrade"
+              className="inline-flex items-center rounded-full bg-emerald-500 px-4 py-1.5 text-xs font-semibold text-slate-950 hover:bg-emerald-400 transition-colors"
+            >
+              Unlock unlimited reflections →
+            </Link>
+            <span className="text-xs text-slate-700">7-day full refund · Cancel anytime</span>
+          </div>
+        )}
       </div>
 
       {/* ── Onboarding moments ── */}
