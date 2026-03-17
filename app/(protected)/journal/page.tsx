@@ -142,15 +142,34 @@ export default async function JournalPage() {
 
       {/* Empty state */}
       {entries?.length === 0 && (
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-10 text-center space-y-3">
-          <p className="text-2xl">✦</p>
-          <p className="text-sm text-slate-400">You haven&rsquo;t written any entries yet.</p>
-          <Link
-            href="/journal/new"
-            className="inline-flex items-center gap-1 text-sm text-emerald-400 hover:text-emerald-300 transition"
-          >
-            Write your first entry →
-          </Link>
+        <div className="space-y-6">
+          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-8 text-center space-y-2">
+            <p className="text-2xl">✦</p>
+            <p className="text-sm text-slate-300 font-medium">You haven&rsquo;t written any entries yet.</p>
+            <p className="text-xs text-slate-500">One sentence is always enough to start.</p>
+          </div>
+          <div>
+            <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-600">
+              Start here
+            </p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[
+                { q: "What has been weighing on you lately?", sub: "You don't have to solve it — just name it.", color: "border-emerald-500/20 hover:border-emerald-500/40" },
+                { q: "Is there something you keep thinking about today?", sub: "A conversation, a feeling, a moment.", color: "border-violet-500/20 hover:border-violet-500/40" },
+                { q: "What felt heavy this week?", sub: "No need to explain why.", color: "border-amber-500/20 hover:border-amber-500/40" },
+              ].map((p) => (
+                <Link
+                  key={p.q}
+                  href={`/journal/new?prompt=${encodeURIComponent(p.q)}`}
+                  className={`group rounded-2xl border bg-white/[0.02] p-5 transition hover:bg-white/[0.05] ${p.color}`}
+                >
+                  <p className="text-sm font-medium leading-snug text-slate-100 transition group-hover:text-white">{p.q}</p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-slate-500">{p.sub}</p>
+                  <p className="mt-3 text-xs font-medium text-emerald-400 group-hover:text-emerald-300 transition">Start →</p>
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 

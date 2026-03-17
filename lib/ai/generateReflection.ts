@@ -73,6 +73,12 @@ const DOMAIN_SIGNALS: Record<Domain, WeightedSignal[]> = {
     { re: /\b(colleague|coworker|manager|boss|team|client)\b/i, w: 2 },
     { re: /\b(meeting|office|project|deadline|presentation)\b/i, w: 2 },
     { re: /\b(work|job|career|promotion|performance.?review)\b/i, w: 2 },
+    // Work overload signals — guilt, can't stop, behind
+    { re: /\b(work.*piling|piling up|work load|workload|too much work)\b/i, w: 3 },
+    { re: /\b(saying yes|can't say no|hard to stop|find it hard to stop|hard to switch off|can't stop working)\b/i, w: 3 },
+    { re: /\b(behind on everything|feel behind|falling behind|behind at work|behind on work)\b/i, w: 3 },
+    { re: /\b(stayed up|up until|up working|working late|worked late|all night|until 2am|until 1am|until 3am)\b/i, w: 2 },
+    { re: /\b(guilty.*leaving|leaving.*guilty|felt guilty.*stop|guilty.*stop)\b/i, w: 3 },
     // FIX Bug1: new signals for implicit work dynamics
     { re: /\b(project lead|project manager|lead on|team lead)\b/i, w: 3 },
     { re: /\b(overlooked|passed over|sidelined|not consulted|nobody asked|no one asked)\b/i, w: 3 },
@@ -87,6 +93,11 @@ const DOMAIN_SIGNALS: Record<Domain, WeightedSignal[]> = {
     { re: /\b(family|friend|best friend|parents?|sibling|sister|brother|mum|mom|dad|father|mother)\b/i, w: 2 },
     { re: /\b(invisible|unheard|unseen|disconnected|lonely|taken for granted|drifting apart|growing apart)\b/i, w: 2 },
     { re: /\b(told me|said to me|didn't say|the way (he|she|they)|between us|our relationship)\b/i, w: 2 },
+    // Implicit relationship distress signals — replaying, distance, silence
+    { re: /\b(keep replaying|replaying it|keep thinking about|can't stop thinking|sitting with me|been sitting with)\b/i, w: 3 },
+    { re: /\b(weird distance|strange distance|distance between us|something between us|neither.*addressing|not addressing)\b/i, w: 3 },
+    { re: /\b(said the wrong|wrong thing|said something|conversation.*last week|last week.*conversation)\b/i, w: 2 },
+    { re: /\b(close friend|good friend|old friend|my friend)\b/i, w: 2 },
   ],
   MONEY: [
     { re: /\b(bank statements?|bank account|can't make rent|can't afford rent|can't pay)\b/i, w: 5 },
@@ -209,6 +220,10 @@ const PRESSURE_SIGNALS: Partial<Record<Exclude<Domain, "GENERAL">, WeightedSigna
   RELATIONSHIP: [
     { re: /\b(we had a fight|we argued|he left|she left|they left|walking away|gave up on (me|us)|doesn't love|fell out of love|cheated|affair|betrayed)\b/i, w: 5 },
     { re: /\b(not talking|stopped talking|haven't spoken|she ended|he ended|they ended)\b/i, w: 4 },
+    // Implicit relationship rupture — distance, replaying, something unsaid
+    { re: /\b(weird distance|strange between us|keep replaying|replaying.*conversation|can't stop thinking about.*said|been sitting with me)\b/i, w: 4 },
+    { re: /\b(said the wrong thing|said something wrong|the wrong thing|something I said|something I did)\b/i, w: 3 },
+    { re: /\b(neither.*addressing|not addressing it|both.*pretending|neither.*talking)\b/i, w: 4 },
   ],
   // FIX Bug1: WORK pressure signals for implicit workplace dynamics
   WORK: [
@@ -574,7 +589,7 @@ const DOMAIN_DEFAULTS: Record<Domain, DomainDefaults> = {
       "What you're carrying: A quiet signal — not loud enough to name yet, but present enough to notice.\nWhat's really happening: You showed up to write, even without words. That's the start of something.",
     corepattern: "You're in the middle of something — not at the beginning, not at the end, just present with it.",
     themes: ["self-awareness", "processing", "presence", "uncertainty"],
-    emotions: ["uncertainty", "restlessness", "quiet courage", "hope"],
+    emotions: ["uncertainty", "restlessness", "frustration", "exhaustion"],
     nextStepFree: "Option A: Write one more sentence — what's the feeling underneath the first one? Option B: Ask yourself: is this about something that happened, something expected, or something missing?",
     nextStepPremium: "Option A: Write the clearest fact you know from this entry, then the clearest need it points to. Option B: Identify what this touches (safety / belonging / worth / control). Script line: \"I don't need the answer yet — I just need to stay honest about what's here.\"",
     shortNextStep: "Option A: Sit with it for 60 seconds and notice if a word arrives. Option B: Write one more line — it doesn't have to make sense.",
