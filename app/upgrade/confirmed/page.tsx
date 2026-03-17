@@ -22,14 +22,15 @@ export default function UpgradeConfirmedPage() {
 
         {/* Headline */}
         <h1 className="text-center font-display text-3xl font-semibold leading-snug text-white sm:text-4xl">
-          You&apos;re Premium now.
+          Your trial has started.
           <br />
           <span className="text-emerald-400">The deeper layer is open.</span>
         </h1>
 
         <p className="mx-auto mt-5 max-w-md text-center text-[15px] leading-relaxed text-slate-400">
           Havenly will now read across your entries over time — not just today&apos;s. The
-          patterns, the weekly mirror, and the why-this-keeps-happening layer are all yours.
+          patterns, the weekly mirror, and the why-this-keeps-happening layer are all yours
+          for the next 7 days, and beyond if you choose to stay.
         </p>
 
         {/* What just unlocked */}
@@ -109,18 +110,17 @@ export default function UpgradeConfirmedPage() {
           </Link>
         </p>
 
-        {/* Bug #12 fix: price confirmation + refund guarantee */}
-        <div className="mt-6 rounded-2xl border border-slate-800/60 bg-slate-900/40 px-6 py-4 text-center">
-          <p className="text-xs text-slate-500">
-            You were charged <span className="font-medium text-slate-300">$30/month</span>.
-            {" "}Cancel anytime in{" "}
+        {/* Trial + billing note */}
+        <div className="mt-6 rounded-2xl border border-emerald-500/15 bg-emerald-500/[0.04] px-6 py-4 text-center">
+          <p className="text-xs font-medium text-emerald-400">
+            🛡️ Your 7-day free trial has started — no charge today
+          </p>
+          <p className="mt-1.5 text-xs text-slate-500">
+            $30/month begins after your trial ends. Cancel any time before then in{" "}
             <Link href="/settings/billing" className="text-slate-400 underline underline-offset-2 hover:text-slate-300">
               billing settings
             </Link>
-            .
-          </p>
-          <p className="mt-2 text-xs text-emerald-500/70">
-            🛡️ 7-day full refund if it&apos;s not for you — email support@havenly.app
+            {" "}and you won&apos;t be charged anything.
           </p>
         </div>
 
