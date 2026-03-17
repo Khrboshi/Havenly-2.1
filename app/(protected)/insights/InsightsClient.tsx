@@ -48,9 +48,12 @@ function maxVal(m: Record<string, number>) {
 }
 
 function friendlyDate(iso: string) {
-  return new Date(iso).toLocaleDateString(undefined, {
+  // Parse as UTC then format in local timezone to avoid month shifting
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, {
     month: "short",
     year: "numeric",
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   });
 }
 
@@ -800,12 +803,10 @@ export default function InsightsClient() {
               label="Entries"
               value={String(totalEntryCount)}
               sub={
-                data.firstEntryDate
-                  ? `Since ${
-                      mounted
-                        ? friendlyDate(data.firstEntryDate)
-                        : data.firstEntryDate.slice(0, 7)
-                    }`
+                data.firstEntryDate && mounted
+                  ? `Since ${friendlyDate(data.firstEntryDate)}`
+                  : data.firstEntryDate
+                  ? "Since joined"
                   : undefined
               }
             />

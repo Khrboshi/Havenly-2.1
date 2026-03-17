@@ -95,16 +95,16 @@ function buildPrompt(opts: {
 Write a short, personal summary of what has been showing up across this person's journal entries.
 
 Rules:
-- Write 2-3 short paragraphs. No more.
+- Write EXACTLY 3 short paragraphs separated by a blank line. No more, no fewer.
+- Paragraph 1: What they write about most and the emotion that sits underneath it. 2-3 sentences.
+- Paragraph 2: The recurring pattern — what keeps showing up and what it connects to. 2-3 sentences.
+- Paragraph 3: ONE sentence only. A single quiet, open question. Nothing else.
 - Speak ONLY in second person — always "you" and "your". NEVER use "I", "I notice", "I sense", "I wonder", "I can see". You are a mirror, not a person.
-- Be specific: name their actual emotions, themes, and what areas of life they write about most.
+- Do NOT list emotions or themes by name in a row — weave them into sentences that describe what they feel like together.
 - Do NOT use therapy-speak, jargon, or prescriptive advice ("you should", "try to", "consider").
 - Do NOT list bullet points or use headers.
-- The first paragraph names what they write about most and the emotion that sits underneath it.
-- The second paragraph names the pattern — what keeps showing up, what it connects to.
-- End with one quiet, open question — genuinely curious, not leading.
-- Keep it under 200 words total.
-- BANNED openers: "I notice", "I sense", "I can see", "I've noticed", "Looking at your entries", "Based on your entries", "It seems like", "It appears that"`;
+- Keep the whole summary under 180 words.
+- BANNED phrases: "I notice", "I sense", "I can see", "I've noticed", "I wonder", "Looking at your entries", "Based on your entries", "It seems like", "It appears that", "emotions that surface include", "themes that appear", "recurring themes include"`;
 
   const parts: string[] = [`You have written ${entryCount} journal entries since ${since}.`];
   if (domainLabels) parts.push(`The areas of life you write about most: ${domainLabels}.`);
@@ -119,7 +119,7 @@ Rules:
   if (momentum && momentum !== "Steady") parts.push(`Overall emotional momentum right now: ${momentum}.`);
 
   const user = parts.join("\n") +
-    "\n\nWrite the summary now in second person (you/your). Do not start with 'I'. Start directly with what has been showing up.";
+    "\n\nWrite exactly 3 paragraphs separated by blank lines. Second person only. Paragraph 3 is one question sentence, nothing else.";
 
   return { system, user };
 }
