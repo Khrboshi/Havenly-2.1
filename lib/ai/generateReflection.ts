@@ -99,6 +99,11 @@ const DOMAIN_SIGNALS: Record<Domain, WeightedSignal[]> = {
     { re: /\b(illness|sick|pain|chronic|anxiety|mental health|therapy)\b/i, w: 2 },
     { re: /\b(scan|test results?|appointment|specialist|blood)\b/i, w: 2 },
     { re: /\b(burnout|panic|depress(ed|ion)|insomnia)\b/i, w: 1 },
+    // Sleep & mental health signals — common entries that belong in HEALTH
+    { re: /\b(can'?t sleep|sleep properly|sleep well|wake up at|waking up at|woke up at|lying awake|wide awake|3am|4am|2am)\b/i, w: 4 },
+    { re: /\b(sleep(ing)?|insomnia|tired|exhausted|fatigue|restless)\b(?!.{0,20}\b(workout|training|gym|run|race)\b)/i, w: 2 },
+    { re: /\b(racing mind|racing thoughts|brain won'?t stop|can'?t switch off|mind going|rumina)\b/i, w: 3 },
+    { re: /\b(anxious|anxiety|panic|overwhelm|burnt out|burnout|breaking point)\b/i, w: 2 },
   ],
   GRIEF: [
     { re: /\b(grief|grieving|loss|lost|died|death|passed away|funeral)\b/i, w: 3 },
@@ -175,6 +180,10 @@ const PRESSURE_SIGNALS: Partial<Record<Exclude<Domain, "GENERAL">, WeightedSigna
   HEALTH: [
     { re: /\b(doctor|diagnosis|test results?|scan|symptoms?|pain|health|body|blood work|appointment|specialist)\b/i, w: 5 },
     { re: /\b(illness|sick|panic attack|chest tight|couldn't breathe|health anxiety)\b/i, w: 4 },
+    // Sleep-specific pressure signals — high confidence HEALTH entries
+    { re: /\b(can'?t sleep|haven'?t slept|sleep properly|wake up at \d|waking up at \d|lying awake|wide awake at)\b/i, w: 6 },
+    { re: /\b(racing mind|racing thoughts|brain (just )?starts? (running|going)|can'?t switch off|rumina)\b/i, w: 5 },
+    { re: /\b(six weeks|weeks? (of|without) sleep|months? (of|without) sleep)\b/i, w: 3 },
   ],
   IDENTITY: [
     { re: /\b(who I am|what kind of person|don't recognize myself|version of myself|performing competence|performing|mask|fake|fraud|pretending|authentic|self-worth)\b/i, w: 5 },
@@ -425,20 +434,20 @@ const DOMAIN_DEFAULTS: Record<Domain, DomainDefaults> = {
 
   HEALTH: {
     summary:
-      "What you're carrying: Your body is asking for your attention right now.\nWhat's really happening: Waiting and not knowing can feel like losing control — even before you have answers.",
+      "What you're carrying: Your body or mind has been under sustained pressure and you're feeling it.\nWhat's really happening: This isn't just tiredness — it's what happens when the nervous system has been running on alert for too long.",
     shortSummary:
-      "What you're carrying: Something about your health is sitting with you today.\nWhat's really happening: Your body is asking to be heard — and you're listening.",
+      "What you're carrying: A quiet signal from your body or mind asking to be heard.\nWhat's really happening: You're noticing it — and that's already something.",
     corepattern: "You're navigating the space between what you know and what you can't control about your own wellbeing.",
-    themes: ["health anxiety", "uncertainty", "body awareness", "control"],
-    emotions: ["anxiety", "fear", "uncertainty", "overwhelm"],
-    nextStepFree: "Option A: Write down what you actually know right now — separate from what you're afraid of. Option B: Name one thing your body needs today that isn't about fixing anything.",
-    nextStepPremium: "Option A: Write what you know (facts) vs what you fear (stories). Option B: Name one gentle thing your body needs today that isn't about fixing. Script line: \"I can hold uncertainty without solving it today.\"",
-    shortNextStep: "Option A: Notice where in your body you feel this worry. Name it without judging it. Option B: Write one sentence about what you wish someone understood about how this feels.",
+    themes: ["sleep", "mental load", "body awareness", "self-criticism"],
+    emotions: ["anxiety", "exhaustion", "frustration", "overwhelm"],
+    nextStepFree: "Option A: Write down what you actually know right now — separate from what you fear. Option B: Name one thing your body needs today that isn't about fixing or performing.",
+    nextStepPremium: "Option A: Write what you know (facts) vs what you fear (stories) — two columns, one line each. Option B: Name one gentle thing your body needs today that isn't about fixing. Script line: \"I can hold uncertainty without solving it today.\"",
+    shortNextStep: "Option A: Notice where in your body you feel this. Name it without judging it. Option B: Write one sentence about what you wish someone understood about how this feels.",
     questions: [
-      "What part is most frightening — the results, the waiting, or what it might mean for your life?",
-      "What have you been doing to cope with the pain or uncertainty (even if it's imperfect)?",
-      "What would you want to walk into the appointment knowing or asking for?",
-      "Next time, note what triggered the worry and what helped it settle even slightly.",
+      "What does the exhaustion feel like in your body right now — is it closer to heaviness, tightness, or emptiness?",
+      "When you say you've already failed the day before it starts, what would 'not failing' actually look like?",
+      "What is your mind reviewing at 3am — and what does it most need to hear?",
+      "Next time, note what your first thought is when you wake — and whether it's a fact or a fear.",
     ],
     shortQuestions: [
       "What does your body feel like right now — not what you think about it, just what's actually there?",
@@ -446,7 +455,7 @@ const DOMAIN_DEFAULTS: Record<Domain, DomainDefaults> = {
       "What would it feel like to be gentle with yourself about this?",
       "Next time, note what triggered the worry and what helped it settle.",
     ],
-    mustHave: /\b(doctor|hospital|diagnosis|symptoms|medication|illness|sick|pain|health|medical|body|anxiety|therapy|mental|test results?)\b/i,
+    mustHave: /\b(doctor|hospital|diagnosis|symptoms|medication|illness|sick|pain|health|medical|body|anxiety|therapy|mental|test results?|sleep|sleeping|insomnia|wake up|waking|tired|exhausted|racing mind|racing thoughts|burnout|panic|3am|4am|2am)\b/i,
     driftKeywords: /\b(workout|gym|rent|bank|money|debt)\b/i,
   },
 
@@ -1042,7 +1051,7 @@ function ensurePremiumSummary(
       RELATIONSHIP: `Deeper direction: What you didn't say is still shaping the distance. Naming what you needed — even just to yourself — is the first honest move.${mixedHint}`,
       FITNESS: `Deeper direction: Your body's resistance is data, not failure. What it's asking for is probably simpler than what you're demanding of it.${mixedHint}`,
       MONEY: `Deeper direction: The anxiety isn't about the number — it's about what the number represents. Separating the fact from the story is the first move.${mixedHint}`,
-      HEALTH: `Deeper direction: Sitting with uncertainty is its own form of courage. Write down one thing you actually know right now — separate from what you fear — and let that be enough for today.${mixedHint}`,
+      HEALTH: `Deeper direction: Sitting with uncertainty is its own form of courage. The body keeps score of what the mind is carrying — and right now yours is asking for rest, not answers.${mixedHint}`,
       GRIEF: `Deeper direction: You're not supposed to be over this. Carrying it differently over time isn't the same as letting it go — and that's okay.${mixedHint}`,
       PARENTING: `Deeper direction: The gap between the parent you want to be and the moment you had is where growth happens. One simple repair — said without excuses — means more than you think.${mixedHint}`,
       CREATIVE: `Deeper direction: The block isn't about the work — it's about what you think the work will say about you. Making something imperfect today is the only way through.${mixedHint}`,
@@ -1309,7 +1318,11 @@ function buildSystemPrompt(
     : "";
 
   const domainSpecific: Partial<Record<Domain, string>> = {
-    HEALTH: `DOMAIN: HEALTH\nHARD RULE: Questions must reference the specific fear or situation from this entry — not generic health advice.\nBANNED question patterns: "what could be causing your pain" (self-diagnosis), "how can you prepare yourself" (advice-y), "prioritize your emotional well-being", "take care of yourself", "manage your health".`,
+    HEALTH: `DOMAIN: HEALTH
+HARD RULE: This covers medical concerns AND mental health AND sleep/exhaustion entries.
+For sleep entries: questions must reference the specific pattern (3am wake-ups, racing mind, the failure feeling) — not generic health advice.
+For medical entries: stay with the fear and uncertainty — don't give medical advice.
+BANNED question patterns: "what could be causing your symptoms" (self-diagnosis), "how can you prepare yourself" (advice-y), "prioritize your emotional well-being", "take care of yourself", "manage your health", "set a bedtime routine", "try sleep hygiene".`,
     GRIEF: `DOMAIN: GRIEF\nHARD RULE: Never suggest moving on or finding closure. Grief questions should deepen connection to the person/thing lost — not push toward resolution.`,
     PARENTING: `DOMAIN: PARENTING\nHARD RULE: The carrying line MUST use a specific detail from this entry (son, yelled, the look on his face, failing him). 'A parenting moment is sitting with you' is BANNED.`,
     CREATIVE: `DOMAIN: CREATIVE\nHARD RULE: The carrying line MUST use a specific detail from this entry (blank page, novel, staring, used to love writing, proof of something). 'A creative block is sitting with you' is BANNED. The phrase "proof of something I'm failing at" or similar must appear if present in the entry.`,
@@ -1471,7 +1484,7 @@ export async function generateReflectionFromEntry(input: Input): Promise<Reflect
   // FIX Bug3: expanded DOMAIN_ANCHOR_SIGNALS with vivid/metaphorical phrase patterns
   const DOMAIN_ANCHOR_SIGNALS: Partial<Record<Domain, RegExp>> = {
     MONEY: /\b(bank|rent|afford|money|debt|paycheck|salary|broke|financial|bills?|savings?|numbers|pretending|managing)\b/i,
-    HEALTH: /\b(pain|doctor|test|diagnosis|scared|sick|illness|symptoms?|body|health|blood|nine days|phone rings|clench)\b/i,
+    HEALTH: /\b(pain|doctor|test|diagnosis|scared|sick|illness|symptoms?|body|health|blood|nine days|phone rings|clench|wake up|waking|3am|4am|sleep|running through|already failed|racing|can'?t switch|lying awake)\b/i,
     GRIEF: /\b(died|death|miss|passed|gone|grief|loss|funeral|remember|almost picked up|call me|saturdays)\b/i,
     PARENTING: /\b(son|daughter|kid|child|yelled|snapped|broke me|failing|parent|look on his face|look on her face|eight)\b/i,
     CREATIVE: /\b(blank page|writing|novel|draw|music|block|staring|draft|proof|used to love|forty minutes)\b/i,
