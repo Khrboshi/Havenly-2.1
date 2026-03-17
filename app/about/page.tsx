@@ -72,24 +72,23 @@ export default function AboutPage() {
 
             <div className="mt-5 space-y-4 text-[15px] leading-relaxed text-slate-300/90">
               <p>
-                I built Havenly because I kept noticing the same thing in myself
-                and in people around me: we carry a lot. The emotional labour of
-                relationships, the low hum of work stress, and the way the same
-                patterns seem to come back no matter how much we try to handle
-                things differently.
-              </p>
-
-              <p>
-                Journaling helped me, but it often felt like writing into a void.
-                I could pour something out, close the notebook, and still not
-                fully understand what I was actually feeling or why it kept
+                Havenly exists because journaling often feels like writing into a
+                void. You pour something out, close the notebook, and still don&apos;t
+                fully understand what you were actually feeling — or why it keeps
                 happening.
               </p>
 
               <p>
+                The same patterns come back. The same emotional weight. The same
+                conversations replayed. Not because people aren&apos;t trying, but
+                because it&apos;s genuinely hard to see the thread when you&apos;re
+                living inside it.
+              </p>
+
+              <p>
                 Havenly exists to close that loop. You write. It reflects. Over
-                time, it helps you see the thread — not to diagnose you or fix
-                you, but because understanding yourself is genuinely useful.
+                time, it helps you see what quietly repeats — not to diagnose you
+                or fix you, but because understanding yourself is genuinely useful.
               </p>
             </div>
 
@@ -97,6 +96,56 @@ export default function AboutPage() {
               <p className="font-display text-lg font-medium leading-relaxed text-white">
                 &ldquo;Your inner life isn&apos;t content. It&apos;s yours.
                 Havenly is built around that idea.&rdquo;
+              </p>
+            </div>
+          </div>
+
+          {/* Built independently */}
+          <div className="max-w-4xl">
+            <h2 className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+              Built independently
+            </h2>
+
+            <div className="mt-5 grid gap-4 sm:grid-cols-3">
+              {[
+                {
+                  label: "No investors",
+                  body: "Havenly is independently built and funded. No venture capital, no board, no pressure to grow at the expense of the product.",
+                  accent: "border-emerald-500/20 bg-emerald-500/[0.03]",
+                  tag: "text-emerald-400/80",
+                },
+                {
+                  label: "No ads, ever",
+                  body: "Revenue comes entirely from Premium subscriptions. Your data is never sold, shared, or used to train AI models. That is the whole business model.",
+                  accent: "border-violet-500/20 bg-violet-500/[0.03]",
+                  tag: "text-violet-400/80",
+                },
+                {
+                  label: "One person accountable",
+                  body: "Havenly is built by a single independent developer. Every decision about privacy, product, and pricing has one person behind it — reachable at support@havenly.app.",
+                  accent: "border-sky-500/20 bg-sky-500/[0.03]",
+                  tag: "text-sky-400/80",
+                },
+              ].map(({ label, body, accent, tag }) => (
+                <div key={label} className={`rounded-[1.5rem] border p-5 ${accent}`}>
+                  <p className={`text-[11px] font-semibold uppercase tracking-[0.2em] ${tag}`}>
+                    {label}
+                  </p>
+                  <p className="mt-3 text-sm leading-relaxed text-slate-400">{body}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 rounded-[1.5rem] border border-slate-800 bg-slate-900/40 px-6 py-5">
+              <p className="text-sm leading-relaxed text-slate-400">
+                If something feels wrong, unclear, or broken —{" "}
+                <a
+                  href="mailto:support@havenly.app"
+                  className="font-medium text-emerald-400 transition-colors hover:text-emerald-300"
+                >
+                  email support@havenly.app
+                </a>
+                . There is no support ticket system. You&apos;re writing to the person who built it.
               </p>
             </div>
           </div>

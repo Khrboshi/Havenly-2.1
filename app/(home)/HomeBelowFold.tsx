@@ -553,6 +553,99 @@ export default function HomeBelowFold() {
 
       {/* ── 5. Founding members ──────────────────────────────────────────── */}
       <section className="border-b border-slate-800/60 py-12 sm:py-16">
+        <div className="mx-auto max-w-5xl px-5">
+          <ScrollReveal className="max-w-2xl">
+            <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-emerald-500/60">
+              What a reflection looks like
+            </p>
+            <h2 className="mt-3 font-display text-2xl font-semibold text-white sm:text-3xl">
+              This is what Havenly actually{" "}
+              <span className="text-emerald-400">says back.</span>
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-slate-400">
+              These are illustrative examples built from the kinds of entries people write.
+              Yours will be built from your own words.
+            </p>
+          </ScrollReveal>
+
+          <div className="mt-10 grid gap-5 lg:grid-cols-3">
+            {/* Example 1 — WORK */}
+            <ScrollReveal className="flex flex-col rounded-[1.5rem] border border-slate-800 bg-slate-900/50 overflow-hidden">
+              <div className="border-b border-slate-800 bg-slate-950/60 px-5 py-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-600">What you wrote</p>
+                <p className="mt-2 text-sm leading-relaxed text-slate-400 italic">
+                  &ldquo;I keep saying yes to things even when I&apos;m already overwhelmed. I stayed up until 2am finishing something that probably could have waited, but I felt guilty leaving it.&rdquo;
+                </p>
+              </div>
+              <div className="flex-1 bg-emerald-950/20 px-5 py-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500/70">Havenly reflected</p>
+                <p className="mt-2 text-sm leading-relaxed text-slate-200">
+                  Work has been piling up and you keep saying yes even when you&apos;re already overwhelmed — the guilt of stopping feels heavier than the cost of continuing.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {["exhaustion", "guilt", "overcommitment"].map(e => (
+                    <span key={e} className="rounded-full border border-slate-700 bg-slate-800/60 px-2.5 py-0.5 text-[11px] text-slate-400">{e}</span>
+                  ))}
+                </div>
+              </div>
+            </ScrollReveal>
+
+            {/* Example 2 — RELATIONSHIP */}
+            <ScrollReveal className="flex flex-col rounded-[1.5rem] border border-slate-800 bg-slate-900/50 overflow-hidden">
+              <div className="border-b border-slate-800 bg-slate-950/60 px-5 py-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-600">What you wrote</p>
+                <p className="mt-2 text-sm leading-relaxed text-slate-400 italic">
+                  &ldquo;A conversation with a close friend has been sitting with me. I feel like I said the wrong thing and now there&apos;s this weird distance between us that neither of us is addressing.&rdquo;
+                </p>
+              </div>
+              <div className="flex-1 bg-emerald-950/20 px-5 py-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500/70">Havenly reflected</p>
+                <p className="mt-2 text-sm leading-relaxed text-slate-200">
+                  The distance you felt — and what you didn&apos;t say — is still there. Replaying the conversation is your mind trying to find the version where you got it right.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {["longing", "disconnection", "hurt"].map(e => (
+                    <span key={e} className="rounded-full border border-slate-700 bg-slate-800/60 px-2.5 py-0.5 text-[11px] text-slate-400">{e}</span>
+                  ))}
+                </div>
+              </div>
+            </ScrollReveal>
+
+            {/* Example 3 — HEALTH */}
+            <ScrollReveal className="flex flex-col rounded-[1.5rem] border border-slate-800 bg-slate-900/50 overflow-hidden">
+              <div className="border-b border-slate-800 bg-slate-950/60 px-5 py-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-600">What you wrote</p>
+                <p className="mt-2 text-sm leading-relaxed text-slate-400 italic">
+                  &ldquo;I&apos;ve been snapping at people I care about and I don&apos;t fully understand why. I&apos;m not angry at them. I think I&apos;m just running on empty.&rdquo;
+                </p>
+              </div>
+              <div className="flex-1 bg-emerald-950/20 px-5 py-4">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500/70">Havenly reflected</p>
+                <p className="mt-2 text-sm leading-relaxed text-slate-200">
+                  You&apos;re running on empty and everything feels like one more thing — the snapping isn&apos;t anger, it&apos;s what happens when there&apos;s nothing left to absorb with.
+                </p>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {["exhaustion", "frustration", "helplessness"].map(e => (
+                    <span key={e} className="rounded-full border border-slate-700 bg-slate-800/60 px-2.5 py-0.5 text-[11px] text-slate-400">{e}</span>
+                  ))}
+                </div>
+              </div>
+            </ScrollReveal>
+          </div>
+
+          <ScrollReveal className="mt-8 text-center">
+            <Link
+              href="/magic-login"
+              className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:-translate-y-px"
+            >
+              Write your first entry free →
+            </Link>
+            <p className="mt-3 text-xs text-slate-600">No card required. Free is fully usable.</p>
+          </ScrollReveal>
+        </div>
+      </section>
+
+      <section className="border-b border-slate-800/60 py-12 sm:py-16">
         <div className="mx-auto max-w-4xl px-5">
           <ScrollReveal className="text-center">
             <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-emerald-500/60">

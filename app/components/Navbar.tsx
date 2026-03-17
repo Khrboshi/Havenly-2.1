@@ -139,6 +139,7 @@ export default function Navbar() {
             })}
 
             {!isLoggedIn ? (
+              pathname !== "/magic-login" && (
               <Link
                 href="/magic-login"
                 prefetch
@@ -146,6 +147,7 @@ export default function Navbar() {
               >
                 Start free
               </Link>
+              )
             ) : (
               <button
                 onClick={handleLogout}
@@ -219,6 +221,7 @@ export default function Navbar() {
                 </nav>
 
                 {!isLoggedIn ? (
+                  pathname !== "/magic-login" ? (
                   <div className="mt-6 rounded-3xl border border-white/10 bg-white/[0.03] p-4">
                     <p className="text-sm font-medium text-white">
                       Start with a private journal entry.
@@ -237,6 +240,7 @@ export default function Navbar() {
                       Write your first entry free →
                     </Link>
                   </div>
+                  ) : null
                 ) : (
                   <button
                     onClick={handleLogout}

@@ -21,6 +21,7 @@ type Reflection = {
   emotions: string[];
   gentlenextstep: string;
   questions: string[];
+  domain?: string;
   // Crisis safety response
   crisis?: boolean;
   message?: string;
@@ -470,33 +471,73 @@ export default function JournalEntryClient({
                 See your full pattern →
               </Link>
             </div>
-          ) : (
-            <div>
-              <p className="text-sm font-medium text-white/80">
-                This reflection is now part of your pattern history.
-              </p>
-              <p className="mt-1.5 text-xs leading-relaxed text-slate-500">
-                With Premium, Havenly reads across all your entries and shows you
-                what keeps repeating — the emotional thread you can&apos;t always
-                see from inside it. Less than one therapy session per month.
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Link
-                  href="/upgrade"
-                  className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2.5 text-xs font-semibold text-slate-950 shadow-sm shadow-emerald-500/20 transition hover:bg-emerald-400"
-                >
-                  Unlock your pattern history →
-                </Link>
-                <Link
-                  href="/insights/preview"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] px-4 py-2.5 text-xs font-medium text-slate-400 transition hover:border-white/[0.15] hover:text-slate-200"
-                >
-                  See an example
-                </Link>
+          ) : (() => {
+            const domain = reflection.domain ?? "GENERAL";
+            const ctaCopy: Record<string, { headline: string; sub: string }> = {
+              WORK: {
+                headline: "You wrote about work pressing in.",
+                sub: "Premium shows you when this pattern repeats — and what it has in common across weeks. Most people are surprised by what they find.",
+              },
+              RELATIONSHIP: {
+                headline: "You wrote about a relationship that's sitting with you.",
+                sub: "Premium shows you when this kind of thing keeps coming back — the emotional thread across your entries that's hard to see from inside it.",
+              },
+              HEALTH: {
+                headline: "You wrote about running on empty.",
+                sub: "Premium tracks when exhaustion keeps surfacing and what it tends to show up alongside. The pattern usually starts earlier than people realise.",
+              },
+              IDENTITY: {
+                headline: "You wrote about not feeling like yourself.",
+                sub: "Premium shows you the version of yourself that keeps recurring in your entries — and what tends to pull you away from it.",
+              },
+              GRIEF: {
+                headline: "You wrote about loss.",
+                sub: "Premium shows how grief surfaces and shifts across your entries over time. Sometimes the pattern reveals what still needs to be said.",
+              },
+              MONEY: {
+                headline: "You wrote about financial pressure.",
+                sub: "Premium shows when money stress keeps returning and what it tends to trigger alongside it. The pattern is rarely just about the numbers.",
+              },
+              PARENTING: {
+                headline: "You wrote about being a parent.",
+                sub: "Premium shows the emotional patterns in how you show up — the recurring moments, what triggers them, and what shifts over time.",
+              },
+              CREATIVE: {
+                headline: "You wrote about a creative block.",
+                sub: "Premium shows when this surfaces, what it follows, and whether it's getting better or worse. The pattern is usually not what you think.",
+              },
+              FITNESS: {
+                headline: "You wrote about your body.",
+                sub: "Premium tracks the emotional patterns around how you feel about your physical self — what shifts, what stays, and what it connects to.",
+              },
+              GENERAL: {
+                headline: "This reflection is now part of your pattern history.",
+                sub: "Premium shows you what keeps repeating across your entries — the emotional thread you can't always see from inside it.",
+              },
+            };
+            const copy = ctaCopy[domain] ?? ctaCopy.GENERAL;
+            return (
+              <div>
+                <p className="text-sm font-medium text-white/80">{copy.headline}</p>
+                <p className="mt-1.5 text-xs leading-relaxed text-slate-500">{copy.sub}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Link
+                    href="/upgrade"
+                    className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2.5 text-xs font-semibold text-slate-950 shadow-sm shadow-emerald-500/20 transition hover:bg-emerald-400"
+                  >
+                    Unlock your pattern history →
+                  </Link>
+                  <Link
+                    href="/insights/preview"
+                    className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] px-4 py-2.5 text-xs font-medium text-slate-400 transition hover:border-white/[0.15] hover:text-slate-200"
+                  >
+                    See an example
+                  </Link>
+                </div>
+                <p className="mt-3 text-[11px] text-slate-700">🛡️ 7-day full refund · Cancel anytime</p>
               </div>
-              <p className="mt-3 text-[11px] text-slate-700">🛡️ 7-day full refund · Cancel anytime</p>
-            </div>
-          )}
+            );
+          })()}
         </div>
       )}
 
