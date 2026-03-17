@@ -1405,6 +1405,7 @@ summary (labeled lines in order):
 ${summaryStructure}
 
 corepattern — ONE sentence. The specific dynamic in THIS entry.
+CRITICAL: Must be meaningfully DIFFERENT from "What's really happening" — shorter, more distilled, the one-line takeaway. Do NOT restate or paraphrase the WRH line. If WRH explains the mechanism, corepattern names the underlying tension in 10 words or fewer.
 
 themes — short phrases. emotions — single words (prefer nouns: shame not shameful, anxiety not anxious).
 

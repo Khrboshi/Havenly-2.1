@@ -287,6 +287,12 @@ function DomainSection({
     color: "#34d399",
   };
 
+  const topCount = sorted[0]?.[1] ?? 0;
+  const secondCount = sorted[1]?.[1] ?? 0;
+  // Only highlight as "most written-about" if top domain has at least 2x entries of second
+  // Otherwise it's a statistical tie and the label is misleading
+  const hasClearLeader = topCount >= 2 && topCount >= secondCount * 2;
+
   return (
     <section className="rounded-2xl border border-slate-800 bg-slate-950/50 p-6">
       <div className="mb-1">
@@ -305,8 +311,8 @@ function DomainSection({
             {topMeta.label}
           </p>
           <p className="text-xs text-slate-500">
-            {sorted[0][1]} of {total} {total === 1 ? "entry" : "entries"} — your
-            most written-about area
+            {sorted[0][1]} of {total} {total === 1 ? "entry" : "entries"}
+            {hasClearLeader ? " — your most written-about area" : " — patterns become clearer as you write more"}
           </p>
         </div>
       </div>
@@ -623,8 +629,7 @@ function WeeklySummarySection({ hasRealData }: { hasRealData: boolean }) {
 
           <div className="flex items-center gap-3 pt-1 border-t border-slate-800">
             <span className="text-xs text-slate-700" suppressHydrationWarning>
-              Generated {generatedLabel}
-              {state.cached ? " · cached" : ""}
+              Last updated {generatedLabel}
             </span>
           </div>
         </div>

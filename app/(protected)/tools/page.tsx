@@ -20,31 +20,40 @@ export default function ToolsPage() {
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <Link
           href="/tools/mood"
-          className="rounded-2xl border border-slate-800 bg-slate-950/60 p-6 transition hover:border-slate-700 hover:bg-slate-900"
+          className="group rounded-2xl border border-slate-800 bg-slate-950/60 p-6 transition hover:border-emerald-500/30 hover:bg-slate-900"
         >
           <h3 className="mb-2 font-medium text-slate-100">A quiet moment</h3>
           <p className="text-sm text-slate-400">
             Pause and notice where you actually are — no scores, no ratings, just honesty.
           </p>
+          <p className="mt-4 text-xs font-medium text-emerald-400 transition group-hover:text-emerald-300">
+            Open →
+          </p>
         </Link>
 
         <Link
           href="/tools/reflection"
-          className="rounded-2xl border border-slate-800 bg-slate-950/60 p-6 transition hover:border-slate-700 hover:bg-slate-900"
+          className="group rounded-2xl border border-slate-800 bg-slate-950/60 p-6 transition hover:border-emerald-500/30 hover:bg-slate-900"
         >
           <h3 className="mb-2 font-medium text-slate-100">Guided Reflection</h3>
           <p className="text-sm text-slate-400">
             A prompt shaped around what has been showing up in your entries lately.
           </p>
+          <p className="mt-4 text-xs font-medium text-emerald-400 transition group-hover:text-emerald-300">
+            Open →
+          </p>
         </Link>
 
         <Link
           href="/tools/suggestions"
-          className="rounded-2xl border border-slate-800 bg-slate-950/60 p-6 transition hover:border-slate-700 hover:bg-slate-900"
+          className="group rounded-2xl border border-slate-800 bg-slate-950/60 p-6 transition hover:border-emerald-500/30 hover:bg-slate-900"
         >
           <h3 className="mb-2 font-medium text-slate-100">Small Suggestions</h3>
           <p className="text-sm text-slate-400">
             One or two gentle ideas, based on your patterns — not instructions, just invitations.
+          </p>
+          <p className="mt-4 text-xs font-medium text-emerald-400 transition group-hover:text-emerald-300">
+            Open →
           </p>
         </Link>
       </div>

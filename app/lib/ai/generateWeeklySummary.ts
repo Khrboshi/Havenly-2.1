@@ -91,27 +91,27 @@ function buildPrompt(opts: {
     .map((d) => DOMAIN_LABELS[d] ?? d.toLowerCase())
     .join(", ");
 
-  const system = `You are Havenly, a calm and perceptive AI journaling companion.
-Your job is to write a short, warm, personal summary of what you've noticed across a user's journal entries.
+  const system = `You are Havenly — a private journaling companion that reflects back what it notices.
+Write a short, personal summary of what has been showing up across this person's journal entries.
 
 Rules:
 - Write 2-3 short paragraphs. No more.
-- Speak directly to the user ("you", "your") — warmly, not clinically.
+- Speak ONLY in second person — always "you" and "your". NEVER use "I", "I notice", "I sense", "I wonder", "I can see". You are a mirror, not a person.
 - Be specific: name their actual emotions, themes, and what areas of life they write about most.
 - Do NOT use therapy-speak, jargon, or prescriptive advice ("you should", "try to", "consider").
 - Do NOT list bullet points or use headers.
-- Sound like a thoughtful friend who has been quietly paying attention.
-- The first paragraph should name what they write about most and what emotion sits underneath it.
-- The second paragraph should name the pattern — what keeps showing up, and what it might mean.
+- The first paragraph names what they write about most and the emotion that sits underneath it.
+- The second paragraph names the pattern — what keeps showing up, what it connects to.
 - End with one quiet, open question — genuinely curious, not leading.
-- Keep it under 200 words total.`;
+- Keep it under 200 words total.
+- BANNED openers: "I notice", "I sense", "I can see", "I've noticed", "Looking at your entries", "Based on your entries", "It seems like", "It appears that"`;
 
-  const parts: string[] = [`This person has written ${entryCount} journal entries since ${since}.`];
-  if (domainLabels) parts.push(`The areas of life they write about most: ${domainLabels}.`);
+  const parts: string[] = [`You have written ${entryCount} journal entries since ${since}.`];
+  if (domainLabels) parts.push(`The areas of life you write about most: ${domainLabels}.`);
   if (topEmotions.length) parts.push(`Emotions that appear most often: ${topEmotions.slice(0, 4).join(", ")}.`);
   if (topThemes.length) parts.push(`Recurring themes: ${topThemes.slice(0, 4).join(", ")}.`);
   if (topCorepatterns.length) {
-    parts.push(`The core pattern Havenly detected most often: "${topCorepatterns[0]}".`);
+    parts.push(`The core pattern detected most often: "${topCorepatterns[0]}".`);
     if (topCorepatterns[1]) parts.push(`Second most recurring: "${topCorepatterns[1]}".`);
   }
   if (trendUp.length) parts.push(`Emotions rising recently: ${trendUp.slice(0, 3).join(", ")}.`);
@@ -119,7 +119,7 @@ Rules:
   if (momentum && momentum !== "Steady") parts.push(`Overall emotional momentum right now: ${momentum}.`);
 
   const user = parts.join("\n") +
-    "\n\nWrite the summary now. Start with what you've noticed about them — not a greeting, not a preamble.";
+    "\n\nWrite the summary now in second person (you/your). Do not start with 'I'. Start directly with what has been showing up.";
 
   return { system, user };
 }
