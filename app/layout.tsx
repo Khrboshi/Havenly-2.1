@@ -2,6 +2,7 @@ import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { Fraunces, DM_Sans } from "next/font/google";
 import Navbar from "@/app/components/Navbar";
+import Footer from "@/app/components/Footer";
 import Providers from "./providers";
 import DeepLinkBootstrap from "./components/DeepLinkBootstrap";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -86,6 +87,7 @@ export default function RootLayout({
           <Navbar />
           <InstallPrompt />
           {children}
+          <Footer />
         </Providers>
         <SpeedInsights />
       </body>
