@@ -12,6 +12,10 @@ const faqs = [
     a: "Premium unlocks the layer that reads across all your entries over time — not just the one you wrote today. You start seeing which emotional themes appear most often, how they connect to each other, what has been shifting, and why something may keep happening. The weekly summary pulls it all together into one personal read each week.",
   },
   {
+    q: "How many reflections do I get on the free plan?",
+    a: "Free includes 3 AI reflections per month — enough to experience how Havenly works. Premium gives you unlimited reflections on every entry.",
+  },
+  {
     q: "What is your refund policy?",
     a: "Every new subscription starts with a 7-day free trial — no charge until day 8. Cancel any time before then and you won't be charged anything. After the trial, if Premium is not what you expected, email havenly.support@gmail.com and we will issue a full refund — no questions asked. This applies to your first subscription period only.",
   },
@@ -195,6 +199,17 @@ export default function UpgradePage() {
                 </div>
 
                 <p className="mt-3 text-xs text-slate-700">{PAYMENT.checkoutTrustLine}</p>
+                <p className="mt-1 text-xs text-slate-700">
+                  By subscribing you agree to the{" "}
+                  <Link href="/terms" className="text-slate-500 underline underline-offset-2 transition-colors hover:text-slate-400">
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/privacy" className="text-slate-500 underline underline-offset-2 transition-colors hover:text-slate-400">
+                    Privacy Policy
+                  </Link>
+                  .
+                </p>
               </div>
 
               {/* Already free? */}
@@ -472,9 +487,12 @@ export default function UpgradePage() {
               </div>
             ))}
           </div>
-          <div className="mt-8 text-xs text-slate-700">
+          <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-700">
+            <Link href="/terms" className="text-emerald-600 transition-colors hover:text-emerald-500">
+              Terms of Service →
+            </Link>
             <Link href="/privacy" className="text-emerald-600 transition-colors hover:text-emerald-500">
-              Read the Privacy Policy →
+              Privacy Policy →
             </Link>
           </div>
         </div>
