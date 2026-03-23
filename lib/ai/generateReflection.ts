@@ -10,7 +10,7 @@
 //    emotionally loaded phrases ("behind glass", "proof of something", "almost picked up",
 //    "can't name it", "feel off"). bestAnchor selection scores for vivid phrases first,
 //    then falls back to domain signals, then falls back to anchors[0].
-// 4) Default model updated to llama-4-scout-17b-8e-instruct
+// 4) Default model updated to llama-4-scout-17b-16e-instruct
 
 export type Reflection = {
   summary: string;
@@ -1480,8 +1480,8 @@ export async function generateReflectionFromEntry(input: Input): Promise<Reflect
   const apiKey = process.env.GROQAPIKEY || process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error("Missing GROQAPIKEY");
 
-  // FIX: updated default model to llama-4-scout-17b-8e-instruct
-  const model = process.env.GROQMODEL || "llama-4-scout-17b-8e-instruct";
+  // FIX: updated default model to llama-4-scout-17b-16e-instruct
+  const model = process.env.GROQMODEL || "llama-4-scout-17b-16e-instruct";
   const plan = normalizePlan(input.plan);
 
   const entryBody = (input.content || "").trim();
