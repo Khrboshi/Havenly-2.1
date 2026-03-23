@@ -744,9 +744,9 @@ export default function HomeBelowFold() {
               <ul className="mt-5 space-y-3 text-sm text-slate-300">
                 {[
                   { label: "Write anytime", sub: "Your entries stay private" },
-                  { label: "3 AI reflections to start", sub: "Enough to discover if this is for you" },
+                  { label: "3 AI reflections per month", sub: "Enough to see if Havenly fits how you think" },
                   { label: "Gentle prompts", sub: "Helpful when you do not know how to begin" },
-                  { label: "Basic pattern insights", sub: "A first layer of what keeps showing up" },
+                  { label: "Encrypted & private", sub: "Your entries are never shared, sold, or used to train AI" },
                 ].map(({ label, sub }) => (
                   <li key={label} className="flex items-start gap-2">
                     <span className="mt-0.5 shrink-0 text-emerald-600">✓</span>
@@ -877,6 +877,10 @@ export default function HomeBelowFold() {
                 q: "Why would someone pay for Premium?",
                 a: "Free helps you write and reflect. Premium helps you understand what your entries mean together over time: recurring themes, hidden patterns, weekly summaries, and clearer insight into why something keeps happening.",
               },
+              {
+                q: "How many reflections do I get on the free plan?",
+                a: "Free includes 3 AI reflections per month — enough to experience how Havenly works. Premium gives you unlimited reflections on every entry.",
+              },
             ].map(({ q, a }) => (
               <ScrollReveal key={q}>
                 <div className="border-b border-slate-800/60 pb-5">
@@ -924,7 +928,7 @@ export default function HomeBelowFold() {
             <div className="mt-6 flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-slate-600">
               <span>✓ Private by default</span>
               <span>✓ Never trains AI models</span>
-              <span>✓ 7-day refund guarantee</span>
+              <span>✓ 7-day free trial</span>
               <span>✓ No ads, ever</span>
             </div>
           </ScrollReveal>
