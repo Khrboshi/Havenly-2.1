@@ -140,7 +140,7 @@ export default async function BillingPage() {
             </p>
             <p className="mt-0.5 text-xs text-slate-400">
               Not what you expected? Email{" "}
-              <span className="text-slate-200">support@havenly.app</span> for a
+              <span className="text-slate-200">havenly.support@gmail.com</span> for a
               full refund — no questions asked.
             </p>
           </div>
@@ -231,7 +231,7 @@ export default async function BillingPage() {
                     🛡️ 7-day full refund guarantee
                   </p>
                   <p className="mt-0.5 text-xs text-slate-500">
-                    Email <span className="text-slate-300">support@havenly.app</span> — no questions asked.
+                    Email <span className="text-slate-300">havenly.support@gmail.com</span> — no questions asked.
                   </p>
                 </div>
               )}
@@ -269,7 +269,7 @@ export default async function BillingPage() {
             <div className="text-xs font-semibold text-slate-400">Support</div>
             <p className="mt-2 text-sm text-slate-400">
               Billing questions or cancellations:{" "}
-              <span className="text-slate-200">support@havenly.app</span>
+              <span className="text-slate-200">havenly.support@gmail.com</span>
             </p>
           </div>
 

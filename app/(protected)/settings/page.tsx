@@ -307,7 +307,7 @@ export default async function SettingsPage() {
             </div>
             <p className="mt-3 text-xs text-slate-600">
               To request data export or account deletion, email{" "}
-              <span className="text-slate-400">support@havenly.app</span> from
+              <span className="text-slate-400">havenly.support@gmail.com</span> from
               your account address.
             </p>
           </Card>
@@ -332,7 +332,7 @@ export default async function SettingsPage() {
 
           <Card title="Support" subtitle="Help with billing or account issues.">
             <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-5 py-1">
-              <DataRow label="Email" value="support@havenly.app" />
+              <DataRow label="Email" value="havenly.support@gmail.com" />
             </div>
             <p className="mt-3 text-xs text-slate-600">
               Include your account email for faster help.

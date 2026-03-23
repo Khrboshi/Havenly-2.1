@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ARTICLES } from "./articles";
 import EmailCapture from "@/app/components/EmailCapture";
 import ScrollReveal from "@/app/components/ScrollReveal";
+import { CONFIG } from "@/app/lib/config";
 
 export const metadata = {
   title: "Havenly Journal — Articles for Overloaded Minds",
@@ -11,7 +12,7 @@ export const metadata = {
     title: "Havenly Journal — Articles for Overloaded Minds",
     description:
       "Gentle articles about emotional load, rest, and self-awareness. No productivity hacks.",
-    url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://havenly-2-1.vercel.app") + "/blog",
+    url: CONFIG.siteUrl + "/blog",
   },
 };
 

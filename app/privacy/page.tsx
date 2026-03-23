@@ -32,7 +32,7 @@ export default function PrivacyPolicyPage() {
           <p className="mt-2 text-xs text-slate-300">
             If you have questions, contact us at{" "}
             <span className="font-semibold text-slate-100">
-              support@havenly.app
+              havenly.support@gmail.com
             </span>
             .
           </p>

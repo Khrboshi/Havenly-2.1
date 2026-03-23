@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { Resend } from "resend";
+import { CONFIG } from "@/app/lib/config";
 
 export const runtime = "nodejs";
 
@@ -98,7 +99,7 @@ function confirmationEmailHtml(): string {
           </tr>
           <tr>
             <td style="padding-bottom:40px;">
-              <a href="https://havenly.app/blog" style="display:inline-block;background-color:#3ee7b0;color:#020617;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:9999px;">
+              <a href={`${CONFIG.siteUrl}/blog`} style="display:inline-block;background-color:#3ee7b0;color:#020617;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:9999px;">
                 Read the latest article →
               </a>
             </td>
@@ -106,9 +107,9 @@ function confirmationEmailHtml(): string {
           <tr>
             <td>
               <p style="margin:0;font-size:12px;line-height:1.6;color:#334155;">
-                You're receiving this because you signed up at havenly.app.<br />
+                You're receiving this because you signed up at Havenly.<br />
                 Your email address is never sold or shared.<br />
-                <a href="https://havenly.app/privacy" style="color:#475569;">Privacy Policy</a>
+                <a href={`${CONFIG.siteUrl}/privacy`} style="color:#475569;">Privacy Policy</a>
               </p>
             </td>
           </tr>

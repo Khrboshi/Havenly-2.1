@@ -1,9 +1,7 @@
 import type { MetadataRoute } from "next";
+import { CONFIG } from "@/app/lib/config";
 
-const base = (
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  "https://havenly.app"
-).replace(/\/$/, "");
+const base = CONFIG.siteUrl.replace(/\/$/, "");
 
 export default function robots(): MetadataRoute.Robots {
   return {

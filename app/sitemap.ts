@@ -1,10 +1,8 @@
 import type { MetadataRoute } from "next";
 import { ARTICLES } from "./blog/articles";
+import { CONFIG } from "@/app/lib/config";
 
-const base = (
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  "https://havenly.app"
-).replace(/\/$/, "");
+const base = CONFIG.siteUrl.replace(/\/$/, "");
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const blogPosts: MetadataRoute.Sitemap = ARTICLES.map((article) => ({

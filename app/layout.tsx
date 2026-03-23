@@ -6,6 +6,7 @@ import Providers from "./providers";
 import DeepLinkBootstrap from "./components/DeepLinkBootstrap";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import InstallPrompt from "@/app/components/InstallPrompt";
+import { CONFIG } from "@/app/lib/config";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -22,7 +23,7 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://havenly-2-1.vercel.app";
+const SITE_URL = CONFIG.siteUrl;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

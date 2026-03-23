@@ -1,5 +1,6 @@
 import Link from "next/link";
 import HomeBelowFold from "./(home)/HomeBelowFold";
+import { CONFIG } from "@/app/lib/config";
 
 export const metadata = {
   title: "Havenly — The Journal That Listens",
@@ -9,7 +10,7 @@ export const metadata = {
     title: "Havenly — The Journal That Listens",
     description:
       "Write what's weighing on you. Get a gentle reflection back. Start seeing what keeps returning.",
-    url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://havenly-2-1.vercel.app") + "/",
+    url: CONFIG.siteUrl + "/",
   },
 };
 

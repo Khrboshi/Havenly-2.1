@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CONFIG } from "@/app/lib/config";
 
 export const metadata = {
   title: "About Havenly — A Journal for Understanding Yourself",
@@ -8,7 +9,7 @@ export const metadata = {
     title: "About Havenly — A Journal for Understanding Yourself",
     description:
       "Built for people who want to understand themselves better, not optimize themselves harder.",
-    url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://havenly-2-1.vercel.app") + "/about",
+    url: CONFIG.siteUrl + "/about",
   },
 };
 
@@ -122,7 +123,7 @@ export default function AboutPage() {
                 },
                 {
                   label: "One person accountable",
-                  body: "Havenly is built by a single independent developer. Every decision about privacy, product, and pricing has one person behind it — reachable at support@havenly.app.",
+                  body: "Havenly is built by a single independent developer. Every decision about privacy, product, and pricing has one person behind it — reachable at havenly.support@gmail.com.",
                   accent: "border-sky-500/20 bg-sky-500/[0.03]",
                   tag: "text-sky-400/80",
                 },
@@ -140,10 +141,10 @@ export default function AboutPage() {
               <p className="text-sm leading-relaxed text-slate-400">
                 If something feels wrong, unclear, or broken —{" "}
                 <a
-                  href="mailto:support@havenly.app"
+                  href="mailto:havenly.support@gmail.com"
                   className="font-medium text-emerald-400 transition-colors hover:text-emerald-300"
                 >
-                  email support@havenly.app
+                  email havenly.support@gmail.com
                 </a>
                 . There is no support ticket system. You&apos;re writing to the person who built it.
               </p>

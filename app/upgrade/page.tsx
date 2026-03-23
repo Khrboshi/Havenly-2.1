@@ -12,7 +12,7 @@ const faqs = [
   },
   {
     q: "What is your refund policy?",
-    a: "Every new subscription starts with a 7-day free trial — no charge until day 8. Cancel any time before then and you won't be charged anything. After the trial, if Premium is not what you expected, email support@havenly.app and we will issue a full refund — no questions asked. This applies to your first subscription period only.",
+    a: "Every new subscription starts with a 7-day free trial — no charge until day 8. Cancel any time before then and you won't be charged anything. After the trial, if Premium is not what you expected, email havenly.support@gmail.com and we will issue a full refund — no questions asked. This applies to your first subscription period only.",
   },
   {
     q: "What if I do not write very often?",
@@ -58,10 +58,10 @@ function UpgradeButton({
       if (data?.url) {
         window.location.assign(data.url);
       } else {
-        setError("Something went wrong — please try again or email support@havenly.app.");
+        setError("Something went wrong — please try again or email havenly.support@gmail.com.");
       }
     } catch {
-      setError("Something went wrong — please try again or email support@havenly.app.");
+      setError("Something went wrong — please try again or email havenly.support@gmail.com.");
     } finally {
       setLoading(false);
     }
