@@ -280,7 +280,7 @@ export default function JournalEntryClient({
                 href="/upgrade"
                 className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-sm shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:-translate-y-px"
               >
-                Start ${PRICING.trialLabel} →
+                {`Start ${PRICING.trialLabel} →`}
               </Link>
               <Link
                 href="/insights/preview"
@@ -290,7 +290,7 @@ export default function JournalEntryClient({
               </Link>
             </div>
             <p className="mt-3 text-[11px] text-slate-700">
-              🛡️ No charge for ${PRICING.trialDays} ${PRICING.trialDays === 1 ? "day" : "days"} · Cancel anytime · {" "}
+              {`🛡️ No charge for ${PRICING.trialDays} ${PRICING.trialDays === 1 ? "day" : "days"} · Cancel anytime · `}{" "}
               <Link
                 href="/terms"
                 className="underline underline-offset-2 transition-colors hover:text-slate-500"
@@ -590,7 +590,7 @@ export default function JournalEntryClient({
                     href="/upgrade"
                     className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2.5 text-xs font-semibold text-slate-950 shadow-sm shadow-emerald-500/20 transition hover:bg-emerald-400"
                   >
-                    Start ${PRICING.trialLabel} →
+                    {`Start ${PRICING.trialLabel} →`}
                   </Link>
                   <Link
                     href="/insights/preview"
@@ -600,7 +600,7 @@ export default function JournalEntryClient({
                   </Link>
                 </div>
                 <p className="mt-3 text-[11px] text-slate-700">
-                  🛡️ No charge for ${PRICING.trialDays} ${PRICING.trialDays === 1 ? "day" : "days"} · Cancel anytime ·{" "}
+                  {`🛡️ No charge for ${PRICING.trialDays} ${PRICING.trialDays === 1 ? "day" : "days"} · Cancel anytime ·`}{" "}
                   <Link
                     href="/terms"
                     className="underline underline-offset-2 transition-colors hover:text-slate-500"
@@ -655,10 +655,10 @@ export default function JournalEntryClient({
         open={showUpgrade}
         onClose={() => setShowUpgrade(false)}
         title="You've used your 3 free reflections this month."
-        message="Start a free trial to keep reflecting on every entry — no charge for ${PRICING.trialDays} ${PRICING.trialDays === 1 ? "day" : "days"}, cancel anytime before then."
+        message={`Start a free trial to keep reflecting on every entry — no charge for ${PRICING.trialDays} ${PRICING.trialDays === 1 ? "day" : "days"}, cancel anytime before then.`}
         source="reflection_limit"
         ctaHref="/upgrade"
-        ctaLabel="Start ${PRICING.trialLabel} →"
+        ctaLabel={`Start ${PRICING.trialLabel} →`}
       />
     </div>
   );
