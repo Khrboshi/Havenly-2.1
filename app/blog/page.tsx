@@ -23,7 +23,7 @@ export default function BlogPage() {
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <section className="relative overflow-hidden border-b border-slate-800/60 bg-slate-950">
         <div className="pointer-events-none absolute left-0 top-0 h-[320px] w-[420px] rounded-full bg-emerald-500/[0.05] blur-3xl" />
-        <div className="pointer-events-none absolute right-[-80px] top-0 h-[320px] w-[360px] rounded-full bg-cyan-500/[0.04] blur-3xl" />
+        <div className="pointer-events-none absolute right-[-80px] top-0 h-[320px] w-[360px] rounded-full bg-violet-500/[0.04] blur-3xl" />
 
         <div className="relative mx-auto max-w-6xl px-6 pb-14 pt-12 sm:pb-16 sm:pt-16">
           <div className="max-w-4xl">

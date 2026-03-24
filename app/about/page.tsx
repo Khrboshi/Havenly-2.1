@@ -2,13 +2,13 @@ import Link from "next/link";
 import { CONFIG } from "@/app/lib/config";
 
 export const metadata = {
-  title: `About ${CONFIG.appName} — A Journal for Understanding Yourself`,
+  title: `About ${CONFIG.appName} — The Journal That Reads Underneath`,
   description:
-    "Built for people who want to understand themselves better, not optimize themselves harder.",
+    "A private journal that reflects back what you write — and over time, shows you the patterns you've been too close to see. Built independently, no ads, no investors.",
   openGraph: {
-    title: `About ${CONFIG.appName} — A Journal for Understanding Yourself`,
+    title: `About ${CONFIG.appName} — The Journal That Reads Underneath`,
     description:
-      "Built for people who want to understand themselves better, not optimize themselves harder.",
+      "A private journal that reflects back what you write — and over time, shows you the patterns you've been too close to see.",
     url: CONFIG.siteUrl + "/about",
   },
 };
@@ -22,19 +22,19 @@ export default function AboutPage() {
         <div className="mx-auto max-w-5xl px-6">
           <div className="max-w-4xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-400/80">
-              About Quiet Mirror
+              About {CONFIG.appName}
             </p>
 
             <h1 className="mt-4 font-display text-[2.2rem] font-semibold leading-[1.08] tracking-tight text-white sm:text-5xl">
-              A private journal that notices what you carry —{" "}
+              A mirror for what you carry —{" "}
               <span className="text-emerald-400">
-                and helps you see it clearly.
+                held quietly, without judgment.
               </span>
             </h1>
 
             <p className="mt-5 max-w-3xl text-[15px] leading-relaxed text-slate-300 sm:text-[17px]">
-              Not a productivity tool. Not a mood tracker. Quiet Mirror is a place to
-              write honestly, get a gentle reflection back, and — over time — see
+              Not a productivity tool. Not a mood tracker. {CONFIG.appName} is a place to
+              write honestly, receive a gentle reflection back, and — over time — see
               the patterns that have quietly been shaping your weeks.
             </p>
 
@@ -45,10 +45,9 @@ export default function AboutPage() {
               >
                 Start journaling free
               </Link>
-
               <Link
                 href="/upgrade"
-                className="inline-flex items-center justify-center rounded-full border border-slate-700/60 px-5 py-3 text-sm font-medium text-slate-400 transition-colors hover:border-slate-600 hover:text-white"
+                className="inline-flex items-center justify-center rounded-full border border-slate-700/60 px-5 py-3 text-sm font-medium text-slate-400 transition-colors hover:border-slate-500 hover:text-white"
               >
                 See Pricing &rarr;
               </Link>
@@ -61,42 +60,41 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* ── Body sections ─────────────────────────────────────────────────── */}
+      {/* ── Body ─────────────────────────────────────────────────────────── */}
       <section className="py-12 sm:py-16">
         <div className="mx-auto max-w-5xl space-y-14 px-6 sm:space-y-16">
 
-          {/* Why it exists */}
+          {/* Why the name */}
           <div className="max-w-4xl">
             <h2 className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
-              Why it exists
+              Why "Quiet Mirror"
             </h2>
 
             <div className="mt-5 space-y-4 text-[15px] leading-relaxed text-slate-300/90">
               <p>
-                Quiet Mirror exists because journaling often feels like writing into a
-                void. You pour something out, close the notebook, and still don&apos;t
-                fully understand what you were actually feeling — or why it keeps
-                happening.
+                A mirror doesn&apos;t advise. It doesn&apos;t judge. It simply
+                reflects back what&apos;s already there — clearly, without distortion,
+                without noise. That is exactly what this product is meant to do.
               </p>
-
               <p>
-                The same patterns come back. The same emotional weight. The same
-                conversations replayed. Not because people aren&apos;t trying, but
-                because it&apos;s genuinely hard to see the thread when you&apos;re
-                living inside it.
+                The &ldquo;quiet&rdquo; part matters too. When you&apos;re carrying
+                something heavy, the last thing you need is another loud surface.
+                You need somewhere still — where you can write honestly, see yourself
+                clearly, and leave a little lighter.
               </p>
-
               <p>
-                Quiet Mirror exists to close that loop. You write. It reflects. Over
-                time, it helps you see what quietly repeats — not to diagnose you
-                or fix you, but because understanding yourself is genuinely useful.
+                Most journaling apps store your entries. {CONFIG.appName} does something
+                different: it reads across them over time and reflects back the thread
+                running through them — the emotions that keep surfacing, the themes
+                you return to without noticing, the pattern you&apos;ve been living
+                but couldn&apos;t quite name.
               </p>
             </div>
 
             <div className="mt-8 rounded-[1.6rem] border border-emerald-500/15 bg-emerald-500/[0.03] px-6 py-5">
               <p className="font-display text-lg font-medium leading-relaxed text-white">
-                &ldquo;Your inner life isn&apos;t content. It&apos;s yours.
-                Quiet Mirror is built around that idea.&rdquo;
+                &ldquo;Your inner life isn&apos;t content to be optimised.
+                It&apos;s yours to understand. {CONFIG.appName} is built around that.&rdquo;
               </p>
             </div>
           </div>
@@ -111,21 +109,21 @@ export default function AboutPage() {
               {[
                 {
                   label: "No investors",
-                  body: "Quiet Mirror is independently built and funded. No venture capital, no board, no pressure to grow at the expense of the product.",
+                  body: `${CONFIG.appName} is independently built and funded. No venture capital, no board, no pressure to grow at the expense of the product or your privacy.`,
                   accent: "border-emerald-500/20 bg-emerald-500/[0.03]",
                   tag: "text-emerald-400/80",
                 },
                 {
                   label: "No ads, ever",
-                  body: "Revenue comes entirely from Premium subscriptions. Your data is never sold, shared, or used to train AI models. That is the whole business model.",
+                  body: "Revenue comes entirely from Premium subscriptions. Your data is never sold, shared, or used to train AI models. That is the complete business model.",
                   accent: "border-violet-500/20 bg-violet-500/[0.03]",
                   tag: "text-violet-400/80",
                 },
                 {
                   label: "One person accountable",
-                  body: "Quiet Mirror is built by a single independent developer. Every decision about privacy, product, and pricing has one person behind it — reachable at hello@quietmirror.me.",
-                  accent: "border-sky-500/20 bg-sky-500/[0.03]",
-                  tag: "text-sky-400/80",
+                  body: `${CONFIG.appName} is built by a single independent developer. Every decision about privacy, product, and pricing has one person behind it — reachable directly at ${CONFIG.supportEmail}.`,
+                  accent: "border-emerald-500/20 bg-emerald-500/[0.03]",
+                  tag: "text-emerald-400/80",
                 },
               ].map(({ label, body, accent, tag }) => (
                 <div key={label} className={`rounded-[1.5rem] border p-5 ${accent}`}>
@@ -141,10 +139,10 @@ export default function AboutPage() {
               <p className="text-sm leading-relaxed text-slate-400">
                 If something feels wrong, unclear, or broken —{" "}
                 <a
-                  href="mailto:hello@quietmirror.me"
+                  href={`mailto:${CONFIG.supportEmail}`}
                   className="font-medium text-emerald-400 transition-colors hover:text-emerald-300"
                 >
-                  email hello@quietmirror.me
+                  email {CONFIG.supportEmail}
                 </a>
                 . There is no support ticket system. You&apos;re writing to the person who built it.
               </p>
@@ -160,17 +158,16 @@ export default function AboutPage() {
 
               <div className="mt-5 space-y-4 text-[15px] leading-relaxed text-slate-300/90">
                 <p>
-                  Most journaling apps store your entries. Some add reminders.
-                  Some let you tag your mood. Quiet Mirror does something different:
-                  it reads what you&apos;ve written across time and looks for the
-                  things that quietly repeat — the emotions that keep surfacing,
-                  the themes you return to without realising, and the patterns
-                  that have been there for weeks or months.
+                  Most journaling apps are passive storage. They hold what you
+                  write, then wait. {CONFIG.appName} actively reads across your entries —
+                  not to diagnose you, but to hold up a mirror to the thread
+                  running through everything you&apos;ve written.
                 </p>
-
                 <p>
-                  You do not have to force structure onto yourself to make this
-                  happen. You write honestly, and Quiet Mirror does the noticing.
+                  You don&apos;t have to force structure onto yourself. You write
+                  honestly, at your own pace, whenever you need to — and{" "}
+                  {CONFIG.appName} does the noticing. When you&apos;re ready, it
+                  reflects back what it found.
                 </p>
               </div>
             </div>
@@ -178,14 +175,14 @@ export default function AboutPage() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
               <div className="rounded-[1.5rem] border border-emerald-500/20 bg-emerald-500/[0.03] p-5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-400/80">
-                  Quiet Mirror is
+                  {CONFIG.appName} is
                 </p>
                 <ul className="mt-4 space-y-2.5 text-sm leading-relaxed text-slate-300">
                   {[
                     "A private place to write without judgment",
-                    "A gentle reflection on what you wrote",
+                    "A gentle mirror for what you've written",
                     "A way to see patterns across weeks and months",
-                    "Respectful of your pace and privacy",
+                    "Respectful of your pace, your privacy, and your process",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2">
                       <span className="mt-0.5 shrink-0 text-emerald-500">✓</span>
@@ -197,14 +194,14 @@ export default function AboutPage() {
 
               <div className="rounded-[1.5rem] border border-slate-800 bg-slate-900/40 p-5">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-400/70">
-                  Quiet Mirror is not
+                  {CONFIG.appName} is not
                 </p>
                 <ul className="mt-4 space-y-2.5 text-sm leading-relaxed text-slate-400">
                   {[
                     "Therapy or a substitute for clinical care",
                     "A productivity or self-optimisation tool",
                     "A public or social platform",
-                    "Something you have to use every day",
+                    "Something that requires daily commitment",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-2">
                       <span className="mt-0.5 shrink-0 text-slate-600">&mdash;</span>
@@ -227,21 +224,18 @@ export default function AboutPage() {
                 <p>
                   When you write an entry and request a reflection, the AI reads
                   what you&apos;ve written and responds with a short, thoughtful
-                  paragraph — not advice and not a diagnosis. More like a mirror
-                  held up gently: it names what it noticed in your words, reflects
-                  an emotion back, and sometimes asks a quiet question.
+                  paragraph. Not advice. Not a diagnosis. More like a mirror held
+                  up gently: it names what it noticed in your words, reflects an
+                  emotion back, and sometimes asks a quiet question worth sitting with.
                 </p>
-
                 <p>
-                  Over time, the AI looks across your entries to find recurring
-                  threads: which emotions appear most often, which themes keep
-                  returning, and whether things have been shifting or staying the
-                  same. Premium members see this as a fuller insights view —
-                  their personal pattern, updated as they write.
+                  Over time, it reads across your entries to find the recurring
+                  threads — which emotions appear most often, which themes keep
+                  returning, whether things have been shifting or staying the same.
+                  Premium members see this as a fuller pattern view, updated as they write.
                 </p>
-
                 <p>
-                  The AI is a tool for reflection, not a replacement for the
+                  The AI is a reflective tool. It is not a replacement for the
                   people in your life, and not a substitute for professional
                   support if you need it.
                 </p>
@@ -259,29 +253,28 @@ export default function AboutPage() {
                   AI models, never shared with third parties, and never shown to
                   anyone but you.
                 </p>
-
                 <p>
-                  We do not run ads and we do not sell data. Quiet Mirror earns
+                  We do not run ads and we do not sell data. {CONFIG.appName} earns
                   revenue from Premium subscriptions — that is the business
-                  model, and it is designed that way deliberately.
+                  model, designed that way deliberately.
                 </p>
-
                 <p>
                   <Link
                     href="/privacy"
                     className="font-medium text-emerald-400 transition-colors hover:text-emerald-300"
                   >
-                    Read our full Privacy Policy &rarr;
+                    Read the full Privacy Policy &rarr;
                   </Link>
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Bottom CTA strip */}
+          {/* Bottom CTA */}
           <div className="flex flex-col gap-4 border-t border-slate-800/60 pt-8 sm:flex-row sm:items-center sm:justify-between">
             <p className="max-w-md text-sm leading-relaxed text-slate-500">
-              Quiet Mirror works best when you use it honestly, at your own pace.
+              {CONFIG.appName} works best when you use it honestly, at your own pace.
+              There is no streak. No pressure. Just the mirror.
             </p>
 
             <div className="flex flex-wrap gap-3">
@@ -291,15 +284,15 @@ export default function AboutPage() {
               >
                 Start free
               </Link>
-
               <Link
                 href="/blog"
-                className="inline-flex items-center justify-center rounded-full border border-slate-700/60 px-5 py-3 text-sm font-medium text-slate-400 transition-colors hover:border-slate-600 hover:text-white"
+                className="inline-flex items-center justify-center rounded-full border border-slate-700/60 px-5 py-3 text-sm font-medium text-slate-400 transition-colors hover:border-slate-500 hover:text-white"
               >
                 Read the blog &rarr;
               </Link>
             </div>
           </div>
+
         </div>
       </section>
     </main>

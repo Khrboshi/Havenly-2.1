@@ -58,7 +58,7 @@ export default function PrivacyPolicyPage() {
         {/* Sections */}
         <div className="mt-10 space-y-10 text-sm">
 
-          <section id="what-havenly-is">
+          <section id="what-quiet-mirror-is">
             <h2 className="text-lg font-semibold text-slate-100">
               What {CONFIG.appName} is (and is not)
             </h2>

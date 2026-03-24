@@ -49,7 +49,7 @@ export default function InstallPage() {
             </div>
             <div>
               <p className="text-sm font-semibold text-white">{CONFIG.appName}</p>
-              <p className="text-xs text-slate-500">Your sanctuary among the noise.</p>
+              <p className="text-xs text-slate-500">Write honestly. Reflect clearly.</p>
               <p className="mt-1.5 text-xs text-slate-600">Lives on your Home Screen, opens instantly.</p>
             </div>
           </div>
