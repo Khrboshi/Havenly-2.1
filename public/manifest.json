@@ -1,8 +1,8 @@
 {
-  "name": "Havenly",
-  "short_name": "Havenly",
+  "name": "Quiet Mirror",
+  "short_name": "Quiet Mirror",
   "id": "/",
-  "description": "A calm, private journaling companion with gentle AI reflections.",
+  "description": "Write honestly. Get a gentle reflection back. See the patterns shaping your life.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -36,13 +36,13 @@
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Havenly desktop"
+      "label": "Quiet Mirror desktop"
     },
     {
       "src": "/pwa/screenshots/screenshot-2.png",
       "sizes": "720x1280",
       "type": "image/png",
-      "label": "Havenly mobile"
+      "label": "Quiet Mirror mobile"
     }
   ]
 }
