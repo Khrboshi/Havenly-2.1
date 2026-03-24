@@ -134,7 +134,7 @@ export default function UpgradePage() {
                   { label: "Unlimited reflections", sub: "Reflect on every entry, not just a few each month", color: "text-emerald-400" },
                   { label: "Full pattern insights", sub: "See what repeats across weeks and months", color: "text-violet-400" },
                   { label: "Weekly personal summary", sub: "A written mirror of what Quiet Mirror noticed this week", color: "text-amber-400" },
-                  { label: "Why-this-keeps-happening insights", sub: "Get closer to the recurring emotional loop underneath", color: "text-sky-400" },
+                  { label: "Why-this-keeps-happening insights", sub: "Get closer to the recurring emotional loop underneath", color: "text-violet-400" },
                   { label: "Everything in Free", sub: "Nothing removed — just a deeper layer added", color: "text-slate-500" },
                 ].map(({ label, sub, color }) => (
                   <li key={label} className="flex items-start gap-3">
@@ -184,7 +184,7 @@ export default function UpgradePage() {
                     {PRICING.valueLabel}
                   </span>
                 </div>
-                {/* trialFreeFor = "Free for 7 days" — derives from PRICING.trialDays */}
+                
                 <p className="mb-4 text-xs text-slate-600">
                   {PRICING.trialFreeFor} · then {PRICING.monthlyCadence} · Cancel anytime
                 </p>
@@ -257,7 +257,7 @@ export default function UpgradePage() {
                       { label: "Emotional load", pct: 64, color: "bg-emerald-400" },
                       { label: "Responsibility for others", pct: 50, color: "bg-emerald-500/60" },
                       { label: "Overwhelm / exhaustion", pct: 45, color: "bg-violet-400/70" },
-                      { label: "Clarity (↑ rising)", pct: 28, color: "bg-sky-400/60" },
+                      { label: "Clarity (↑ rising)", pct: 28, color: "bg-violet-400/60" },
                     ].map(({ label, pct, color }) => (
                       <div key={label}>
                         <div className="mb-1 flex items-center justify-between">
@@ -397,15 +397,15 @@ export default function UpgradePage() {
               </div>
             </div>
 
-            <div className="rounded-[1.5rem] border border-sky-500/20 bg-sky-500/[0.04] p-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-sky-400">What is shifting</p>
+            <div className="rounded-[1.5rem] border border-violet-500/20 bg-violet-500/[0.04] p-6">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-violet-400">What is shifting</p>
               <p className="mt-3 text-[15px] leading-[1.7] text-slate-200">
                 Curiosity and honesty are{" "}
-                <span className="text-sky-300">rising in recent entries</span> — which often
+                <span className="text-violet-300">rising in recent entries</span> — which often
                 signals that something important is becoming clearer.
               </p>
               <div className="mt-4 flex items-center gap-2 text-xs text-slate-500">
-                <span className="text-sky-400">↑</span>
+                <span className="text-violet-400">↑</span>
                 <span>Clarity signal up over the last 2 weeks</span>
               </div>
             </div>
@@ -453,7 +453,7 @@ export default function UpgradePage() {
           </p>
           <div className="flex flex-col items-center gap-2">
             <UpgradeButton className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-7 py-3.5 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:-translate-y-px disabled:opacity-60" />
-            {/* trialFreeFor = "Free for 7 days" */}
+            
             <p className="text-xs text-slate-600">
               {PRICING.trialFreeFor} · then {PRICING.monthlyCadence} · Cancel anytime
             </p>
@@ -508,7 +508,7 @@ export default function UpgradePage() {
               Start free first
             </Link>
           </div>
-          {/* Full sub-line: "Free for 7 days · No charge today · Cancel anytime · No ads, ever" */}
+          
           <p className="mt-5 text-xs text-slate-700">
             {PRICING.trialFreeFor} · No charge today · Cancel anytime · No ads, ever
           </p>

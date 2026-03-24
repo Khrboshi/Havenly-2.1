@@ -76,7 +76,7 @@ export default function HomeBelowFold() {
                         { label: "Emotional load", pct: 64, color: "bg-emerald-400" },
                         { label: "Responsibility for others", pct: 50, color: "bg-emerald-500/70" },
                         { label: "Overwhelm / exhaustion", pct: 45, color: "bg-violet-400/70" },
-                        { label: "Clarity (↑ rising)", pct: 28, color: "bg-sky-400/60" },
+                        { label: "Clarity (↑ rising)", pct: 28, color: "bg-violet-400/60" },
                       ].map(({ label, pct, color }) => (
                         <div key={label}>
                           <div className="mb-1 flex items-center justify-between">
@@ -291,13 +291,13 @@ export default function HomeBelowFold() {
               <div className="mt-4 rounded-xl border border-amber-500/10 bg-amber-500/[0.04] p-3"><p className="text-xs leading-relaxed text-slate-400">This pattern appeared in your last 3 weeks of entries. It tends to peak on Sundays.</p></div>
             </div>
 
-            <div className="relative rounded-[1.5rem] border border-sky-500/20 bg-sky-500/[0.04] p-6">
+            <div className="relative rounded-[1.5rem] border border-violet-500/20 bg-violet-500/[0.04] p-6">
               <div className="flex items-start justify-between gap-3">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-sky-400">What is shifting</p>
-                <span className="shrink-0 rounded-full border border-sky-500/20 bg-sky-500/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.15em] text-sky-400">Premium</span>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-violet-400">What is shifting</p>
+                <span className="shrink-0 rounded-full border border-violet-500/20 bg-violet-500/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.15em] text-violet-400">Premium</span>
               </div>
-              <p className="mt-3 text-[15px] leading-[1.7] text-slate-200">Curiosity and honesty are <span className="text-sky-300">rising in recent entries</span> — which often signals that something important is becoming clearer.</p>
-              <div className="mt-4 flex items-center gap-2 text-xs text-slate-500"><span className="text-sky-400">↑</span><span>Clarity signal up over the last 2 weeks</span></div>
+              <p className="mt-3 text-[15px] leading-[1.7] text-slate-200">Curiosity and honesty are <span className="text-violet-300">rising in recent entries</span> — which often signals that something important is becoming clearer.</p>
+              <div className="mt-4 flex items-center gap-2 text-xs text-slate-500"><span className="text-violet-400">↑</span><span>Clarity signal up over the last 2 weeks</span></div>
             </div>
 
             <div className="relative rounded-[1.5rem] border border-rose-500/20 bg-rose-500/[0.04] p-6">
@@ -429,11 +429,11 @@ export default function HomeBelowFold() {
                 icon: "🛡️",
                 // PRICING.trialLabel = "7-day free trial" (or whatever trialDays is set to)
                 title: PRICING.trialLabel,
-                // PRICING.trialFreeFor = "Free for 7 days"
+                // PRICING.trialFreeFor = "Free for N days" — driven by PRICING.trialDays
                 // PRICING.trialNoChargeUntil = "no charge until day 8"
                 body: `Try everything free for ${PRICING.trialDays} days — full Insights, unlimited reflections, all tools. ${PRICING.trialNoChargeUntil.charAt(0).toUpperCase() + PRICING.trialNoChargeUntil.slice(1)}. Cancel before then and you won't pay anything.`,
-                border: "border-sky-500/20",
-                bg: "bg-sky-500/[0.03]",
+                border: "border-violet-500/20",
+                bg: "bg-violet-500/[0.03]",
               },
               {
                 icon: "✦",

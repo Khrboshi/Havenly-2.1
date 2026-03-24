@@ -71,7 +71,7 @@ export default function RequirePremium({ children }: RequirePremiumProps) {
                 {
                   label: "Why-this-keeps-happening insights",
                   sub: "Understand the recurring loops underneath your entries",
-                  dot: "bg-sky-400",
+                  dot: "bg-violet-400",
                 },
               ].map(({ label, sub, dot }) => (
                 <div key={label} className="flex items-start gap-3">
@@ -101,7 +101,7 @@ export default function RequirePremium({ children }: RequirePremiumProps) {
               </div>
 
               <p className="mt-1 text-xs text-slate-600">
-                Free for 7 days · then {PRICING.monthlyCadence} · Cancel anytime
+                {PRICING.trialFreeFor} · then {PRICING.monthlyCadence} · Cancel anytime
               </p>
 
               <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
@@ -109,7 +109,7 @@ export default function RequirePremium({ children }: RequirePremiumProps) {
                   href="/upgrade"
                   className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-3 text-sm font-semibold text-slate-950 shadow-md shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:-translate-y-px"
                 >
-                  Start 7-day free trial →
+                  Start {PRICING.trialLabel} →
                 </Link>
                 <Link
                   href="/insights/preview"

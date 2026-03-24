@@ -82,9 +82,9 @@ const ACCENT_STYLES: Record<Mood["accent"], { idle: string; active: string; dot:
     dot: "bg-amber-400",
   },
   sky: {
-    idle: "border-sky-500/20 hover:border-sky-500/40 bg-sky-500/[0.03] hover:bg-sky-500/[0.06]",
-    active: "border-sky-500/60 bg-sky-500/[0.08]",
-    dot: "bg-sky-400",
+    idle: "border-violet-500/20 hover:border-violet-500/40 bg-violet-500/[0.03] hover:bg-violet-500/[0.06]",
+    active: "border-violet-500/60 bg-violet-500/[0.08]",
+    dot: "bg-violet-400",
   },
   emerald: {
     idle: "border-emerald-500/20 hover:border-emerald-500/40 bg-emerald-500/[0.03] hover:bg-emerald-500/[0.06]",

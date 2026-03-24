@@ -115,10 +115,10 @@ const ACCENT_CLASSES: Record<string, { border: string; label: string; dot: strin
     arrow: "text-amber-400 group-hover:text-amber-300",
   },
   sky: {
-    border: "border-sky-500/20 hover:border-sky-500/40",
-    label: "text-sky-400/60",
-    dot: "bg-sky-500",
-    arrow: "text-sky-400 group-hover:text-sky-300",
+    border: "border-violet-500/20 hover:border-violet-500/40",
+    label: "text-violet-400/60",
+    dot: "bg-violet-500",
+    arrow: "text-violet-400 group-hover:text-violet-300",
   },
   rose: {
     border: "border-rose-500/20 hover:border-rose-500/40",
@@ -549,7 +549,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
             >
               Unlock unlimited reflections →
             </Link>
-            <span className="text-xs text-slate-700">7-day full refund · Cancel anytime</span>
+            <span className="text-xs text-slate-700">{PRICING.trialDays}-day full refund · Cancel anytime</span>
           </div>
         )}
       </div>

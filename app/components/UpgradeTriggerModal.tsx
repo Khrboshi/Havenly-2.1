@@ -45,7 +45,7 @@ export default function UpgradeTriggerModal({
     description ??
     "Premium unlocks unlimited reflections, pattern insights across time, and a weekly summary of what Quiet Mirror noticed.";
 
-  const finalCtaLabel = ctaLabel ?? cta ?? "Start 7-day free trial →";
+  const finalCtaLabel = ctaLabel ?? cta ?? `Start ${PRICING.trialLabel} →`;
   const finalCtaHref = ctaHref ?? "/upgrade";
 
   return (
@@ -116,7 +116,7 @@ export default function UpgradeTriggerModal({
           {/* Trust + dismiss */}
           <div className="mt-4 flex items-center justify-between">
             <p className="text-[11px] text-slate-700">
-              🛡️ No charge for 7 days ·{" "}
+              🛡️ {PRICING.trialFreeFor} ·{" "}
               <Link
                 href="/terms"
                 className="underline underline-offset-2 transition-colors hover:text-slate-500"

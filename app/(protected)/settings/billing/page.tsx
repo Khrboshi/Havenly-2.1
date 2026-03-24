@@ -20,7 +20,7 @@ function PlanBadge({ plan }: { plan: PlanType }) {
   }
   if (plan === "TRIAL") {
     return (
-      <span className="inline-flex items-center rounded-full border border-sky-500/30 bg-sky-500/10 px-2.5 py-1 text-xs font-semibold text-sky-300">
+      <span className="inline-flex items-center rounded-full border border-violet-500/30 bg-violet-500/10 px-2.5 py-1 text-xs font-semibold text-violet-300">
         Trial
       </span>
     );

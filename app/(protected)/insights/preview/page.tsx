@@ -496,7 +496,7 @@ export default async function InsightsPreviewPage() {
               Back to dashboard
             </Link>
           </div>
-          <p className="mt-4 text-xs text-slate-700">🛡️ 7-day full refund · Cancel anytime · No questions asked.</p>
+          <p className="mt-4 text-xs text-slate-700">🛡️ {PRICING.trialDays}-day full refund · Cancel anytime · No questions asked.</p>
         </div>
 
         <p className="text-center text-xs text-slate-700">Insights deepen as your reflection history grows.</p>
