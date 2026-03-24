@@ -57,8 +57,8 @@ function confirmationEmailHtml(): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>You're in — ${CONFIG.newsletterName}</title>
 </head>
-<body style="margin:0;padding:0;background-color:#020617;font-family:'DM Sans',system-ui,sans-serif;color:#cbd5e1;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#020617;padding:40px 16px;">
+<body style="margin:0;padding:0;background-color:#0b1120;font-family:'DM Sans',system-ui,sans-serif;color:#cbd5e1;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0b1120;padding:40px 16px;">
     <tr>
       <td align="center">
         <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
@@ -99,7 +99,7 @@ function confirmationEmailHtml(): string {
           </tr>
           <tr>
             <td style="padding-bottom:40px;">
-              <a href="${CONFIG.siteUrl}/blog" style="display:inline-block;background-color:#3ee7b0;color:#020617;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:9999px;">
+              <a href="${CONFIG.siteUrl}/blog" style="display:inline-block;background-color:#7c9fff;color:#0b1120;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:9999px;">
                 Read the latest article →
               </a>
             </td>

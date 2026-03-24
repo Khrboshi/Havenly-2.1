@@ -61,7 +61,7 @@ function friendlyDate(iso: string) {
 
 function Sparkline({
   values,
-  color = "#34d399",
+  color = "#7c9fff",
   height = 32,
   width = 80,
 }: {
@@ -154,7 +154,7 @@ function BarRow({
   count,
   max,
   rank,
-  accent = "#34d399",
+  accent = "#7c9fff",
 }: {
   label: string;
   count: number;
@@ -254,7 +254,7 @@ const DOMAIN_LABELS: Record<
   string,
   { label: string; emoji: string; color: string }
 > = {
-  MONEY: { label: "Money", emoji: "💰", color: "#34d399" },
+  MONEY: { label: "Money", emoji: "💰", color: "#7c9fff" },
   WORK: { label: "Work", emoji: "💼", color: "#60a5fa" },
   RELATIONSHIP: { label: "Relationships", emoji: "🤝", color: "#f472b6" },
   HEALTH: { label: "Health", emoji: "🫀", color: "#fb923c" },
@@ -287,7 +287,7 @@ function DomainSection({
   const topMeta = DOMAIN_LABELS[top] ?? {
     label: top,
     emoji: "📝",
-    color: "#34d399",
+    color: "#7c9fff",
   };
 
   const topCount = sorted[0]?.[1] ?? 0;
@@ -475,7 +475,7 @@ function WeeklyTrends({
                 </span>
                 <Sparkline
                   values={tSparklines[k]}
-                  color="#34d399"
+                  color="#7c9fff"
                   width={80}
                   height={28}
                 />
@@ -717,7 +717,7 @@ export default function InsightsClient() {
       Object.keys(data?.weeklyTrend?.emotions ?? {}).length > 0);
 
   const momentumColor: Record<string, string> = {
-    Lifting: "#34d399",
+    Lifting: "#7c9fff",
     Shifting: "#fbbf24",
     Softening: "#94a3b8",
     Heavy: "#f87171",
@@ -820,7 +820,7 @@ export default function InsightsClient() {
               label="Top theme"
               value={topTheme ?? "—"}
               sub={allThemes[0] ? `${allThemes[0][1]} entries` : undefined}
-              accent="#34d399"
+              accent="#7c9fff"
             />
             <StatCard
               label="Momentum"
@@ -972,7 +972,7 @@ export default function InsightsClient() {
                       count={v}
                       max={maxTheme}
                       rank={i}
-                      accent="#34d399"
+                      accent="#7c9fff"
                     />
                   ))}
                 </ul>

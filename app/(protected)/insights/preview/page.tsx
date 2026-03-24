@@ -167,7 +167,7 @@ export default async function InsightsPreviewPage() {
           </div>
           <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4 space-y-1">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Top theme</p>
-            <p className="text-base font-semibold capitalize truncate" style={{ color: hasData ? "#34d399" : "#334155" }}>
+            <p className="text-base font-semibold capitalize truncate" style={{ color: hasData ? "#7c9fff" : "#334155" }}>
               {hasData && topTheme ? sc(topTheme) : "—"}
             </p>
             <p className="text-xs text-slate-600">{hasData ? `${sortedThemes[0]?.[1]} ${sortedThemes[0]?.[1] === 1 ? "entry" : "entries"}` : "Builds as you write"}</p>
@@ -388,13 +388,13 @@ export default async function InsightsPreviewPage() {
                     <li key={label} className="space-y-1.5">
                       <div className="flex items-center justify-between gap-3 text-sm">
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <span className="w-4 shrink-0 text-right tabular-nums text-[10px]" style={{ color: isTop ? "#34d399" : "#475569" }}>{i + 1}</span>
+                          <span className="w-4 shrink-0 text-right tabular-nums text-[10px]" style={{ color: isTop ? "#7c9fff" : "#475569" }}>{i + 1}</span>
                           <span className={`truncate ${isTop ? "font-medium text-slate-100" : "text-slate-400"}`}>{sc(label)}</span>
                         </div>
                         <span className="shrink-0 tabular-nums text-xs text-slate-600">{count}</span>
                       </div>
                       <div className="h-[3px] w-full overflow-hidden rounded-full bg-slate-800/80">
-                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: isTop ? "#34d399" : "#334155" }} />
+                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: isTop ? "#7c9fff" : "#334155" }} />
                       </div>
                     </li>
                   );

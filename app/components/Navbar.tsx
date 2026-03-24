@@ -97,7 +97,7 @@ export default function Navbar() {
   return (
     <>
       {/* ── Desktop / shared header ─────────────────────────────────────── */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#020617]/80 backdrop-blur-xl">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#0b1120]/80 backdrop-blur-xl">
         <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-4">
 
           {/* Logo */}
@@ -190,7 +190,7 @@ export default function Navbar() {
           {/* Slide-down panel */}
           <div
             id="mobile-menu"
-            className="fixed inset-x-0 top-[72px] bottom-0 z-50 flex flex-col bg-[#020617]/95"
+            className="fixed inset-x-0 top-[72px] bottom-0 z-50 flex flex-col bg-[#0b1120]/95"
           >
             <div className="flex-1 overflow-y-auto px-5 pb-8 pt-5">
               <div className="mx-auto flex max-w-xl flex-col">

@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 // ── Domain metadata ────────────────────────────────────────────────────────────
 
 const DOMAIN_META: Record<string, { emoji: string; color: string }> = {
-  MONEY:        { emoji: "💰", color: "#34d399" },
+  MONEY:        { emoji: "💰", color: "#7c9fff" },
   WORK:         { emoji: "💼", color: "#60a5fa" },
   RELATIONSHIP: { emoji: "🤝", color: "#f472b6" },
   HEALTH:       { emoji: "🫀", color: "#fb923c" },
@@ -39,8 +39,8 @@ const EMOTION_COLORS: Record<string, string> = {
   confusion: "#a78bfa", doubt: "#a78bfa", uncertainty: "#a78bfa",
   invisibility: "#a78bfa", "self-doubt": "#a78bfa",
   // Greens
-  hope: "#34d399", relief: "#34d399", calm: "#34d399", gratitude: "#34d399",
-  pride: "#34d399", joy: "#34d399", contentment: "#34d399",
+  hope: "#7c9fff", relief: "#7c9fff", calm: "#7c9fff", gratitude: "#7c9fff",
+  pride: "#7c9fff", joy: "#7c9fff", contentment: "#7c9fff",
   // Blues
   curiosity: "#60a5fa", openness: "#60a5fa", clarity: "#60a5fa",
   // Pinks
