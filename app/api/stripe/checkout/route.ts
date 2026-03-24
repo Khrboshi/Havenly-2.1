@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { PRICING } from "@/app/lib/pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -70,7 +71,9 @@ export async function POST() {
       success_url: `${siteUrl}/upgrade/confirmed?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${siteUrl}/upgrade`,
       subscription_data: {
-        trial_period_days: 7,
+        // PRICING.trialDays is the single source of truth for the trial length.
+        // Change it in app/lib/pricing.ts — this API call updates automatically.
+        trial_period_days: PRICING.trialDays,
         metadata: {
           supabase_user_id: user.id,
         },
