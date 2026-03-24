@@ -2,8 +2,9 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ARTICLES, getArticle } from "../articles";
 import EmailCapture from "@/app/components/EmailCapture";
+import { CONFIG } from "@/app/lib/config";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://havenly-2-1.vercel.app";
+const SITE_URL = CONFIG.siteUrl;
 
 type BlogArticlePageProps = {
   params: { slug: string };
@@ -25,7 +26,7 @@ export function generateMetadata({ params }: BlogArticlePageProps): Metadata {
       title: article.title,
       description: article.summary,
       url: `${SITE_URL}/blog/${article.slug}`,
-      siteName: "Havenly",
+      siteName: CONFIG.appName,
     },
     twitter: {
       card: "summary",
@@ -63,7 +64,7 @@ export default function BlogArticlePage({ params }: BlogArticlePageProps) {
     url: `${SITE_URL}/blog/${article.slug}`,
     publisher: {
       "@type": "Organization",
-      name: "Havenly",
+      name: CONFIG.appName,
       url: SITE_URL,
     },
     articleSection: article.category,

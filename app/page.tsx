@@ -1,15 +1,13 @@
 import Link from "next/link";
 import HomeBelowFold from "./(home)/HomeBelowFold";
-import { CONFIG } from "@/app/lib/config";
+import { CONFIG, BRAND } from "@/app/lib/config";
 
 export const metadata = {
-  title: "Havenly — The Journal That Listens",
-  description:
-    "Write what's weighing on you. Get a gentle reflection back. Start seeing what keeps returning. Free to start.",
+  title: BRAND.fullTitle,
+  description: CONFIG.description,
   openGraph: {
-    title: "Havenly — The Journal That Listens",
-    description:
-      "Write what's weighing on you. Get a gentle reflection back. Start seeing what keeps returning.",
+    title: BRAND.fullTitle,
+    description: CONFIG.ogDescription,
     url: CONFIG.siteUrl + "/",
   },
 };

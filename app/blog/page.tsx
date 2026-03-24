@@ -5,11 +5,11 @@ import ScrollReveal from "@/app/components/ScrollReveal";
 import { CONFIG } from "@/app/lib/config";
 
 export const metadata = {
-  title: "Havenly Journal — Articles for Overloaded Minds",
+  title: `${CONFIG.appName} Journal — Articles for Overloaded Minds`,
   description:
     "Gentle articles about emotional load, rest, journaling, and self-awareness. No productivity hacks — just softer ways to understand what you're feeling.",
   openGraph: {
-    title: "Havenly Journal — Articles for Overloaded Minds",
+    title: `${CONFIG.appName} Journal — Articles for Overloaded Minds`,
     description:
       "Gentle articles about emotional load, rest, and self-awareness. No productivity hacks.",
     url: CONFIG.siteUrl + "/blog",

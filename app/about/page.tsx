@@ -2,11 +2,11 @@ import Link from "next/link";
 import { CONFIG } from "@/app/lib/config";
 
 export const metadata = {
-  title: "About Havenly — A Journal for Understanding Yourself",
+  title: `About ${CONFIG.appName} — A Journal for Understanding Yourself`,
   description:
     "Built for people who want to understand themselves better, not optimize themselves harder.",
   openGraph: {
-    title: "About Havenly — A Journal for Understanding Yourself",
+    title: `About ${CONFIG.appName} — A Journal for Understanding Yourself`,
     description:
       "Built for people who want to understand themselves better, not optimize themselves harder.",
     url: CONFIG.siteUrl + "/about",

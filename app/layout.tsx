@@ -7,7 +7,7 @@ import Providers from "./providers";
 import DeepLinkBootstrap from "./components/DeepLinkBootstrap";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import InstallPrompt from "@/app/components/InstallPrompt";
-import { CONFIG } from "@/app/lib/config";
+import { CONFIG, BRAND } from "@/app/lib/config";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -29,11 +29,10 @@ const SITE_URL = CONFIG.siteUrl;
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Havenly — The Journal That Listens",
-    template: "%s | Havenly",
+    default: BRAND.fullTitle,
+    template: BRAND.titleTemplate,
   },
-  description:
-    "Write what's weighing on you. Get a gentle reflection back. Start seeing what keeps returning. Private AI journaling, free to start.",
+  description: CONFIG.description,
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -44,21 +43,20 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    title: "Havenly",
+    title: CONFIG.appName,
     statusBarStyle: "black-translucent",
   },
   openGraph: {
     type: "website",
-    siteName: "Havenly",
-    title: "Havenly — The Journal That Listens",
-    description:
-      "Write what's weighing on you. Get a gentle reflection back. Start seeing what keeps returning.",
+    siteName: CONFIG.appName,
+    title: BRAND.fullTitle,
+    description: CONFIG.ogDescription,
     url: SITE_URL,
   },
   twitter: {
     card: "summary",
-    title: "Havenly — The Journal That Listens",
-    description: "Write what's weighing on you. Get a gentle reflection back.",
+    title: BRAND.fullTitle,
+    description: CONFIG.ogDescription,
   },
 };
 
