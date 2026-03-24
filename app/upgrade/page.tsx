@@ -5,6 +5,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PRICING } from "@/app/lib/pricing";
 import { PAYMENT } from "@/app/lib/payment";
+import { CONFIG } from "@/app/lib/config";
+
+// ─── FAQ data ─────────────────────────────────────────────────────────────────
+// All trial-length copy derives from PRICING — change trialDays in pricing.ts
+// and this FAQ updates automatically.
 
 const faqs = [
   {
@@ -17,7 +22,8 @@ const faqs = [
   },
   {
     q: "What is your refund policy?",
-    a: "Every new subscription starts with a 7-day free trial — no charge until day 8. Cancel any time before then and you won't be charged anything. After the trial, if Premium is not what you expected, email havenly.support@gmail.com and we will issue a full refund — no questions asked. This applies to your first subscription period only.",
+    // trialNoChargeUntil = "no charge until day 8" (always trialDays + 1)
+    a: `Every new subscription starts with a ${PRICING.trialLabel} — ${PRICING.trialNoChargeUntil}. Cancel any time before then and you won't be charged anything. After the trial, if Premium is not what you expected, email ${CONFIG.supportEmail} and we will issue a full refund — no questions asked. This applies to your first subscription period only.`,
   },
   {
     q: "What if I do not write very often?",
@@ -29,11 +35,11 @@ const faqs = [
   },
   {
     q: "Is my data safe and private?",
-    a: "Yes. Your entries stay private, are never sold, never shared, and are never used to train AI models. Havenly is built around that principle.",
+    a: `Yes. Your entries stay private, are never sold, never shared, and are never used to train AI models. ${CONFIG.appName} is built around that principle.`,
   },
   {
     q: `Why is Premium ${PRICING.monthlyCadence}?`,
-    a: `Most journaling tools charge for cloud storage or prettier templates. Havenly charges for the AI layer that reads across weeks of entries and surfaces what you couldn't see from inside it. That work is genuinely expensive to run — and ${PRICING.monthlyCadence} keeps it sustainable without ads or selling your data.`,
+    a: `Most journaling tools charge for cloud storage or prettier templates. ${CONFIG.appName} charges for the AI layer that reads across weeks of entries and surfaces what you couldn't see from inside it. That work is genuinely expensive to run — and ${PRICING.monthlyCadence} keeps it sustainable without ads or selling your data.`,
   },
 ];
 
@@ -41,7 +47,8 @@ const faqs = [
 
 function UpgradeButton({
   className,
-  label = "Start 7-day free trial",
+  // Default label derives from PRICING so it updates with trialDays automatically
+  label = `Start ${PRICING.trialLabel}`,
 }: {
   className?: string;
   label?: string;
@@ -63,10 +70,10 @@ function UpgradeButton({
       if (data?.url) {
         window.location.assign(data.url);
       } else {
-        setError("Something went wrong — please try again or email havenly.support@gmail.com.");
+        setError(`Something went wrong — please try again or email ${CONFIG.supportEmail}.`);
       }
     } catch {
-      setError("Something went wrong — please try again or email havenly.support@gmail.com.");
+      setError(`Something went wrong — please try again or email ${CONFIG.supportEmail}.`);
     } finally {
       setLoading(false);
     }
@@ -106,7 +113,7 @@ export default function UpgradePage() {
             {/* Left — copy + CTA */}
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-400/80">
-                Havenly Premium
+                {CONFIG.appName} Premium
               </p>
 
               <h1 className="mt-4 font-display text-[2.2rem] font-semibold leading-[1.05] tracking-tight sm:text-5xl md:text-[3.2rem]">
@@ -117,11 +124,11 @@ export default function UpgradePage() {
 
               <p className="mt-5 max-w-lg text-[15px] leading-relaxed text-slate-400 sm:text-[17px]">
                 Premium connects your entries across time. Instead of only reflecting what
-                you wrote today, Havenly starts showing what keeps repeating, what is
+                you wrote today, {CONFIG.appName} starts showing what keeps repeating, what is
                 shifting, and what may be underneath it.
               </p>
 
-              {/* Feature list — tight, no cards */}
+              {/* Feature list */}
               <ul className="mt-7 space-y-3">
                 {[
                   { label: "Unlimited reflections", sub: "Reflect on every entry, not just a few each month", color: "text-emerald-400" },
@@ -141,8 +148,8 @@ export default function UpgradePage() {
               </ul>
 
               {/* Free vs Premium comparison */}
-              <div className="mt-8 max-w-sm rounded-2xl border border-white/[0.07] bg-white/[0.03] overflow-hidden">
-                <div className="grid grid-cols-[1fr_auto_auto] text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600 border-b border-white/[0.06] px-4 py-2.5">
+              <div className="mt-8 max-w-sm overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.03]">
+                <div className="grid grid-cols-[1fr_auto_auto] border-b border-white/[0.06] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600">
                   <span></span>
                   <span className="w-16 text-center">Free</span>
                   <span className="w-16 text-center text-emerald-400">Premium</span>
@@ -177,16 +184,21 @@ export default function UpgradePage() {
                     {PRICING.valueLabel}
                   </span>
                 </div>
-                <p className="mb-4 text-xs text-slate-600">Free for 7 days · then {PRICING.monthlyCadence} · Cancel anytime</p>
+                {/* trialFreeFor = "Free for 7 days" — derives from PRICING.trialDays */}
+                <p className="mb-4 text-xs text-slate-600">
+                  {PRICING.trialFreeFor} · then {PRICING.monthlyCadence} · Cancel anytime
+                </p>
 
                 <div className="flex flex-col gap-2 sm:max-w-sm">
                   <UpgradeButton className="inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-6 py-4 text-base font-semibold text-slate-950 shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-400 hover:-translate-y-px disabled:opacity-60 sm:py-3.5 sm:text-sm" />
 
-                  {/* Refund — directly under button */}
+                  {/* Trust badge — all copy derives from PRICING */}
                   <div className="rounded-xl border border-emerald-500/15 bg-emerald-500/[0.04] px-4 py-2.5 text-center">
-                    <p className="text-xs font-medium text-slate-300">🛡️ 7-day free trial — no charge today</p>
+                    <p className="text-xs font-medium text-slate-300">
+                      🛡️ {PRICING.trialLabel} — no charge today
+                    </p>
                     <p className="mt-0.5 text-[11px] leading-relaxed text-slate-600">
-                      Try everything free for 7 days. Cancel before then and you won't be charged.
+                      Try everything free for {PRICING.trialDays} days. Cancel before then and you won&apos;t be charged.
                     </p>
                   </div>
 
@@ -212,7 +224,6 @@ export default function UpgradePage() {
                 </p>
               </div>
 
-              {/* Already free? */}
               <p className="mt-5 text-xs text-slate-600">
                 Already using Free?{" "}
                 <span className="text-slate-500">
@@ -221,14 +232,12 @@ export default function UpgradePage() {
               </p>
             </div>
 
-            {/* Right — live proof card (navy input / green output) */}
+            {/* Right — live proof card */}
             <div className="lg:sticky lg:top-6">
-              {/* Glow */}
               <div className="pointer-events-none absolute -inset-4 rounded-[2.5rem] bg-emerald-500/[0.07] blur-[60px]" />
 
               <div className="relative overflow-hidden rounded-[1.75rem] border border-white/[0.09] shadow-2xl shadow-black/60">
 
-                {/* Header */}
                 <div className="flex items-center justify-between border-b border-slate-800/70 bg-slate-950/95 px-6 py-4">
                   <div className="flex items-center gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/60" />
@@ -239,12 +248,10 @@ export default function UpgradePage() {
                   </span>
                 </div>
 
-                {/* INPUT — dark navy */}
                 <div className="bg-slate-950/90 px-6 pb-5 pt-5">
                   <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-600">
                     From your entries
                   </p>
-                  {/* Mini bar chart */}
                   <div className="space-y-2.5">
                     {[
                       { label: "Emotional load", pct: 64, color: "bg-emerald-400" },
@@ -264,7 +271,6 @@ export default function UpgradePage() {
                     ))}
                   </div>
 
-                  {/* Stat row */}
                   <div className="mt-4 flex gap-3">
                     <div className="flex-1 rounded-xl border border-slate-700/50 bg-slate-800/60 px-3 py-2.5 text-center">
                       <p className="font-display text-xl font-bold text-white">14<span className="text-sm font-normal text-slate-500">/22</span></p>
@@ -277,12 +283,11 @@ export default function UpgradePage() {
                   </div>
                 </div>
 
-                {/* OUTPUT — green tinted */}
                 <div className="border-t border-emerald-500/10 bg-emerald-950/40 px-6 pb-6 pt-5">
                   <div className="mb-3 flex items-center gap-3">
                     <div className="h-px flex-1 bg-emerald-500/10" />
                     <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-500/60">
-                      Havenly reflects
+                      {CONFIG.appName} reflects
                     </span>
                     <div className="h-px flex-1 bg-emerald-500/10" />
                   </div>
@@ -308,7 +313,7 @@ export default function UpgradePage() {
         </div>
       </section>
 
-      {/* ── What Premium surfaces — full data-rich cards ──────────────────── */}
+      {/* ── What Premium surfaces ─────────────────────────────────────────── */}
       <section className="border-b border-slate-800/60 py-14 sm:py-20">
         <div className="mx-auto max-w-6xl px-5">
 
@@ -321,7 +326,7 @@ export default function UpgradePage() {
               <span className="text-emerald-400">when you can finally see them.</span>
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-slate-400">
-              Across your entries, Havenly finds what keeps surfacing — the emotions,
+              Across your entries, {CONFIG.appName} finds what keeps surfacing — the emotions,
               themes, and questions that repeat without you noticing.
             </p>
             <p className="mt-2 text-xs text-slate-600">
@@ -331,11 +336,8 @@ export default function UpgradePage() {
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 
-            {/* Card 1 — What shows up most */}
             <div className="rounded-[1.5rem] border border-violet-500/20 bg-violet-500/[0.04] p-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-violet-400">
-                What shows up most
-              </p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-violet-400">What shows up most</p>
               <p className="mt-3 text-lg font-semibold leading-snug text-white">
                 Emotional load appears in{" "}
                 <span className="text-violet-300">14 of your last 22</span>{" "}
@@ -360,11 +362,8 @@ export default function UpgradePage() {
               </div>
             </div>
 
-            {/* Card 2 — What keeps returning */}
             <div className="rounded-[1.5rem] border border-emerald-500/20 bg-emerald-500/[0.04] p-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-400">
-                What keeps returning
-              </p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-400">What keeps returning</p>
               <p className="mt-3 text-lg font-semibold leading-snug text-white">
                 Responsibility and communication are the{" "}
                 <span className="text-emerald-300">two themes most often linked</span> together.
@@ -384,11 +383,8 @@ export default function UpgradePage() {
               </div>
             </div>
 
-            {/* Card 3 — What may be driving it */}
             <div className="rounded-[1.5rem] border border-amber-500/20 bg-amber-500/[0.04] p-6 sm:col-span-2 lg:col-span-1">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-400">
-                What may be driving it
-              </p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-400">What may be driving it</p>
               <p className="mt-3 text-[15px] leading-[1.7] text-slate-200">
                 You often sound most overwhelmed when you feel responsible for{" "}
                 <span className="text-amber-300">keeping everything steady for everyone else</span>{" "}
@@ -401,11 +397,8 @@ export default function UpgradePage() {
               </div>
             </div>
 
-            {/* Card 4 — What is shifting */}
             <div className="rounded-[1.5rem] border border-sky-500/20 bg-sky-500/[0.04] p-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-sky-400">
-                What is shifting
-              </p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-sky-400">What is shifting</p>
               <p className="mt-3 text-[15px] leading-[1.7] text-slate-200">
                 Curiosity and honesty are{" "}
                 <span className="text-sky-300">rising in recent entries</span> — which often
@@ -417,25 +410,17 @@ export default function UpgradePage() {
               </div>
             </div>
 
-            {/* Card 5 — Weekly mirror */}
             <div className="rounded-[1.5rem] border border-rose-500/20 bg-rose-500/[0.04] p-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-400">
-                Your weekly mirror
-              </p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-400">Your weekly mirror</p>
               <p className="mt-3 text-[15px] leading-[1.7] text-slate-200">
                 This week, your entries returned most often to questions of worth, pace, and{" "}
                 <span className="text-rose-300">what you&apos;re actually allowed to need</span>.
               </p>
-              <p className="mt-3 text-[11px] text-slate-500">
-                Generated every Monday · Personal to your entries only
-              </p>
+              <p className="mt-3 text-[11px] text-slate-500">Generated every Monday · Personal to your entries only</p>
             </div>
 
-            {/* Card 6 — A question worth sitting with */}
             <div className="rounded-[1.5rem] border border-slate-500/20 bg-slate-500/[0.04] p-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">
-                A question worth sitting with
-              </p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">A question worth sitting with</p>
               <p className="mt-3 text-lg font-medium leading-snug text-white">
                 &ldquo;What keeps making you say you&apos;re fine before you&apos;ve had a
                 chance to ask whether you are?&rdquo;
@@ -468,7 +453,10 @@ export default function UpgradePage() {
           </p>
           <div className="flex flex-col items-center gap-2">
             <UpgradeButton className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-7 py-3.5 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:-translate-y-px disabled:opacity-60" />
-            <p className="text-xs text-slate-600">Free for 7 days · then {PRICING.monthlyCadence} · Cancel anytime</p>
+            {/* trialFreeFor = "Free for 7 days" */}
+            <p className="text-xs text-slate-600">
+              {PRICING.trialFreeFor} · then {PRICING.monthlyCadence} · Cancel anytime
+            </p>
           </div>
         </div>
       </div>
@@ -488,12 +476,8 @@ export default function UpgradePage() {
             ))}
           </div>
           <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-700">
-            <Link href="/terms" className="text-emerald-600 transition-colors hover:text-emerald-500">
-              Terms of Service →
-            </Link>
-            <Link href="/privacy" className="text-emerald-600 transition-colors hover:text-emerald-500">
-              Privacy Policy →
-            </Link>
+            <Link href="/terms" className="text-emerald-600 transition-colors hover:text-emerald-500">Terms of Service →</Link>
+            <Link href="/privacy" className="text-emerald-600 transition-colors hover:text-emerald-500">Privacy Policy →</Link>
           </div>
         </div>
       </section>
@@ -509,12 +493,13 @@ export default function UpgradePage() {
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-slate-500 sm:text-base">
             Start with a single entry. When you want the deeper picture, Premium helps
-            Havenly connect the dots.
+            {CONFIG.appName} connect the dots.
           </p>
           <div className="mt-7 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            {/* Label explicitly passed — derives from PRICING */}
             <UpgradeButton
               className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-7 py-4 text-base font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:-translate-y-px disabled:opacity-60 sm:py-3.5 sm:text-sm"
-              label="Start 7-day free trial →"
+              label={`Start ${PRICING.trialLabel} →`}
             />
             <Link
               href="/magic-login"
@@ -523,8 +508,9 @@ export default function UpgradePage() {
               Start free first
             </Link>
           </div>
+          {/* Full sub-line: "Free for 7 days · No charge today · Cancel anytime · No ads, ever" */}
           <p className="mt-5 text-xs text-slate-700">
-            Free for 7 days · No charge today · Cancel anytime · No ads, ever
+            {PRICING.trialFreeFor} · No charge today · Cancel anytime · No ads, ever
           </p>
         </div>
       </section>
