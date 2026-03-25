@@ -19,10 +19,11 @@ const config: Config = {
         // Light mode: royal blue #2563eb + emerald green #059669 + white bg
         // All via CSS variables — tailwind reads them automatically
         emerald: {
-          300: "#6ee7b7",
-          400: "#34d399",
+          300: "var(--hvn-accent-mint)",
+          400: "var(--hvn-accent-mint)",
           500: "var(--hvn-accent-mint)",
           600: "var(--hvn-accent-mint-hover)",
+          700: "var(--hvn-accent-mint-hover)",
         },
         violet: {
           400: "#a78bfa",
