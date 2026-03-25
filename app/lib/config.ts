@@ -28,7 +28,7 @@ export const CONFIG = {
   newsletterName: "Quiet Mirror Letters",
 
   /** From address used in all outgoing emails (must match verified Resend domain) */
-  emailFromAddress: "Quiet Mirror <onboarding@resend.dev>",
+  emailFromAddress: "Quiet Mirror <hello@quietmirror.me>",
 
   /** Subject line for newsletter confirmation email */
   emailConfirmSubject: "You're in — Quiet Mirror Letters",
