@@ -619,3 +619,61 @@ body::-webkit-scrollbar-thumb:hover  { background: var(--qm-border-subtle); }
     color-scheme: light;
   }
 }
+/* ========================================
+   EMERGENCY FIX — Force Quiet Mirror Colors
+   ======================================== */
+
+/* Force all backgrounds to use Quiet Mirror */
+body, 
+.bg-slate-950, 
+.bg-slate-900, 
+.bg-slate-800,
+.bg-black,
+.bg-gray-900 {
+  background-color: var(--qm-bg) !important;
+}
+
+/* Force all cards and elevated surfaces */
+.bg-slate-900\/40,
+.bg-slate-900\/50,
+.bg-black\/40,
+.card,
+.panel {
+  background-color: var(--qm-bg-elevated) !important;
+}
+
+/* Force all primary text */
+.text-slate-100,
+.text-slate-200,
+.text-slate-300,
+.text-white {
+  color: var(--qm-text-primary) !important;
+}
+
+/* Force all secondary text */
+.text-slate-400,
+.text-slate-500 {
+  color: var(--qm-text-secondary) !important;
+}
+
+/* Convert all emerald/green to your accent */
+.text-emerald-400,
+.text-emerald-500,
+.bg-emerald-400,
+.bg-emerald-500,
+.border-emerald-500 {
+  color: var(--qm-accent) !important;
+  background-color: var(--qm-accent) !important;
+  border-color: var(--qm-accent-border) !important;
+}
+
+/* Make buttons look correct */
+button.bg-emerald-500,
+a.bg-emerald-500 {
+  background-color: var(--qm-accent) !important;
+}
+
+button.bg-emerald-500:hover,
+a.bg-emerald-500:hover {
+  background-color: var(--qm-accent-hover) !important;
+}
