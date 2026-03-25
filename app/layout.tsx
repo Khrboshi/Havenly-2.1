@@ -1,5 +1,7 @@
+// app/layout.tsx
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
+import type { ReactNode } from "react";
 import { Fraunces, DM_Sans } from "next/font/google";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
@@ -62,15 +64,15 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#0b1120" },
-    { media: "(prefers-color-scheme: light)", color: "#f8faff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b1120" }, // dark hvn-bg
+    { media: "(prefers-color-scheme: light)", color: "#f3f5fb" }, // light hvn-bg
   ],
 };
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <html lang="en">
@@ -83,13 +85,26 @@ export default function RootLayout({
         className={`${fraunces.variable} ${dmSans.variable}`}
         suppressHydrationWarning
       >
+        {/* Accessibility: skip link for keyboard and screen-reader users */}
+        <a
+          href="#content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-full focus:bg-slate-900 focus:px-4 focus:py-2 focus:text-sm focus:text-white"
+        >
+          Skip to main content
+        </a>
+
         <DeepLinkBootstrap />
+
         <Providers>
           <Navbar />
           <InstallPrompt />
-          {children}
+
+          {/* Content anchor for skip link (pages can still use their own <main>) */}
+          <div id="content">{children}</div>
+
           <Footer />
         </Providers>
+
         <SpeedInsights />
       </body>
     </html>
