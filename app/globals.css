@@ -3,80 +3,69 @@
 @tailwind utilities;
 
 /* ===========================
-   QUIET MIRROR — 9.5/10 BRAND SYSTEM
-   
-   Dark mode → deep indigo + soft periwinkle (calm, reflective)
-   Light mode → warm linen + muted lavender (gentle, paper-like)
-   
-   Core principle: "Quiet" = no bright accents, soft edges, low saturation
-                    "Mirror" = clarity without glare, subtle depth
+   QUIET MIRROR — BRAND SYSTEM
+
+   Dark mode  → deep indigo + soft periwinkle
+   Light mode → warm linen  + muted lavender
+
+   "Quiet" = no bright accents, soft edges, low saturation
+   "Mirror" = clarity without glare, subtle depth
    =========================== */
 
-/* ── DARK MODE (default) ── */
+/* ── Dark mode (default) ── */
 :root {
-  /* Backgrounds — deep indigo, almost black but with warmth */
   --qm-bg:           #0a0d1a;
   --qm-bg-elevated:  #0f121f;
   --qm-bg-soft:      #141828;
   --qm-bg-card:      #181c2e;
 
-  /* Text — high contrast but not pure white */
   --qm-text-primary:   #e8ebf5;
   --qm-text-secondary: #bcc3db;
   --qm-text-muted:     #8089a8;
   --qm-text-faint:     #5a6178;
 
-  /* Accent — soft periwinkle, not bright */
   --qm-accent:         #8b9dff;
   --qm-accent-hover:   #a1b1ff;
   --qm-accent-soft:    rgba(139, 157, 255, 0.11);
   --qm-accent-border:  rgba(139, 157, 255, 0.20);
 
-  /* Secondary — muted lavender for variety */
   --qm-accent-2:       #9a8dc0;
   --qm-accent-2-soft:  rgba(154, 141, 192, 0.11);
 
-  /* Borders & shadows */
   --qm-border-subtle:     rgba(184, 195, 219, 0.10);
   --qm-border-card:       rgba(184, 195, 219, 0.08);
   --qm-shadow-soft:       0 20px 60px rgba(10, 13, 26, 0.70);
   --qm-shadow-card:       0 12px 32px rgba(10, 13, 26, 0.50);
   --qm-shadow-card-lift:  0 24px 64px rgba(10, 13, 26, 0.65);
 
-  /* Focus ring variables for consistency */
-  --qm-focus-ring-color: var(--qm-accent);
+  --qm-focus-ring-color:  var(--qm-accent);
   --qm-focus-ring-offset: 2px;
-  --qm-focus-ring-width: 2px;
+  --qm-focus-ring-width:  2px;
 
   color-scheme: dark;
 }
 
-/* ── LIGHT MODE ── */
+/* ── Light mode ── */
 @media (prefers-color-scheme: light) {
   :root {
-    /* Backgrounds — warm linen/paper tones */
     --qm-bg:           #faf9f7;
     --qm-bg-elevated:  #ffffff;
     --qm-bg-soft:      #f2f0ed;
     --qm-bg-card:      #fdfcfb;
 
-    /* Text — dark warm grey, not pure black */
     --qm-text-primary:   #1c1916;
     --qm-text-secondary: #4a453f;
     --qm-text-muted:     #706b63;
     --qm-text-faint:     #9d968d;
 
-    /* Accent — muted slate lavender (soft, trust, calm) */
     --qm-accent:         #5b6de8;
     --qm-accent-hover:   #4a5bcc;
     --qm-accent-soft:    rgba(91, 109, 232, 0.10);
     --qm-accent-border:  rgba(91, 109, 232, 0.22);
 
-    /* Secondary — soft mauve for variety */
     --qm-accent-2:       #8676ae;
     --qm-accent-2-soft:  rgba(134, 118, 174, 0.10);
 
-    /* Borders & shadows */
     --qm-border-subtle:     rgba(28, 25, 22, 0.12);
     --qm-border-card:       rgba(28, 25, 22, 0.08);
     --qm-shadow-soft:       0 20px 60px rgba(28, 25, 22, 0.06);
@@ -85,54 +74,11 @@
 
     color-scheme: light;
   }
-
-  /* Light mode overrides for Tailwind classes */
-  .text-white,
-  .text-slate-100,
-  .text-slate-200 { color: var(--qm-text-primary) !important; }
-
-  .text-slate-300,
-  .text-slate-400 { color: var(--qm-text-secondary) !important; }
-
-  .text-slate-500,
-  .text-slate-600 { color: var(--qm-text-muted) !important; }
-
-  .text-slate-700 { color: var(--qm-text-faint) !important; }
-
-  /* Borders */
-  .border-slate-800,
-  .border-slate-700,
-  .border-white\/6,
-  .border-white\/8,
-  .border-white\/10 { border-color: var(--qm-border-card) !important; }
-
-  /* Backgrounds */
-  .bg-slate-950,
-  .bg-slate-900 { background-color: var(--qm-bg) !important; }
-
-  .bg-slate-900\/40,
-  .bg-slate-900\/50,
-  .bg-slate-900\/60 { background-color: var(--qm-bg-elevated) !important; }
-
-  /* Emerald → Quiet accent conversion */
-  .text-emerald-400,
-  .text-emerald-500,
-  .text-emerald-300 { color: var(--qm-accent) !important; }
-
-  .bg-emerald-500 { background-color: var(--qm-accent) !important; }
-  .bg-emerald-400 { background-color: var(--qm-accent-hover) !important; }
-
-  .border-emerald-500\/20,
-  .border-emerald-500\/25,
-  .border-emerald-500\/30 { border-color: var(--qm-accent-border) !important; }
-
-  .bg-emerald-500\/5,
-  .bg-emerald-500\/10 { background-color: var(--qm-accent-soft) !important; }
-
-  /* Scrollbar */
-  body::-webkit-scrollbar-thumb { background: rgba(28, 25, 22, 0.18) !important; }
-  body::-webkit-scrollbar-thumb:hover { background: rgba(28, 25, 22, 0.28) !important; }
 }
+
+/* ===========================
+   BASE LAYER
+   =========================== */
 
 @layer base {
   html {
@@ -152,12 +98,12 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Subtle texture — dark mode only */
+  /* Subtle noise texture — dark mode only, low z-index */
   body::before {
     content: "";
     position: fixed;
     inset: 0;
-    z-index: 999;
+    z-index: 1;
     pointer-events: none;
     opacity: 0.010;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
@@ -180,7 +126,7 @@
   }
 
   a, button, [role="button"] { -webkit-tap-highlight-color: transparent; }
-  
+
   input, textarea, select { font-size: max(16px, 1rem); }
   input, textarea, select, button { font: inherit; }
 
@@ -195,26 +141,14 @@
   select:focus { outline: none; }
 
   p { text-wrap: pretty; }
-}
 
-/* ===========================
-   ACCESSIBILITY ENHANCEMENTS
-   Focus visible styles for keyboard navigation
-   =========================== */
-
-@layer base {
-  /* 
-    Global focus-visible styles for all interactive elements
-    These styles only appear when navigating with keyboard (Tab key)
-    Not visible when using mouse/touch
-  */
+  /* ── Focus-visible (keyboard navigation only) ── */
   :focus-visible {
     outline: var(--qm-focus-ring-width) solid var(--qm-focus-ring-color);
     outline-offset: var(--qm-focus-ring-offset);
     border-radius: 4px;
   }
 
-  /* Specific overrides for elements that shouldn't have default focus styles */
   button:focus-visible,
   a:focus-visible,
   [role="button"]:focus-visible,
@@ -225,18 +159,13 @@
     outline-offset: var(--qm-focus-ring-offset);
   }
 
-  /* Remove default outline from browsers that use :focus (not :focus-visible) */
-  :focus:not(:focus-visible) {
-    outline: none;
-  }
+  :focus:not(:focus-visible) { outline: none; }
 
-  /* Ensure the custom ring-qm-focus class still works with :focus-visible */
   .ring-qm-focus:focus-visible {
     box-shadow: 0 0 0 1px var(--qm-accent-border), 0 0 0 4px var(--qm-accent-soft);
     outline: none;
   }
 
-  /* For interactive elements that might have custom focus handling */
   .qm-input:focus-visible {
     outline: none;
     border-color: var(--qm-accent);
@@ -255,7 +184,6 @@
     transform: translateY(-1px);
   }
 
-  /* Navigation links */
   .nav-link:focus-visible {
     outline: var(--qm-focus-ring-width) solid var(--qm-accent);
     outline-offset: 2px;
@@ -263,129 +191,9 @@
   }
 }
 
-@layer utilities {
-  /* Reveal animations */
-  .reveal {
-    opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.65s ease, transform 0.65s ease;
-  }
-  .reveal.is-visible { opacity: 1; transform: translateY(0); }
-
-  .reveal-delay-1 { transition-delay: 0.1s; }
-  .reveal-delay-2 { transition-delay: 0.2s; }
-  .reveal-delay-3 { transition-delay: 0.3s; }
-  .reveal-delay-4 { transition-delay: 0.4s; }
-
-  .stagger-children > * {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.55s ease, transform 0.55s ease;
-  }
-
-  .stagger-children.is-visible > *:nth-child(1) { opacity: 1; transform: none; transition-delay: 0.05s; }
-  .stagger-children.is-visible > *:nth-child(2) { opacity: 1; transform: none; transition-delay: 0.15s; }
-  .stagger-children.is-visible > *:nth-child(3) { opacity: 1; transform: none; transition-delay: 0.25s; }
-  .stagger-children.is-visible > *:nth-child(4) { opacity: 1; transform: none; transition-delay: 0.35s; }
-  .stagger-children.is-visible > *:nth-child(5) { opacity: 1; transform: none; transition-delay: 0.45s; }
-  .stagger-children.is-visible > *:nth-child(6) { opacity: 1; transform: none; transition-delay: 0.55s; }
-
-  /* Section backgrounds */
-  .bg-qm-page-gradient {
-    background:
-      radial-gradient(circle at 0% 0%, var(--qm-accent-soft), transparent 42%),
-      radial-gradient(circle at 100% 0%, var(--qm-accent-2-soft), transparent 38%),
-      var(--qm-bg);
-  }
-
-  .bg-qm-hero-gradient {
-    background:
-      radial-gradient(ellipse 85% 55% at 50% -8%, var(--qm-accent-soft), transparent),
-      var(--qm-bg);
-  }
-
-  .section-tinted { background: var(--qm-bg-soft); }
-
-  .section-purple-tint {
-    background:
-      radial-gradient(ellipse 60% 50% at 50% 0%, var(--qm-accent-soft), transparent),
-      var(--qm-bg);
-  }
-
-  .section-cta-gradient {
-    background:
-      radial-gradient(ellipse 80% 60% at 50% 100%, var(--qm-accent-soft), transparent),
-      var(--qm-bg);
-  }
-
-  /* Color utilities */
-  .bg-qm-bg           { background-color: var(--qm-bg); }
-  .bg-qm-elevated     { background-color: var(--qm-bg-elevated); }
-  .bg-qm-soft         { background-color: var(--qm-bg-soft); }
-  .bg-qm-card         { background-color: var(--qm-bg-card); }
-
-  .text-qm-primary    { color: var(--qm-text-primary); }
-  .text-qm-secondary  { color: var(--qm-text-secondary); }
-  .text-qm-muted      { color: var(--qm-text-muted); }
-  .text-qm-faint      { color: var(--qm-text-faint); }
-
-  .text-qm-accent     { color: var(--qm-accent); }
-  .bg-qm-accent       { background-color: var(--qm-accent); }
-  .bg-qm-accent-soft  { background-color: var(--qm-accent-soft); }
-  .border-qm-accent   { border-color: var(--qm-accent-border); }
-
-  .border-qm-subtle   { border-color: var(--qm-border-subtle); }
-  .border-qm-card     { border-color: var(--qm-border-card); }
-
-  .shadow-qm-soft     { box-shadow: var(--qm-shadow-soft); }
-  .shadow-qm-card     { box-shadow: var(--qm-shadow-card); }
-  .shadow-qm-lift     { box-shadow: var(--qm-shadow-card-lift); }
-
-  /* Focus ring */
-  .ring-qm-focus {
-    box-shadow:
-      0 0 0 1px var(--qm-accent-border),
-      0 0 0 4px var(--qm-accent-soft);
-  }
-
-  /* Panel components */
-  .qm-panel {
-    border: 1px solid var(--qm-border-card);
-    background: var(--qm-bg-elevated);
-    backdrop-filter: blur(10px);
-    box-shadow: var(--qm-shadow-card);
-  }
-
-  .qm-panel-strong {
-    border: 1px solid var(--qm-border-subtle);
-    background: var(--qm-bg-elevated);
-    backdrop-filter: blur(14px);
-    box-shadow: var(--qm-shadow-card-lift);
-  }
-
-  /* Typography utilities */
-  .qm-copy-readable { line-height: 1.72; letter-spacing: -0.005em; }
-  .qm-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; }
-
-  /* Safe areas */
-  .pb-safe   { padding-bottom: env(safe-area-inset-bottom); }
-  .pb-safe-4 { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
-  .pt-safe   { padding-top: env(safe-area-inset-top); }
-
-  /* Animation utilities */
-  .animate-fade-in-up { animation: fadeInUp 0.65s ease-out forwards; }
-  .animate-fade-in    { animation: fadeIn 0.5s ease-out forwards; }
-
-  .anim-delay-0   { animation-delay: 0s;   opacity: 0; }
-  .anim-delay-100 { animation-delay: 0.1s; opacity: 0; }
-  .anim-delay-200 { animation-delay: 0.2s; opacity: 0; }
-  .anim-delay-300 { animation-delay: 0.3s; opacity: 0; }
-  .anim-delay-400 { animation-delay: 0.4s; opacity: 0; }
-  .anim-delay-500 { animation-delay: 0.5s; opacity: 0; }
-  .anim-delay-600 { animation-delay: 0.6s; opacity: 0; }
-  .anim-delay-700 { animation-delay: 0.7s; opacity: 0; }
-  .anim-delay-800 { animation-delay: 0.8s; opacity: 0; }
-}
+/* ===========================
+   COMPONENTS LAYER
+   =========================== */
 
 @layer components {
   .nav-link {
@@ -420,7 +228,7 @@
     font-weight: 500;
     transition: transform 0.16s ease, background-color 0.16s ease, border-color 0.16s ease;
   }
-  .qm-btn-secondary:hover { 
+  .qm-btn-secondary:hover {
     border-color: var(--qm-accent-border);
     background: var(--qm-accent-soft);
     transform: translateY(-1px);
@@ -435,14 +243,143 @@
     color: var(--qm-text-primary);
     transition: border-color 0.16s ease, box-shadow 0.16s ease;
   }
-  .qm-input:hover { border-color: var(--qm-border-subtle); }
-  .qm-input:focus {
+  .qm-input:hover  { border-color: var(--qm-border-subtle); }
+  .qm-input:focus   {
     border-color: var(--qm-accent);
     box-shadow: 0 0 0 3px var(--qm-accent-soft);
   }
 }
 
-/* Keyframes */
+/* ===========================
+   UTILITIES LAYER
+   =========================== */
+
+@layer utilities {
+  /* ── Reveal animations ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.65s ease, transform 0.65s ease;
+  }
+  .reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+
+  .stagger-children > * {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.55s ease, transform 0.55s ease;
+  }
+  .stagger-children.is-visible > *:nth-child(1) { opacity: 1; transform: none; transition-delay: 0.05s; }
+  .stagger-children.is-visible > *:nth-child(2) { opacity: 1; transform: none; transition-delay: 0.15s; }
+  .stagger-children.is-visible > *:nth-child(3) { opacity: 1; transform: none; transition-delay: 0.25s; }
+  .stagger-children.is-visible > *:nth-child(4) { opacity: 1; transform: none; transition-delay: 0.35s; }
+  .stagger-children.is-visible > *:nth-child(5) { opacity: 1; transform: none; transition-delay: 0.45s; }
+  .stagger-children.is-visible > *:nth-child(6) { opacity: 1; transform: none; transition-delay: 0.55s; }
+
+  /* ── Section backgrounds ── */
+  .bg-qm-page-gradient {
+    background:
+      radial-gradient(circle at 0% 0%, var(--qm-accent-soft), transparent 42%),
+      radial-gradient(circle at 100% 0%, var(--qm-accent-2-soft), transparent 38%),
+      var(--qm-bg);
+  }
+
+  .bg-qm-hero-gradient {
+    background:
+      radial-gradient(ellipse 85% 55% at 50% -8%, var(--qm-accent-soft), transparent),
+      var(--qm-bg);
+  }
+
+  .section-tinted { background: var(--qm-bg-soft); }
+
+  .section-purple-tint {
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 0%, var(--qm-accent-soft), transparent),
+      var(--qm-bg);
+  }
+
+  .section-cta-gradient {
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 100%, var(--qm-accent-soft), transparent),
+      var(--qm-bg);
+  }
+
+  /* ── Color utilities ── */
+  .bg-qm-bg           { background-color: var(--qm-bg); }
+  .bg-qm-elevated     { background-color: var(--qm-bg-elevated); }
+  .bg-qm-soft         { background-color: var(--qm-bg-soft); }
+  .bg-qm-card         { background-color: var(--qm-bg-card); }
+
+  .text-qm-primary    { color: var(--qm-text-primary); }
+  .text-qm-secondary  { color: var(--qm-text-secondary); }
+  .text-qm-muted      { color: var(--qm-text-muted); }
+  .text-qm-faint      { color: var(--qm-text-faint); }
+
+  .text-qm-accent     { color: var(--qm-accent); }
+  .bg-qm-accent       { background-color: var(--qm-accent); }
+  .bg-qm-accent-soft  { background-color: var(--qm-accent-soft); }
+  .border-qm-accent   { border-color: var(--qm-accent-border); }
+
+  .border-qm-subtle   { border-color: var(--qm-border-subtle); }
+  .border-qm-card     { border-color: var(--qm-border-card); }
+
+  .shadow-qm-soft     { box-shadow: var(--qm-shadow-soft); }
+  .shadow-qm-card     { box-shadow: var(--qm-shadow-card); }
+  .shadow-qm-lift     { box-shadow: var(--qm-shadow-card-lift); }
+
+  .ring-qm-focus {
+    box-shadow:
+      0 0 0 1px var(--qm-accent-border),
+      0 0 0 4px var(--qm-accent-soft);
+  }
+
+  /* ── Panels ── */
+  .qm-panel {
+    border: 1px solid var(--qm-border-card);
+    background: var(--qm-bg-elevated);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--qm-shadow-card);
+  }
+
+  .qm-panel-strong {
+    border: 1px solid var(--qm-border-subtle);
+    background: var(--qm-bg-elevated);
+    backdrop-filter: blur(14px);
+    box-shadow: var(--qm-shadow-card-lift);
+  }
+
+  /* ── Typography utilities ── */
+  .qm-copy-readable { line-height: 1.72; letter-spacing: -0.005em; }
+  .qm-eyebrow       { font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; }
+
+  /* ── Safe areas (mobile notch) ── */
+  .pb-safe   { padding-bottom: env(safe-area-inset-bottom); }
+  .pb-safe-4 { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
+  .pt-safe   { padding-top: env(safe-area-inset-top); }
+
+  /* ── Animation utilities ── */
+  .animate-fade-in-up { animation: fadeInUp 0.65s ease-out forwards; }
+  .animate-fade-in    { animation: fadeIn 0.5s ease-out forwards; }
+
+  .anim-delay-0   { animation-delay: 0s;   opacity: 0; }
+  .anim-delay-100 { animation-delay: 0.1s; opacity: 0; }
+  .anim-delay-200 { animation-delay: 0.2s; opacity: 0; }
+  .anim-delay-300 { animation-delay: 0.3s; opacity: 0; }
+  .anim-delay-400 { animation-delay: 0.4s; opacity: 0; }
+  .anim-delay-500 { animation-delay: 0.5s; opacity: 0; }
+  .anim-delay-600 { animation-delay: 0.6s; opacity: 0; }
+  .anim-delay-700 { animation-delay: 0.7s; opacity: 0; }
+  .anim-delay-800 { animation-delay: 0.8s; opacity: 0; }
+}
+
+/* ===========================
+   KEYFRAMES
+   =========================== */
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -463,217 +400,147 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.animate-fadeIn    { animation: fadeIn 0.5s ease-out both; }
-.animate-dropdown  { animation: dropdownFadeSlide 0.22s ease-out forwards; }
-.animate-slideDown { animation: slideDown 0.2s ease-out; }
-
-/* Scrollbar */
-body::-webkit-scrollbar              { width: 8px; }
-body::-webkit-scrollbar-track        { background: transparent; }
-body::-webkit-scrollbar-thumb        { background: var(--qm-border-card); border-radius: 999px; }
-body::-webkit-scrollbar-thumb:hover  { background: var(--qm-border-subtle); }
-/* ===========================
-   FORCED OVERRIDES
-   Ensures all Tailwind default colors use Quiet Mirror tokens
-   This ensures consistency even if components use old classes
-   =========================== */
-
-@layer base {
-  /* === BACKGROUND OVERRIDES === */
-  .bg-slate-950,
-  .bg-slate-900,
-  .bg-slate-800,
-  .bg-slate-700,
-  .bg-black,
-  .bg-gray-900,
-  .bg-gray-950 {
-    background-color: var(--qm-bg) !important;
-  }
-
-  .bg-slate-900\/40,
-  .bg-slate-900\/50,
-  .bg-slate-900\/60,
-  .bg-black\/50,
-  .bg-black\/40 {
-    background-color: var(--qm-bg-elevated) !important;
-  }
-
-  /* === TEXT OVERRIDES === */
-  .text-slate-100,
-  .text-slate-200,
-  .text-slate-300,
-  .text-white,
-  .text-gray-100,
-  .text-gray-200 {
-    color: var(--qm-text-primary) !important;
-  }
-
-  .text-slate-400,
-  .text-slate-500,
-  .text-gray-400,
-  .text-gray-500 {
-    color: var(--qm-text-secondary) !important;
-  }
-
-  .text-slate-600,
-  .text-slate-700,
-  .text-gray-600,
-  .text-gray-700 {
-    color: var(--qm-text-muted) !important;
-  }
-
-  /* === BORDER OVERRIDES === */
-  .border-slate-800,
-  .border-slate-700,
-  .border-white\/10,
-  .border-white\/8,
-  .border-white\/6,
-  .border-gray-800,
-  .border-gray-700 {
-    border-color: var(--qm-border-card) !important;
-  }
-
-  /* === EMERALD (OLD ACCENT) → QM-ACCENT CONVERSION === */
-  .text-emerald-400,
-  .text-emerald-500,
-  .text-emerald-600,
-  .text-emerald-300 {
-    color: var(--qm-accent) !important;
-  }
-
-  .bg-emerald-400,
-  .bg-emerald-500,
-  .bg-emerald-600 {
-    background-color: var(--qm-accent) !important;
-  }
-
-  .bg-emerald-500\/5,
-  .bg-emerald-500\/10,
-  .bg-emerald-400\/10,
-  .bg-emerald-500\/20 {
-    background-color: var(--qm-accent-soft) !important;
-  }
-
-  .border-emerald-500\/20,
-  .border-emerald-500\/25,
-  .border-emerald-500\/30 {
-    border-color: var(--qm-accent-border) !important;
-  }
-
-  .hover\:bg-emerald-400:hover,
-  .hover\:bg-emerald-500:hover {
-    background-color: var(--qm-accent-hover) !important;
-  }
-
-  .hover\:text-emerald-400:hover,
-  .hover\:text-emerald-500:hover {
-    color: var(--qm-accent-hover) !important;
-  }
-
-  /* === FOCUS RING OVERRIDES === */
-  .ring-emerald-400,
-  .ring-emerald-500,
-  .focus\:ring-emerald-400:focus,
-  .focus\:ring-emerald-500:focus {
-    --tw-ring-color: var(--qm-accent) !important;
-  }
-
-  .ring-offset-emerald-400,
-  .ring-offset-emerald-500 {
-    --tw-ring-offset-color: var(--qm-accent) !important;
-  }
-
-  /* === PLACEHOLDER TEXT OVERRIDES === */
-  .placeholder-slate-400::placeholder,
-  .placeholder-slate-500::placeholder {
-    color: var(--qm-text-muted) !important;
-  }
-
-  /* === DIVIDER OVERRIDES === */
-  .divide-slate-800 > :not([hidden]) ~ :not([hidden]),
-  .divide-slate-700 > :not([hidden]) ~ :not([hidden]) {
-    border-color: var(--qm-border-card) !important;
-  }
-}
+.animate-fadeIn     { animation: fadeIn 0.5s ease-out both; }
+.animate-dropdown   { animation: dropdownFadeSlide 0.22s ease-out forwards; }
+.animate-slideDown  { animation: slideDown 0.2s ease-out; }
 
 /* ===========================
-   UTILITY OVERRIDES FOR DARK/LIGHT MODE CONSISTENCY
-   Ensures smooth transitions between color schemes
+   SCROLLBAR
    =========================== */
 
-* {
-  transition-property: background-color, border-color, color, fill, stroke;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
+body::-webkit-scrollbar             { width: 8px; }
+body::-webkit-scrollbar-track       { background: transparent; }
+body::-webkit-scrollbar-thumb       { background: var(--qm-border-card); border-radius: 999px; }
+body::-webkit-scrollbar-thumb:hover { background: var(--qm-border-subtle); }
 
-/* Optional: Add a subtle transition when switching color schemes */
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-  }
-}
+/* ===========================
+   LEGACY TAILWIND CLASS → QUIET MIRROR REMAPPING
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color-scheme: light;
-  }
-}
-/* ========================================
-   EMERGENCY FIX — Force Quiet Mirror Colors
-   ======================================== */
+   Single authoritative section.
+   CSS variables already switch between dark/light mode,
+   so ONE set of overrides covers both color schemes.
 
-/* Force all backgrounds to use Quiet Mirror */
-body, 
-.bg-slate-950, 
-.bg-slate-900, 
+   RULE: each selector group only sets the ONE property it controls.
+   =========================== */
+
+/* ── Backgrounds ── */
+.bg-slate-950,
+.bg-slate-900,
 .bg-slate-800,
+.bg-slate-700,
 .bg-black,
-.bg-gray-900 {
+.bg-gray-900,
+.bg-gray-950 {
   background-color: var(--qm-bg) !important;
 }
 
-/* Force all cards and elevated surfaces */
 .bg-slate-900\/40,
 .bg-slate-900\/50,
+.bg-slate-900\/60,
 .bg-black\/40,
-.card,
-.panel {
+.bg-black\/50 {
   background-color: var(--qm-bg-elevated) !important;
 }
 
-/* Force all primary text */
+/* ── Text colors ── */
+.text-white,
 .text-slate-100,
 .text-slate-200,
 .text-slate-300,
-.text-white {
+.text-gray-100,
+.text-gray-200 {
   color: var(--qm-text-primary) !important;
 }
 
-/* Force all secondary text */
 .text-slate-400,
-.text-slate-500 {
+.text-slate-500,
+.text-gray-400,
+.text-gray-500 {
   color: var(--qm-text-secondary) !important;
 }
 
-/* Convert all emerald/green to your accent */
-.text-emerald-400,
-.text-emerald-500,
-.bg-emerald-400,
-.bg-emerald-500,
-.border-emerald-500 {
-  color: var(--qm-accent) !important;
-  background-color: var(--qm-accent) !important;
-  border-color: var(--qm-accent-border) !important;
+.text-slate-600,
+.text-slate-700,
+.text-gray-600,
+.text-gray-700 {
+  color: var(--qm-text-muted) !important;
 }
 
-/* Make buttons look correct */
+/* ── Borders ── */
+.border-slate-800,
+.border-slate-700,
+.border-gray-800,
+.border-gray-700,
+.border-white\/6,
+.border-white\/8,
+.border-white\/10 {
+  border-color: var(--qm-border-card) !important;
+}
+
+.divide-slate-800 > :not([hidden]) ~ :not([hidden]),
+.divide-slate-700 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--qm-border-card) !important;
+}
+
+/* ── Placeholders ── */
+.placeholder-slate-400::placeholder,
+.placeholder-slate-500::placeholder {
+  color: var(--qm-text-muted) !important;
+}
+
+/* ── Emerald → QM accent (TEXT only) ── */
+.text-emerald-300,
+.text-emerald-400,
+.text-emerald-500,
+.text-emerald-600 {
+  color: var(--qm-accent) !important;
+}
+
+.hover\:text-emerald-400:hover,
+.hover\:text-emerald-500:hover {
+  color: var(--qm-accent-hover) !important;
+}
+
+/* ── Emerald → QM accent (BACKGROUND only) ── */
+.bg-emerald-400,
+.bg-emerald-500,
+.bg-emerald-600,
 button.bg-emerald-500,
 a.bg-emerald-500 {
   background-color: var(--qm-accent) !important;
 }
 
+.hover\:bg-emerald-400:hover,
+.hover\:bg-emerald-500:hover,
 button.bg-emerald-500:hover,
 a.bg-emerald-500:hover {
   background-color: var(--qm-accent-hover) !important;
+}
+
+.bg-emerald-500\/5,
+.bg-emerald-500\/10,
+.bg-emerald-400\/10,
+.bg-emerald-500\/20 {
+  background-color: var(--qm-accent-soft) !important;
+}
+
+/* ── Emerald → QM accent (BORDER only) ── */
+.border-emerald-500,
+.border-emerald-500\/20,
+.border-emerald-500\/25,
+.border-emerald-500\/30 {
+  border-color: var(--qm-accent-border) !important;
+}
+
+/* ── Emerald → QM accent (RING only) ── */
+.ring-emerald-400,
+.ring-emerald-500,
+.focus\:ring-emerald-400:focus,
+.focus\:ring-emerald-500:focus {
+  --tw-ring-color: var(--qm-accent) !important;
+}
+
+.ring-offset-emerald-400,
+.ring-offset-emerald-500 {
+  --tw-ring-offset-color: var(--qm-accent) !important;
 }
