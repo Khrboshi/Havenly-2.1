@@ -27,7 +27,7 @@ export default function RequirePremium({ children }: RequirePremiumProps) {
 
   if (!isPremium) {
     return (
-      <div className="min-h-screen bg-slate-950 px-4 py-12 text-white">
+      <div className="min-h-screen bg-slate-950 px-4 py-12 text-[color:var(--hvn-text-primary)]">
         <div className="mx-auto max-w-2xl space-y-6">
 
           {/* Main card */}

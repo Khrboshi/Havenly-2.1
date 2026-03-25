@@ -61,7 +61,7 @@ export default function CompleteClient() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-950 px-6">
       <div className="max-w-sm text-center">
-        <h1 className="font-display text-lg font-semibold text-white">
+        <h1 className="font-display text-lg font-semibold text-[color:var(--hvn-text-primary)]">
           {closeBlocked ? "You're signed in." : "Signing you in\u2026"}
         </h1>
         

@@ -223,7 +223,7 @@ function StatCard({
       </p>
       <p
         className="text-base font-semibold leading-tight"
-        style={{ color: accent ?? "#e2e8f0" }}
+        style={{ color: accent ?? "var(--hvn-text-primary)" }}
       >
         {value}
       </p>

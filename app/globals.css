@@ -78,6 +78,54 @@
 
     color-scheme: light;
   }
+
+  /* ── Light mode text overrides ─────────────────────────────────────
+     text-white and text-slate-100/200 are designed for dark backgrounds.
+     In light mode, override them to use the proper dark text so headings
+     and body text remain readable on warm cream backgrounds.
+  ── */
+  .text-white,
+  .text-slate-100,
+  .text-slate-200 {
+    color: var(--hvn-text-primary) !important;
+  }
+
+  /* Muted text — keep readable but softer */
+  .text-slate-300,
+  .text-slate-400 {
+    color: var(--hvn-text-muted) !important;
+  }
+
+  /* Borders — adapt dark borders to warm tones */
+  .border-slate-800,
+  .border-slate-700\/60,
+  .border-slate-700 {
+    border-color: var(--hvn-card-border) !important;
+  }
+
+  /* Card backgrounds */
+  .bg-slate-900\/40,
+  .bg-slate-900\/35,
+  .bg-slate-900\/60 {
+    background-color: var(--hvn-bg-elevated) !important;
+  }
+
+  /* White borders are invisible on light bg — use warm tone instead */
+  [class*="border-white\/"] {
+    border-color: var(--hvn-card-border) !important;
+  }
+
+  /* Slate text that's too dark in light mode */
+  .text-slate-500 { color: var(--hvn-text-muted) !important; }
+  .text-slate-600 { color: var(--hvn-text-muted) !important; }
+
+  /* Scrollbar warm tones */
+  body::-webkit-scrollbar-thumb {
+    background: rgba(92, 74, 58, 0.25) !important;
+  }
+  body::-webkit-scrollbar-thumb:hover {
+    background: rgba(92, 74, 58, 0.40) !important;
+  }
 }
 
 @layer base {

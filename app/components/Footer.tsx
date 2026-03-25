@@ -101,7 +101,7 @@ export default function Footer() {
                 height={22}
                 className="rounded-md"
               />
-              <span className="text-sm font-semibold text-white">
+              <span className="text-sm font-semibold text-[color:var(--hvn-text-primary)]">
                 {CONFIG.appName}
               </span>
             </Link>

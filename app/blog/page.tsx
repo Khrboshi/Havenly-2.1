@@ -20,7 +20,7 @@ const featuredTopics = ["Emotional load", "Journaling", "Rest & burnout"];
 
 export default function BlogPage() {
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
+    <main className="min-h-screen bg-slate-950 text-[color:var(--hvn-text-primary)]">
       <section className="relative overflow-hidden border-b border-slate-800/60 bg-slate-950">
         <div className="pointer-events-none absolute left-0 top-0 h-[320px] w-[420px] rounded-full bg-emerald-500/[0.05] blur-3xl" />
         <div className="pointer-events-none absolute right-[-80px] top-0 h-[320px] w-[360px] rounded-full bg-violet-500/[0.04] blur-3xl" />

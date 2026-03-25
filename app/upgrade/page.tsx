@@ -100,7 +100,7 @@ function UpgradeButton({
 
 export default function UpgradePage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-950 text-[color:var(--hvn-text-primary)]">
 
       {/* ── Hero — with embedded proof card ──────────────────────────────── */}
       <section className="relative overflow-hidden border-b border-slate-800/60">

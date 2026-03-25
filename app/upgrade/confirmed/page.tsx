@@ -7,7 +7,7 @@ export const metadata = { title: `Welcome to Premium | ${CONFIG.appName}` };
 
 export default function UpgradeConfirmedPage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-950 text-[color:var(--hvn-text-primary)]">
 
       {/* Glow */}
       <div className="pointer-events-none fixed left-1/2 top-0 h-[500px] w-[700px] -translate-x-1/2 rounded-full bg-emerald-500/[0.10] blur-[130px]" />

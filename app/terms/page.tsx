@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default function TermsOfServicePage() {
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
+    <main className="min-h-screen bg-slate-950 text-[color:var(--hvn-text-primary)]">
       <section className="mx-auto max-w-4xl px-6 pb-16 pt-24">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">
           Terms of Service

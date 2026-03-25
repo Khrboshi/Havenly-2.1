@@ -56,7 +56,7 @@ export default function EmailCapture({ source = "blog", variant = "blog-index" }
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(); }}
                 placeholder="your@email.com"
-                className="min-w-0 flex-1 rounded-full border border-white/10 bg-slate-950/70 px-4 py-2.5 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500/40"
+                className="min-w-0 flex-1 rounded-full border border-[color:var(--hvn-card-border)] bg-slate-950/70 px-4 py-2.5 text-sm text-[color:var(--hvn-text-primary)] outline-none transition placeholder:text-[color:var(--hvn-text-muted)] focus:border-[color:var(--hvn-accent-mint)]"
               />
               <button
                 onClick={handleSubmit}
@@ -83,7 +83,7 @@ export default function EmailCapture({ source = "blog", variant = "blog-index" }
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-400/70">
             {CONFIG.newsletterName}
           </p>
-          <h3 className="mt-2 text-lg font-semibold leading-snug text-white">
+          <h3 className="mt-2 text-lg font-semibold leading-snug text-[color:var(--hvn-text-primary)]">
             One quiet article a week.
           </h3>
           <p className="mt-2 text-sm leading-relaxed text-slate-400">
@@ -105,7 +105,7 @@ export default function EmailCapture({ source = "blog", variant = "blog-index" }
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(); }}
                 placeholder="your@email.com"
-                className="min-w-0 flex-1 rounded-full border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500/40"
+                className="min-w-0 flex-1 rounded-full border border-[color:var(--hvn-card-border)] bg-slate-950/70 px-4 py-3 text-sm text-[color:var(--hvn-text-primary)] outline-none transition placeholder:text-[color:var(--hvn-text-muted)] focus:border-[color:var(--hvn-accent-mint)]"
               />
               <button
                 onClick={handleSubmit}

@@ -199,7 +199,7 @@ function MagicLoginInner() {
   const tokenOk = digitsOnlyToken.length >= 6 && digitsOnlyToken.length <= 8;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-950 text-[color:var(--hvn-text-primary)]">
       <div className="mx-auto w-full max-w-6xl px-4 pt-24 pb-16 sm:px-6 lg:grid lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:px-8">
         {/* ── Left column ── */}
         <div className="hidden lg:flex lg:flex-col lg:justify-start">
@@ -326,7 +326,7 @@ function MagicLoginInner() {
             )}
 
             {/* Mode toggle */}
-            <div className="grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-slate-950/60 p-1.5">
+            <div className="grid grid-cols-2 gap-2 rounded-2xl border border-[color:var(--hvn-card-border)] bg-slate-950/60 p-1.5">
               {(["code", "link"] as Mode[]).map((m) => (
                 <button
                   key={m}
@@ -360,7 +360,7 @@ function MagicLoginInner() {
                   if (e.key === "Enter" && email && mode === "link") onSendEmail();
                 }}
                 placeholder="you@example.com"
-                className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500/50"
+                className="w-full rounded-2xl border border-[color:var(--hvn-card-border)] bg-slate-950/70 px-4 py-3 text-sm text-[color:var(--hvn-text-primary)] outline-none transition placeholder:text-[color:var(--hvn-text-muted)] focus:border-[color:var(--hvn-accent-mint)]"
               />
             </div>
 
@@ -401,7 +401,7 @@ function MagicLoginInner() {
                     }}
                     inputMode="numeric"
                     placeholder="Enter 6–8 digit code"
-                    className="w-full rounded-2xl border border-white/10 bg-slate-950/70 px-4 py-3 text-sm text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500/50"
+                    className="w-full rounded-2xl border border-[color:var(--hvn-card-border)] bg-slate-950/70 px-4 py-3 text-sm text-[color:var(--hvn-text-primary)] outline-none transition placeholder:text-[color:var(--hvn-text-muted)] focus:border-[color:var(--hvn-accent-mint)]"
                   />
                   <button
                     type="button"
