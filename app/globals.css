@@ -7,9 +7,6 @@
 
    Dark mode  → deep indigo + soft periwinkle
    Light mode → warm linen  + muted lavender
-
-   "Quiet" = no bright accents, soft edges, low saturation
-   "Mirror" = clarity without glare, subtle depth
    =========================== */
 
 /* ── Dark mode (default) ── */
@@ -98,7 +95,6 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Subtle noise texture — dark mode only, low z-index */
   body::before {
     content: "";
     position: fixed;
@@ -126,7 +122,6 @@
   }
 
   a, button, [role="button"] { -webkit-tap-highlight-color: transparent; }
-
   input, textarea, select { font-size: max(16px, 1rem); }
   input, textarea, select, button { font: inherit; }
 
@@ -142,7 +137,7 @@
 
   p { text-wrap: pretty; }
 
-  /* ── Focus-visible (keyboard navigation only) ── */
+  /* Focus-visible */
   :focus-visible {
     outline: var(--qm-focus-ring-width) solid var(--qm-focus-ring-color);
     outline-offset: var(--qm-focus-ring-offset);
@@ -255,7 +250,6 @@
    =========================== */
 
 @layer utilities {
-  /* ── Reveal animations ── */
   .reveal {
     opacity: 0;
     transform: translateY(24px);
@@ -280,7 +274,6 @@
   .stagger-children.is-visible > *:nth-child(5) { opacity: 1; transform: none; transition-delay: 0.45s; }
   .stagger-children.is-visible > *:nth-child(6) { opacity: 1; transform: none; transition-delay: 0.55s; }
 
-  /* ── Section backgrounds ── */
   .bg-qm-page-gradient {
     background:
       radial-gradient(circle at 0% 0%, var(--qm-accent-soft), transparent 42%),
@@ -294,7 +287,7 @@
       var(--qm-bg);
   }
 
-  .section-tinted { background: var(--qm-bg-soft); }
+  .section-tinted       { background: var(--qm-bg-soft); }
 
   .section-purple-tint {
     background:
@@ -308,7 +301,6 @@
       var(--qm-bg);
   }
 
-  /* ── Color utilities ── */
   .bg-qm-bg           { background-color: var(--qm-bg); }
   .bg-qm-elevated     { background-color: var(--qm-bg-elevated); }
   .bg-qm-soft         { background-color: var(--qm-bg-soft); }
@@ -337,7 +329,6 @@
       0 0 0 4px var(--qm-accent-soft);
   }
 
-  /* ── Panels ── */
   .qm-panel {
     border: 1px solid var(--qm-border-card);
     background: var(--qm-bg-elevated);
@@ -352,16 +343,13 @@
     box-shadow: var(--qm-shadow-card-lift);
   }
 
-  /* ── Typography utilities ── */
   .qm-copy-readable { line-height: 1.72; letter-spacing: -0.005em; }
   .qm-eyebrow       { font-size: 11px; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; }
 
-  /* ── Safe areas (mobile notch) ── */
   .pb-safe   { padding-bottom: env(safe-area-inset-bottom); }
   .pb-safe-4 { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
   .pt-safe   { padding-top: env(safe-area-inset-top); }
 
-  /* ── Animation utilities ── */
   .animate-fade-in-up { animation: fadeInUp 0.65s ease-out forwards; }
   .animate-fade-in    { animation: fadeIn 0.5s ease-out forwards; }
 
@@ -413,134 +401,260 @@ body::-webkit-scrollbar-track       { background: transparent; }
 body::-webkit-scrollbar-thumb       { background: var(--qm-border-card); border-radius: 999px; }
 body::-webkit-scrollbar-thumb:hover { background: var(--qm-border-subtle); }
 
-/* ===========================
-   LEGACY TAILWIND CLASS → QUIET MIRROR REMAPPING
+/* ============================================================
+   LEGACY TAILWIND → QUIET MIRROR REMAPPING
+   
+   ONE authoritative section. Covers ALL emerald + green + teal
+   shades, ALL opacity variants, ALL gradient stops.
+   
+   Each selector group sets ONLY the property it controls.
+   ============================================================ */
 
-   Single authoritative section.
-   CSS variables already switch between dark/light mode,
-   so ONE set of overrides covers both color schemes.
+/* ─────────── BACKGROUND OVERRIDES ─────────── */
 
-   RULE: each selector group only sets the ONE property it controls.
-   =========================== */
-
-/* ── Backgrounds ── */
-.bg-slate-950,
-.bg-slate-900,
-.bg-slate-800,
-.bg-slate-700,
-.bg-black,
-.bg-gray-900,
-.bg-gray-950 {
+/* Slate/Gray/Black → QM background */
+.bg-slate-950, .bg-slate-900, .bg-slate-800, .bg-slate-700,
+.bg-black, .bg-gray-900, .bg-gray-950 {
   background-color: var(--qm-bg) !important;
 }
 
-.bg-slate-900\/40,
-.bg-slate-900\/50,
-.bg-slate-900\/60,
-.bg-black\/40,
-.bg-black\/50 {
+.bg-slate-900\/40, .bg-slate-900\/50, .bg-slate-900\/60,
+.bg-black\/40, .bg-black\/50 {
   background-color: var(--qm-bg-elevated) !important;
 }
 
-/* ── Text colors ── */
-.text-white,
-.text-slate-100,
-.text-slate-200,
-.text-slate-300,
-.text-gray-100,
-.text-gray-200 {
-  color: var(--qm-text-primary) !important;
+/* ALL emerald backgrounds → QM accent */
+.bg-emerald-50, .bg-emerald-100, .bg-emerald-200, .bg-emerald-300 {
+  background-color: var(--qm-accent-soft) !important;
 }
-
-.text-slate-400,
-.text-slate-500,
-.text-gray-400,
-.text-gray-500 {
-  color: var(--qm-text-secondary) !important;
-}
-
-.text-slate-600,
-.text-slate-700,
-.text-gray-600,
-.text-gray-700 {
-  color: var(--qm-text-muted) !important;
-}
-
-/* ── Borders ── */
-.border-slate-800,
-.border-slate-700,
-.border-gray-800,
-.border-gray-700,
-.border-white\/6,
-.border-white\/8,
-.border-white\/10 {
-  border-color: var(--qm-border-card) !important;
-}
-
-.divide-slate-800 > :not([hidden]) ~ :not([hidden]),
-.divide-slate-700 > :not([hidden]) ~ :not([hidden]) {
-  border-color: var(--qm-border-card) !important;
-}
-
-/* ── Placeholders ── */
-.placeholder-slate-400::placeholder,
-.placeholder-slate-500::placeholder {
-  color: var(--qm-text-muted) !important;
-}
-
-/* ── Emerald → QM accent (TEXT only) ── */
-.text-emerald-300,
-.text-emerald-400,
-.text-emerald-500,
-.text-emerald-600 {
-  color: var(--qm-accent) !important;
-}
-
-.hover\:text-emerald-400:hover,
-.hover\:text-emerald-500:hover {
-  color: var(--qm-accent-hover) !important;
-}
-
-/* ── Emerald → QM accent (BACKGROUND only) ── */
-.bg-emerald-400,
-.bg-emerald-500,
-.bg-emerald-600,
-button.bg-emerald-500,
-a.bg-emerald-500 {
+.bg-emerald-400, .bg-emerald-500, .bg-emerald-600 {
   background-color: var(--qm-accent) !important;
 }
-
-.hover\:bg-emerald-400:hover,
-.hover\:bg-emerald-500:hover,
-button.bg-emerald-500:hover,
-a.bg-emerald-500:hover {
-  background-color: var(--qm-accent-hover) !important;
+.bg-emerald-700, .bg-emerald-800, .bg-emerald-900, .bg-emerald-950 {
+  background-color: var(--qm-bg-card) !important;
 }
 
-.bg-emerald-500\/5,
-.bg-emerald-500\/10,
-.bg-emerald-400\/10,
-.bg-emerald-500\/20 {
+/* ALL emerald bg with opacity → QM accent soft */
+[class*="bg-emerald"][class*="\/"] {
   background-color: var(--qm-accent-soft) !important;
 }
 
-/* ── Emerald → QM accent (BORDER only) ── */
-.border-emerald-500,
-.border-emerald-500\/20,
-.border-emerald-500\/25,
-.border-emerald-500\/30 {
+/* ALL green backgrounds → QM accent */
+.bg-green-50, .bg-green-100, .bg-green-200, .bg-green-300 {
+  background-color: var(--qm-accent-soft) !important;
+}
+.bg-green-400, .bg-green-500, .bg-green-600 {
+  background-color: var(--qm-accent) !important;
+}
+.bg-green-700, .bg-green-800, .bg-green-900, .bg-green-950 {
+  background-color: var(--qm-bg-card) !important;
+}
+
+[class*="bg-green"][class*="\/"] {
+  background-color: var(--qm-accent-soft) !important;
+}
+
+/* ALL teal backgrounds → QM accent */
+.bg-teal-50, .bg-teal-100, .bg-teal-200, .bg-teal-300 {
+  background-color: var(--qm-accent-soft) !important;
+}
+.bg-teal-400, .bg-teal-500, .bg-teal-600 {
+  background-color: var(--qm-accent) !important;
+}
+.bg-teal-700, .bg-teal-800, .bg-teal-900, .bg-teal-950 {
+  background-color: var(--qm-bg-card) !important;
+}
+
+[class*="bg-teal"][class*="\/"] {
+  background-color: var(--qm-accent-soft) !important;
+}
+
+/* Hover bg overrides */
+.hover\:bg-emerald-400:hover, .hover\:bg-emerald-500:hover,
+.hover\:bg-emerald-600:hover, .hover\:bg-green-400:hover,
+.hover\:bg-green-500:hover, .hover\:bg-green-600:hover,
+.hover\:bg-teal-400:hover, .hover\:bg-teal-500:hover,
+.hover\:bg-teal-600:hover {
+  background-color: var(--qm-accent-hover) !important;
+}
+
+/* ─────────── GRADIENT STOP OVERRIDES ─────────── */
+
+/* from-emerald / from-green / from-teal */
+.from-emerald-50, .from-emerald-100, .from-emerald-200, .from-emerald-300,
+.from-emerald-400, .from-emerald-500, .from-emerald-600,
+.from-green-50, .from-green-100, .from-green-200, .from-green-300,
+.from-green-400, .from-green-500, .from-green-600,
+.from-teal-50, .from-teal-100, .from-teal-200, .from-teal-300,
+.from-teal-400, .from-teal-500, .from-teal-600 {
+  --tw-gradient-from: var(--qm-accent) !important;
+  --tw-gradient-to: transparent !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+.from-emerald-700, .from-emerald-800, .from-emerald-900, .from-emerald-950,
+.from-green-700, .from-green-800, .from-green-900, .from-green-950,
+.from-teal-700, .from-teal-800, .from-teal-900, .from-teal-950 {
+  --tw-gradient-from: var(--qm-bg-card) !important;
+  --tw-gradient-to: transparent !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+[class*="from-emerald"][class*="\/"],
+[class*="from-green"][class*="\/"],
+[class*="from-teal"][class*="\/"] {
+  --tw-gradient-from: var(--qm-accent-soft) !important;
+}
+
+/* to-emerald / to-green / to-teal */
+.to-emerald-50, .to-emerald-100, .to-emerald-200, .to-emerald-300,
+.to-emerald-400, .to-emerald-500, .to-emerald-600,
+.to-green-50, .to-green-100, .to-green-200, .to-green-300,
+.to-green-400, .to-green-500, .to-green-600,
+.to-teal-50, .to-teal-100, .to-teal-200, .to-teal-300,
+.to-teal-400, .to-teal-500, .to-teal-600 {
+  --tw-gradient-to: var(--qm-accent-soft) !important;
+}
+
+.to-emerald-700, .to-emerald-800, .to-emerald-900, .to-emerald-950,
+.to-green-700, .to-green-800, .to-green-900, .to-green-950,
+.to-teal-700, .to-teal-800, .to-teal-900, .to-teal-950 {
+  --tw-gradient-to: var(--qm-bg-card) !important;
+}
+
+[class*="to-emerald"][class*="\/"],
+[class*="to-green"][class*="\/"],
+[class*="to-teal"][class*="\/"] {
+  --tw-gradient-to: var(--qm-accent-soft) !important;
+}
+
+/* via-emerald / via-green / via-teal */
+[class*="via-emerald"],
+[class*="via-green"],
+[class*="via-teal"] {
+  --tw-gradient-via: var(--qm-accent-soft) !important;
+}
+
+/* ─────────── TEXT COLOR OVERRIDES ─────────── */
+
+/* Slate/Gray → QM text hierarchy */
+.text-white, .text-slate-100, .text-slate-200, .text-slate-300,
+.text-gray-100, .text-gray-200 {
+  color: var(--qm-text-primary) !important;
+}
+
+.text-slate-400, .text-slate-500, .text-gray-400, .text-gray-500 {
+  color: var(--qm-text-secondary) !important;
+}
+
+.text-slate-600, .text-slate-700, .text-gray-600, .text-gray-700 {
+  color: var(--qm-text-muted) !important;
+}
+
+/* ALL emerald/green/teal text → QM accent */
+.text-emerald-50, .text-emerald-100, .text-emerald-200, .text-emerald-300,
+.text-emerald-400, .text-emerald-500, .text-emerald-600,
+.text-emerald-700, .text-emerald-800, .text-emerald-900, .text-emerald-950,
+.text-green-50, .text-green-100, .text-green-200, .text-green-300,
+.text-green-400, .text-green-500, .text-green-600,
+.text-green-700, .text-green-800, .text-green-900, .text-green-950,
+.text-teal-50, .text-teal-100, .text-teal-200, .text-teal-300,
+.text-teal-400, .text-teal-500, .text-teal-600,
+.text-teal-700, .text-teal-800, .text-teal-900, .text-teal-950 {
+  color: var(--qm-accent) !important;
+}
+
+/* Hover text overrides */
+.hover\:text-emerald-300:hover, .hover\:text-emerald-400:hover,
+.hover\:text-emerald-500:hover, .hover\:text-emerald-600:hover,
+.hover\:text-green-300:hover, .hover\:text-green-400:hover,
+.hover\:text-green-500:hover, .hover\:text-green-600:hover,
+.hover\:text-teal-300:hover, .hover\:text-teal-400:hover,
+.hover\:text-teal-500:hover, .hover\:text-teal-600:hover {
+  color: var(--qm-accent-hover) !important;
+}
+
+/* ─────────── BORDER OVERRIDES ─────────── */
+
+/* Slate/Gray → QM border */
+.border-slate-800, .border-slate-700, .border-gray-800, .border-gray-700,
+.border-white\/6, .border-white\/8, .border-white\/10 {
+  border-color: var(--qm-border-card) !important;
+}
+
+/* ALL emerald/green/teal borders → QM accent border */
+.border-emerald-50, .border-emerald-100, .border-emerald-200, .border-emerald-300,
+.border-emerald-400, .border-emerald-500, .border-emerald-600,
+.border-emerald-700, .border-emerald-800, .border-emerald-900, .border-emerald-950,
+.border-green-50, .border-green-100, .border-green-200, .border-green-300,
+.border-green-400, .border-green-500, .border-green-600,
+.border-green-700, .border-green-800, .border-green-900, .border-green-950,
+.border-teal-50, .border-teal-100, .border-teal-200, .border-teal-300,
+.border-teal-400, .border-teal-500, .border-teal-600,
+.border-teal-700, .border-teal-800, .border-teal-900, .border-teal-950 {
   border-color: var(--qm-accent-border) !important;
 }
 
-/* ── Emerald → QM accent (RING only) ── */
-.ring-emerald-400,
-.ring-emerald-500,
-.focus\:ring-emerald-400:focus,
-.focus\:ring-emerald-500:focus {
+/* Border with opacity variants */
+[class*="border-emerald"][class*="\/"],
+[class*="border-green"][class*="\/"],
+[class*="border-teal"][class*="\/"] {
+  border-color: var(--qm-accent-border) !important;
+}
+
+/* Divide overrides */
+.divide-slate-800 > :not([hidden]) ~ :not([hidden]),
+.divide-slate-700 > :not([hidden]) ~ :not([hidden]),
+.divide-emerald-500 > :not([hidden]) ~ :not([hidden]),
+.divide-green-500 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--qm-border-card) !important;
+}
+
+/* ─────────── RING OVERRIDES ─────────── */
+
+.ring-emerald-400, .ring-emerald-500, .ring-emerald-600,
+.ring-green-400, .ring-green-500, .ring-green-600,
+.ring-teal-400, .ring-teal-500, .ring-teal-600,
+.focus\:ring-emerald-400:focus, .focus\:ring-emerald-500:focus,
+.focus\:ring-green-400:focus, .focus\:ring-green-500:focus {
   --tw-ring-color: var(--qm-accent) !important;
 }
 
-.ring-offset-emerald-400,
-.ring-offset-emerald-500 {
-  --tw-ring-offset-color: var(--qm-accent) !important;
+/* ─────────── PLACEHOLDER OVERRIDES ─────────── */
+
+.placeholder-slate-400::placeholder,
+.placeholder-slate-500::placeholder,
+.placeholder-emerald-400::placeholder {
+  color: var(--qm-text-muted) !important;
+}
+
+/* ─────────── DECORATION / ACCENT OVERRIDES ─────────── */
+
+.decoration-emerald-400, .decoration-emerald-500,
+.decoration-green-400, .decoration-green-500 {
+  text-decoration-color: var(--qm-accent) !important;
+}
+
+.accent-emerald-400, .accent-emerald-500,
+.accent-green-400, .accent-green-500 {
+  accent-color: var(--qm-accent) !important;
+}
+
+/* ─────────── SHADOW COLOR OVERRIDES ─────────── */
+
+.shadow-emerald-500\/5, .shadow-emerald-500\/10, .shadow-emerald-500\/20,
+.shadow-green-500\/5, .shadow-green-500\/10, .shadow-green-500\/20 {
+  --tw-shadow-color: var(--qm-accent-soft) !important;
+}
+
+/* ─────────── SVG FILL / STROKE OVERRIDES ─────────── */
+
+.fill-emerald-400, .fill-emerald-500, .fill-emerald-600,
+.fill-green-400, .fill-green-500, .fill-green-600 {
+  fill: var(--qm-accent) !important;
+}
+
+.stroke-emerald-400, .stroke-emerald-500, .stroke-emerald-600,
+.stroke-green-400, .stroke-green-500, .stroke-green-600 {
+  stroke: var(--qm-accent) !important;
 }
