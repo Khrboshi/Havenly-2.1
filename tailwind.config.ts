@@ -6,12 +6,14 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  // Matches the prefers-color-scheme approach in globals.css
+  darkMode: "media",
   theme: {
     extend: {
       colors: {
         // Quiet Mirror brand palette — soft, muted, introspective
         mirror: {
-          50: "#f5f7ff",
+          50:  "#f5f7ff",
           100: "#ebf0ff",
           200: "#d6e0ff",
           300: "#b8c9ff",
@@ -23,7 +25,7 @@ const config: Config = {
           900: "#354482",
         },
         quiet: {
-          50: "#f8f7fb",
+          50:  "#f8f7fb",
           100: "#f0eef6",
           200: "#e0dded",
           300: "#cbc4e0",
@@ -34,53 +36,52 @@ const config: Config = {
           800: "#5f5480",
           900: "#4f4669",
         },
-        // Map CSS variables to Tailwind colors for consistent usage
+        // CSS-variable-backed colors (auto-switch dark ↔ light)
         qm: {
-          bg: "var(--qm-bg)",
-          elevated: "var(--qm-bg-elevated)",
-          soft: "var(--qm-bg-soft)",
-          card: "var(--qm-bg-card)",
-          primary: "var(--qm-text-primary)",
-          secondary: "var(--qm-text-secondary)",
-          muted: "var(--qm-text-muted)",
-          faint: "var(--qm-text-faint)",
-          accent: "var(--qm-accent)",
-          "accent-hover": "var(--qm-accent-hover)",
+          bg:            "var(--qm-bg)",
+          elevated:      "var(--qm-bg-elevated)",
+          soft:          "var(--qm-bg-soft)",
+          card:          "var(--qm-bg-card)",
+          primary:       "var(--qm-text-primary)",
+          secondary:     "var(--qm-text-secondary)",
+          muted:         "var(--qm-text-muted)",
+          faint:         "var(--qm-text-faint)",
+          accent:        "var(--qm-accent)",
+          "accent-hover":"var(--qm-accent-hover)",
           "accent-soft": "var(--qm-accent-soft)",
-          "accent-border": "var(--qm-accent-border)",
-          "accent-2": "var(--qm-accent-2)",
-          "accent-2-soft": "var(--qm-accent-2-soft)",
-          "border-subtle": "var(--qm-border-subtle)",
+          "accent-border":"var(--qm-accent-border)",
+          "accent-2":    "var(--qm-accent-2)",
+          "accent-2-soft":"var(--qm-accent-2-soft)",
+          "border-subtle":"var(--qm-border-subtle)",
           "border-card": "var(--qm-border-card)",
         },
       },
       fontFamily: {
         display: ["var(--font-display)", "Fraunces", "Georgia", "serif"],
-        body: ["var(--font-body)", "DM Sans", "system-ui", "sans-serif"],
+        body:    ["var(--font-body)", "DM Sans", "system-ui", "sans-serif"],
       },
-      // Add animation utilities that match your design system
       animation: {
-        "fade-in": "fadeIn 0.5s ease-out forwards",
-        "fade-in-up": "fadeInUp 0.65s ease-out forwards",
-        "slide-down": "slideDown 0.2s ease-out",
-        "dropdown": "dropdownFadeSlide 0.22s ease-out forwards",
+        "fade-in":     "fadeIn 0.5s ease-out forwards",
+        "fade-in-up":  "fadeInUp 0.65s ease-out forwards",
+        "slide-down":  "slideDown 0.2s ease-out",
+        dropdown:      "dropdownFadeSlide 0.22s ease-out forwards",
       },
       keyframes: {
         fadeIn: {
           from: { opacity: "0", transform: "translateY(6px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
+          to:   { opacity: "1", transform: "translateY(0)" },
         },
         fadeInUp: {
           from: { opacity: "0", transform: "translateY(20px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
+          to:   { opacity: "1", transform: "translateY(0)" },
         },
         slideDown: {
           from: { opacity: "0", transform: "translateY(-6px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
+          to:   { opacity: "1", transform: "translateY(0)" },
         },
         dropdownFadeSlide: {
           from: { opacity: "0", transform: "translateY(-6px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
+          to:   { opacity: "1", transform: "translateY(0)" },
         },
       },
     },
