@@ -8,7 +8,8 @@ export default function DeepLinkBootstrap() {
 
     // If user opens via deep link, prevent visual flash
     if (path.startsWith("/auth/callback")) {
-      document.documentElement.style.background = "#0b1120";
+      const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.style.background = isDark ? "#0b1120" : "#f8faff";
       document.body.style.opacity = "0.98";
     }
   }, []);
