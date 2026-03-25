@@ -59,7 +59,7 @@ export default function HomeBelowFold() {
                 </span>
               </div>
 
-              <div className="bg-slate-900/90 px-6 py-7 sm:px-8 sm:py-8">
+              <div className="bg-[color:var(--hvn-bg-elevated)] px-6 py-7 sm:px-8 sm:py-8">
                 <p className="font-display text-xl font-medium leading-relaxed text-white sm:text-2xl">
                   &ldquo;You often sound most overwhelmed when you feel responsible for{" "}
                   <span className="text-emerald-300">keeping everything steady for everyone else</span>{" "}
@@ -83,7 +83,7 @@ export default function HomeBelowFold() {
                             <span className="text-xs text-slate-400">{label}</span>
                             <span className="text-xs text-slate-600">{pct}%</span>
                           </div>
-                          <div className="h-2 w-full rounded-full bg-slate-800">
+                          <div className="h-2 w-full rounded-full bg-[color:var(--hvn-bg-soft)]">
                             <div className={`h-2 rounded-full ${color}`} style={{ width: `${pct}%` }} />
                           </div>
                         </div>
@@ -92,7 +92,7 @@ export default function HomeBelowFold() {
                   </div>
 
                   <div className="flex flex-row gap-3 sm:flex-col sm:justify-center">
-                    <div className="rounded-2xl border border-slate-700/50 bg-slate-800/60 px-4 py-3 text-center sm:px-5">
+                    <div className="rounded-2xl border border-[color:var(--hvn-card-border)] bg-[color:var(--hvn-bg-soft)] px-4 py-3 text-center sm:px-5">
                       <p className="font-display text-2xl font-bold text-white sm:text-3xl">
                         14<span className="text-base font-normal text-slate-500">/22</span>
                       </p>
@@ -100,7 +100,7 @@ export default function HomeBelowFold() {
                         entries with<br />emotional load
                       </p>
                     </div>
-                    <div className="rounded-2xl border border-slate-700/50 bg-slate-800/60 px-4 py-3 text-center sm:px-5">
+                    <div className="rounded-2xl border border-[color:var(--hvn-card-border)] bg-[color:var(--hvn-bg-soft)] px-4 py-3 text-center sm:px-5">
                       <p className="font-display text-2xl font-bold text-white sm:text-3xl">
                         3<span className="text-base font-normal text-slate-500">wks</span>
                       </p>
@@ -130,7 +130,7 @@ export default function HomeBelowFold() {
       </section>
 
       {/* ── 1. Recognition ───────────────────────────────────────────────── */}
-      <section className="border-y border-slate-800/60 py-10 sm:py-14">
+      <section className="border-y border-[color:var(--hvn-border-subtle)] py-10 sm:py-14">
         <div className="mx-auto max-w-6xl px-5">
           <ScrollReveal>
             <p className="mb-6 text-[11px] font-medium uppercase tracking-[0.2em] text-slate-500">
@@ -149,7 +149,7 @@ export default function HomeBelowFold() {
       </section>
 
       {/* ── 2. Concrete AI Demo ──────────────────────────────────────────── */}
-      <section className="border-b border-slate-800/60 section-tinted py-14 sm:py-20">
+      <section className="border-b border-[color:var(--hvn-border-subtle)] section-tinted py-14 sm:py-20">
         <div className="mx-auto max-w-6xl px-5">
           <ScrollReveal className="mb-10 max-w-2xl">
             <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-emerald-500/70">What actually happens</p>
@@ -164,11 +164,11 @@ export default function HomeBelowFold() {
             </p>
           </ScrollReveal>
 
-          <ScrollReveal className="overflow-hidden rounded-[1.5rem] border border-slate-800/60 md:grid md:grid-cols-2">
-            <div className="border-b border-slate-800/60 bg-slate-900/60 p-6 md:border-b-0 md:border-r">
+          <ScrollReveal className="overflow-hidden rounded-[1.5rem] border border-[color:var(--hvn-card-border)] md:grid md:grid-cols-2">
+            <div className="border-b border-[color:var(--hvn-border-subtle)] bg-[color:var(--hvn-bg-elevated)] p-6 md:border-b-0 md:border-r">
               <div className="mb-4 flex items-center justify-between">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-600">What you write</p>
-                <span className="rounded-full border border-slate-700/50 px-2 py-0.5 text-[10px] text-slate-600">~2 min</span>
+                <span className="rounded-full border border-[color:var(--hvn-card-border)] px-2 py-0.5 text-[10px] text-slate-600">~2 min</span>
               </div>
               <p className="text-[15px] leading-[1.75] text-slate-200">
                 &ldquo;Work has been overwhelming. I keep saying yes and then resenting it. At home
@@ -177,7 +177,7 @@ export default function HomeBelowFold() {
               </p>
               <div className="mt-5 flex flex-wrap gap-1.5">
                 {["Honest", "Unfiltered", "No structure needed"].map((t) => (
-                  <span key={t} className="rounded-full border border-slate-700/50 px-2.5 py-0.5 text-[11px] text-slate-500">{t}</span>
+                  <span key={t} className="rounded-full border border-[color:var(--hvn-card-border)] px-2.5 py-0.5 text-[11px] text-slate-500">{t}</span>
                 ))}
               </div>
             </div>
@@ -209,7 +209,7 @@ export default function HomeBelowFold() {
               { step: "2", label: "Get a reflection that names what you feel", sub: "Not advice. A mirror. Short, thoughtful, honest.", accent: "text-violet-400", border: "border-violet-500/20" },
               { step: "3", label: "See what keeps returning over time", sub: "Patterns across weeks and months, not just today.", accent: "text-amber-400", border: "border-amber-500/20" },
             ].map(({ step, label, sub, accent, border }) => (
-              <div key={step} className={`rounded-2xl border bg-slate-900/40 p-5 ${border}`}>
+              <div key={step} className={`rounded-2xl border bg-[color:var(--hvn-bg-elevated)] p-5 ${border}`}>
                 <p className={`mb-2 text-xs font-semibold uppercase tracking-[0.2em] ${accent}`}>Step {step}</p>
                 <p className="text-[15px] font-medium leading-snug text-white">{label}</p>
                 <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{sub}</p>
@@ -226,7 +226,7 @@ export default function HomeBelowFold() {
       </section>
 
       {/* ── 3. AI Insight Cards ───────────────────────────────────────────── */}
-      <section className="border-b border-slate-800/60 section-purple-tint py-14 sm:py-20">
+      <section className="border-b border-[color:var(--hvn-border-subtle)] section-purple-tint py-14 sm:py-20">
         <div className="mx-auto max-w-6xl px-5">
           <ScrollReveal className="mb-10">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -258,7 +258,7 @@ export default function HomeBelowFold() {
                 {[{ label: "Emotional load", pct: 64, color: "bg-violet-400" }, { label: "Overwhelm", pct: 45, color: "bg-violet-500/60" }, { label: "Clarity", pct: 28, color: "bg-violet-600/50" }].map(({ label, pct, color }) => (
                   <div key={label}>
                     <div className="mb-1 flex items-center justify-between"><span className="text-xs text-slate-500">{label}</span><span className="text-xs text-slate-600">{pct}%</span></div>
-                    <div className="h-1.5 w-full rounded-full bg-slate-800"><div className={`h-1.5 rounded-full ${color}`} style={{ width: `${pct}%` }} /></div>
+                    <div className="h-1.5 w-full rounded-full bg-[color:var(--hvn-bg-soft)]"><div className={`h-1.5 rounded-full ${color}`} style={{ width: `${pct}%` }} /></div>
                   </div>
                 ))}
               </div>
@@ -271,8 +271,8 @@ export default function HomeBelowFold() {
                 {[
                   { label: "Responsibility", count: "11×", color: "border-emerald-500/20 bg-emerald-500/10 text-emerald-300" },
                   { label: "Communication", count: "9×", color: "border-emerald-500/20 bg-emerald-500/10 text-emerald-300" },
-                  { label: "Boundary-setting", count: "7×", color: "border-slate-600/40 bg-slate-800/50 text-slate-400" },
-                  { label: "Exhaustion", count: "6×", color: "border-slate-600/40 bg-slate-800/50 text-slate-400" },
+                  { label: "Boundary-setting", count: "7×", color: "border-[color:var(--hvn-card-border)] bg-[color:var(--hvn-bg-soft)] text-slate-400" },
+                  { label: "Exhaustion", count: "6×", color: "border-[color:var(--hvn-card-border)] bg-[color:var(--hvn-bg-soft)] text-slate-400" },
                 ].map(({ label, count, color }) => (
                   <div key={label} className={`rounded-xl border px-3 py-2 ${color}`}>
                     <p className="text-[11px] font-medium">{label}</p>
@@ -323,7 +323,7 @@ export default function HomeBelowFold() {
       </section>
 
       {/* ── 4. What makes it different ───────────────────────────────────── */}
-      <section className="border-b border-slate-800/60 py-12 sm:py-16">
+      <section className="border-b border-[color:var(--hvn-border-subtle)] py-12 sm:py-16">
         <div className="mx-auto max-w-6xl px-5">
           <ScrollReveal className="mb-8 max-w-2xl">
             <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-emerald-500/70">What makes it different</p>
@@ -351,7 +351,7 @@ export default function HomeBelowFold() {
       </section>
 
       {/* ── 5. Example reflections ───────────────────────────────────────── */}
-      <section className="border-b border-slate-800/60 py-12 sm:py-16">
+      <section className="border-b border-[color:var(--hvn-border-subtle)] py-12 sm:py-16">
         <div className="mx-auto max-w-5xl px-5">
           <ScrollReveal className="max-w-2xl">
             <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-emerald-500/60">What a reflection looks like</p>
@@ -359,7 +359,7 @@ export default function HomeBelowFold() {
             <p className="mt-3 text-sm leading-relaxed text-slate-400">These are illustrative examples built from the kinds of entries people write. Yours will be built from your own words.</p>
           </ScrollReveal>
 
-          <div className="mt-10 grid gap-5 lg:grid-cols-3">
+          <div className="mt-10 grid gap-5 lg:grid-cols-3 lg:items-stretch">
             {[
               {
                 wrote: "I keep saying yes to things even when I'm already overwhelmed. I stayed up until 2am finishing something that probably could have waited, but I felt guilty leaving it.",
@@ -379,7 +379,7 @@ export default function HomeBelowFold() {
             ].map(({ wrote, reflected, tags }) => (
               <ScrollReveal key={tags[0]} className="flex flex-col overflow-hidden rounded-[1.5rem] border border-hvn-card">
                 {/* WHAT YOU WROTE — fixed min-height so dividing line stays consistent */}
-                <div className="min-h-[140px] border-b border-hvn-card bg-hvn-bg-elevated px-5 py-4">
+                <div className="min-h-[160px] border-b border-hvn-card bg-hvn-bg-elevated px-5 py-4">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-hvn-text-muted">What you wrote</p>
                   <p className="mt-2 text-sm italic leading-relaxed text-hvn-text-secondary">&ldquo;{wrote}&rdquo;</p>
                 </div>
@@ -403,7 +403,7 @@ export default function HomeBelowFold() {
       </section>
 
       {/* ── 6. Trust cards — "Built with care" ───────────────────────────── */}
-      <section className="border-b border-slate-800/60 py-12 sm:py-16">
+      <section className="border-b border-[color:var(--hvn-border-subtle)] py-12 sm:py-16">
         <div className="mx-auto max-w-4xl px-5">
           <ScrollReveal className="text-center">
             <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-emerald-500/60">Built with care</p>
@@ -456,7 +456,7 @@ export default function HomeBelowFold() {
       </section>
 
       {/* ── Pattern interrupt ─────────────────────────────────────────────── */}
-      <div className="border-y border-slate-800/40 py-12 sm:py-14">
+      <div className="border-y border-[color:var(--hvn-border-subtle)] py-12 sm:py-14">
         <ScrollReveal className="mx-auto max-w-4xl px-5 text-center">
           <p className="font-display text-2xl font-medium leading-relaxed text-white sm:text-3xl sm:leading-relaxed">
             Most people don&apos;t lack self-awareness.{" "}
@@ -466,7 +466,7 @@ export default function HomeBelowFold() {
       </div>
 
       {/* ── 7. Pricing ────────────────────────────────────────────────────── */}
-      <section className="border-b border-slate-800/60 section-tinted py-12 sm:py-20">
+      <section className="border-b border-[color:var(--hvn-border-subtle)] section-tinted py-12 sm:py-20">
         <div className="mx-auto max-w-6xl px-5">
           <ScrollReveal className="mb-8 max-w-2xl">
             <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-emerald-500/70">Free vs Premium</p>
@@ -475,7 +475,7 @@ export default function HomeBelowFold() {
           </ScrollReveal>
 
           <ScrollReveal stagger className="flex flex-col-reverse gap-4 md:grid md:grid-cols-2 md:gap-5">
-            <div className="flex flex-col rounded-2xl border border-slate-800 bg-slate-900/40 p-5 sm:p-6">
+            <div className="flex flex-col rounded-2xl border border-[color:var(--hvn-card-border)] bg-[color:var(--hvn-bg-elevated)] p-5 sm:p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Free</p>
               <p className="mt-1 font-display text-xl font-semibold text-white sm:text-2xl">A private place to start</p>
               <div className="mt-2 flex items-baseline gap-1.5"><span className="text-3xl font-bold text-white">$0</span><span className="text-sm text-slate-400">/ month</span></div>
@@ -491,7 +491,7 @@ export default function HomeBelowFold() {
                 ))}
               </ul>
               <div className="mt-auto pt-6">
-                <Link href="/magic-login" className="inline-flex w-full items-center justify-center rounded-full border border-slate-700 bg-slate-900 px-5 py-3 text-sm font-medium text-slate-200 transition-colors hover:bg-slate-800">Start free</Link>
+                <Link href="/magic-login" className="inline-flex w-full items-center justify-center rounded-full border border-[color:var(--hvn-card-border)] bg-[color:var(--hvn-bg-elevated)] px-5 py-3 text-sm font-medium text-[color:var(--hvn-text-secondary)] transition-colors hover:bg-[color:var(--hvn-bg-soft)]">Start free</Link>
                 <p className="mt-2 text-center text-xs text-slate-700">No card required. No expiry.</p>
               </div>
             </div>
@@ -506,7 +506,7 @@ export default function HomeBelowFold() {
               </div>
               <p className="mt-1 text-xs text-slate-600">Cancel anytime</p>
               <p className="mt-3 text-sm text-slate-300">Best for people who want to understand what keeps happening, not just document what happened today.</p>
-              <div className="mt-4 rounded-xl border border-slate-700/60 bg-slate-900/50 p-3 text-xs text-slate-400">
+              <div className="mt-4 rounded-xl border border-[color:var(--hvn-card-border)] bg-[color:var(--hvn-bg-elevated)] p-3 text-xs text-slate-400">
                 <p><span className="text-slate-600">Without Premium:</span> you may sense a pattern but still be too close to it to name.</p>
                 <p className="mt-1"><span className="text-emerald-500/80">With Premium:</span>{" "}Quiet Mirror starts showing what repeats, what is shifting, and what may be underneath it.</p>
               </div>
@@ -530,7 +530,7 @@ export default function HomeBelowFold() {
                     {PRICING.trialFreeFor} · then {PRICING.monthlyCadence} · Cancel anytime
                   </p>
                 </div>
-                <Link href="/insights/preview" className="inline-flex w-full items-center justify-center rounded-full border border-slate-700 px-5 py-2.5 text-xs font-medium text-slate-300 transition-colors hover:bg-slate-900">Preview Premium insights</Link>
+                <Link href="/insights/preview" className="inline-flex w-full items-center justify-center rounded-full border border-[color:var(--hvn-card-border)] px-5 py-2.5 text-xs font-medium text-[color:var(--hvn-text-secondary)] transition-colors hover:bg-[color:var(--hvn-bg-soft)]">Preview Premium insights</Link>
               </div>
               <p className="mt-3 text-center text-xs text-slate-700">{PAYMENT.checkoutTrustLine}</p>
             </div>
@@ -539,7 +539,7 @@ export default function HomeBelowFold() {
       </section>
 
       {/* ── 8. FAQ ────────────────────────────────────────────────────────── */}
-      <section className="bg-slate-950 py-12 sm:py-14">
+      <section className="bg-[color:var(--hvn-bg)] py-12 sm:py-14">
         <div className="mx-auto max-w-3xl px-5">
           <ScrollReveal>
             <h2 className="font-display text-xl font-semibold text-white sm:text-2xl">A few honest answers</h2>
@@ -554,7 +554,7 @@ export default function HomeBelowFold() {
               { q: "How many reflections do I get on the free plan?", a: "Free includes 3 AI reflections per month — enough to experience how Quiet Mirror works. Premium gives you unlimited reflections on every entry." },
             ].map(({ q, a }) => (
               <ScrollReveal key={q}>
-                <div className="border-b border-slate-800/60 pb-5">
+                <div className="border-b border-[color:var(--hvn-border-subtle)] pb-5">
                   <p className="text-[15px] font-medium text-white sm:text-base">{q}</p>
                   <p className="mt-2 text-sm leading-relaxed text-slate-500">{a}</p>
                 </div>
@@ -568,7 +568,7 @@ export default function HomeBelowFold() {
       </section>
 
       {/* ── 9. Closing CTA ────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden border-t border-slate-800/60 section-cta-gradient py-20 sm:py-28">
+      <section className="relative overflow-hidden border-t border-[color:var(--hvn-border-subtle)] section-cta-gradient py-20 sm:py-28">
         <div className="pointer-events-none absolute bottom-0 left-1/2 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-emerald-500/[0.08] blur-[120px]" />
         <div className="relative mx-auto max-w-3xl px-5 text-center">
           <ScrollReveal>

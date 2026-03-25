@@ -67,7 +67,7 @@ export default function AboutPage() {
           {/* Why the name */}
           <div className="max-w-4xl">
             <h2 className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
-              Why "Quiet Mirror"
+              Why &#8220;{CONFIG.appName}&#8221;
             </h2>
 
             <div className="mt-5 space-y-4 text-[15px] leading-relaxed text-slate-300/90">
