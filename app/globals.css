@@ -1,3 +1,8 @@
+/* Design tokens will be used throughout */
+:root {
+  --color-primary: #3B82F6;
+  --color-secondary: #10B981;
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
