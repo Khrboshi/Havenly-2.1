@@ -7,6 +7,13 @@ import { PRICING } from "@/app/lib/pricing";
 import { PAYMENT } from "@/app/lib/payment";
 import { CONFIG } from "@/app/lib/config";
 
+
+export const metadata = {
+  title: `Upgrade to Premium | ${CONFIG.appName}`,
+  description: `Unlock unlimited AI reflections, weekly pattern summaries, and deep insight tracking. ${PRICING.monthlyCadence}.`,
+};
+
+
 // ─── FAQ data ───────────────────────────────────────────────────────────────
 //
 // All trial-length copy derives from PRICING — change trialDays in pricing.ts
@@ -238,7 +245,7 @@ export default function UpgradePage() {
                 </p>
 
                 <div className="flex flex-col gap-2 sm:max-w-sm">
-                  <UpgradeButton className="inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-6 py-4 text-base font-semibold text-slate-950 shadow-lg shadow-emerald-500/25 transition-all hover:bg-emerald-400 hover:-translate-y-px disabled:opacity-60 sm:py-3.5 sm:text-sm" />
+                  <UpgradeButton className="inline-flex w-full items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-6 py-4 text-base font-semibold text-white shadow-lg transition-all hover:bg-[color:var(--hvn-accent-mint-hover)] hover:-translate-y-px disabled:opacity-60 sm:py-3.5 sm:text-sm" />
 
                   {/* Trust badge — all copy derives from PRICING */}
                   <div className="rounded-xl border border-emerald-500/15 bg-emerald-500/[0.04] px-4 py-2.5 text-center">
@@ -620,7 +627,7 @@ export default function UpgradePage() {
             </span>
           </p>
           <div className="flex flex-col items-center gap-2">
-            <UpgradeButton className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-7 py-3.5 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:-translate-y-px disabled:opacity-60" />
+            <UpgradeButton className="inline-flex items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-7 py-3.5 text-sm font-semibold text-white shadow-lg transition-all hover:bg-[color:var(--hvn-accent-mint-hover)] hover:-translate-y-px disabled:opacity-60" />
             <p className="text-xs text-slate-600">
               {PRICING.trialFreeFor} · then {PRICING.monthlyCadence} · Cancel
               anytime
@@ -681,7 +688,7 @@ export default function UpgradePage() {
           </p>
           <div className="mt-7 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <UpgradeButton
-              className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-7 py-4 text-base font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:-translate-y-px disabled:opacity-60 sm:py-3.5 sm:text-sm"
+              className="inline-flex items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-7 py-4 text-base font-semibold text-white shadow-lg transition-all hover:bg-[color:var(--hvn-accent-mint-hover)] hover:-translate-y-px disabled:opacity-60 sm:py-3.5 sm:text-sm"
               label={`Start ${PRICING.trialLabel} →`}
             />
             <Link

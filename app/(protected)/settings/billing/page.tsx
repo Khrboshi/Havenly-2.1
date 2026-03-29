@@ -120,7 +120,7 @@ export default async function BillingPage() {
             ) : (
               <a
                 href="/upgrade"
-                className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
+                className="inline-flex items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-4 py-2 text-sm font-semibold text-white hover:bg-[color:var(--hvn-accent-mint-hover)]"
               >
                 Upgrade to Premium
               </a>
@@ -251,7 +251,7 @@ export default async function BillingPage() {
               {!isPaid ? (
                 <a
                   href="/upgrade"
-                  className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
+                  className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-4 py-2 text-sm font-semibold text-white hover:bg-[color:var(--hvn-accent-mint-hover)]"
                 >
                   Upgrade to Premium
                 </a>
@@ -298,7 +298,7 @@ export default async function BillingPage() {
           ) : (
             <a
               href="/upgrade"
-              className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
+              className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-4 py-2 text-sm font-semibold text-white hover:bg-[color:var(--hvn-accent-mint-hover)]"
             >
               View Premium
             </a>

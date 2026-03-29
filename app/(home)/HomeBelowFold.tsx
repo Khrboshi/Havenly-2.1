@@ -335,7 +335,7 @@ export default function HomeBelowFold() {
           <div className="mt-8 text-center">
             <Link
               href="/magic-login"
-              className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-3.5 text-sm font-semibold text-slate-950 shadow shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:-translate-y-px"
+              className="inline-flex items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-6 py-3.5 text-sm font-semibold text-white shadow transition-all hover:bg-[color:var(--hvn-accent-mint-hover)] hover:-translate-y-px"
             >
               Write your first entry free →
             </Link>
@@ -693,7 +693,7 @@ export default function HomeBelowFold() {
           <ScrollReveal className="mt-8 text-center">
             <Link
               href="/magic-login"
-              className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:-translate-y-px"
+              className="inline-flex items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-[color:var(--hvn-accent-mint-hover)] hover:-translate-y-px"
             >
               Write your first entry free →
             </Link>
@@ -928,7 +928,7 @@ export default function HomeBelowFold() {
               <div className="mt-auto flex flex-col gap-2 pt-6">
                 <Link
                   href="/upgrade"
-                  className="inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:-translate-y-px"
+                  className="inline-flex w-full items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-5 py-3 text-sm font-semibold text-white shadow-lg transition-all hover:bg-[color:var(--hvn-accent-mint-hover)] hover:-translate-y-px"
                 >
                   Start seeing the pattern →
                 </Link>
@@ -1043,7 +1043,7 @@ export default function HomeBelowFold() {
             <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-center">
               <Link
                 href="/magic-login"
-                className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-8 py-4 text-base font-semibold text-slate-950 shadow-xl shadow-emerald-500/25 transition-all hover:bg-emerald-400 hover:-translate-y-0.5"
+                className="inline-flex items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-8 py-4 text-base font-semibold text-white shadow-xl transition-all hover:bg-[color:var(--hvn-accent-mint-hover)] hover:-translate-y-0.5"
               >
                 Write your first entry free →
               </Link>

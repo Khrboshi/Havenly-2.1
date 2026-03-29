@@ -63,7 +63,7 @@ export default function BlogPage() {
             <div className="mt-7 flex flex-wrap gap-3">
               <Link
                 href="/magic-login"
-                className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 shadow-md shadow-emerald-500/20 transition-colors hover:bg-emerald-400"
+                className="inline-flex items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-5 py-3 text-sm font-semibold text-white shadow-md transition-colors hover:bg-[color:var(--hvn-accent-mint-hover)]"
               >
                 Start a free private journal
               </Link>
@@ -137,7 +137,7 @@ export default function BlogPage() {
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="/magic-login"
-              className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 shadow-md shadow-emerald-500/20 transition-colors hover:bg-emerald-400"
+              className="inline-flex items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-5 py-3 text-sm font-semibold text-white shadow-md transition-colors hover:bg-[color:var(--hvn-accent-mint-hover)]"
             >
               Start free reflection
             </Link>

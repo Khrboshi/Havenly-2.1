@@ -370,7 +370,7 @@ function MagicLoginInner() {
                   type="button"
                   onClick={onSendEmail}
                   disabled={status === "loading" || !email}
-                  className="inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-4 py-3.5 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex w-full items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-[color:var(--hvn-accent-mint-hover)] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {status === "loading" ? "Sending…" : "Send magic link"}
                 </button>
@@ -384,7 +384,7 @@ function MagicLoginInner() {
                   type="button"
                   onClick={onSendEmail}
                   disabled={status === "loading" || !email}
-                  className="inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-4 py-3.5 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex w-full items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-[color:var(--hvn-accent-mint-hover)] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {status === "loading" ? "Sending…" : "Send sign-in email"}
                 </button>

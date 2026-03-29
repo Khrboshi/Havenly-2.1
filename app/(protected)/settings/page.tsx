@@ -64,7 +64,7 @@ function ActionLink({
 }) {
   const cls =
     variant === "primary"
-      ? "rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 transition-colors"
+      ? "rounded-full bg-[color:var(--hvn-accent-mint)] px-4 py-2 text-sm font-semibold text-white hover:bg-[color:var(--hvn-accent-mint-hover)] transition-colors"
       : "rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/15 transition-colors";
 
   const isPortal = href.startsWith(PAYMENT.portalUrl("").split("?")[0]);
@@ -326,7 +326,7 @@ export default async function SettingsPage() {
             <Link
               href="/install"
               prefetch={false}
-              className="inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400 transition-colors"
+              className="inline-flex w-full items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-4 py-2 text-sm font-semibold text-white hover:bg-[color:var(--hvn-accent-mint-hover)] transition-colors"
             >
               Install app
             </Link>

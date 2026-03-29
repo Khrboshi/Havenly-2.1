@@ -107,7 +107,7 @@ export default function RequirePremium({ children }: RequirePremiumProps) {
               <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                 <Link
                   href="/upgrade"
-                  className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-3 text-sm font-semibold text-slate-950 shadow-md shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:-translate-y-px"
+                  className="inline-flex items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-6 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-[color:var(--hvn-accent-mint-hover)] hover:-translate-y-px"
                 >
                   Start {PRICING.trialLabel} →
                 </Link>

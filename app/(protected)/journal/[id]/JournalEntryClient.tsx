@@ -242,7 +242,7 @@ export default function JournalEntryClient({
               className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold transition-all disabled:opacity-50 ${
                 isLimitReached
                   ? "border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20"
-                  : "bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+                  : "bg-[color:var(--hvn-accent-mint)] text-white hover:bg-[color:var(--hvn-accent-mint-hover)]"
               }`}
             >
               {busy ? (
@@ -278,7 +278,7 @@ export default function JournalEntryClient({
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <Link
                 href="/upgrade"
-                className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 shadow-sm shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:-translate-y-px"
+                className="inline-flex items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-4 py-2 text-xs font-semibold text-white shadow-sm transition-all hover:bg-[color:var(--hvn-accent-mint-hover)] hover:-translate-y-px"
               >
                 {`Start ${PRICING.trialLabel} →`}
               </Link>
@@ -588,7 +588,7 @@ export default function JournalEntryClient({
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Link
                     href="/upgrade"
-                    className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2.5 text-xs font-semibold text-slate-950 shadow-sm shadow-emerald-500/20 transition hover:bg-emerald-400"
+                    className="inline-flex items-center gap-2 rounded-full bg-[color:var(--hvn-accent-mint)] px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[color:var(--hvn-accent-mint-hover)]"
                   >
                     {`Start ${PRICING.trialLabel} →`}
                   </Link>

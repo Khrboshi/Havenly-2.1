@@ -144,7 +144,7 @@ export default function Navbar() {
               <Link
                 href="/magic-login"
                 prefetch
-                className="ml-2 inline-flex items-center justify-center rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:-translate-y-px"
+                className="ml-2 inline-flex items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-4 py-2 text-sm font-semibold text-white shadow-lg transition-all hover:bg-[color:var(--hvn-accent-mint-hover)] hover:-translate-y-px"
               >
                 Start free
               </Link>
@@ -236,7 +236,7 @@ export default function Navbar() {
                       href="/magic-login"
                       prefetch
                       onClick={() => setMobileOpen(false)}
-                      className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-5 py-3.5 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-400"
+                      className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-5 py-3.5 text-sm font-semibold text-white shadow-lg transition-all hover:bg-[color:var(--hvn-accent-mint-hover)]"
                     >
                       Write your first entry free →
                     </Link>

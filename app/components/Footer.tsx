@@ -136,7 +136,7 @@ export default function Footer() {
             >
               <Image
                 src="/pwa/icon-192.png"
-                alt=""
+                alt="Quiet Mirror"
                 width={22}
                 height={22}
                 className="rounded-md"

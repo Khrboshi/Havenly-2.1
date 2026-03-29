@@ -37,7 +37,7 @@ export default function ErrorPage({
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <button
             onClick={reset}
-            className="rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-slate-950 transition-colors hover:bg-emerald-400"
+            className="rounded-full bg-[color:var(--hvn-accent-mint)] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[color:var(--hvn-accent-mint-hover)]"
           >
             Try again
           </button>

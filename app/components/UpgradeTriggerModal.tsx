@@ -100,7 +100,7 @@ export default function UpgradeTriggerModal({
           <div className="mt-5 flex flex-col gap-2">
             <Link
               href={finalCtaHref}
-              className="inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 shadow-md shadow-emerald-500/20 transition-all hover:bg-emerald-400 hover:-translate-y-px"
+              className="inline-flex w-full items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-5 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-[color:var(--hvn-accent-mint-hover)] hover:-translate-y-px"
             >
               {finalCtaLabel}
             </Link>

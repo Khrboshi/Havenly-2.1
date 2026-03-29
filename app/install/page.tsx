@@ -6,6 +6,12 @@ import Image from "next/image";
 import { useInstallAvailability } from "@/app/hooks/useInstallAvailability";
 import { CONFIG } from "@/app/lib/config";
 
+export const metadata = {
+  title: "Install the App | Quiet Mirror",
+  description: "Add Quiet Mirror to your home screen for a faster, app-like journaling experience. No app store needed.",
+};
+
+
 export default function InstallPage() {
   const { isStandalone, isIOS, isSafariIOS, canPromptNative, promptInstall } =
     useInstallAvailability({ allowPreventDefault: false });
@@ -43,7 +49,7 @@ export default function InstallPage() {
                 height={64}
                 className="rounded-[22%] shadow-xl shadow-black/40"
               />
-              <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[9px] font-bold text-slate-950">
+              <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] text-[9px] font-bold text-white">
                 ✓
               </span>
             </div>
@@ -117,7 +123,7 @@ export default function InstallPage() {
                     </p>
                     <button
                       onClick={handleInstallClick}
-                      className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-emerald-500 px-4 py-3.5 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400"
+                      className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-[color:var(--hvn-accent-mint-hover)]"
                     >
                       Install {CONFIG.appName}
                     </button>

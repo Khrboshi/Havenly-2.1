@@ -266,7 +266,7 @@ export default function JournalForm(_props: Props) {
           <button
             type="submit"
             disabled={!canSave}
-            className="flex-1 rounded-full bg-emerald-500 px-6 py-3.5 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex-1 rounded-full bg-[color:var(--hvn-accent-mint)] px-6 py-3.5 text-sm font-semibold text-white shadow-lg transition hover:bg-[color:var(--hvn-accent-mint-hover)] disabled:cursor-not-allowed disabled:opacity-40"
           >
             {status === "saving" ? "Saving…" : "Write"}
           </button>

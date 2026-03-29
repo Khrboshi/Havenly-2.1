@@ -263,7 +263,7 @@ function FreeInsightTeaser({
 
       <Link
         href="/upgrade"
-        className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 transition hover:bg-emerald-400"
+        className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-[color:var(--hvn-accent-mint)] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[color:var(--hvn-accent-mint-hover)]"
       >
         Unlock insights →
       </Link>
@@ -324,7 +324,7 @@ function ThreadCard({
       <div className="mt-4 flex flex-wrap gap-2">
         <Link
           href={buildHref(threadPrompt)}
-          className="inline-flex rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow-sm shadow-emerald-500/20 transition hover:bg-emerald-400"
+          className="inline-flex rounded-full bg-[color:var(--hvn-accent-mint)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[color:var(--hvn-accent-mint-hover)]"
         >
           {wroteToday ? "Add to today" : "Write now"}
         </Link>
@@ -360,7 +360,7 @@ function WelcomePanel() {
       </p>
       <Link
         href="/journal/new"
-        className="mt-5 inline-flex items-center gap-2 rounded-full bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-sm shadow-emerald-500/20 transition hover:bg-emerald-400"
+        className="mt-5 inline-flex items-center gap-2 rounded-full bg-[color:var(--hvn-accent-mint)] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[color:var(--hvn-accent-mint-hover)]"
       >
         Write your first entry →
       </Link>
@@ -546,7 +546,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
           <div className="mt-3 flex items-center gap-3">
             <Link
               href="/upgrade"
-              className="inline-flex items-center rounded-full bg-emerald-500 px-4 py-1.5 text-xs font-semibold text-slate-950 hover:bg-emerald-400 transition-colors"
+              className="inline-flex items-center rounded-full bg-[color:var(--hvn-accent-mint)] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[color:var(--hvn-accent-mint-hover)] transition-colors"
             >
               Unlock unlimited reflections →
             </Link>

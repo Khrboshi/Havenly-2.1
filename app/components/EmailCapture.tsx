@@ -61,7 +61,7 @@ export default function EmailCapture({ source = "blog", variant = "blog-index" }
               <button
                 onClick={handleSubmit}
                 disabled={!email || status === "loading"}
-                className="shrink-0 rounded-full bg-emerald-500 px-4 py-2.5 text-xs font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:opacity-50"
+                className="shrink-0 rounded-full bg-[color:var(--hvn-accent-mint)] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[color:var(--hvn-accent-mint-hover)] disabled:opacity-50"
               >
                 {status === "loading" ? "…" : "Subscribe"}
               </button>
@@ -110,7 +110,7 @@ export default function EmailCapture({ source = "blog", variant = "blog-index" }
               <button
                 onClick={handleSubmit}
                 disabled={!email || status === "loading"}
-                className="shrink-0 rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:opacity-50"
+                className="shrink-0 rounded-full bg-[color:var(--hvn-accent-mint)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[color:var(--hvn-accent-mint-hover)] disabled:opacity-50"
               >
                 {status === "loading" ? "…" : "Subscribe"}
               </button>
