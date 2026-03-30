@@ -31,14 +31,14 @@ const nextConfig = {
         "connect-src 'self'",
         "https://*.supabase.co",
         "wss://*.supabase.co",
-        "https://eu.i.posthog.com",
-        "https://us.i.posthog.com",
+        "https://*.posthog.com",
         "https://va.vercel-scripts.com",
       ].join(" "),
       "frame-src 'none'",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
+      "upgrade-insecure-requests",
     ].join("; ");
 
     return [
