@@ -7,13 +7,6 @@ import { PRICING } from "@/app/lib/pricing";
 import { PAYMENT } from "@/app/lib/payment";
 import { CONFIG } from "@/app/lib/config";
 
-
-export const metadata = {
-  title: `Upgrade to Premium | ${CONFIG.appName}`,
-  description: `Unlock unlimited AI reflections, weekly pattern summaries, and deep insight tracking. ${PRICING.monthlyCadence}.`,
-};
-
-
 // ─── FAQ data ───────────────────────────────────────────────────────────────
 //
 // All trial-length copy derives from PRICING — change trialDays in pricing.ts
