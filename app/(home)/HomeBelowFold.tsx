@@ -1,7 +1,7 @@
 import Link from "next/link";
 import ScrollReveal from "@/app/components/ScrollReveal";
 import { PRICING } from "@/app/lib/pricing";
-import { REFLECTION } from "@/app/lib/copy";
+import { useTranslation } from "@/app/components/I18nProvider";
 import { PAYMENT } from "@/app/lib/payment";
 
 // ─── Data ──────────────────────────────────────────────────────────────────
@@ -30,6 +30,7 @@ const recognitions = [
 // ─── Component ────────────────────────────────────────────────────────────
 
 export default function HomeBelowFold() {
+  const { t } = useTranslation();
   return (
     <>
       {/* ── 0. PROOF INTERRUPTION ─────────────────────────────────────────── */}
@@ -912,7 +913,7 @@ export default function HomeBelowFold() {
                   {
                     label: "Everything in Free",
                     sub:
-                      REFLECTION.nothingRemoved,
+                      t.reflection.nothingRemoved,
                   },
                 ].map(({ label, sub }) => (
                   <li key={label} className="flex items-start gap-2">

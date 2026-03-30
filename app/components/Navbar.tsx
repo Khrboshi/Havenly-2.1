@@ -8,6 +8,8 @@ import { Menu, X } from "lucide-react";
 import { useSupabase } from "@/app/components/SupabaseSessionProvider";
 import { useInstallAvailability } from "@/app/hooks/useInstallAvailability";
 import { CONFIG } from "@/app/lib/config";
+import { useTranslation } from "@/app/components/I18nProvider";
+import LanguageSwitcher from "@/app/components/LanguageSwitcher";
 
 type NavLink = { href: string; label: string };
 
@@ -17,6 +19,7 @@ export default function Navbar() {
   const { session, supabase } = useSupabase();
   const { isStandalone } = useInstallAvailability();
 
+  const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const isLoggedIn = !!session;
 
@@ -139,6 +142,7 @@ export default function Navbar() {
               );
             })}
 
+            <LanguageSwitcher variant="compact" />
             {!isLoggedIn ? (
               pathname !== "/magic-login" && (
               <Link
@@ -146,7 +150,7 @@ export default function Navbar() {
                 prefetch
                 className="qm-btn-primary ml-2 inline-flex items-center justify-center px-4 py-2 text-sm"
               >
-                Start free
+                {t.navbar.startFree}
               </Link>
               )
             ) : (
@@ -154,7 +158,7 @@ export default function Navbar() {
                 onClick={handleLogout}
                 className="ml-2 inline-flex items-center justify-center rounded-full px-3 py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300"
               >
-                Logout
+                {t.navbar.logout}
               </button>
             )}
           </div>
@@ -164,7 +168,7 @@ export default function Navbar() {
             type="button"
             className="inline-flex h-10 w-10 items-center justify-center rounded-full text-qm-secondary transition-colors hover:bg-qm-accent-soft md:hidden"
             onClick={() => setMobileOpen((v) => !v)}
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-label={mobileOpen ? t.navbar.closeMenu : t.navbar.openMenu}
             aria-expanded={mobileOpen}
             aria-controls="mobile-menu"
           >
@@ -197,7 +201,7 @@ export default function Navbar() {
               <div className="mx-auto flex max-w-xl flex-col">
                 <p className="mb-5 text-[11px] font-medium uppercase tracking-[0.2em] text-qm-accent" style={{ opacity: 0.7 }}>
                   {isLoggedIn
-                    ? "Your space"
+                    ? t.navbar.yourSpace
                     : "Private journaling that reflects back"}
                 </p>
 
@@ -226,11 +230,10 @@ export default function Navbar() {
                   pathname !== "/magic-login" ? (
                   <div className="mt-6 qm-panel rounded-3xl p-4">
                     <p className="text-sm font-medium text-qm-primary">
-                      Start with a private journal entry.
+                      {t.navbar.privateTagline}
                     </p>
                     <p className="mt-1 text-sm leading-relaxed text-qm-secondary">
-                      No feed, no pressure, no card required. Just a calmer
-                      place to put what is on your mind.
+                      {t.navbar.privateNoCred}
                     </p>
 
                     <Link
@@ -248,11 +251,14 @@ export default function Navbar() {
                     onClick={handleLogout}
                     className="mt-6 inline-flex w-full items-center justify-center rounded-full border border-red-500/20 bg-red-500/10 px-5 py-3.5 text-sm font-semibold text-red-300 transition-colors hover:bg-red-500/15"
                   >
-                    Logout
+                    {t.navbar.logout}
                   </button>
                 )}
 
-                <p className="mt-5 text-center text-xs leading-relaxed text-qm-faint">
+                <div className="mt-5 flex justify-center">
+                  <LanguageSwitcher variant="full" />
+                </div>
+                <p className="mt-4 text-center text-xs leading-relaxed text-qm-faint">
                   Quiet Mirror is built for quiet, private reflection — not
                   performance.
                 </p>

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { JOURNAL, ERRORS } from "@/app/lib/copy";
+import { useTranslation } from "@/app/components/I18nProvider";
 
 type Props = Record<string, never>;
 
@@ -19,6 +19,7 @@ function pickSeed(title: string, content: string) {
 
 export default function JournalForm(_props: Props) {
   const router = useRouter();
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
 
   const [title, setTitle] = useState("");
@@ -74,7 +75,7 @@ export default function JournalForm(_props: Props) {
     const contentTrimmed = content.trim();
     if (!contentTrimmed) {
       setStatus("error");
-      setError(ERRORS.entryEmpty);
+      setError(t.errors.entryEmpty);
       return;
     }
     setStatus("saving");
@@ -88,7 +89,7 @@ export default function JournalForm(_props: Props) {
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
         setStatus("error");
-        setError(json?.error || json?.message || ERRORS.entrySaveFailed);
+        setError(json?.error || json?.message || t.errors.entrySaveFailed);
         return;
       }
       setStatus("success");
@@ -105,7 +106,7 @@ export default function JournalForm(_props: Props) {
       router.refresh();
     } catch (err: unknown) {
       setStatus("error");
-      setError(err instanceof Error ? err.message : ERRORS.networkError);
+      setError(err instanceof Error ? err.message : t.errors.networkError);
     }
   }
 
@@ -117,22 +118,22 @@ export default function JournalForm(_props: Props) {
       {/* Header */}
       <div className="mb-8 pt-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-qm-accent" style={{ opacity: 0.7 }}>
-          {JOURNAL.newEntryLabel}
+          {t.journal.newEntryLabel}
         </p>
         <h1 className="font-display mt-2 text-2xl font-semibold leading-snug text-qm-primary sm:text-3xl">
-          {hasIncomingPrompt ? incomingPrompt : JOURNAL.newEntryHeading}
+          {hasIncomingPrompt ? incomingPrompt : t.journal.newEntryHeading}
         </h1>
         <p className="mt-2 text-sm text-qm-secondary">
-          {JOURNAL.newEntrySubheading}
+          {t.journal.newEntrySubheading}
         </p>
       </div>
 
       {/* Starter prompts */}
       {!hasIncomingPrompt && content.trim().length === 0 && (
         <div className="mb-6">
-          <p className="mb-2.5 text-xs text-qm-muted">{JOURNAL.notSureWhereToStart}</p>
+          <p className="mb-2.5 text-xs text-qm-muted">{t.journal.notSureWhereToStart}</p>
           <div className="flex flex-wrap gap-2">
-            {JOURNAL.starterPrompts.map((prompt) => (
+            {t.journal.starterPrompts.map((prompt) => (
               <button
                 key={prompt}
                 type="button"
@@ -152,7 +153,7 @@ export default function JournalForm(_props: Props) {
           ref={textareaRef}
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder={JOURNAL.textareaPlaceholder}
+          placeholder={t.journal.textareaPlaceholder}
           autoFocus={!hasIncomingPrompt}
           className="qm-input w-full min-h-[50vh] resize-none px-5 py-5 text-base leading-relaxed placeholder:text-qm-faint outline-none sm:text-[17px]"
         />
@@ -171,13 +172,13 @@ export default function JournalForm(_props: Props) {
             onClick={() => setShowTitle(true)}
             className="text-xs text-qm-muted transition hover:text-qm-secondary"
           >
-            {JOURNAL.addTitleOptional}
+            {t.journal.addTitleOptional}
           </button>
         ) : (
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder={JOURNAL.titlePlaceholder}
+            placeholder={t.journal.titlePlaceholder}
             autoFocus
             className="qm-input w-full px-4 py-3 text-sm placeholder:text-qm-faint outline-none"
             maxLength={120}
@@ -187,7 +188,7 @@ export default function JournalForm(_props: Props) {
 
       {/* Privacy reminder */}
       <p className="mt-4 text-xs text-qm-faint">
-        {JOURNAL.privacyReminder}
+        {t.journal.privacyReminder}
       </p>
 
       {/* Progress nudge */}
@@ -224,11 +225,11 @@ export default function JournalForm(_props: Props) {
             disabled={!canSave}
             className="qm-btn-primary flex-1 px-6 py-3.5 text-sm disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {status === "saving" ? JOURNAL.savingLabel : JOURNAL.saveButtonLabel}
+            {status === "saving" ? t.journal.savingLabel : t.journal.saveButtonLabel}
           </button>
           {canSave && (
             <p className="hidden shrink-0 text-xs text-qm-muted sm:block">
-              {JOURNAL.saveReflectNudge}
+              {t.journal.saveReflectNudge}
             </p>
           )}
         </div>

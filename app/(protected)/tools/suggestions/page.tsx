@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import RequirePremium from "@/app/components/RequirePremium";
-import { TOOLS } from "@/app/lib/copy";
+import { useTranslation } from "@/app/components/I18nProvider";
 
 type Suggestion = { text: string; prompt: string };
 
@@ -29,6 +29,7 @@ const ACCENT_COLORS = [
 ];
 
 export default function SuggestionsToolPage() {
+  const { t } = useTranslation();
   const [state, setState] = useState<State>({ status: "loading" });
 
   const fetchSuggestions = useCallback(async () => {
@@ -84,7 +85,7 @@ export default function SuggestionsToolPage() {
           {state.status === "error" && (
             <div className="rounded-2xl border border-slate-800 bg-slate-900/30 px-6 py-6">
               <p className="text-sm text-slate-400">
-                {TOOLS.somethingWentWrong("suggestions")}
+                {t.tools.somethingWentWrong("suggestions")}
               </p>
               <button
                 onClick={fetchSuggestions}

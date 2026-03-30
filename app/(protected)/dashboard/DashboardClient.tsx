@@ -7,12 +7,12 @@ import { useSupabase } from "@/app/components/SupabaseSessionProvider";
 import { useUserPlan } from "@/app/components/useUserPlan";
 import type { DashboardData } from "./page";
 import { PRICING } from "@/app/lib/pricing";
-import { ERRORS, NAV, JOURNAL } from "@/app/lib/copy";
+import { useTranslation } from "@/app/components/I18nProvider";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function titleOrUntitled(title: string | null) {
-  return title?.trim() ? title.trim() : JOURNAL.untitledEntry;
+function titleOrUntitled(title: string | null, fallback: string) {
+  return title?.trim() ? title.trim() : fallback;
 }
 
 function friendlyNameFromUser(user: any): string | null {
@@ -287,10 +287,11 @@ function ThreadCard({
   lastTopEmotion: string | null;
   wroteToday: boolean;
 }) {
+  const { t } = useTranslation();
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
   const when = lastEntryDate ? friendlyDate(lastEntryDate, mounted) : null;
-  const title = titleOrUntitled(lastEntryTitle);
+  const title = titleOrUntitled(lastEntryTitle, t.journal.untitledEntry);
 
   const sectionLabel = wroteToday
     ? "You wrote today"
@@ -442,7 +443,9 @@ function ProgressNudge({ entryCount }: { entryCount: number }) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 
-export default function DashboardClient({ data }: { data: DashboardData }) {
+export default function DashboardClient({
+   data }: { data: DashboardData }) {
+  const { t } = useTranslation();
   const { supabase } = useSupabase();
   const { planType, credits, loading: planLoading } = useUserPlan();
 
@@ -477,7 +480,7 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
   } = data;
 
   const subline = useMemo(() => {
-    if (entryCount === 0) return JOURNAL.emptyStateNudge;
+    if (entryCount === 0) return t.journal.emptyStateNudge;
     if (wroteToday) return "You've written today.";
     return "Choose a prompt to begin.";
   }, [entryCount, wroteToday]);
