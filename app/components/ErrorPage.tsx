@@ -26,24 +26,24 @@ export default function ErrorPage({
     message ?? `${CONFIG.appName} ran into an issue loading this page. Try again in a moment.`;
 
   return (
-    <div className="flex min-h-[60vh] items-center justify-center bg-slate-950 px-4">
-      <div className="mx-auto max-w-md rounded-2xl border border-slate-800 bg-slate-900/80 p-8 text-center">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+    <div className="flex min-h-[60vh] items-center justify-center bg-qm-bg px-4">
+      <div className="mx-auto max-w-md qm-panel rounded-2xl p-8 text-center">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-qm-muted">
           Something went wrong
         </p>
-        <p className="mt-3 text-sm leading-relaxed text-slate-400">
+        <p className="mt-3 text-sm leading-relaxed text-qm-secondary">
           {displayMessage}
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <button
             onClick={reset}
-            className="rounded-full bg-[color:var(--hvn-accent-mint)] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[color:var(--hvn-accent-mint-hover)]"
+            className="qm-btn-primary px-5 py-2.5 text-sm"
           >
             Try again
           </button>
           <Link
             href={backHref}
-            className="rounded-full border border-slate-700 px-5 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800"
+            className="qm-btn-secondary rounded-full px-5 py-2.5 text-sm"
           >
             {backLabel}
           </Link>

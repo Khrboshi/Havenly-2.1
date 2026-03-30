@@ -33,6 +33,20 @@
   --qm-signal-warm-bg:     rgba(200, 170, 100, 0.10);
   --qm-signal-warm-border: rgba(200, 170, 100, 0.25);
 
+  /* ── Data-visualisation semantic tokens ──────────────────────────────────
+     Fixed colours (intentionally not theme-dependent — emotions have
+     consistent colour associations regardless of light/dark mode).      */
+  --qm-dv-positive: #7c9fff;   /* calm, hope, gratitude, joy          */
+  --qm-dv-work:     #60a5fa;   /* work, curiosity, clarity            */
+  --qm-dv-love:     #f472b6;   /* love, relationship, connection      */
+  --qm-dv-health:   #fb923c;   /* health, anxiety, stress             */
+  --qm-dv-grief:    #a78bfa;   /* grief, confusion, doubt             */
+  --qm-dv-growth:   #86efac;   /* parenting, growth                   */
+  --qm-dv-creative: #fbbf24;   /* creative, shame, guilt              */
+  --qm-dv-identity: #e879f9;   /* identity, transformation            */
+  --qm-dv-fitness:  #2dd4bf;   /* fitness, energy                     */
+  --qm-dv-fear:     #f87171;   /* fear, anger, panic                  */
+
   --qm-border-subtle:     rgba(184, 195, 219, 0.10);
   --qm-border-card:       rgba(184, 195, 219, 0.08);
   --qm-shadow-soft:       0 20px 60px rgba(10, 13, 26, 0.70);
