@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NAV } from "@/app/lib/copy";
 
 export default function NotFound() {
   return (
