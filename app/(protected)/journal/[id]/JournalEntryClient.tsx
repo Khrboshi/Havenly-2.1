@@ -32,19 +32,19 @@ function parseSummary(summary: string): { carrying: string; happening: string; d
   const rawCarrying = summary.match(/What you're carrying:\s*([^\n]+(?:\n(?!What's|Deeper)[^\n]+)*)/i)?.[1]?.trim() ?? "";
   const carrying = rawCarrying
     .replace(/\s*What's really happening:.*$/is, "")
-    .replace(/\s*{REFLECTION.deeperDirection}:.*$/is, "")
+    .replace(/\s*Deeper direction:.*$/is, "")
     .trim();
   const rawHappening = summary.match(/What's really happening:\s*([^\n]+(?:\n(?!Deeper)[^\n]+)*)/i)?.[1]?.trim() ?? "";
-  const happening = rawHappening.replace(/\s*{REFLECTION.deeperDirection}:.*$/is, "").trim();
-  const deeper = summary.match(/{REFLECTION.deeperDirection}:\s*([^\n]+(?:\n[^\n]+)*)/i)?.[1]?.trim() ?? "";
+  const happening = rawHappening.replace(/\s*Deeper direction:.*$/is, "").trim();
+  const deeper = summary.match(/Deeper direction:\s*([^\n]+(?:\n[^\n]+)*)/i)?.[1]?.trim() ?? "";
   return { carrying, happening, deeper };
 }
 
 function parseNextStep(step: string): { optionA: string; optionB: string; script: string } {
   if (!step) return { optionA: "", optionB: "", script: "" };
-  const optionA = step.match(/{REFLECTION.optionA}:\s*(.+?)(?={REFLECTION.optionB}:|{REFLECTION.scriptLine}:|$)/is)?.[1]?.trim() ?? "";
-  const optionB = step.match(/{REFLECTION.optionB}:\s*(.+?)(?={REFLECTION.scriptLine}:|$)/is)?.[1]?.trim() ?? "";
-  const scriptRaw = step.match(/{REFLECTION.scriptLine}:\s*[""'\u201c\u2018]?(.+?)[""'\u201d\u2019]?\s*$/is)?.[1]?.trim() ?? "";
+  const optionA = step.match(/Option A:\s*(.+?)(?=Option B:|Script line:|$)/is)?.[1]?.trim() ?? "";
+  const optionB = step.match(/Option B:\s*(.+?)(?=Script line:|$)/is)?.[1]?.trim() ?? "";
+  const scriptRaw = step.match(/Script line:\s*[""'\u201c\u2018]?(.+?)[""'\u201d\u2019]?\s*$/is)?.[1]?.trim() ?? "";
   const script = scriptRaw.replace(/^["\u201c\u2018]|["\u201d\u2019]$/g, "").trim();
   return { optionA, optionB, script };
 }
