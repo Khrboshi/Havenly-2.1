@@ -34,7 +34,7 @@ export default function ReflectionToolPage() {
 
   return (
     <RequirePremium>
-      <div className="min-h-screen w-full bg-slate-950 px-6 py-10 text-[color:var(--hvn-text-primary)]">
+      <div className="min-h-screen w-full bg-qm-bg px-6 py-10 text-qm-primary">
         <div className="mx-auto max-w-2xl space-y-8">
 
           <header className="space-y-3">

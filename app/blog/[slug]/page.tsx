@@ -42,7 +42,7 @@ export default function BlogArticlePage({ params }: BlogArticlePageProps) {
 
   if (!article) {
     return (
-      <main className="min-h-screen bg-slate-950 text-[color:var(--hvn-text-primary)]">
+      <main className="min-h-screen bg-qm-bg text-qm-primary">
         <section className="mx-auto flex min-h-[60vh] max-w-3xl flex-col items-center justify-center px-6 pt-24 text-center">
           <p className="text-sm text-slate-400">Article not found.</p>
           <Link
@@ -73,7 +73,7 @@ export default function BlogArticlePage({ params }: BlogArticlePageProps) {
   };
 
   return (
-    <main className="min-h-screen bg-slate-950 text-[color:var(--hvn-text-primary)]">
+    <main className="min-h-screen bg-qm-bg text-qm-primary">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

@@ -106,7 +106,7 @@ function UpgradeButton({
 
 export default function UpgradePage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-qm-bg text-qm-primary">
       {/* ── Hero — with embedded proof card ──────────────────────────────── */}
       <section className="relative overflow-hidden border-b border-slate-800/60">
         <div className="pointer-events-none absolute left-1/2 top-0 h-[420px] w-[700px] -translate-x-1/2 rounded-full bg-emerald-500/[0.13] blur-[110px]" />
@@ -296,7 +296,7 @@ export default function UpgradePage() {
               <div className="pointer-events-none absolute -inset-4 rounded-[2.5rem] bg-emerald-500/[0.07] blur-[60px]" />
               <div className="relative overflow-hidden rounded-[1.75rem] border border-white/[0.09] shadow-2xl shadow-black/60">
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-slate-800/70 bg-slate-950/95 px-6 py-4">
+                <div className="flex items-center justify-between border-b border-slate-800/70 px-6 py-4" style={{ backgroundColor: "#0f121f" }}">
                   <div className="flex items-center gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/60" />
                     <p className="text-xs font-medium text-slate-500">
@@ -309,7 +309,7 @@ export default function UpgradePage() {
                 </div>
 
                 {/* Input side */}
-                <div className="bg-slate-950/90 px-6 pb-5 pt-5">
+                <div className="px-6 pb-5 pt-5" style={{ backgroundColor: "#141828" }}">
                   <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-600">
                     From your entries
                   </p>
@@ -630,7 +630,7 @@ export default function UpgradePage() {
       </div>
 
       {/* ── FAQ ───────────────────────────────────────────────────────────── */}
-      <section className="border-b border-slate-800/60 bg-slate-950 py-12 sm:py-14">
+      <section className="border-b bg-qm-card py-12 sm:py-14">
         <div className="mx-auto max-w-3xl px-5">
           <h2 className="font-display text-xl font-semibold text-white sm:text-2xl">
             A few honest answers

@@ -120,7 +120,7 @@ export default async function InsightsPreviewPage() {
   const maxDomain  = Math.max(...domainBars.map(([, v]) => v), 1);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200">
+    <div className="min-h-screen bg-qm-bg text-qm-primary">
       <UpgradeIntentTracker source="insights-preview" />
 
       {/* ── Sticky banner ───────────────────────────────────────────────── */}
