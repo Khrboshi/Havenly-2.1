@@ -699,8 +699,7 @@ body::-webkit-scrollbar-thumb:hover { background: var(--qm-border-subtle); }
 .bg-hvn-accent-mint-soft { background-color: var(--qm-accent-soft) !important; }
 
 /* Opacity variants — Tailwind encodes these as background-color with alpha   */
-.bg-hvn-bg\/80,
-.bg-hvn-bg\/95 {
+.bg-hvn-bg\/80 {
   background-color: color-mix(in srgb, var(--qm-bg) 80%, transparent) !important;
 }
 .bg-hvn-bg\/95 {
