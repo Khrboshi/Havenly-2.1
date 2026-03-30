@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ERRORS, UI } from "@/app/lib/copy";
+import { useTranslation } from "@/app/components/I18nProvider";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -407,6 +407,7 @@ function Skeleton() {
 // ─── Not enough data ──────────────────────────────────────────────────────────
 
 function NotEnoughData({ entryCount }: { entryCount: number }) {
+  const { t } = useTranslation();
   const needed = Math.max(0, 5 - entryCount);
   return (
     <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-10 text-center space-y-4">
@@ -416,20 +417,20 @@ function NotEnoughData({ entryCount }: { entryCount: number }) {
       <div className="space-y-1">
         <h3 className="text-sm font-semibold text-slate-200">
           {entryCount === 0
-            ? UI.noReflectionsYet
-            : `${entryCount} ${entryCount === 1 ? "reflection" : "reflections"} so far`}
+            ? t.ui.noReflectionsYet
+            : t.ui.reflectionsSoFar(entryCount)}
         </h3>
         <p className="mx-auto max-w-sm text-sm text-slate-500">
           {needed > 0
-            ? `${needed} more ${needed === 1 ? "reflection" : "reflections"} and Quiet Mirror will start surfacing what quietly repeats across your entries.`
-            : "Generating your personal patterns now — check back after your next reflection."}
+            ? t.ui.moreNeeded(needed)
+            : t.ui.patternsGenerating}
         </p>
       </div>
       <Link
         href="/journal/new"
         className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-sm text-slate-300 hover:bg-white/10 transition"
       >
-        Write an entry →
+        {t.ui.writeAnEntry}
       </Link>
     </div>
   );
@@ -513,6 +514,7 @@ function WeeklyTrends({
 // ─── Weekly AI Summary ────────────────────────────────────────────────────────
 
 function WeeklySummarySection({ hasRealData }: { hasRealData: boolean }) {
+  const { t } = useTranslation();
   const [state, setState] = useState<SummaryState>({ status: "idle" });
 
   async function fetchSummary(force = false) {
@@ -526,7 +528,7 @@ function WeeklySummarySection({ hasRealData }: { hasRealData: boolean }) {
         const j = await res.json().catch(() => ({} as any));
         setState({
           status: "error",
-          message: j?.error || "Couldn't generate summary.",
+          message: j?.error || t.ui.summaryFailed,
         });
         return;
       }
@@ -540,7 +542,7 @@ function WeeklySummarySection({ hasRealData }: { hasRealData: boolean }) {
     } catch {
       setState({
         status: "error",
-        message: ERRORS.networkRetry,
+        message: t.errors.networkRetry,
       });
     }
   }
@@ -648,6 +650,7 @@ function WeeklySummarySection({ hasRealData }: { hasRealData: boolean }) {
 }
 
 export default function InsightsClient() {
+  const { t } = useTranslation();
   const [data, setData] = useState<InsightData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -666,12 +669,12 @@ export default function InsightsClient() {
         const res = await fetch("/api/ai/insights", { cache: "no-store" });
         if (!res.ok) {
           const j = await res.json().catch(() => ({} as any));
-          setError(j?.error || ERRORS.insightsFailed);
+          setError(j?.error || t.errors.insightsFailed);
           return;
         }
         setData(await res.json());
       } catch {
-        setError(ERRORS.insightsFailed);
+        setError(t.errors.insightsFailed);
       }
     }
     load();

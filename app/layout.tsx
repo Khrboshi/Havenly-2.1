@@ -10,6 +10,8 @@ import DeepLinkBootstrap from "./components/DeepLinkBootstrap";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import InstallPrompt from "@/app/components/InstallPrompt";
 import { CONFIG, BRAND } from "@/app/lib/config";
+import { cookies } from "next/headers";
+import { getLocaleFromCookieString } from "@/app/lib/i18n";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -110,13 +112,14 @@ export const viewport: Viewport = {
   userScalable: true,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: ReactNode;
 }) {
+  const locale = getLocaleFromCookieString(cookies().toString());
   return (
-    <html lang="en">
+    <html lang={locale}>
       <head>
         {/* Mobile web app capabilities */}
         <meta name="mobile-web-app-capable" content="yes" />

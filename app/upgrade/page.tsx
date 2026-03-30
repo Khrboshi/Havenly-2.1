@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PRICING } from "@/app/lib/pricing";
-import { REFLECTION } from "@/app/lib/copy";
+import { useTranslation } from "@/app/components/I18nProvider";
 import { PAYMENT } from "@/app/lib/payment";
 import { CONFIG } from "@/app/lib/config";
 
@@ -106,6 +106,7 @@ function UpgradeButton({
 // ─── Page ───────────────────────────────────────────────────────────────────
 
 export default function UpgradePage() {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-qm-bg text-qm-primary">
       {/* ── Hero — with embedded proof card ──────────────────────────────── */}
@@ -161,7 +162,7 @@ export default function UpgradePage() {
                   },
                   {
                     label: "Everything in Free",
-                    sub: REFLECTION.nothingRemoved,
+                    sub: t.reflection.nothingRemoved,
                     color: "text-slate-500",
                   },
                 ].map(({ label, sub, color }) => (

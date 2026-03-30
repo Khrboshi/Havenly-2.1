@@ -2,7 +2,9 @@
 import { createServerSupabase } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { JOURNAL } from "@/app/lib/copy";
+import { getTranslations } from "@/app/lib/i18n";
+import { cookies } from "next/headers";
+import { getLocaleFromCookieString } from "@/app/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -78,12 +80,12 @@ function monthKey(iso: string): string {
   return d.toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
 }
 
-function entryTitle(title: string | null, content: string | null): string {
+function entryTitle(title: string | null, content: string | null, fallback: string): string {
   if (title?.trim()) return title.trim();
   // Use first sentence of content, capped at 60 chars
   const first = (content ?? "").split(/[.!?\n]/)[0].trim();
   if (first.length > 4) return first.length > 60 ? first.slice(0, 57) + "…" : first;
-  return JOURNAL.untitledEntry;
+  return fallback;
 }
 
 function parseAI(raw: any): any {
@@ -97,6 +99,8 @@ function parseAI(raw: any): any {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function JournalPage() {
+  const cookieHeader = cookies().toString();
+  const t = getTranslations(getLocaleFromCookieString(cookieHeader));
   const supabase = createServerSupabase();
 
   const { data: { session } } = await supabase.auth.getSession();
@@ -192,7 +196,7 @@ export default async function JournalPage() {
               const domainMeta = DOMAIN_META[domain] ?? DOMAIN_META.GENERAL;
               const topEmotion: string = ai?.emotions?.[0] ?? "";
               const eColor = topEmotion ? emotionColor(topEmotion) : null;
-              const title = entryTitle(entry.title, entry.content);
+              const title = entryTitle(entry.title, entry.content, t.journal.untitledEntry);
               const isUntitled = !entry.title?.trim();
 
               return (

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useUserPlan } from "@/app/components/useUserPlan";
 import UpgradeTriggerModal from "@/app/components/UpgradeTriggerModal";
 import { PRICING } from "@/app/lib/pricing";
-import { ERRORS, NAV, JOURNAL, REFLECTION, UI } from "@/app/lib/copy";
+import { useTranslation } from "@/app/components/I18nProvider";
 
 type JournalEntry = {
   id: string;
@@ -93,6 +93,7 @@ export default function JournalEntryClient({
 }) {
   const router = useRouter();
   const { planType, credits, loading, refresh } = useUserPlan();
+  const { t } = useTranslation();
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
@@ -139,14 +140,14 @@ export default function JournalEntryClient({
       if (res.status === 402) { setShowUpgrade(true); return; }
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setError(j?.error || ERRORS.reflectionFailed);
+        setError(j?.error || t.errors.reflectionFailed);
         return;
       }
       const j = await res.json().catch(() => ({}));
       setReflection(j?.reflection || null);
       await refresh();
     } catch {
-      setError(ERRORS.reflectionFailed);
+      setError(t.errors.reflectionFailed);
     } finally {
       setBusy(false);
     }
@@ -159,13 +160,13 @@ export default function JournalEntryClient({
       const res = await fetch(`/api/journal/${entry.id}`, { method: "DELETE" });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        setDeleteError(j?.error || ERRORS.entryDeleteFailed);
+        setDeleteError(j?.error || t.errors.entryDeleteFailed);
         setDeleting(false);
         return;
       }
       router.push("/journal");
     } catch {
-      setDeleteError(ERRORS.entryGenericFail);
+      setDeleteError(t.errors.entryGenericFail);
       setDeleting(false);
     }
   }
@@ -177,7 +178,7 @@ export default function JournalEntryClient({
       <header className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="font-display text-2xl font-semibold leading-snug tracking-tight text-white sm:text-3xl">
-            {entry.title || JOURNAL.untitled}
+            {entry.title || t.journal.untitled}
           </h1>
           <p className="mt-1 text-xs text-white/35" suppressHydrationWarning>
             {mounted
@@ -193,7 +194,7 @@ export default function JournalEntryClient({
           href="/journal"
           className="mt-1 shrink-0 text-xs text-emerald-400/70 transition-colors hover:text-emerald-300"
         >
-          {NAV.backToJournal}
+          {t.nav.backToJournal}
         </Link>
       </header>
 
@@ -209,7 +210,7 @@ export default function JournalEntryClient({
           <div className="flex items-start gap-2 border-b border-white/6 bg-emerald-500/5 px-6 py-3">
             <span className="mt-0.5 text-sm text-emerald-400">&#10022;</span>
             <p className="text-xs leading-relaxed text-slate-400">
-              {REFLECTION.firstEntryBanner}
+              {t.reflection.firstEntryBanner}
             </p>
           </div>
         )}
@@ -217,7 +218,7 @@ export default function JournalEntryClient({
         <div className="flex items-center justify-between border-b border-white/6 px-6 py-4">
           <div>
             <h2 className="text-sm font-semibold tracking-tight text-white/90">
-              {REFLECTION.cardHeading}
+              {t.reflection.cardHeading}
             </h2>
 
             {/* Credits counter — only show for free users */}
@@ -248,18 +249,18 @@ export default function JournalEntryClient({
               {busy ? (
                 <>
                   <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-slate-950/30 border-t-slate-950" />
-                  {REFLECTION.reflectingLabel}
+                  {t.reflection.reflectingLabel}
                 </>
               ) : isLimitReached ? (
-                REFLECTION.unlockReflectionLabel
+                t.reflection.unlockReflectionLabel
               ) : (
-                REFLECTION.seeReflectionLabel
+                t.reflection.seeReflectionLabel
               )}
             </button>
           ) : (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/[0.06] px-3 py-1.5 text-xs font-medium text-emerald-400/80">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              {REFLECTION.savedToHistory}
+              {t.reflection.savedToHistory}
             </span>
           )}
         </div>
@@ -327,7 +328,7 @@ export default function JournalEntryClient({
                 />
               ))}
             </div>
-            <span className="text-xs text-white/35">{REFLECTION.readingEntry}</span>
+            <span className="text-xs text-white/35">{t.reflection.readingEntry}</span>
           </div>
         )}
 
@@ -370,7 +371,7 @@ export default function JournalEntryClient({
                 {parsedSummary.carrying && (
                   <div>
                     <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-emerald-400/60">
-                      {REFLECTION.whatYoureCarrying}
+                      {t.reflection.whatYoureCarrying}
                     </p>
                     <p className="text-sm leading-relaxed text-white/90">
                       {parsedSummary.carrying}
@@ -380,7 +381,7 @@ export default function JournalEntryClient({
                 {parsedSummary.happening && (
                   <div>
                     <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-white/30">
-                      {REFLECTION.whatsReallyHappening}
+                      {t.reflection.whatsReallyHappening}
                     </p>
                     <p className="text-sm leading-relaxed text-white/70">
                       {parsedSummary.happening}
@@ -390,7 +391,7 @@ export default function JournalEntryClient({
                 {parsedSummary.deeper && (
                   <div className="rounded-xl border border-emerald-500/12 bg-emerald-500/5 px-4 py-3">
                     <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-emerald-400/50">
-                      {REFLECTION.deeperDirection}
+                      {t.reflection.deeperDirection}
                     </p>
                     <p className="text-sm leading-relaxed text-white/70">
                       {parsedSummary.deeper}
@@ -447,13 +448,13 @@ export default function JournalEntryClient({
             {parsedStep && (
               <div className="space-y-3 px-6 py-5">
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-white/30">
-                  {REFLECTION.gentleNextStep}
+                  {t.reflection.gentleNextStep}
                 </p>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {parsedStep.optionA && (
                     <div className="rounded-xl border border-white/8 bg-white/[0.03] px-4 py-3">
                       <p className="mb-1 text-[10px] font-semibold text-emerald-400/60">
-                        {REFLECTION.optionA}
+                        {t.reflection.optionA}
                       </p>
                       <p className="text-xs leading-relaxed text-white/70">
                         {parsedStep.optionA}
@@ -463,7 +464,7 @@ export default function JournalEntryClient({
                   {parsedStep.optionB && (
                     <div className="rounded-xl border border-white/8 bg-white/[0.03] px-4 py-3">
                       <p className="mb-1 text-[10px] font-semibold text-white/30">
-                        {REFLECTION.optionB}
+                        {t.reflection.optionB}
                       </p>
                       <p className="text-xs leading-relaxed text-white/70">
                         {parsedStep.optionB}
@@ -474,7 +475,7 @@ export default function JournalEntryClient({
                 {parsedStep.script && (
                   <div className="rounded-xl border border-emerald-500/15 bg-emerald-500/5 px-4 py-3">
                     <p className="mb-1 text-[10px] font-semibold text-emerald-400/50">
-                      {REFLECTION.scriptLine}
+                      {t.reflection.scriptLine}
                     </p>
                     <p className="text-sm italic text-white/75">
                       &ldquo;{parsedStep.script}&rdquo;
@@ -504,7 +505,7 @@ export default function JournalEntryClient({
 
             <div className="px-6 py-3">
               <p className="text-center text-[10px] text-white/18">
-                {REFLECTION.savedPermanently}
+                {t.reflection.savedPermanently}
               </p>
             </div>
 
@@ -519,7 +520,7 @@ export default function JournalEntryClient({
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-medium text-white/80">
-                  {REFLECTION.patternHistoryNote}
+                  {t.reflection.patternHistoryNote}
                 </p>
                 <p className="mt-1 text-xs leading-relaxed text-slate-500">
                   Quiet Mirror tracks what keeps showing up across all your entries.
@@ -530,7 +531,7 @@ export default function JournalEntryClient({
                 href="/insights"
                 className="shrink-0 inline-flex items-center gap-2 rounded-full border border-emerald-500/25 bg-emerald-500/[0.06] px-4 py-2.5 text-xs font-semibold text-emerald-400 transition hover:bg-emerald-500/[0.12] hover:text-emerald-300"
               >
-                {REFLECTION.seeFullPattern}
+                {t.reflection.seeFullPattern}
               </Link>
             </div>
           ) : (() => {
@@ -620,12 +621,12 @@ export default function JournalEntryClient({
             onClick={() => setDeleteConfirm(true)}
             className="text-xs text-white/20 transition-colors hover:text-white/40"
           >
-            {JOURNAL.removeEntryLabel}
+            {t.journal.removeEntryLabel}
           </button>
         ) : (
           <div className="space-y-2">
             <p className="text-xs text-white/40">
-              {JOURNAL.deleteWarning}
+              {t.journal.deleteWarning}
             </p>
             {deleteError && (
               <p className="text-xs text-red-400">{deleteError}</p>
@@ -636,13 +637,13 @@ export default function JournalEntryClient({
                 disabled={deleting}
                 className="text-xs font-medium text-red-400/80 transition-colors hover:text-red-400 disabled:opacity-50"
               >
-                {deleting ? JOURNAL.deletingLabel : JOURNAL.deleteConfirmLabel}
+                {deleting ? t.journal.deletingLabel : t.journal.deleteConfirmLabel}
               </button>
               <button
                 onClick={() => { setDeleteConfirm(false); setDeleteError(null); }}
                 className="text-xs text-white/30 transition-colors hover:text-white/60"
               >
-                {JOURNAL.cancelLabel}
+                {t.journal.cancelLabel}
               </button>
             </div>
           </div>

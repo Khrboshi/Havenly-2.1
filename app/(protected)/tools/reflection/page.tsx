@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import RequirePremium from "@/app/components/RequirePremium";
-import { TOOLS } from "@/app/lib/copy";
+import { useTranslation } from "@/app/components/I18nProvider";
 
 type State =
   | { status: "loading" }
@@ -14,6 +14,7 @@ type State =
   | { status: "error" };
 
 export default function ReflectionToolPage() {
+  const { t } = useTranslation();
   const [state, setState] = useState<State>({ status: "loading" });
 
   const fetchQuestion = useCallback(async () => {
@@ -69,7 +70,7 @@ export default function ReflectionToolPage() {
               {state.status === "error" && (
                 <div className="space-y-4">
                   <p className="text-sm text-slate-400">
-                    {TOOLS.somethingWentWrong("question")}
+                    {t.tools.somethingWentWrong("question")}
                   </p>
                   <button
                     onClick={fetchQuestion}

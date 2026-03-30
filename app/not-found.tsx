@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { NAV } from "@/app/lib/copy";
+import { cookies } from "next/headers";
+import { getTranslations, getLocaleFromCookieString } from "@/app/lib/i18n";
 
 export default function NotFound() {
+  const t = getTranslations(getLocaleFromCookieString(cookies().toString()));
   return (
     <div className="flex min-h-[80vh] items-center justify-center bg-slate-950 px-4">
       <div className="mx-auto max-w-md text-center space-y-4">
@@ -20,13 +22,13 @@ export default function NotFound() {
             href="/dashboard"
             className="rounded-full bg-[color:var(--hvn-accent-mint)] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[color:var(--hvn-accent-mint-hover)]"
           >
-            {NAV.goToDashboard}
+            {t.nav.goToDashboard}
           </Link>
           <Link
             href="/"
             className="rounded-full border border-slate-700 px-5 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:bg-slate-800"
           >
-            {NAV.backToHome}
+            {t.nav.backToHome}
           </Link>
         </div>
       </div>
