@@ -8,47 +8,47 @@ export const dynamic = "force-dynamic";
 // ── Domain metadata ────────────────────────────────────────────────────────────
 
 const DOMAIN_META: Record<string, { emoji: string; color: string }> = {
-  MONEY:        { emoji: "💰", color: "#7c9fff" },
-  WORK:         { emoji: "💼", color: "#60a5fa" },
-  RELATIONSHIP: { emoji: "🤝", color: "#f472b6" },
-  HEALTH:       { emoji: "🫀", color: "#fb923c" },
-  GRIEF:        { emoji: "🕊️", color: "#a78bfa" },
-  PARENTING:    { emoji: "🌱", color: "#86efac" },
-  CREATIVE:     { emoji: "✍️", color: "#fbbf24" },
-  IDENTITY:     { emoji: "🪞", color: "#e879f9" },
-  FITNESS:      { emoji: "⚡", color: "#2dd4bf" },
-  GENERAL:      { emoji: "📝", color: "#64748b" },
+  MONEY:        { emoji: "💰", color: "var(--qm-dv-positive)" },
+  WORK:         { emoji: "💼", color: "var(--qm-dv-work)" },
+  RELATIONSHIP: { emoji: "🤝", color: "var(--qm-dv-love)" },
+  HEALTH:       { emoji: "🫀", color: "var(--qm-dv-health)" },
+  GRIEF:        { emoji: "🕊️", color: "var(--qm-dv-grief)" },
+  PARENTING:    { emoji: "🌱", color: "var(--qm-dv-growth)" },
+  CREATIVE:     { emoji: "✍️", color: "var(--qm-dv-creative)" },
+  IDENTITY:     { emoji: "🪞", color: "var(--qm-dv-identity)" },
+  FITNESS:      { emoji: "⚡", color: "var(--qm-dv-fitness)" },
+  GENERAL:      { emoji: "📝", color: "var(--qm-text-muted)" },
 };
 
 // ── Emotion color mapping (matches JournalEntryClient) ─────────────────────────
 
 const EMOTION_COLORS: Record<string, string> = {
   // Reds / danger
-  fear: "#f87171", panic: "#f87171", terror: "#f87171", dread: "#f87171",
-  rage: "#f87171", fury: "#f87171", anger: "#f87171",
+  fear: "var(--qm-dv-fear)", panic: "var(--qm-dv-fear)", terror: "var(--qm-dv-fear)", dread: "var(--qm-dv-fear)",
+  rage: "var(--qm-dv-fear)", fury: "var(--qm-dv-fear)", anger: "var(--qm-dv-fear)",
   // Oranges
-  anxiety: "#fb923c", worry: "#fb923c", stress: "#fb923c", overwhelmed: "#fb923c",
-  frustration: "#fb923c", irritation: "#fb923c",
+  anxiety: "var(--qm-dv-health)", worry: "var(--qm-dv-health)", stress: "var(--qm-dv-health)", overwhelmed: "var(--qm-dv-health)",
+  frustration: "var(--qm-dv-health)", irritation: "var(--qm-dv-health)",
   // Yellows
-  shame: "#fbbf24", guilt: "#fbbf24", embarrassment: "#fbbf24",
+  shame: "var(--qm-dv-creative)", guilt: "var(--qm-dv-creative)", embarrassment: "var(--qm-dv-creative)",
   // Slates / grey-blue
-  sadness: "#94a3b8", grief: "#94a3b8", loneliness: "#94a3b8",
-  exhaustion: "#94a3b8", numbness: "#94a3b8", emptiness: "#94a3b8",
-  disconnection: "#94a3b8", resignation: "#94a3b8",
+  sadness: "var(--qm-text-secondary)", grief: "var(--qm-text-secondary)", loneliness: "var(--qm-text-secondary)",
+  exhaustion: "var(--qm-text-secondary)", numbness: "var(--qm-text-secondary)", emptiness: "var(--qm-text-secondary)",
+  disconnection: "var(--qm-text-secondary)", resignation: "var(--qm-text-secondary)",
   // Purples
-  confusion: "#a78bfa", doubt: "#a78bfa", uncertainty: "#a78bfa",
-  invisibility: "#a78bfa", "self-doubt": "#a78bfa",
+  confusion: "var(--qm-dv-grief)", doubt: "var(--qm-dv-grief)", uncertainty: "var(--qm-dv-grief)",
+  invisibility: "var(--qm-dv-grief)", "self-doubt": "var(--qm-dv-grief)",
   // Greens
-  hope: "#7c9fff", relief: "#7c9fff", calm: "#7c9fff", gratitude: "#7c9fff",
-  pride: "#7c9fff", joy: "#7c9fff", contentment: "#7c9fff",
+  hope: "var(--qm-dv-positive)", relief: "var(--qm-dv-positive)", calm: "var(--qm-dv-positive)", gratitude: "var(--qm-dv-positive)",
+  pride: "var(--qm-dv-positive)", joy: "var(--qm-dv-positive)", contentment: "var(--qm-dv-positive)",
   // Blues
-  curiosity: "#60a5fa", openness: "#60a5fa", clarity: "#60a5fa",
+  curiosity: "var(--qm-dv-work)", openness: "var(--qm-dv-work)", clarity: "var(--qm-dv-work)",
   // Pinks
-  love: "#f472b6", connection: "#f472b6", tenderness: "#f472b6",
+  love: "var(--qm-dv-love)", connection: "var(--qm-dv-love)", tenderness: "var(--qm-dv-love)",
 };
 
 function emotionColor(e: string): string {
-  return EMOTION_COLORS[e.toLowerCase().trim()] ?? "#64748b";
+  return EMOTION_COLORS[e.toLowerCase().trim()] ?? "var(--qm-text-muted)";
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────

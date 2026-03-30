@@ -160,21 +160,21 @@ export default async function InsightsPreviewPage() {
           </div>
           <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4 space-y-1">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Top emotion</p>
-            <p className="text-base font-semibold capitalize truncate" style={{ color: hasData ? "#a78bfa" : "#334155" }}>
+            <p className="text-base font-semibold capitalize truncate" style={{ color: hasData ? "var(--qm-dv-grief)" : "var(--qm-bg-card)" }}>
               {hasData && topEmotion ? sc(topEmotion) : "—"}
             </p>
             <p className="text-xs text-slate-600">{hasData ? `${sortedEmotions[0]?.[1]} ${sortedEmotions[0]?.[1] === 1 ? "entry" : "entries"}` : "Builds as you write"}</p>
           </div>
           <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4 space-y-1">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Top theme</p>
-            <p className="text-base font-semibold capitalize truncate" style={{ color: hasData ? "#7c9fff" : "#334155" }}>
+            <p className="text-base font-semibold capitalize truncate" style={{ color: hasData ? "var(--qm-dv-positive)" : "var(--qm-bg-card)" }}>
               {hasData && topTheme ? sc(topTheme) : "—"}
             </p>
             <p className="text-xs text-slate-600">{hasData ? `${sortedThemes[0]?.[1]} ${sortedThemes[0]?.[1] === 1 ? "entry" : "entries"}` : "Builds as you write"}</p>
           </div>
           <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4 space-y-1">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Momentum</p>
-            <p className="text-base font-semibold" style={{ color: hasData ? "#fbbf24" : "#334155" }}>
+            <p className="text-base font-semibold" style={{ color: hasData ? "var(--qm-dv-creative)" : "var(--qm-bg-card)" }}>
               {hasData ? "Shifting" : "—"}
             </p>
             <p className="text-xs text-slate-600">{hasData ? "Based on recent entries" : "Builds as you write"}</p>
@@ -249,7 +249,7 @@ export default async function InsightsPreviewPage() {
                         <span className="tabular-nums text-slate-600">{count}</span>
                       </div>
                       <div className="h-[3px] w-full overflow-hidden rounded-full bg-slate-800">
-                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: isTop ? "#60a5fa" : "#1e293b" }} />
+                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: isTop ? "var(--qm-dv-work)" : "var(--qm-bg-soft)" }} />
                       </div>
                     </li>
                   );
@@ -388,13 +388,13 @@ export default async function InsightsPreviewPage() {
                     <li key={label} className="space-y-1.5">
                       <div className="flex items-center justify-between gap-3 text-sm">
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <span className="w-4 shrink-0 text-right tabular-nums text-[10px]" style={{ color: isTop ? "#7c9fff" : "#475569" }}>{i + 1}</span>
+                          <span className="w-4 shrink-0 text-right tabular-nums text-[10px]" style={{ color: isTop ? "var(--qm-dv-positive)" : "var(--qm-text-muted)" }}>{i + 1}</span>
                           <span className={`truncate ${isTop ? "font-medium text-slate-100" : "text-slate-400"}`}>{sc(label)}</span>
                         </div>
                         <span className="shrink-0 tabular-nums text-xs text-slate-600">{count}</span>
                       </div>
                       <div className="h-[3px] w-full overflow-hidden rounded-full bg-slate-800/80">
-                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: isTop ? "#7c9fff" : "#334155" }} />
+                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: isTop ? "var(--qm-dv-positive)" : "var(--qm-bg-card)" }} />
                       </div>
                     </li>
                   );
@@ -438,13 +438,13 @@ export default async function InsightsPreviewPage() {
                     <li key={label} className="space-y-1.5">
                       <div className="flex items-center justify-between gap-3 text-sm">
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <span className="w-4 shrink-0 text-right tabular-nums text-[10px]" style={{ color: isTop ? "#a78bfa" : "#475569" }}>{i + 1}</span>
+                          <span className="w-4 shrink-0 text-right tabular-nums text-[10px]" style={{ color: isTop ? "var(--qm-dv-grief)" : "var(--qm-text-muted)" }}>{i + 1}</span>
                           <span className={`truncate ${isTop ? "font-medium text-slate-100" : "text-slate-400"}`}>{sc(label)}</span>
                         </div>
                         <span className="shrink-0 tabular-nums text-xs text-slate-600">{count}</span>
                       </div>
                       <div className="h-[3px] w-full overflow-hidden rounded-full bg-slate-800/80">
-                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: isTop ? "#a78bfa" : "#334155" }} />
+                        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: isTop ? "var(--qm-dv-grief)" : "var(--qm-bg-card)" }} />
                       </div>
                     </li>
                   );

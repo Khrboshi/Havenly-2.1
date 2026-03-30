@@ -61,7 +61,7 @@ function friendlyDate(iso: string) {
 
 function Sparkline({
   values,
-  color = "#7c9fff",
+  color = "var(--qm-dv-positive)",
   height = 32,
   width = 80,
 }: {
@@ -112,7 +112,7 @@ function Sparkline({
   const lastVal = values[values.length - 1];
   const prevVal = values[values.length - 2] ?? lastVal;
   const dotColor =
-    lastVal > prevVal ? color : lastVal < prevVal ? "#94a3b8" : color;
+    lastVal > prevVal ? color : lastVal < prevVal ? "var(--qm-text-secondary)" : color;
 
   return (
     <svg width={width} height={height} style={{ overflow: "visible" }}>
@@ -154,7 +154,7 @@ function BarRow({
   count,
   max,
   rank,
-  accent = "#7c9fff",
+  accent = "var(--qm-dv-positive)",
 }: {
   label: string;
   count: number;
@@ -171,7 +171,7 @@ function BarRow({
         <div className="flex items-center gap-2.5 min-w-0">
           <span
             className="shrink-0 tabular-nums text-[10px] w-4 text-right"
-            style={{ color: isTop ? accent : "#475569" }}
+            style={{ color: isTop ? accent : "var(--qm-text-muted)" }}
           >
             {rank + 1}
           </span>
@@ -195,7 +195,7 @@ function BarRow({
           className="h-full rounded-full transition-all duration-700"
           style={{
             width: `${pct}%`,
-            backgroundColor: isTop ? accent : "#334155",
+            backgroundColor: isTop ? accent : "var(--qm-bg-card)",
           }}
         />
       </div>
@@ -254,16 +254,16 @@ const DOMAIN_LABELS: Record<
   string,
   { label: string; emoji: string; color: string }
 > = {
-  MONEY: { label: "Money", emoji: "💰", color: "#7c9fff" },
-  WORK: { label: "Work", emoji: "💼", color: "#60a5fa" },
-  RELATIONSHIP: { label: "Relationships", emoji: "🤝", color: "#f472b6" },
-  HEALTH: { label: "Health", emoji: "🫀", color: "#fb923c" },
-  GRIEF: { label: "Grief", emoji: "🕊️", color: "#a78bfa" },
-  PARENTING: { label: "Parenting", emoji: "🌱", color: "#86efac" },
-  CREATIVE: { label: "Creative", emoji: "✍️", color: "#fbbf24" },
-  IDENTITY: { label: "Identity", emoji: "🪞", color: "#e879f9" },
-  FITNESS: { label: "Fitness", emoji: "⚡", color: "#2dd4bf" },
-  GENERAL: { label: "General", emoji: "📝", color: "#64748b" },
+  MONEY: { label: "Money", emoji: "💰", color: "var(--qm-dv-positive)" },
+  WORK: { label: "Work", emoji: "💼", color: "var(--qm-dv-work)" },
+  RELATIONSHIP: { label: "Relationships", emoji: "🤝", color: "var(--qm-dv-love)" },
+  HEALTH: { label: "Health", emoji: "🫀", color: "var(--qm-dv-health)" },
+  GRIEF: { label: "Grief", emoji: "🕊️", color: "var(--qm-dv-grief)" },
+  PARENTING: { label: "Parenting", emoji: "🌱", color: "var(--qm-dv-growth)" },
+  CREATIVE: { label: "Creative", emoji: "✍️", color: "var(--qm-dv-creative)" },
+  IDENTITY: { label: "Identity", emoji: "🪞", color: "var(--qm-dv-identity)" },
+  FITNESS: { label: "Fitness", emoji: "⚡", color: "var(--qm-dv-fitness)" },
+  GENERAL: { label: "General", emoji: "📝", color: "var(--qm-text-muted)" },
 };
 
 function DomainSection({
@@ -287,7 +287,7 @@ function DomainSection({
   const topMeta = DOMAIN_LABELS[top] ?? {
     label: top,
     emoji: "📝",
-    color: "#7c9fff",
+    color: "var(--qm-dv-positive)",
   };
 
   const topCount = sorted[0]?.[1] ?? 0;
@@ -325,7 +325,7 @@ function DomainSection({
           const meta = DOMAIN_LABELS[domain] ?? {
             label: domain,
             emoji: "📝",
-            color: "#64748b",
+            color: "var(--qm-text-muted)",
           };
           const pct = Math.round((count / sorted[0][1]) * 100);
           return (
@@ -344,7 +344,7 @@ function DomainSection({
                   className="h-full rounded-full transition-all duration-700"
                   style={{
                     width: `${pct}%`,
-                    backgroundColor: i === 0 ? meta.color : "#1e293b",
+                    backgroundColor: i === 0 ? meta.color : "var(--qm-bg-card)",
                   }}
                 />
               </div>
@@ -475,7 +475,7 @@ function WeeklyTrends({
                 </span>
                 <Sparkline
                   values={tSparklines[k]}
-                  color="#7c9fff"
+                  color="var(--qm-dv-positive)"
                   width={80}
                   height={28}
                 />
@@ -496,7 +496,7 @@ function WeeklyTrends({
                 </span>
                 <Sparkline
                   values={eSparklines[k]}
-                  color="#a78bfa"
+                  color="var(--qm-dv-grief)"
                   width={80}
                   height={28}
                 />
@@ -717,13 +717,13 @@ export default function InsightsClient() {
       Object.keys(data?.weeklyTrend?.emotions ?? {}).length > 0);
 
   const momentumColor: Record<string, string> = {
-    Lifting: "#7c9fff",
-    Shifting: "#fbbf24",
-    Softening: "#94a3b8",
-    Heavy: "#f87171",
-    Steady: "#64748b",
+    Lifting: "var(--qm-dv-positive)",
+    Shifting: "var(--qm-dv-creative)",
+    Softening: "var(--qm-text-secondary)",
+    Heavy: "var(--qm-dv-fear)",
+    Steady: "var(--qm-text-muted)",
   };
-  const mColor = momentumColor[data?.momentum ?? "Steady"] ?? "#64748b";
+  const mColor = momentumColor[data?.momentum ?? "Steady"] ?? "var(--qm-text-muted)";
 
   function renderHeadline() {
     if (!topEmotion && !topTheme) return null;
@@ -814,13 +814,13 @@ export default function InsightsClient() {
               label="Top emotion"
               value={topEmotion ?? "—"}
               sub={allEmotions[0] ? `${allEmotions[0][1]} ${allEmotions[0][1] === 1 ? "time" : "times"}` : undefined}
-              accent="#a78bfa"
+              accent="var(--qm-dv-grief)"
             />
             <StatCard
               label="Top theme"
               value={topTheme ?? "—"}
               sub={allThemes[0] ? `${allThemes[0][1]} entries` : undefined}
-              accent="#7c9fff"
+              accent="var(--qm-dv-positive)"
             />
             <StatCard
               label="Momentum"
@@ -972,7 +972,7 @@ export default function InsightsClient() {
                       count={v}
                       max={maxTheme}
                       rank={i}
-                      accent="#7c9fff"
+                      accent="var(--qm-dv-positive)"
                     />
                   ))}
                 </ul>
@@ -1017,7 +1017,7 @@ export default function InsightsClient() {
                       count={v}
                       max={maxEmotion}
                       rank={i}
-                      accent="#a78bfa"
+                      accent="var(--qm-dv-grief)"
                     />
                   ))}
                 </ul>

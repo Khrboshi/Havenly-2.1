@@ -123,25 +123,25 @@ export default function InstallPrompt() {
 
   return (
     <div className="fixed bottom-4 left-1/2 z-50 w-[calc(100%-2rem)] max-w-xl -translate-x-1/2">
-      <div className="rounded-2xl border border-white/10 bg-slate-950/90 p-4 shadow-2xl backdrop-blur">
+      <div className="qm-panel-strong rounded-2xl p-4 shadow-2xl backdrop-blur">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-slate-100">Install {CONFIG.appName}</p>
+            <p className="text-sm font-semibold text-qm-primary">Install {CONFIG.appName}</p>
 
             {isIOS && isSafariIOS ? (
-              <p className="mt-1 text-xs text-slate-300">
+              <p className="mt-1 text-xs text-qm-secondary">
                 On iPhone Safari: tap{" "}
-                <span className="inline-flex items-center gap-1 font-semibold text-slate-100">
+                <span className="inline-flex items-center gap-1 font-semibold text-qm-primary">
                   <ShareIcon className="h-4 w-4" /> Share
                 </span>{" "}
                 then{" "}
-                <span className="inline-flex items-center gap-1 font-semibold text-slate-100">
+                <span className="inline-flex items-center gap-1 font-semibold text-qm-primary">
                   <PlusSquareIcon className="h-4 w-4" /> Add to Home Screen
                 </span>
                 .
               </p>
             ) : (
-              <p className="mt-1 text-xs text-slate-300">
+              <p className="mt-1 text-xs text-qm-secondary">
                 Get a faster, app-like experience with an app icon on your device.
               </p>
             )}
@@ -149,7 +149,7 @@ export default function InstallPrompt() {
 
           <button
             onClick={() => dismiss("close")}
-            className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-200 hover:bg-white/10"
+            className="qm-btn-secondary rounded-full px-3 py-1 text-xs"
           >
             Close
           </button>
@@ -159,13 +159,13 @@ export default function InstallPrompt() {
           <div className="mt-3 flex gap-2">
             <button
               onClick={installNative}
-              className="flex-1 rounded-full bg-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-300"
+              className="qm-btn-primary flex-1 px-4 py-2 text-sm"
             >
               Install
             </button>
             <button
               onClick={() => dismiss("later")}
-              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+              className="qm-btn-secondary rounded-full px-4 py-2 text-sm font-semibold"
             >
               Later
             </button>
@@ -174,14 +174,14 @@ export default function InstallPrompt() {
           <div className="mt-3 flex justify-end">
             <button
               onClick={() => dismiss("later")}
-              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+              className="qm-btn-secondary rounded-full px-4 py-2 text-sm font-semibold"
             >
               Got it
             </button>
           </div>
         )}
 
-        <p className="mt-2 text-[11px] text-slate-400">
+        <p className="mt-2 text-[11px] text-qm-secondary">
           This won’t appear when Quiet Mirror is opened as an installed app.
         </p>
       </div>

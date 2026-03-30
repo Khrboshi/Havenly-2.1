@@ -35,18 +35,18 @@ export default function EmailCapture({ source = "blog", variant = "blog-index" }
 
   if (variant === "article-inline") {
     return (
-      <div className="my-8 rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
+      <div className="my-8 qm-panel rounded-2xl p-5">
         {status === "success" ? (
           <div className="py-2 text-center">
-            <p className="text-sm font-medium text-emerald-400">You&apos;re in.</p>
-            <p className="mt-1 text-xs text-slate-500">One quiet article a week, whenever it&apos;s ready.</p>
+            <p className="text-sm font-medium text-qm-accent">You&apos;re in.</p>
+            <p className="mt-1 text-xs text-qm-muted">One quiet article a week, whenever it&apos;s ready.</p>
           </div>
         ) : (
           <>
-            <p className="text-sm font-medium text-slate-200">
+            <p className="text-sm font-medium text-qm-primary">
               One quiet article a week.
             </p>
-            <p className="mt-1 text-xs leading-relaxed text-slate-500">
+            <p className="mt-1 text-xs leading-relaxed text-qm-muted">
               No noise, no streak guilt. Just something worth reading when it&apos;s ready.
             </p>
             <div className="mt-4 flex gap-2">
@@ -56,12 +56,12 @@ export default function EmailCapture({ source = "blog", variant = "blog-index" }
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(); }}
                 placeholder="your@email.com"
-                className="min-w-0 flex-1 rounded-full border border-[color:var(--hvn-card-border)] bg-slate-950/70 px-4 py-2.5 text-sm text-[color:var(--hvn-text-primary)] outline-none transition placeholder:text-[color:var(--hvn-text-muted)] focus:border-[color:var(--hvn-accent-mint)]"
+                className="min-w-0 flex-1 rounded-full border border-qm-card bg-qm-elevated px-4 py-2.5 text-sm text-qm-primary outline-none transition placeholder:text-qm-faint focus:border-qm-accent"
               />
               <button
                 onClick={handleSubmit}
                 disabled={!email || status === "loading"}
-                className="shrink-0 rounded-full bg-[color:var(--hvn-accent-mint)] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[color:var(--hvn-accent-mint-hover)] disabled:opacity-50"
+                className="qm-btn-primary shrink-0 px-4 py-2.5 text-xs disabled:opacity-50"
               >
                 {status === "loading" ? "…" : "Subscribe"}
               </button>
@@ -77,24 +77,24 @@ export default function EmailCapture({ source = "blog", variant = "blog-index" }
 
   // ── Blog index variant — full-width section card ──
   return (
-    <div className="rounded-[1.8rem] border border-emerald-500/15 bg-emerald-500/[0.03] p-6 sm:p-7">
+    <div className="qm-panel rounded-[1.8rem] p-6 sm:p-7">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="max-w-sm">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-400/70">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-qm-accent opacity-70">
             {CONFIG.newsletterName}
           </p>
-          <h3 className="mt-2 text-lg font-semibold leading-snug text-[color:var(--hvn-text-primary)]">
+          <h3 className="mt-2 text-lg font-semibold leading-snug text-qm-primary">
             One quiet article a week.
           </h3>
-          <p className="mt-2 text-sm leading-relaxed text-slate-400">
+          <p className="mt-2 text-sm leading-relaxed text-qm-secondary">
             No streak guilt. No noise. Just one piece worth reading, whenever it&apos;s ready. Unsubscribe in one click.
           </p>
         </div>
 
         {status === "success" ? (
           <div className="flex flex-col items-start gap-1 sm:items-end">
-            <p className="text-sm font-semibold text-emerald-400">You&apos;re in. ✓</p>
-            <p className="text-xs text-slate-600">Look out for the next article.</p>
+            <p className="text-sm font-semibold text-qm-accent">You&apos;re in. ✓</p>
+            <p className="text-xs text-qm-muted">Look out for the next article.</p>
           </div>
         ) : (
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-[280px]">
@@ -105,12 +105,12 @@ export default function EmailCapture({ source = "blog", variant = "blog-index" }
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(); }}
                 placeholder="your@email.com"
-                className="min-w-0 flex-1 rounded-full border border-[color:var(--hvn-card-border)] bg-slate-950/70 px-4 py-3 text-sm text-[color:var(--hvn-text-primary)] outline-none transition placeholder:text-[color:var(--hvn-text-muted)] focus:border-[color:var(--hvn-accent-mint)]"
+                className="min-w-0 flex-1 rounded-full border border-qm-card bg-qm-elevated px-4 py-3 text-sm text-qm-primary outline-none transition placeholder:text-qm-faint focus:border-qm-accent"
               />
               <button
                 onClick={handleSubmit}
                 disabled={!email || status === "loading"}
-                className="shrink-0 rounded-full bg-[color:var(--hvn-accent-mint)] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[color:var(--hvn-accent-mint-hover)] disabled:opacity-50"
+                className="qm-btn-primary shrink-0 px-5 py-3 text-sm disabled:opacity-50"
               >
                 {status === "loading" ? "…" : "Subscribe"}
               </button>
@@ -118,7 +118,7 @@ export default function EmailCapture({ source = "blog", variant = "blog-index" }
             {status === "error" && (
               <p className="mt-1 pl-2 text-xs text-red-400">Something went wrong. Try again.</p>
             )}
-            <p className="pl-2 text-[11px] text-slate-700">
+            <p className="pl-2 text-[11px] text-qm-faint">
               No spam. No selling. One click to leave.
             </p>
           </div>

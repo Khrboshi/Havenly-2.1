@@ -97,7 +97,7 @@ export default function Navbar() {
   return (
     <>
       {/* ── Desktop / shared header ─────────────────────────────────────── */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b bg-hvn-bg/80 backdrop-blur-xl" style={{ borderColor: "var(--qm-border-card)" }}>
+      <header className="fixed inset-x-0 top-0 z-50 border-b backdrop-blur-xl" style={{ borderColor: "var(--qm-border-card)", backgroundColor: "color-mix(in srgb, var(--qm-bg) 80%, transparent)" }}>
         <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-4">
 
           {/* Logo */}
@@ -191,7 +191,7 @@ export default function Navbar() {
           {/* Slide-down panel */}
           <div
             id="mobile-menu"
-            className="fixed inset-x-0 top-[72px] bottom-0 z-50 flex flex-col bg-hvn-bg/95"
+            className="fixed inset-x-0 top-[72px] bottom-0 z-50 flex flex-col" style={{ backgroundColor: "color-mix(in srgb, var(--qm-bg) 95%, transparent)" }}
           >
             <div className="flex-1 overflow-y-auto px-5 pb-8 pt-5">
               <div className="mx-auto flex max-w-xl flex-col">

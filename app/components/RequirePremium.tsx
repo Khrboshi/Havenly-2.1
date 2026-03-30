@@ -14,9 +14,9 @@ export default function RequirePremium({ children }: RequirePremiumProps) {
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center bg-slate-950">
-        <div className="flex items-center gap-3 rounded-full border border-slate-800 bg-slate-900/80 px-4 py-2 text-sm text-slate-300">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+      <div className="flex min-h-[60vh] items-center justify-center bg-qm-bg">
+        <div className="flex items-center gap-3 rounded-full border border-qm-subtle bg-qm-card px-4 py-2 text-sm text-qm-secondary">
+          <span className="h-2 w-2 animate-pulse rounded-full bg-qm-accent" />
           <span>Checking your plan…</span>
         </div>
       </div>
@@ -27,24 +27,24 @@ export default function RequirePremium({ children }: RequirePremiumProps) {
 
   if (!isPremium) {
     return (
-      <div className="min-h-screen bg-slate-950 px-4 py-12 text-[color:var(--hvn-text-primary)]">
+      <div className="min-h-screen bg-qm-bg px-4 py-12 text-qm-primary">
         <div className="mx-auto max-w-2xl space-y-6">
 
           {/* Main card */}
-          <div className="rounded-[1.75rem] border border-emerald-500/20 bg-emerald-500/[0.03] p-7 shadow-xl shadow-black/30 sm:p-8">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+          <div className="qm-panel rounded-[1.75rem] p-7 shadow-qm-soft sm:p-8">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-qm-accent bg-qm-accent-soft px-3 py-1 text-xs font-semibold text-qm-accent">
               ✦ Premium feature
             </span>
 
-            <h1 className="font-display mt-5 text-2xl font-semibold leading-snug text-white sm:text-3xl">
+            <h1 className="font-display mt-5 text-2xl font-semibold leading-snug text-qm-primary sm:text-3xl">
               You&apos;ve been writing honestly.
               <br />
-              <span className="text-emerald-400">
+              <span className="text-qm-accent">
                 This is where the deeper picture starts.
               </span>
             </h1>
 
-            <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-slate-300">
+            <p className="mt-4 max-w-lg text-[15px] leading-relaxed text-qm-secondary">
               This feature is part of Premium — the layer that reads across your
               entries over time and shows you what keeps repeating, what&apos;s
               shifting, and what may be underneath it.
@@ -56,7 +56,7 @@ export default function RequirePremium({ children }: RequirePremiumProps) {
                 {
                   label: "Unlimited reflections",
                   sub: "Reflect on every entry, not just a few each month",
-                  dot: "bg-emerald-400",
+                  dot: "bg-qm-accent",
                 },
                 {
                   label: "Pattern insights across time",
@@ -79,41 +79,41 @@ export default function RequirePremium({ children }: RequirePremiumProps) {
                     className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${dot}`}
                   />
                   <div>
-                    <p className="text-sm font-medium text-slate-100">
+                    <p className="text-sm font-medium text-qm-primary">
                       {label}
                     </p>
-                    <p className="text-xs text-slate-500">{sub}</p>
+                    <p className="text-xs text-qm-muted">{sub}</p>
                   </div>
                 </div>
               ))}
             </div>
 
             {/* Price + CTA */}
-            <div className="mt-7 rounded-xl border border-emerald-500/15 bg-slate-950/50 p-5">
+            <div className="mt-7 qm-panel rounded-xl p-5">
               <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                <span className="font-display text-3xl font-bold text-white">
+                <span className="font-display text-3xl font-bold text-qm-primary">
                   {PRICING.monthly}
                 </span>
-                <span className="text-sm text-slate-400">/ month</span>
-                <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-400">
+                <span className="text-sm text-qm-secondary">/ month</span>
+                <span className="rounded-full border border-qm-accent bg-qm-accent-soft px-2.5 py-0.5 text-[11px] font-medium text-qm-accent">
                   {PRICING.valueLabel}
                 </span>
               </div>
 
-              <p className="mt-1 text-xs text-slate-600">
+              <p className="mt-1 text-xs text-qm-muted">
                 {PRICING.trialFreeFor} · then {PRICING.monthlyCadence} · Cancel anytime
               </p>
 
               <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
                 <Link
                   href="/upgrade"
-                  className="inline-flex items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-6 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-[color:var(--hvn-accent-mint-hover)] hover:-translate-y-px"
+                  className="inline-flex items-center justify-center rounded-full qm-btn-primary px-6 py-3 text-sm"
                 >
                   Start {PRICING.trialLabel} →
                 </Link>
                 <Link
                   href="/insights/preview"
-                  className="inline-flex items-center justify-center rounded-full border border-slate-700 px-5 py-3 text-sm font-medium text-slate-300 transition-colors hover:border-slate-600 hover:text-white"
+                  className="inline-flex items-center justify-center rounded-full qm-btn-secondary px-5 py-3 text-sm"
                 >
                   Preview what Premium shows
                 </Link>
@@ -122,8 +122,8 @@ export default function RequirePremium({ children }: RequirePremiumProps) {
           </div>
 
           {/* Soft exit — no pressure */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 px-6 py-5">
-            <p className="text-sm leading-relaxed text-slate-400">
+          <div className="qm-panel rounded-2xl px-6 py-5">
+            <p className="text-sm leading-relaxed text-qm-secondary">
               No pressure to upgrade. Free includes 3 reflections per month and
               full journaling — enough to keep writing honestly at your own
               pace.
@@ -131,13 +131,13 @@ export default function RequirePremium({ children }: RequirePremiumProps) {
             <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
               <Link
                 href="/journal"
-                className="text-sm font-medium text-emerald-400 transition-colors hover:text-emerald-300"
+                className="text-sm font-medium text-qm-accent transition-colors hover:opacity-80"
               >
                 ← Continue journaling free
               </Link>
               <Link
                 href="/dashboard"
-                className="text-sm text-slate-500 transition-colors hover:text-slate-300"
+                className="text-sm text-qm-muted transition-colors hover:text-qm-secondary"
               >
                 Go to dashboard
               </Link>
@@ -145,7 +145,7 @@ export default function RequirePremium({ children }: RequirePremiumProps) {
           </div>
 
           {/* Trust line */}
-          <p className="text-center text-xs text-slate-700">
+          <p className="text-center text-xs text-qm-faint">
             Your entries are private, never shared, and never used to train AI
             models.
           </p>

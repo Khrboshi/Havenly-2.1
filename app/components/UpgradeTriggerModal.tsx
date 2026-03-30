@@ -50,21 +50,21 @@ export default function UpgradeTriggerModal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-sm" style={{ backgroundColor: "rgba(10, 13, 26, 0.75)" }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-md overflow-hidden rounded-[1.5rem] border border-emerald-500/20 bg-slate-950 shadow-2xl shadow-black/60">
+      <div className="w-full max-w-md overflow-hidden rounded-[1.5rem] qm-panel-strong shadow-qm-soft">
         {/* Header with emerald tint */}
-        <div className="border-b border-emerald-500/10 bg-emerald-500/[0.03] px-6 py-5">
-          <span className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-400">
+        <div className="border-b border-qm-card bg-qm-card px-6 py-5">
+          <span className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-qm-accent bg-qm-accent-soft px-2.5 py-1 text-[11px] font-semibold text-qm-accent">
             ✦ Premium feature
           </span>
-          <h3 className="font-display text-xl font-semibold text-white">
+          <h3 className="font-display text-xl font-semibold text-qm-primary">
             {title}
           </h3>
-          <p className="mt-2 text-sm leading-relaxed text-slate-400">
+          <p className="mt-2 text-sm leading-relaxed text-qm-secondary">
             {finalDescription}
           </p>
         </div>
@@ -74,24 +74,24 @@ export default function UpgradeTriggerModal({
           {/* What you get */}
           <div className="space-y-2.5">
             {[
-              { label: "Unlimited reflections", dot: "bg-emerald-400" },
+              { label: "Unlimited reflections", dot: "bg-qm-accent" },
               { label: "Pattern insights across time", dot: "bg-violet-400" },
               { label: "Weekly personal summary", dot: "bg-amber-400" },
             ].map(({ label, dot }) => (
               <div key={label} className="flex items-center gap-2.5">
                 <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
-                <span className="text-sm text-slate-300">{label}</span>
+                <span className="text-sm text-qm-secondary">{label}</span>
               </div>
             ))}
           </div>
 
           {/* Price line */}
-          <div className="mt-5 flex flex-wrap items-baseline gap-x-2 gap-y-1 rounded-xl border border-emerald-500/15 bg-emerald-500/[0.04] px-4 py-3">
-            <span className="font-display text-2xl font-bold text-white">
+          <div className="mt-5 qm-panel flex flex-wrap items-baseline gap-x-2 gap-y-1 rounded-xl px-4 py-3">
+            <span className="font-display text-2xl font-bold text-qm-primary">
               {PRICING.monthly}
             </span>
-            <span className="text-sm text-slate-400">/ month</span>
-            <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
+            <span className="text-sm text-qm-secondary">/ month</span>
+            <span className="rounded-full border border-qm-accent bg-qm-accent-soft px-2 py-0.5 text-[10px] font-medium text-qm-accent">
               {PRICING.valueLabel}
             </span>
           </div>
@@ -100,14 +100,14 @@ export default function UpgradeTriggerModal({
           <div className="mt-5 flex flex-col gap-2">
             <Link
               href={finalCtaHref}
-              className="inline-flex w-full items-center justify-center rounded-full bg-[color:var(--hvn-accent-mint)] px-5 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-[color:var(--hvn-accent-mint-hover)] hover:-translate-y-px"
+              className="inline-flex w-full items-center justify-center rounded-full qm-btn-primary px-5 py-3 text-sm"
             >
               {finalCtaLabel}
             </Link>
 
             <Link
               href="/insights/preview"
-              className="inline-flex w-full items-center justify-center rounded-full border border-slate-700/60 px-5 py-2.5 text-sm font-medium text-slate-400 transition-colors hover:border-slate-600 hover:text-white"
+              className="inline-flex w-full items-center justify-center rounded-full qm-btn-secondary px-5 py-2.5 text-sm"
             >
               Preview what Premium shows
             </Link>
@@ -115,11 +115,11 @@ export default function UpgradeTriggerModal({
 
           {/* Trust + dismiss */}
           <div className="mt-4 flex items-center justify-between">
-            <p className="text-[11px] text-slate-700">
+            <p className="text-[11px] text-qm-faint">
               🛡️ {PRICING.trialFreeFor} ·{" "}
               <Link
                 href="/terms"
-                className="underline underline-offset-2 transition-colors hover:text-slate-500"
+                className="underline underline-offset-2 transition-colors hover:text-qm-muted"
               >
                 Terms
               </Link>
@@ -127,7 +127,7 @@ export default function UpgradeTriggerModal({
             <button
               type="button"
               onClick={onClose}
-              className="text-xs text-slate-600 transition-colors hover:text-slate-400"
+              className="text-xs text-qm-muted transition-colors hover:text-qm-secondary"
             >
               Not now
             </button>
