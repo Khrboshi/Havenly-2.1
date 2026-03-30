@@ -1,6 +1,9 @@
 // app/lib/i18n/en.ts
-// English translations — canonical source.
-// Matches app/lib/copy.ts exactly. Update both together.
+// English translations.
+// Structure: nested namespaces matching app/lib/i18n/types.ts (Translations interface).
+// Note: app/lib/copy.ts uses flat named exports (ERRORS, NAV, etc.) — en.ts mirrors
+// the same strings but in the nested Translations shape, and adds the navbar namespace
+// that copy.ts does not have. When updating a string, update both files.
 
 import type { Translations } from "./types";
 
@@ -101,9 +104,14 @@ export const en: Translations = {
       if (count === 1) return "1 Question";
       return `${count} Questions`;
     },
-    wordCount:        (n) => `${n} ${n === 1 ? "word" : "words"}`,
-    entryCount:       (current, total) => `${current}/${total}`,
-    noReflectionsYet: "No reflections yet",
+    wordCount:          (n) => `${n} ${n === 1 ? "word" : "words"}`,
+    entryCount:         (current, total) => `${current}/${total}`,
+    noReflectionsYet:   "No reflections yet",
+    reflectionsSoFar:   (n) => `${n} ${n === 1 ? "reflection" : "reflections"} so far`,
+    moreNeeded:         (n) => `${n} more ${n === 1 ? "reflection" : "reflections"} and Quiet Mirror will start surfacing what quietly repeats across your entries.`,
+    patternsGenerating: "Generating your personal patterns now — check back after your next reflection.",
+    writeAnEntry:       "Write an entry →",
+    summaryFailed:      "Couldn't generate summary.",
   },
 
   navbar: {

@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { getTranslations, DEFAULT_LOCALE } from "@/app/lib/i18n";
-
-const t = getTranslations(DEFAULT_LOCALE);
+import { cookies } from "next/headers";
+import { getTranslations, getLocaleFromCookieString } from "@/app/lib/i18n";
 
 export default function NotFound() {
+  const t = getTranslations(getLocaleFromCookieString(cookies().toString()));
   return (
     <div className="flex min-h-[80vh] items-center justify-center bg-slate-950 px-4">
       <div className="mx-auto max-w-md text-center space-y-4">

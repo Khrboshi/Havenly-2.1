@@ -125,9 +125,14 @@ export const uk: Translations = {
       if (count === 1) return "1 запитання";
       return `${count} запитання`;
     },
-    wordCount:        (n) => ukWords(n),
-    entryCount:       (current, total) => `${current}/${total}`,
-    noReflectionsYet: "Відображень ще немає",
+    wordCount:          (n) => ukWords(n),
+    entryCount:         (current, total) => `${current}/${total}`,
+    noReflectionsYet:   "Відображень ще немає",
+    reflectionsSoFar:   (n) => `${ukReflections(n)} поки що`,
+    moreNeeded:         (n) => `Ще ${ukReflections(n)} — і Quiet Mirror почне виявляти те, що тихо повторюється у ваших записах.`,
+    patternsGenerating: "Ваші особисті закономірності генеруються — поверніться після наступного відображення.",
+    writeAnEntry:       "Написати запис →",
+    summaryFailed:      "Не вдалося створити зведення.",
   },
 
   navbar: {

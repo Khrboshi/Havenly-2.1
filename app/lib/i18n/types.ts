@@ -118,6 +118,11 @@ export interface Translations {
     wordCount:        (n: number) => string;
     entryCount:       (current: number, total: number) => string;
     noReflectionsYet: string;
+    reflectionsSoFar: (n: number) => string;
+    moreNeeded:       (n: number) => string;
+    patternsGenerating: string;
+    writeAnEntry:     string;
+    summaryFailed:    string;
   };
 
   navbar: {

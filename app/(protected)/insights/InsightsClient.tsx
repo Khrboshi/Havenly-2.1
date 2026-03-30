@@ -418,19 +418,19 @@ function NotEnoughData({ entryCount }: { entryCount: number }) {
         <h3 className="text-sm font-semibold text-slate-200">
           {entryCount === 0
             ? t.ui.noReflectionsYet
-            : `${entryCount} ${entryCount === 1 ? "reflection" : "reflections"} so far`}
+            : t.ui.reflectionsSoFar(entryCount)}
         </h3>
         <p className="mx-auto max-w-sm text-sm text-slate-500">
           {needed > 0
-            ? `${needed} more ${needed === 1 ? "reflection" : "reflections"} and Quiet Mirror will start surfacing what quietly repeats across your entries.`
-            : "Generating your personal patterns now — check back after your next reflection."}
+            ? t.ui.moreNeeded(needed)
+            : t.ui.patternsGenerating}
         </p>
       </div>
       <Link
         href="/journal/new"
         className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-sm text-slate-300 hover:bg-white/10 transition"
       >
-        Write an entry →
+        {t.ui.writeAnEntry}
       </Link>
     </div>
   );
@@ -528,7 +528,7 @@ function WeeklySummarySection({ hasRealData }: { hasRealData: boolean }) {
         const j = await res.json().catch(() => ({} as any));
         setState({
           status: "error",
-          message: j?.error || "Couldn't generate summary.",
+          message: j?.error || t.ui.summaryFailed,
         });
         return;
       }
