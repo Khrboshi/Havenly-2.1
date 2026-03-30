@@ -17,7 +17,7 @@ export default function InstallPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 text-[color:var(--hvn-text-primary)]">
+    <main className="min-h-screen bg-qm-bg text-qm-primary">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:grid lg:grid-cols-[1.02fr_0.98fr] lg:gap-10 lg:px-8 lg:py-14">
 
         {/* ── Left column ── */}
