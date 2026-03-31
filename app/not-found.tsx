@@ -1,14 +1,10 @@
 import Link from "next/link";
-import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getTranslations, getLocaleFromCookieString } from "@/app/lib/i18n";
-import { CONFIG, BRAND } from "@/app/lib/config";
+import { CONFIG } from "@/app/lib/config";
 
-export const metadata: Metadata = {
-  title: `Page Not Found | ${CONFIG.appName}`,
-  description: "The page you were looking for doesn't exist.",
-  robots: { index: false, follow: false },
-};
+// Note: Next.js 14 does not support metadata exports in not-found.tsx.
+// The root layout.tsx robots config handles noindex for unknown routes.
 
 export default function NotFound() {
   const t = getTranslations(getLocaleFromCookieString(cookies().toString()));
