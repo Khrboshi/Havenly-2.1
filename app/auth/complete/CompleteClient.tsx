@@ -65,7 +65,7 @@ export default function CompleteClient() {
           {closeBlocked ? "You're signed in." : "Signing you in\u2026"}
         </h1>
         
-        <p className="mt-2 text-sm leading-relaxed text-slate-400">
+        <p className="mt-2 text-sm leading-relaxed text-qm-muted">
           {closeBlocked
             ? "Your original tab is ready. You can close this one."
             : ""}

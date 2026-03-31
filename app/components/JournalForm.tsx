@@ -138,7 +138,7 @@ export default function JournalForm(_props: Props) {
                 key={prompt}
                 type="button"
                 onClick={() => handleStarterPrompt(prompt)}
-                className="rounded-full border border-qm-card bg-qm-card px-3.5 py-2 text-xs text-qm-secondary transition hover:border-qm-accent hover:bg-qm-accent-soft hover:text-qm-primary"
+                className="rounded-full border border-qm-card bg-qm-card px-3.5 py-2 text-xs text-qm-secondary transition hover:border-qm-accent hover:bg-qm-accent-soft hover:text-white"
               >
                 {prompt}
               </button>
@@ -206,7 +206,7 @@ export default function JournalForm(_props: Props) {
 
       {/* Error */}
       {status === "error" && (
-        <div className="mt-4 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+        <div className="mt-4 rounded-xl border border-qm-danger-border bg-qm-danger-soft px-4 py-3 text-sm text-qm-danger">
           {error}
         </div>
       )}
