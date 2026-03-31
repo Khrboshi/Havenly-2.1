@@ -164,9 +164,9 @@ export default async function JournalPage() {
             </p>
             <div className="grid gap-3 sm:grid-cols-3">
               {[
-                { q: "What has been weighing on you lately?", sub: "You don't have to solve it — just name it.", color: "border-qm-positive-border hover:border-qm-positive-border" },
-                { q: "Is there something you keep thinking about today?", sub: "A conversation, a feeling, a moment.", color: "border-qm-premium-border hover:border-qm-premium-border" },
-                { q: "What felt heavy this week?", sub: "No need to explain why.", color: "border-qm-warning-border hover:border-qm-warning-border" },
+                { q: "What has been weighing on you lately?", sub: "You don't have to solve it — just name it.", color: "border-qm-positive-border hover:border-qm-positive" },
+                { q: "Is there something you keep thinking about today?", sub: "A conversation, a feeling, a moment.", color: "border-qm-premium-border hover:border-qm-premium" },
+                { q: "What felt heavy this week?", sub: "No need to explain why.", color: "border-qm-warning-border hover:border-qm-warning" },
               ].map((p) => (
                 <Link
                   key={p.q}

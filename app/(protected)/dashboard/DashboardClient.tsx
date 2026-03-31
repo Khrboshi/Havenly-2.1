@@ -396,7 +396,7 @@ function PatternStartedCard({
       </p>
       <Link
         href="/journal/new"
-        className="mt-4 inline-flex items-center gap-2 text-xs font-medium text-qm-premium transition hover:text-qm-premium"
+        className="mt-4 inline-flex items-center gap-2 text-xs font-medium text-qm-premium transition hover:text-qm-premium-hover"
       >
         Write another entry →
       </Link>

@@ -94,7 +94,7 @@ const ACCENT_STYLES: Record<Mood["accent"], { idle: string; active: string; dot:
   rose: {
     idle: "border-qm-danger-border hover:border-qm-danger-border bg-qm-danger-strong/[0.03] hover:bg-qm-danger-strong/[0.06]",
     active: "border-qm-danger-border bg-qm-danger-strong/[0.08]",
-    dot: "bg-qm-danger-strong",
+    dot: "bg-qm-danger",
   },
 };
 

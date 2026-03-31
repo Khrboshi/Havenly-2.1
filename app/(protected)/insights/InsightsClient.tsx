@@ -564,7 +564,7 @@ function WeeklySummarySection({ hasRealData }: { hasRealData: boolean }) {
   }, [state]);
 
   return (
-    <section className="rounded-2xl border border-qm-border-subtle bg-gradient-to-br from-slate-900 to-slate-950 p-6 md:p-7">
+    <section className="rounded-2xl border border-qm-border-subtle bg-gradient-to-br from-qm-elevated to-qm-bg p-6 md:p-7">
       <div className="mb-4 flex items-center justify-between gap-4">
         <div>
           <h2 className="text-xs font-semibold uppercase tracking-widest text-qm-faint">
@@ -849,7 +849,7 @@ export default function InsightsClient() {
             <DomainSection domains={data.domains!} entryCount={entryCount} />
           )}
 
-          <section className="rounded-2xl border border-qm-border-subtle bg-gradient-to-br from-slate-950 to-slate-900/40 p-7">
+          <section className="rounded-2xl border border-qm-border-subtle bg-gradient-to-br from-qm-bg to-qm-elevated p-7">
             <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-qm-faint">
               The pattern underneath
             </p>

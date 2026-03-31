@@ -124,7 +124,7 @@ export default async function InsightsPreviewPage() {
       <UpgradeIntentTracker source="insights-preview" />
 
       {/* ── Sticky banner ───────────────────────────────────────────────── */}
-      <div className="sticky top-[72px] z-30 border-b border-qm-positive-border bg-qm-bg backdrop-blur-sm">
+      <div className="sticky top-[72px] z-30 border-b border-qm-positive-border bg-[color:var(--qm-bg-glass-95)] backdrop-blur-sm">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-2.5 sm:px-6">
           <p className="text-xs text-qm-muted">
             <span className="font-medium text-qm-positive">Premium preview</span>
