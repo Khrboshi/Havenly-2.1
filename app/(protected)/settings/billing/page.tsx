@@ -140,7 +140,7 @@ export default async function BillingPage() {
             <p className="text-sm font-semibold text-qm-positive">
               {refundDaysLeft === 1
                 ? s.refundWindowLast(PRICING.trialDays)
-                : s.refundWindowDays(refundDaysLeft!)}
+                : s.refundWindowDays(PRICING.trialDays)}
             </p>
             <p className="mt-0.5 text-xs text-qm-muted">
               Not what you expected? Email{" "}
@@ -265,7 +265,7 @@ export default async function BillingPage() {
           <p className="mt-6 text-xs text-qm-faint">
             {isPaid
               ? `Thank you for supporting ${CONFIG.appName}.`
-              : s.noPresure}
+              : s.noPressure}
           </p>
         </section>
 

@@ -294,7 +294,7 @@ export interface Translations {
     priceLabel:       string;
     nextBillingLabel: string;
     cancellationsLabel:string;
-    noPresure:        string;
+    noPressure:        string;
     refundWindowLast: (days: number) => string;
     refundWindowDays: (days: number) => string;
     refundContact:    string;

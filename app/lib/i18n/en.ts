@@ -278,7 +278,7 @@ export const en: Translations = {
     priceLabel:           "Price",
     nextBillingLabel:     "Next billing",
     cancellationsLabel:   "Cancellations",
-    noPresure:            "No pressure. Free remains fully usable.",
+    noPressure:            "No pressure. Free remains fully usable.",
     refundWindowLast:     (days) => `Last day of your ${days}-day refund window`,
     refundWindowDays:     (days) => `${days} days left in your ${days}-day refund window`,
     refundContact:        "Not what you expected? Email us for a full refund — no questions asked.",
