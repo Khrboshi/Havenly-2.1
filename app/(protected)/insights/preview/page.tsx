@@ -124,7 +124,7 @@ export default async function InsightsPreviewPage() {
       <UpgradeIntentTracker source="insights-preview" />
 
       {/* ── Sticky banner ───────────────────────────────────────────────── */}
-      <div className="sticky top-[72px] z-30 border-b border-qm-positive-border bg-[color:var(--qm-bg-glass-95)] backdrop-blur-sm">
+      <div className="sticky top-[72px] z-30 border-b border-qm-positive-border bg-[var(--qm-bg-glass-95)] backdrop-blur-sm">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-2.5 sm:px-6">
           <p className="text-xs text-qm-muted">
             <span className="font-medium text-qm-positive">Premium preview</span>
@@ -182,7 +182,7 @@ export default async function InsightsPreviewPage() {
         </div>
 
         {/* ── Weekly summary — always locked ──────────────────────────────── */}
-        <div className="relative overflow-hidden rounded-2xl border border-qm-border-subtle bg-gradient-to-br from-slate-900 to-slate-950 p-6 md:p-7">
+        <div className="relative overflow-hidden rounded-2xl border border-qm-border-subtle bg-gradient-to-br from-qm-elevated to-qm-bg p-6 md:p-7">
           <div className="mb-4">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-qm-faint">What Quiet Mirror has noticed</h2>
             <p className="mt-0.5 text-xs text-qm-faint">A personal summary generated from your reflection history.</p>

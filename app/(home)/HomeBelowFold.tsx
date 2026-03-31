@@ -95,12 +95,12 @@ export default function HomeBelowFold() {
                         {
                           label: "Overwhelm / exhaustion",
                           pct: 45,
-                          color: "bg-qm-premium-soft",
+                          color: "bg-qm-premium-muted",
                         },
                         {
                           label: "Clarity (↑ rising)",
                           pct: 28,
-                          color: "bg-qm-premium-soft",
+                          color: "bg-qm-premium-muted",
                         },
                       ].map(({ label, pct, color }) => (
                         <div key={label}>

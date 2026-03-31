@@ -300,7 +300,7 @@ export default function UpgradePage() {
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-qm-border-subtle px-6 py-4" style={{ backgroundColor: "#0f121f" }}>
                   <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-qm-positive shadow-sm shadow-emerald-400/60" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-qm-positive shadow-sm" />
                     <p className="text-xs font-medium text-qm-faint">
                       Your hidden pattern
                     </p>

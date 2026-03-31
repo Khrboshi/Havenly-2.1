@@ -74,7 +74,7 @@ export default function InstallPage() {
 
         {/* ── Right column — card ── */}
         <section className="mx-auto w-full max-w-2xl">
-          <div className="rounded-[1.75rem] border border-white/10 bg-[color:var(--qm-bg-glass-80)] p-6 shadow-2xl shadow-black/40 backdrop-blur sm:p-7">
+          <div className="rounded-[1.75rem] border border-white/10 bg-[var(--qm-bg-glass-80)] p-6 shadow-2xl shadow-black/40 backdrop-blur sm:p-7">
 
             {/* Mobile header */}
             <div className="lg:hidden">
