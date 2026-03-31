@@ -1,19 +1,9 @@
 export default function Loading() {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 24,
-      }}
-    >
-      <div style={{ textAlign: "center", maxWidth: 420 }}>
-        <div style={{ fontSize: 18, marginBottom: 8 }}>Signing you in…</div>
-        <div style={{ opacity: 0.7, fontSize: 14 }}>
-          Please keep this tab open for a moment.
-        </div>
+    <div className="flex min-h-[60vh] items-center justify-center bg-qm-bg">
+      <div className="flex items-center gap-3 rounded-full border border-qm-border-subtle bg-qm-card px-4 py-2 text-sm text-qm-secondary">
+        <span className="h-2 w-2 animate-pulse rounded-full bg-qm-accent" />
+        <span>Loading…</span>
       </div>
     </div>
   );
