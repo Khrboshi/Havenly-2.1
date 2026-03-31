@@ -1026,7 +1026,7 @@ export default function HomeBelowFold() {
 
       {/* ── 9. Closing CTA ────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden border-t border-qm-border-subtle section-cta-gradient py-20 sm:py-28">
-        <div className="pointer-events-none absolute bottom-0 left-1/2 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-qm-positive-strong/[0.08] blur-[120px]" />
+        <div className="pointer-events-none absolute bottom-0 left-1/2 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-[rgba(16,185,129,0.08)] blur-[120px]" />
         <div className="relative mx-auto max-w-3xl px-5 text-center">
           <ScrollReveal>
             <p className="mb-4 text-[11px] font-medium uppercase tracking-[0.2em] text-qm-positive">

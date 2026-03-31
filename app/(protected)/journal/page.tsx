@@ -173,7 +173,7 @@ export default async function JournalPage() {
                   href={`/journal/new?prompt=${encodeURIComponent(p.q)}`}
                   className={`group rounded-2xl border bg-white/[0.02] p-5 transition hover:bg-white/[0.05] ${p.color}`}
                 >
-                  <p className="text-sm font-medium leading-snug text-qm-primary transition group-hover:text-qm-primary">{p.q}</p>
+                  <p className="text-sm font-medium leading-snug text-qm-primary transition group-hover:text-white">{p.q}</p>
                   <p className="mt-1.5 text-xs leading-relaxed text-qm-faint">{p.sub}</p>
                   <p className="mt-3 text-xs font-medium text-qm-positive group-hover:text-qm-positive-hover transition">Start →</p>
                 </Link>
