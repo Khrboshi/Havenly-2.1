@@ -143,7 +143,7 @@ export default async function BillingPage() {
               Not what you expected? Email{" "}
               <a
                 href={`mailto:${CONFIG.supportEmail}`}
-                className="text-qm-primary underline underline-offset-2 hover:text-qm-positive"
+                className="text-qm-primary underline underline-offset-2 hover:text-qm-positive-hover"
               >
                 {CONFIG.supportEmail}
               </a>{" "}
@@ -217,7 +217,7 @@ export default async function BillingPage() {
                   Cancel anytime via{" "}
                   <a
                     href={PAYMENT.portalUrl("/settings/billing")}
-                    className="text-qm-positive hover:text-qm-positive"
+                    className="text-qm-positive hover:text-qm-positive-hover"
                   >
                     Manage subscription
                   </a>{" "}
@@ -239,7 +239,7 @@ export default async function BillingPage() {
                     Email{" "}
                     <a
                       href={`mailto:${CONFIG.supportEmail}`}
-                      className="text-qm-secondary underline underline-offset-2 hover:text-qm-positive"
+                      className="text-qm-secondary underline underline-offset-2 hover:text-qm-positive-hover"
                     >
                       {CONFIG.supportEmail}
                     </a>{" "}
@@ -281,7 +281,7 @@ export default async function BillingPage() {
               Billing questions or cancellations:{" "}
               <a
                 href={`mailto:${CONFIG.supportEmail}`}
-                className="text-qm-primary underline underline-offset-2 hover:text-qm-positive"
+                className="text-qm-primary underline underline-offset-2 hover:text-qm-positive-hover"
               >
                 {CONFIG.supportEmail}
               </a>

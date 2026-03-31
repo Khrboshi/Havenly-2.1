@@ -93,34 +93,34 @@ function getDailyPrompts<T extends { q: string; sub: string; accent: string }>(
 // Map accent name → Tailwind classes
 const ACCENT_CLASSES: Record<string, { border: string; label: string; dot: string; arrow: string }> = {
   emerald: {
-    border: "border-qm-positive-border hover:border-qm-positive-border",
+    border: "border-qm-positive-border hover:border-qm-positive",
     label: "text-qm-positive",
     dot: "bg-qm-positive-strong",
-    arrow: "text-qm-positive group-hover:text-qm-positive",
+    arrow: "text-qm-positive group-hover:text-qm-positive-hover-hover-hover",
   },
   violet: {
-    border: "border-qm-premium-border hover:border-qm-premium-border",
+    border: "border-qm-premium-border hover:border-qm-premium",
     label: "text-qm-premium",
     dot: "bg-qm-premium-strong",
-    arrow: "text-qm-premium group-hover:text-qm-premium",
+    arrow: "text-qm-premium group-hover:text-qm-premium-hover",
   },
   amber: {
-    border: "border-qm-warning-border hover:border-qm-warning-border",
+    border: "border-qm-warning-border hover:border-qm-warning",
     label: "text-qm-warning",
     dot: "bg-qm-warning-strong",
-    arrow: "text-qm-warning group-hover:text-qm-warning",
+    arrow: "text-qm-warning group-hover:text-qm-warning-hover",
   },
   sky: {
-    border: "border-qm-premium-border hover:border-qm-premium-border",
+    border: "border-qm-premium-border hover:border-qm-premium",
     label: "text-qm-premium",
     dot: "bg-qm-premium-strong",
-    arrow: "text-qm-premium group-hover:text-qm-premium",
+    arrow: "text-qm-premium group-hover:text-qm-premium-hover",
   },
   rose: {
-    border: "border-qm-danger-border hover:border-qm-danger-border",
+    border: "border-qm-danger-border hover:border-qm-danger",
     label: "text-qm-danger",
     dot: "bg-qm-danger-strong",
-    arrow: "text-qm-danger group-hover:text-qm-danger",
+    arrow: "text-qm-danger group-hover:text-qm-danger-hover",
   },
   slate: {
     border: "border-qm-border-subtle hover:border-qm-border-subtle",
@@ -185,7 +185,7 @@ function PremiumInsightCard({
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <Link
           href="/insights"
-          className="text-xs font-medium text-qm-positive transition hover:text-qm-positive"
+          className="text-xs font-medium text-qm-positive transition hover:text-qm-positive-hover"
         >
           See full insights →
         </Link>
@@ -610,7 +610,7 @@ export default function DashboardClient({
                   {c.q}
                 </p>
                 <p className="mt-1.5 text-xs leading-relaxed text-qm-faint">{c.sub}</p>
-                <p className="mt-3 text-xs font-medium transition text-qm-positive group-hover:text-qm-positive">
+                <p className="mt-3 text-xs font-medium transition text-qm-positive group-hover:text-qm-positive-hover-hover">
                   Start →
                 </p>
               </Link>
@@ -671,7 +671,7 @@ export default function DashboardClient({
             {isPremium && (
               <Link
                 href="/insights"
-                className="text-xs text-qm-positive transition hover:text-qm-positive"
+                className="text-xs text-qm-positive transition hover:text-qm-positive-hover"
               >
                 View insights →
               </Link>

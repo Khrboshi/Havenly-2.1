@@ -75,6 +75,7 @@ const config: Config = {
           // One alias per meaning. Change globals.css → updates everywhere.
           "positive":        "var(--qm-positive)",
           "positive-strong": "var(--qm-positive-strong)",
+          "positive-hover":  "var(--qm-positive-hover)",
           "positive-soft":   "var(--qm-positive-soft)",
           "positive-border": "var(--qm-positive-border)",
           "positive-muted":  "var(--qm-positive-muted)",
@@ -82,6 +83,7 @@ const config: Config = {
 
           "premium":         "var(--qm-premium)",
           "premium-strong":  "var(--qm-premium-strong)",
+          "premium-hover":   "var(--qm-premium-hover)",
           "premium-soft":    "var(--qm-premium-soft)",
           "premium-border":  "var(--qm-premium-border)",
           "premium-muted":   "var(--qm-premium-muted)",
@@ -89,6 +91,7 @@ const config: Config = {
 
           "danger":          "var(--qm-danger)",
           "danger-strong":   "var(--qm-danger-strong)",
+          "danger-hover":    "var(--qm-danger-hover)",
           "danger-soft":     "var(--qm-danger-soft)",
           "danger-border":   "var(--qm-danger-border)",
           "danger-muted":    "var(--qm-danger-muted)",
@@ -96,6 +99,7 @@ const config: Config = {
 
           "warning":         "var(--qm-warning)",
           "warning-strong":  "var(--qm-warning-strong)",
+          "warning-hover":   "var(--qm-warning-hover)",
           "warning-soft":    "var(--qm-warning-soft)",
           "warning-border":  "var(--qm-warning-border)",
           "warning-muted":   "var(--qm-warning-muted)",

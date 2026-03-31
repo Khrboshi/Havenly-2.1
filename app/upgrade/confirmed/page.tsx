@@ -16,7 +16,7 @@ export default function UpgradeConfirmedPage() {
 
         {/* Icon */}
         <div className="mb-6 flex items-center justify-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full border border-qm-positive-border bg-qm-positive-soft shadow-lg shadow-emerald-500/10">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full border border-qm-positive-border bg-qm-positive-soft shadow-lg">
             <svg className="h-6 w-6 text-qm-positive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
             </svg>

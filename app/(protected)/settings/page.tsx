@@ -276,7 +276,7 @@ export default async function SettingsPage() {
                 ) : (
                   <p className="text-xs text-qm-faint">
                     Free plan includes {PRICING.freeMonthlyCredits} AI reflections per month.{" "}
-                    <Link href="/upgrade" className="text-qm-positive-strong hover:text-qm-positive transition-colors">
+                    <Link href="/upgrade" className="text-qm-positive-strong hover:text-qm-positive-hover transition-colors">
                       Upgrade for unlimited →
                     </Link>
                   </p>
@@ -301,7 +301,7 @@ export default async function SettingsPage() {
                 value={
                   <Link
                     href="/privacy"
-                    className="text-qm-positive hover:text-qm-positive text-xs transition-colors"
+                    className="text-qm-positive hover:text-qm-positive-hover text-xs transition-colors"
                   >
                     Read →
                   </Link>

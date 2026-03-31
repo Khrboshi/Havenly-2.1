@@ -187,7 +187,7 @@ export default function JournalEntryClient({
         </div>
         <Link
           href="/journal"
-          className="mt-1 shrink-0 text-xs text-qm-positive transition-colors hover:text-qm-positive"
+          className="mt-1 shrink-0 text-xs text-qm-positive transition-colors hover:text-qm-positive-hover"
         >
           {t.nav.backToJournal}
         </Link>
@@ -243,7 +243,7 @@ export default function JournalEntryClient({
             >
               {busy ? (
                 <>
-                  <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-qm-border-card border-t-slate-950" />
+                  <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                   {t.reflection.reflectingLabel}
                 </>
               ) : isLimitReached ? (
@@ -524,7 +524,7 @@ export default function JournalEntryClient({
               </div>
               <Link
                 href="/insights"
-                className="shrink-0 inline-flex items-center gap-2 rounded-full border border-qm-positive-border bg-qm-positive-strong/[0.06] px-4 py-2.5 text-xs font-semibold text-qm-positive transition hover:bg-qm-positive-strong/[0.12] hover:text-qm-positive"
+                className="shrink-0 inline-flex items-center gap-2 rounded-full border border-qm-positive-border bg-qm-positive-strong/[0.06] px-4 py-2.5 text-xs font-semibold text-qm-positive transition hover:bg-qm-positive-strong/[0.12] hover:text-qm-positive-hover"
               >
                 {t.reflection.seeFullPattern}
               </Link>

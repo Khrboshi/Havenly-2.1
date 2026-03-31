@@ -217,7 +217,7 @@ export default function InstallPage() {
             <div className="mt-6 flex flex-col items-center gap-3 text-center">
               <Link
                 href="/"
-                className="text-sm font-medium text-qm-positive transition-colors hover:text-qm-positive"
+                className="text-sm font-medium text-qm-positive transition-colors hover:text-qm-positive-hover-hover"
               >
                 ← Back to Home
               </Link>

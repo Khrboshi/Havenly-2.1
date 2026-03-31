@@ -615,7 +615,7 @@ function WeeklySummarySection({ hasRealData }: { hasRealData: boolean }) {
           <button
             type="button"
             onClick={() => fetchSummary()}
-            className="text-xs font-medium text-qm-positive hover:text-qm-positive transition"
+            className="text-xs font-medium text-qm-positive hover:text-qm-positive-hover-hover transition"
           >
             Try again →
           </button>
@@ -949,7 +949,7 @@ export default function InsightsClient() {
                   <button
                     type="button"
                     onClick={() => setShowAllThemes((v) => !v)}
-                    className="text-xs text-qm-positive hover:text-qm-positive transition font-medium"
+                    className="text-xs text-qm-positive hover:text-qm-positive-hover-hover transition font-medium"
                   >
                     {showAllThemes ? "Show less" : `+${allThemes.length - 6} more`}
                   </button>
@@ -992,7 +992,7 @@ export default function InsightsClient() {
                   <button
                     type="button"
                     onClick={() => setShowAllEmotions((v) => !v)}
-                    className="text-xs text-qm-positive hover:text-qm-positive transition font-medium"
+                    className="text-xs text-qm-positive hover:text-qm-positive-hover-hover transition font-medium"
                   >
                     {showAllEmotions
                       ? "Show less"

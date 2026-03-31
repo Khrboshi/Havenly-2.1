@@ -68,6 +68,7 @@
   /* Positive — success, active, streaks, saved states */
   --qm-positive:          #34d399;   /* emerald-400  */
   --qm-positive-strong:   #10b981;   /* emerald-500  */
+  --qm-positive-hover:    #6ee7b7;   /* emerald-300  — lighter, for hover on dark bg */
   --qm-positive-soft:     rgba(52, 211, 153, 0.10);
   --qm-positive-border:   rgba(52, 211, 153, 0.20);
   --qm-positive-muted:    rgba(52, 211, 153, 0.60);
@@ -76,6 +77,7 @@
   /* Premium — insights, upgrade, premium features */
   --qm-premium:           #a78bfa;   /* violet-400   */
   --qm-premium-strong:    #8b5cf6;   /* violet-500   */
+  --qm-premium-hover:     #c4b5fd;   /* violet-300   — lighter, for hover on dark bg */
   --qm-premium-soft:      rgba(167, 139, 250, 0.10);
   --qm-premium-border:    rgba(167, 139, 250, 0.20);
   --qm-premium-muted:     rgba(167, 139, 250, 0.60);
@@ -84,6 +86,7 @@
   /* Danger — delete, errors, destructive actions */
   --qm-danger:            #f87171;   /* red-400      */
   --qm-danger-strong:     #ef4444;   /* red-500      */
+  --qm-danger-hover:      #fca5a5;   /* red-300      — lighter, for hover on dark bg */
   --qm-danger-soft:       rgba(248, 113, 113, 0.10);
   --qm-danger-border:     rgba(248, 113, 113, 0.20);
   --qm-danger-muted:      rgba(248, 113, 113, 0.60);
@@ -92,6 +95,7 @@
   /* Warning — caution, limits, notices */
   --qm-warning:           #fbbf24;   /* amber-400    */
   --qm-warning-strong:    #f59e0b;   /* amber-500    */
+  --qm-warning-hover:     #fcd34d;   /* amber-300    — lighter, for hover on dark bg */
   --qm-warning-soft:      rgba(251, 191, 36, 0.10);
   --qm-warning-border:    rgba(251, 191, 36, 0.20);
   --qm-warning-muted:     rgba(251, 191, 36, 0.60);
@@ -141,6 +145,7 @@
     /* Positive */
     --qm-positive:          #059669;   /* emerald-600  */
     --qm-positive-strong:   #047857;   /* emerald-700  */
+    --qm-positive-hover:    #047857;   /* emerald-700  — darker, for hover on light bg */
     --qm-positive-soft:     rgba(5, 150, 105, 0.10);
     --qm-positive-border:   rgba(5, 150, 105, 0.22);
     --qm-positive-muted:    rgba(5, 150, 105, 0.60);
@@ -149,6 +154,7 @@
     /* Premium */
     --qm-premium:           #7c3aed;   /* violet-600   */
     --qm-premium-strong:    #6d28d9;   /* violet-700   */
+    --qm-premium-hover:     #5b21b6;   /* violet-800   — darker, for hover on light bg */
     --qm-premium-soft:      rgba(124, 58, 237, 0.10);
     --qm-premium-border:    rgba(124, 58, 237, 0.22);
     --qm-premium-muted:     rgba(124, 58, 237, 0.60);
@@ -157,6 +163,7 @@
     /* Danger */
     --qm-danger:            #dc2626;   /* red-600      */
     --qm-danger-strong:     #b91c1c;   /* red-700      */
+    --qm-danger-hover:      #991b1b;   /* red-800      — darker, for hover on light bg */
     --qm-danger-soft:       rgba(220, 38, 38, 0.10);
     --qm-danger-border:     rgba(220, 38, 38, 0.20);
     --qm-danger-muted:      rgba(220, 38, 38, 0.60);
@@ -165,6 +172,7 @@
     /* Warning */
     --qm-warning:           #d97706;   /* amber-600    */
     --qm-warning-strong:    #b45309;   /* amber-700    */
+    --qm-warning-hover:     #92400e;   /* amber-800    — darker, for hover on light bg */
     --qm-warning-soft:      rgba(217, 119, 6, 0.10);
     --qm-warning-border:    rgba(217, 119, 6, 0.20);
     --qm-warning-muted:     rgba(217, 119, 6, 0.60);

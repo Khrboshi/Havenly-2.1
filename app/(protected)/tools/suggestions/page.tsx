@@ -19,12 +19,12 @@ const ACCENT_COLORS = [
   {
     border: "border-qm-positive-border",
     bg: "bg-qm-positive-strong/[0.03]",
-    label: "text-qm-positive",
+    label: "text-qm-positive-muted",
   },
   {
     border: "border-qm-premium-border",
     bg: "bg-qm-premium-strong/[0.03]",
-    label: "text-qm-premium",
+    label: "text-qm-premium-muted",
   },
 ];
 
@@ -89,7 +89,7 @@ export default function SuggestionsToolPage() {
               </p>
               <button
                 onClick={fetchSuggestions}
-                className="mt-4 text-sm font-medium text-qm-positive transition-colors hover:text-qm-positive"
+                className="mt-4 text-sm font-medium text-qm-positive transition-colors hover:text-qm-positive-hover"
               >
                 Try again →
               </button>
@@ -148,7 +148,7 @@ export default function SuggestionsToolPage() {
           </div>
 
           <footer className="flex items-center justify-between pt-2">
-            <Link href="/tools" className="text-sm text-qm-positive transition-colors hover:text-qm-positive">
+            <Link href="/tools" className="text-sm text-qm-positive transition-colors hover:text-qm-positive-hover">
               ← Back to Tools
             </Link>
             <Link href="/journal" className="text-sm text-qm-muted transition-colors hover:text-qm-primary">

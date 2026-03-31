@@ -55,7 +55,7 @@ export default function HomeBelowFold() {
             <div className="overflow-hidden rounded-[1.75rem] border border-qm-positive-border shadow-2xl shadow-black/50">
               <div className="flex items-center justify-between border-b border-qm-positive-border bg-qm-positive-strong/[0.08] px-6 py-4 sm:px-8">
                 <div className="flex items-center gap-2.5">
-                  <span className="h-2 w-2 rounded-full bg-qm-positive shadow-sm shadow-emerald-400/60" />
+                  <span className="h-2 w-2 rounded-full bg-qm-positive shadow-sm" />
                   <p className="text-sm font-medium text-qm-positive">
                     Your hidden pattern
                   </p>
@@ -166,7 +166,7 @@ export default function HomeBelowFold() {
               entries.{" "}
               <Link
                 href="/insights/preview"
-                className="text-qm-positive transition-colors hover:text-qm-positive"
+                className="text-qm-positive transition-colors hover:text-qm-positive-hover-hover"
               >
                 See a full example →
               </Link>
@@ -205,7 +205,7 @@ export default function HomeBelowFold() {
       <section className="border-b border-qm-border-subtle section-tinted py-14 sm:py-20">
         <div className="mx-auto max-w-6xl px-5">
           <ScrollReveal className="mb-10 max-w-2xl">
-            <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-qm-positive">
+            <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-qm-positive-muted">
               What actually happens
             </p>
             <h2 className="mt-3 font-display text-2xl font-semibold text-qm-primary sm:text-3xl">
@@ -547,7 +547,7 @@ export default function HomeBelowFold() {
           <ScrollReveal className="mt-8 text-center">
             <Link
               href="/insights/preview"
-              className="inline-flex items-center justify-center gap-2 text-sm font-medium text-qm-positive transition-colors hover:text-qm-positive"
+              className="inline-flex items-center justify-center gap-2 text-sm font-medium text-qm-positive transition-colors hover:text-qm-positive-hover-hover"
             >
               See a fuller example of Premium insights →
             </Link>
@@ -1016,7 +1016,7 @@ export default function HomeBelowFold() {
           <div className="mt-8 text-xs text-qm-faint">
             <Link
               href="/privacy"
-              className="text-qm-positive-strong transition-colors hover:text-qm-positive"
+              className="text-qm-positive-strong transition-colors hover:text-qm-positive-hover-hover"
             >
               Read the Privacy Policy &rarr;
             </Link>

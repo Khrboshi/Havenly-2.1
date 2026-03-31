@@ -151,7 +151,7 @@ export default function AboutPage() {
                 If something feels wrong, unclear, or broken —{" "}
                 <a
                   href={`mailto:${CONFIG.supportEmail}`}
-                  className="font-medium text-qm-positive transition-colors hover:text-qm-positive"
+                  className="font-medium text-qm-positive transition-colors hover:text-qm-positive-hover-hover"
                 >
                   email {CONFIG.supportEmail}
                 </a>
@@ -285,7 +285,7 @@ export default function AboutPage() {
                 <p>
                   <Link
                     href="/privacy"
-                    className="font-medium text-qm-positive transition-colors hover:text-qm-positive"
+                    className="font-medium text-qm-positive transition-colors hover:text-qm-positive-hover-hover"
                   >
                     Read the full Privacy Policy &rarr;
                   </Link>

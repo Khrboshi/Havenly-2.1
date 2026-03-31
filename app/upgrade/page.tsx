@@ -268,14 +268,14 @@ export default function UpgradePage() {
                   By subscribing you agree to the{" "}
                   <Link
                     href="/terms"
-                    className="text-qm-positive underline underline-offset-2 transition-colors hover:text-qm-positive"
+                    className="text-qm-positive underline underline-offset-2 transition-colors hover:text-qm-positive-hover-hover"
                   >
                     Terms of Service
                   </Link>{" "}
                   and{" "}
                   <Link
                     href="/privacy"
-                    className="text-qm-positive underline underline-offset-2 transition-colors hover:text-qm-positive"
+                    className="text-qm-positive underline underline-offset-2 transition-colors hover:text-qm-positive-hover-hover"
                   >
                     Privacy Policy
                   </Link>
@@ -330,12 +330,12 @@ export default function UpgradePage() {
                       {
                         label: "Overwhelm / exhaustion",
                         pct: 45,
-                        color: "bg-qm-premium-soft",
+                        color: "bg-qm-premium-muted",
                       },
                       {
                         label: "Clarity (↑ rising)",
                         pct: 28,
-                        color: "bg-qm-premium-soft",
+                        color: "bg-qm-premium-muted",
                       },
                     ].map(({ label, pct, color }) => (
                       <div key={label}>
@@ -458,8 +458,8 @@ export default function UpgradePage() {
               <div className="mt-4 space-y-2">
                 {[
                   { label: "Emotional load", pct: 64, color: "bg-qm-premium" },
-                  { label: "Overwhelm", pct: 45, color: "bg-qm-premium-soft" },
-                  { label: "Clarity", pct: 28, color: "bg-qm-premium-soft" },
+                  { label: "Overwhelm", pct: 45, color: "bg-qm-premium-muted" },
+                  { label: "Clarity", pct: 28, color: "bg-qm-premium-muted" },
                 ].map(({ label, pct, color }) => (
                   <div key={label}>
                     <div className="mb-1 flex items-center justify-between">
@@ -603,7 +603,7 @@ export default function UpgradePage() {
           <div className="mt-8">
             <Link
               href="/insights/preview"
-              className="inline-flex items-center gap-2 text-sm font-medium text-qm-positive transition-colors hover:text-qm-positive"
+              className="inline-flex items-center gap-2 text-sm font-medium text-qm-positive transition-colors hover:text-qm-positive-hover-hover"
             >
               See a full example of Premium insights →
             </Link>
@@ -652,13 +652,13 @@ export default function UpgradePage() {
           <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-qm-faint">
             <Link
               href="/terms"
-              className="text-qm-positive-strong transition-colors hover:text-qm-positive"
+              className="text-qm-positive-strong transition-colors hover:text-qm-positive-hover-hover"
             >
               Terms of Service →
             </Link>
             <Link
               href="/privacy"
-              className="text-qm-positive-strong transition-colors hover:text-qm-positive"
+              className="text-qm-positive-strong transition-colors hover:text-qm-positive-hover-hover"
             >
               Privacy Policy →
             </Link>

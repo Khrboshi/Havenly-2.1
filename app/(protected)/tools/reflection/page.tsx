@@ -74,7 +74,7 @@ export default function ReflectionToolPage() {
                   </p>
                   <button
                     onClick={fetchQuestion}
-                    className="text-sm font-medium text-qm-positive transition-colors hover:text-qm-positive"
+                    className="text-sm font-medium text-qm-positive transition-colors hover:text-qm-positive-hover"
                   >
                     Try again →
                   </button>
@@ -123,7 +123,7 @@ export default function ReflectionToolPage() {
           </div>
 
           <footer className="flex items-center justify-between pt-2">
-            <Link href="/tools" className="text-sm text-qm-positive transition-colors hover:text-qm-positive">
+            <Link href="/tools" className="text-sm text-qm-positive transition-colors hover:text-qm-positive-hover">
               ← Back to Tools
             </Link>
             <Link href="/journal" className="text-sm text-qm-muted transition-colors hover:text-qm-primary">
