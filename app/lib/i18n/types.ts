@@ -379,4 +379,41 @@ export interface Translations {
     manageBilling:    string;
     billingSettings:  string;
   };
+  // ── Homepage (marketing page) ────────────────────────────────────────────────
+  homepage: {
+    heroTag:          string;
+    heroHeadline1:    string;
+    heroHeadline2:    string;
+    heroDesc:         string;
+    heroQuote:        string;
+    heroQuoteSub:     string;
+    heroCta1:         string;
+    heroCta2:         string;
+    heroPromise:      string;
+    trust1:           string;
+    trust2:           string;
+    trust3:           string;
+    trust4:           string;
+    previewTag:       string;
+    previewPrivate:   string;
+    previewWhatYouWrote: string;
+    previewEntry:     string;
+    previewReflects:  string;
+    previewReflection:string;
+    previewTag1:      string;
+    previewTag2:      string;
+    previewTag3:      string;
+    previewNeverLeaves:string;
+    previewSeeExample:string;
+  };
+
+  // ── Language selection page ───────────────────────────────────────────────────
+  languagePage: {
+    title:       string;
+    subtitle:    string;
+    active:      string;
+    select:      string;
+    continueBtn: string;
+  };
+
 }
