@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { Resend } from "resend";
 import { CONFIG } from "@/app/lib/config";
-import { getLocaleFromCookieString, getDir } from "@/app/lib/i18n";
+import { getLocaleFromCookieString, getDir, getTranslations } from "@/app/lib/i18n";
 
 export const runtime = "nodejs";
 
@@ -50,13 +50,14 @@ async function recordAttempt(ip: string): Promise<void> {
 }
 
 function confirmationEmailHtml(locale: string, dir: "ltr" | "rtl"): string {
+  const e = getTranslations(locale).email;
   return `
 <!DOCTYPE html>
 <html lang="${locale}" dir="${dir}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>You're in — ${CONFIG.newsletterName}</title>
+  <title>${e.confirmTitle(CONFIG.newsletterName)}</title>
 </head>
 <body style="margin:0;padding:0;background-color:#0b1120;font-family:'DM Sans',system-ui,sans-serif;color:#cbd5e1;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0b1120;padding:40px 16px;">
@@ -71,16 +72,14 @@ function confirmationEmailHtml(locale: string, dir: "ltr" | "rtl"): string {
           <tr>
             <td style="padding-bottom:16px;">
               <h1 style="margin:0;font-size:26px;font-weight:600;line-height:1.2;color:#f8fafc;letter-spacing:-0.02em;">
-                You're in.
+                ${e.confirmHeading}
               </h1>
             </td>
           </tr>
           <tr>
             <td style="padding-bottom:24px;">
               <p style="margin:0;font-size:15px;line-height:1.7;color:#94a3b8;">
-                One quiet article a week — about emotional load, rest, self-awareness,
-                and what it's actually like to carry a lot. No noise. No streak guilt.
-                Just something worth reading when it's ready.
+                ${e.confirmBody}
               </p>
             </td>
           </tr>
@@ -91,26 +90,25 @@ function confirmationEmailHtml(locale: string, dir: "ltr" | "rtl"): string {
           </tr>
           <tr>
             <td style="padding-bottom:24px;">
-              <p style="margin:0 0 8px 0;font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:#475569;">What to expect</p>
+              <p style="margin:0 0 8px 0;font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:#475569;">${e.whatToExpectLabel}</p>
               <p style="margin:0;font-size:14px;line-height:1.7;color:#64748b;">
-                Articles arrive when they're ready — usually once a week.
-                Unsubscribe any time with one click.
+                ${e.whatToExpectBody}
               </p>
             </td>
           </tr>
           <tr>
             <td style="padding-bottom:40px;">
               <a href="${CONFIG.siteUrl}/blog" style="display:inline-block;background-color:#7c9fff;color:#0b1120;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:9999px;">
-                Read the latest article →
+                ${e.readLatestCta}
               </a>
             </td>
           </tr>
           <tr>
             <td>
               <p style="margin:0;font-size:12px;line-height:1.6;color:#334155;">
-                You're receiving this because you signed up at ${CONFIG.appName}.<br />
-                Your email address is never sold or shared.<br />
-                <a href="${CONFIG.siteUrl}/privacy" style="color:#475569;">Privacy Policy</a>
+                ${e.footerLine1(CONFIG.appName)}<br />
+                ${e.footerLine2}<br />
+                <a href="${CONFIG.siteUrl}/privacy" style="color:#475569;">${e.privacyPolicy}</a>
               </p>
             </td>
           </tr>
