@@ -94,7 +94,7 @@ function UpgradeButton({
         disabled={loading}
         className={className}
       >
-        {loading ? "Redirecting…" : label}
+        {loading ? up.redirecting : label}
       </button>
       {error && (
         <p className="mt-2 text-center text-xs text-qm-danger">{error}</p>
@@ -107,6 +107,7 @@ function UpgradeButton({
 
 export default function UpgradePage() {
   const { t } = useTranslation();
+  const up = t.upgradePage;
   return (
     <div className="min-h-screen bg-qm-bg text-qm-primary">
       {/* ── Hero — with embedded proof card ──────────────────────────────── */}
@@ -141,27 +142,27 @@ export default function UpgradePage() {
               <ul className="mt-7 space-y-3">
                 {[
                   {
-                    label: "Unlimited reflections",
-                    sub: "Reflect on every entry, not just a few each month",
+                    label: up.pF1Label,
+                    sub: up.pF1Sub,
                     color: "text-qm-positive",
                   },
                   {
-                    label: "Full pattern insights",
-                    sub: "See what repeats across weeks and months",
+                    label: up.pF2Label,
+                    sub: up.pF2Sub,
                     color: "text-qm-premium",
                   },
                   {
-                    label: "Weekly personal summary",
+                    label: up.pF3Label,
                     sub: "A written mirror of what Quiet Mirror noticed this week",
                     color: "text-qm-warning",
                   },
                   {
-                    label: "Why-this-keeps-happening insights",
-                    sub: "Get closer to the recurring emotional loop underneath",
+                    label: up.pF4Label,
+                    sub: up.pF4Sub,
                     color: "text-qm-premium",
                   },
                   {
-                    label: "Everything in Free",
+                    label: up.pF5Label,
                     sub: t.reflection.nothingRemoved,
                     color: "text-qm-faint",
                   },
@@ -189,12 +190,12 @@ export default function UpgradePage() {
                   </span>
                 </div>
                 {[
-                  { label: "Journal entries", free: "✓", premium: "✓" },
-                  { label: "AI reflections", free: `${PRICING.freeMonthlyCredits} / mo`, premium: "Unlimited" },
-                  { label: "Pattern insights", free: "—", premium: "✓" },
-                  { label: "Weekly summary", free: "—", premium: "✓" },
-                  { label: "Why-it-keeps-happening", free: "—", premium: "✓" },
-                  { label: "Private & ad-free", free: "✓", premium: "✓" },
+                  { label: up.compRow1, free: "✓", premium: "✓" },
+                  { label: up.compRow2, free: `${PRICING.freeMonthlyCredits} / mo`, premium: up.compUnlimited },
+                  { label: up.compRow3, free: "—", premium: "✓" },
+                  { label: up.compRow4, free: "—", premium: "✓" },
+                  { label: up.compRow5, free: "—", premium: "✓" },
+                  { label: up.compRow6, free: "✓", premium: "✓" },
                 ].map(({ label, free, premium }, i) => (
                   <div
                     key={label}
@@ -212,7 +213,7 @@ export default function UpgradePage() {
                     </span>
                     <span
                       className={`w-16 text-center text-xs font-medium ${
-                        premium === "✓" || premium === "Unlimited"
+                        premium === "✓" || premium === up.compUnlimited
                           ? "text-qm-positive"
                           : "text-qm-muted"
                       }`}

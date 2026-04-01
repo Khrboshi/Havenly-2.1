@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { useTranslation } from "@/app/components/I18nProvider";
 import { useUserPlan } from "@/app/components/useUserPlan";
 import { PRICING } from "@/app/lib/pricing";
 
@@ -10,6 +11,7 @@ interface RequirePremiumProps {
 }
 
 export default function RequirePremium({ children }: RequirePremiumProps) {
+  const { t } = useTranslation();
   const { loading, planType } = useUserPlan();
 
   if (loading) {
@@ -54,23 +56,23 @@ export default function RequirePremium({ children }: RequirePremiumProps) {
             <div className="mt-6 space-y-3">
               {[
                 {
-                  label: "Unlimited reflections",
-                  sub: "Reflect on every entry, not just a few each month",
+                  label: rp.f1Label,
+                  sub: rp.f1Sub,
                   dot: "bg-qm-accent",
                 },
                 {
-                  label: "Pattern insights across time",
-                  sub: "See what themes and emotions keep surfacing",
+                  label: rp.f2Label,
+                  sub: rp.f2Sub,
                   dot: "bg-qm-premium",
                 },
                 {
-                  label: "Weekly personal summary",
-                  sub: "A concise mirror of what Quiet Mirror noticed this week",
+                  label: rp.f3Label,
+                  sub: rp.f3Sub,
                   dot: "bg-qm-warning",
                 },
                 {
-                  label: "Why-this-keeps-happening insights",
-                  sub: "Understand the recurring loops underneath your entries",
+                  label: rp.f4Label,
+                  sub: rp.f4Sub,
                   dot: "bg-qm-premium",
                 },
               ].map(({ label, sub, dot }) => (

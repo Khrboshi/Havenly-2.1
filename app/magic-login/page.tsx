@@ -51,7 +51,7 @@ function getSideQuotes(ml: ReturnType<typeof getTranslations>["magicLogin"]) {
 function MagicLoginInner() {
   const router = useRouter();
   const { session } = useSupabase();
-  const { t } = useTranslation();
+  const { t } = useTranslation(); const ml = t.magicLoginPage = useTranslation();
   const ml = t.magicLogin;
   const SIDE_QUOTES = getSideQuotes(ml);
 
@@ -248,9 +248,9 @@ function MagicLoginInner() {
           {!isReturning && (
             <ul className="mt-7 max-w-xs space-y-3">
               {[
-                "Write privately — your entries are never shared or sold",
-                "AI reflects back what it notices in your own words",
-                "See patterns across entries over time with Premium",
+                ml.feat1,
+                ml.feat2,
+                ml.feat3,
               ].map((item) => (
                 <li key={item} className="flex items-start gap-2.5 text-sm text-qm-muted">
                   <span className="mt-0.5 shrink-0 text-qm-positive">✓</span>
@@ -288,26 +288,26 @@ function MagicLoginInner() {
                 <span className="text-sm font-semibold text-qm-secondary">{CONFIG.appName}</span>
               </div>
               <h1 className="font-display text-3xl font-semibold tracking-tight text-qm-primary">
-                {isReturning ? "Welcome back." : "Your private journal."}
+                {isReturning ? ml.returningGreeting : ml.newGreeting}
               </h1>
               <p className="mt-1.5 text-sm leading-relaxed text-qm-muted">
                 {isReturning
-                  ? "Your journal is waiting."
-                  : "Write honestly. Quiet Mirror reflects back what it notices — gently, and only when you ask."}
+                  ? ml.returningWaiting
+                  : ml.newTagline}
               </p>
             </div>
 
             {/* Desktop card header */}
             <div className="mb-5 hidden lg:block">
               <h2 className="font-display text-2xl font-semibold text-qm-primary">
-                {isReturning ? "Sign in to Quiet Mirror" : "Start your free journal"}
+                {isReturning ? ml.ctaReturning : ml.ctaNew}
               </h2>
               <p className="mt-1 text-sm text-qm-faint">
                 {ios
-                  ? "Use the code option — it works best on iPhone."
+                  ? ml.codeHint
                   : isReturning
-                  ? "Choose the method that fits this device."
-                  : "No password. No card required. One email to begin."}
+                  ? ml.deviceHint
+                  : ml.noPasswordHint}
               </p>
             </div>
 
@@ -346,9 +346,9 @@ function MagicLoginInner() {
                       : "text-qm-muted hover:text-qm-primary"
                   }`}
                 >
-                  {m === "code" ? "Code" : "Magic link"}
+                  {m === "code" ? ml.codeLabel : ml.linkLabel}
                   <span className="mt-0.5 block text-[11px] font-normal text-qm-faint">
-                    {m === "code" ? "Best on iPhone" : "Best on desktop"}
+                    {m === "code" ? ml.codeBest : ml.linkBest}
                   </span>
                 </button>
               ))}
@@ -380,7 +380,7 @@ function MagicLoginInner() {
                   disabled={status === "loading" || !email}
                   className="inline-flex w-full items-center justify-center rounded-full bg-qm-accent px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-qm-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {status === "loading" ? "Sending…" : "Send magic link"}
+                  {status === "loading" ? ml.sending : ml.sendLink}
                 </button>
                 <p className="mt-3 text-center text-xs leading-relaxed text-qm-faint">
                   Open the email link in the same browser you started with.
@@ -394,7 +394,7 @@ function MagicLoginInner() {
                   disabled={status === "loading" || !email}
                   className="inline-flex w-full items-center justify-center rounded-full bg-qm-accent px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-qm-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {status === "loading" ? "Sending…" : "Send sign-in email"}
+                  {status === "loading" ? ml.sending : ml.sendEmail}
                 </button>
 
                 <div className="mt-5 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
@@ -408,7 +408,7 @@ function MagicLoginInner() {
                       if (e.key === "Enter" && tokenOk) onVerifyCode();
                     }}
                     inputMode="numeric"
-                    placeholder="Enter 6–8 digit code"
+                    placeholder=ml.codePlaceholder
                     className="w-full rounded-2xl border border-qm-border-card bg-qm-elevated px-4 py-3 text-sm text-qm-primary outline-none transition placeholder:text-qm-muted focus:border-[color:var(--qm-accent)]"
                   />
                   <button
@@ -417,7 +417,7 @@ function MagicLoginInner() {
                     disabled={status === "loading" || !email || !tokenOk}
                     className="mt-4 inline-flex w-full items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-4 py-3.5 text-sm font-semibold text-qm-primary transition hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {status === "loading" ? "Verifying…" : "Verify and sign in"}
+                    {status === "loading" ? ml.verifying : ml.verify}
                   </button>
                   <p className="mt-3 text-xs leading-relaxed text-qm-faint">
                     Tip: if the email shows spaces between numbers, just paste it. Quiet Mirror removes

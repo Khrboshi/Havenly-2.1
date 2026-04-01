@@ -47,7 +47,7 @@ function formatDateFromUnixSeconds(sec: number) {
 export default function TransactionsPage() {
   const { session } = useSupabase();
   const { planType, credits, loading } = useUserPlan();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
 
   const email = session?.user?.email ?? "Unknown user";
 
@@ -201,10 +201,10 @@ export default function TransactionsPage() {
               <table className="w-full min-w-[480px] text-sm">
                 <thead className="bg-white/5 text-qm-muted">
                   <tr>
-                    <th className="text-left font-medium px-4 py-3">Date</th>
-                    <th className="text-left font-medium px-4 py-3">Status</th>
-                    <th className="text-right font-medium px-4 py-3">Amount</th>
-                    <th className="text-right font-medium px-4 py-3">Receipt</th>
+                    <th className="text-left font-medium px-4 py-3">{locale === "ar" ? "التاريخ" : locale === "uk" ? "Дата" : "Date"}</th>
+                    <th className="text-left font-medium px-4 py-3">{locale === "ar" ? "الحالة" : locale === "uk" ? "Статус" : "Status"}</th>
+                    <th className="text-right font-medium px-4 py-3">{locale === "ar" ? "المبلغ" : locale === "uk" ? "Сума" : "Amount"}</th>
+                    <th className="text-right font-medium px-4 py-3">{locale === "ar" ? "الإيصال" : locale === "uk" ? "Квитанція" : "Receipt"}</th>
                   </tr>
                 </thead>
                 <tbody>
