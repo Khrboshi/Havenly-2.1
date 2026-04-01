@@ -2,9 +2,8 @@
 import { createServerSupabase } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getTranslations } from "@/app/lib/i18n";
+import { getTranslations, getLocaleFromCookieString, getIntlLocale } from "@/app/lib/i18n";
 import { cookies } from "next/headers";
-import { getLocaleFromCookieString } from "@/app/lib/i18n";
 import { parseAIResponse } from "@/lib/planUtils";
 
 export const dynamic = "force-dynamic";
@@ -59,7 +58,7 @@ function emotionColor(e: string): string {
 
 function formatDay(iso: string, locale: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString(locale === "uk" ? "uk-UA" : "en-GB", {
+  return d.toLocaleDateString(getIntlLocale(locale), {
     day: "numeric",
     month: "short",
     timeZone: "UTC",
@@ -77,7 +76,7 @@ function formatTime(iso: string): string {
 
 function monthKey(iso: string, locale: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString(locale === "uk" ? "uk-UA" : "en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
+  return d.toLocaleDateString(getIntlLocale(locale), { month: "long", year: "numeric", timeZone: "UTC" });
 }
 
 function entryTitle(title: string | null, content: string | null, fallback: string): string {

@@ -5,7 +5,7 @@ import { createServerSupabase } from "@/lib/supabase/server";
 import { ensureCreditsFresh } from "@/lib/creditRules";
 import { normalizeAIResponseSignals } from "@/lib/ai/normalizeInsightSignals";
 import { normalizePlan, type UserCreditsRow, type JournalAIRow, type GroqChatResponse, parseAIResponse } from "@/lib/planUtils";
-import { getLocaleFromCookieString } from "@/app/lib/i18n";
+import { getLocaleFromCookieString, getAiLanguageName } from "@/app/lib/i18n";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -86,8 +86,7 @@ const FALLBACK_SUGGESTIONS = [
 
 export async function GET(req: Request) {
   const locale = getLocaleFromCookieString(req.headers.get("cookie") ?? "");
-  const LANGUAGE_NAMES: Record<string, string> = { uk: "Ukrainian", fr: "French", de: "German", es: "Spanish" };
-  const targetLanguage = LANGUAGE_NAMES[locale] ?? null;
+  const targetLanguage = getAiLanguageName(locale);
   const languageInstruction = targetLanguage
     ? `\nLANGUAGE RULE: Respond entirely in ${targetLanguage}. Both suggestions and both journal prompts must be in ${targetLanguage} only.\n`
     : "";

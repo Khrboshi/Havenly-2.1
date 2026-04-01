@@ -11,7 +11,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import InstallPrompt from "@/app/components/InstallPrompt";
 import { CONFIG, BRAND } from "@/app/lib/config";
 import { cookies } from "next/headers";
-import { getLocaleFromCookieString } from "@/app/lib/i18n";
+import { getLocaleFromCookieString, getDir } from "@/app/lib/i18n";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -118,8 +118,9 @@ export default async function RootLayout({
   children: ReactNode;
 }) {
   const locale = getLocaleFromCookieString(cookies().toString());
+  const dir    = getDir(locale);
   return (
-    <html lang={locale}>
+    <html lang={locale} dir={dir}>
       <head>
         {/* Mobile web app capabilities */}
         <meta name="mobile-web-app-capable" content="yes" />
@@ -133,7 +134,7 @@ export default async function RootLayout({
         <meta name="copyright" content={`${new Date().getFullYear()} ${CONFIG.appName}`} />
         
         {/* Accessibility: announce page language changes */}
-        <meta httpEquiv="Content-Language" content="en" />
+        <meta httpEquiv="Content-Language" content={locale} />
         
         {/* PWA status bar styling */}
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

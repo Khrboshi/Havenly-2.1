@@ -2,6 +2,7 @@
 // Quiet Mirror V23 — Phase 3 fixes
 // Bug fixes:
 import { CONFIG } from "@/app/lib/config";
+import { getAiLanguageName } from "@/app/lib/i18n";
 // 1) WORK domain detection: added signals for "project lead", "overlooked", "passed over",
 //    "three years here", "nobody asked", "seniority", "recognition" etc.
 // 2) Quality gate: after 3 failed attempts, injectAnchorIntoCarrying now fires on ANY
@@ -1329,18 +1330,11 @@ function buildSystemPrompt(
   const isPremium = plan === "PREMIUM";
   const mixed = secondaryDomains.length > 0;
 
-  // Language instruction — injected when user has selected a non-English locale
-  const LANGUAGE_NAMES: Record<string, string> = {
-    uk: "Ukrainian",
-    fr: "French",
-    de: "German",
-    es: "Spanish",
-    pt: "Portuguese",
-    pl: "Polish",
-  };
-  const targetLanguage = LANGUAGE_NAMES[locale] ?? null;
+  const targetLanguage    = getAiLanguageName(locale);
   const languageInstruction = targetLanguage
-    ? `\nLANGUAGE RULE: You MUST respond entirely in ${targetLanguage}. Every field — summary, corepattern, themes, emotions, gentlenextstep, questions — must be written in ${targetLanguage}. Do not use English anywhere in your response.\n`
+    ? `
+LANGUAGE RULE: You MUST respond entirely in ${targetLanguage}. Every field — summary, corepattern, themes, emotions, gentlenextstep, questions — must be written in ${targetLanguage}. Do not use English anywhere in your response.
+`
     : "";
 
   const summaryStructure =

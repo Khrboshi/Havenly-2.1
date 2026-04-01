@@ -4,28 +4,8 @@
 // Every locale (en, uk, …) must satisfy this shape exactly.
 // TypeScript will error at compile time if a locale is missing a string.
 
-export type Locale = "en" | "uk";
-
-export const SUPPORTED_LOCALES: Locale[] = ["en", "uk"];
-export const DEFAULT_LOCALE: Locale = "en";
-export const LOCALE_STORAGE_KEY = "qm:locale";
-
-export interface LocaleMetadata {
-  code: Locale;
-  /** Native name shown in the language switcher */
-  label: string;
-  /** ISO flag emoji */
-  flag: string;
-}
-
-export const LOCALE_META: Record<Locale, LocaleMetadata> = {
-  en: { code: "en", label: "English",    flag: "🇬🇧" },
-  uk: { code: "uk", label: "Українська", flag: "🇺🇦" },
-};
-
 // ─── Translation shape ────────────────────────────────────────────────────────
-// Mirrors app/lib/copy.ts exactly.
-// Functions that accept runtime values (counts, labels) must be included here.
+// All locale metadata (Locale type, SUPPORTED_LOCALES, etc.) lives in locales.ts.
 
 export interface Translations {
   errors: {
