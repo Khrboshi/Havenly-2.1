@@ -12,6 +12,7 @@ interface RequirePremiumProps {
 
 export default function RequirePremium({ children }: RequirePremiumProps) {
   const { t } = useTranslation();
+  const rp = t.requirePremium;
   const { loading, planType } = useUserPlan();
 
   if (loading) {
