@@ -53,6 +53,7 @@ function MagicLoginInner() {
   const { session } = useSupabase();
   const { t } = useTranslation(); const ml = t.magicLoginPage = useTranslation();
   const ml = t.magicLogin;
+  const mlp = t.magicLoginPage;
   const SIDE_QUOTES = getSideQuotes(ml);
 
   const [paramsReady, setParamsReady] = useState(false);
