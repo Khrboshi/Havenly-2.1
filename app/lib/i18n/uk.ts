@@ -634,15 +634,8 @@ export const uk: Translations = {
     bannerText:           "— ось так виглядатиме ваша сторінка аналітики.",
     bannerCta:            "Розблокувати →",
     heading:              "Аналітика",
-    subHasData:           (count: number) => {
-      const last = count % 10;
-      const lastTwo = count % 100;
-      const form = (lastTwo >= 11 && lastTwo <= 14) ? "записів"
-        : last === 1 ? "запис"
-        : (last >= 2 && last <= 4) ? "записи"
-        : "записів";
-      return `Що Quiet Mirror помітив у ваших ${count} ${form}`;
-    },
+    subHasDataPrefix:     "Що Quiet Mirror помітив у ваших",
+    subHasDataCount:      (count: number) => `${count} ${count === 1 ? "запису" : "записів"}`,
     subNoData:            "Що Quiet Mirror помітить, коли ви почнете писати",
     statBuilds:           "Формується в міру написання",
     statMomentumRecent:   "На основі останніх записів",
@@ -690,15 +683,7 @@ export const uk: Translations = {
     upgradePremiumLabel:  "Преміум",
     upgradeHeadingHasData:"Ваша схема вже формується. Розблокуйте її.",
     upgradeHeadingNoData: "Ось так виглядає ваша аналітика — повністю розблокована.",
-    upgradeBodyHasData:   (count: number) => {
-      const last = count % 10;
-      const lastTwo = count % 100;
-      const form = (lastTwo >= 11 && lastTwo <= 14) ? "записів"
-        : last === 1 ? "запису"
-        : (last >= 2 && last <= 4) ? "записів"
-        : "записів";
-      return `Quiet Mirror вже почав будувати вашу схему на основі ваших ${count} ${form}. Преміум розблоковує повну картину — що повертається, тижневе зведення і що Quiet Mirror помітив в основі.`;
-    },
+    upgradeBodyHasData:   (count: number) => `Quiet Mirror вже почав будувати вашу схему на основі ваших ${count} ${count === 1 ? "запису" : "записів"}. Преміум розблоковує повну картину — що повертається, тижневе зведення і що Quiet Mirror помітив в основі.`,
     upgradeBodyNoData:    "Починайте писати, і Quiet Mirror наповнить це вашими реальними схемами — тижневим зведенням, повною історією схем і тим, що повертається тижнями і місяцями. Менше, ніж одна терапевтична сесія на місяць.",
     upgradeCta:           (price: string) => `Розблокувати повну аналітику — ${price} →`,
     upgradeBack:          "Назад на панель",

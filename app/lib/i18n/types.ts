@@ -549,7 +549,8 @@ export interface Translations {
     bannerCta:            string;
     // Header
     heading:              string;
-    subHasData:           (count: number) => string;
+    subHasDataPrefix:     string;
+    subHasDataCount:      (count: number) => string;
     subNoData:            string;
     // Stat cards
     statBuilds:           string;

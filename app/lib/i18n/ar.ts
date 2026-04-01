@@ -599,12 +599,12 @@ export const ar: Translations = {
     bannerText:           "— هكذا ستبدو صفحة تحليلاتك.",
     bannerCta:            "افتح ←",
     heading:              "التحليلات",
-    subHasData:           (count: number) => {
-      if (count === 0) return "ما لاحظه Quiet Mirror";
-      if (count === 1) return "ما لاحظه Quiet Mirror في مدخلتك";
-      if (count === 2) return "ما لاحظه Quiet Mirror في مدخلتيك";
-      if (count >= 3 && count <= 10) return `ما لاحظه Quiet Mirror في ${count} مدخلات`;
-      return `ما لاحظه Quiet Mirror في ${count} مدخلة`;
+    subHasDataPrefix:     "ما لاحظه Quiet Mirror في",
+    subHasDataCount:      (count: number) => {
+      if (count === 1) return "مدخلة واحدة";
+      if (count === 2) return "مدخلتين";
+      if (count >= 3 && count <= 10) return `${count} مدخلات`;
+      return `${count} مدخلة`;
     },
     subNoData:            "ما سيلاحظه Quiet Mirror حين تبدأ بالكتابة",
     statBuilds:           "يتشكّل مع الكتابة",

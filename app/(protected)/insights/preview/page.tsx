@@ -150,7 +150,7 @@ export default async function InsightsPreviewPage() {
           <h1 className="font-display text-3xl font-semibold text-qm-primary sm:text-4xl">{ip.heading}</h1>
           <p className="mt-1 text-sm text-qm-faint">
             {hasData
-              ? ip.subHasData(entryCount)
+              ? <>{ip.subHasDataPrefix}{" "}<span className="text-qm-muted">{ip.subHasDataCount(entryCount)}</span></>
               : ip.subNoData}
           </p>
         </div>
@@ -277,7 +277,7 @@ export default async function InsightsPreviewPage() {
         <div className="rounded-2xl border border-qm-border-subtle bg-gradient-to-br from-slate-950 to-slate-900/40 p-7">
           <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-qm-faint">{ip.patternSectionLabel}</p>
 
-          {hasData ? (
+          {hasData && topEmotion && topTheme ? (
             <>
               <p className="text-lg leading-relaxed text-qm-secondary">
                 {ip.patternHasData(sc(topEmotion!), topTheme!)}
