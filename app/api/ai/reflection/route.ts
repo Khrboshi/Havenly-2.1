@@ -5,6 +5,7 @@ import { ensureCreditsFresh } from "@/lib/creditRules";
 import { generateReflectionFromEntry, detectCrisisContent } from "@/lib/ai/generateReflection";
 import { type PlanType, normalizePlan } from "@/lib/planUtils";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { getLocaleFromCookieString } from "@/app/lib/i18n";
 
 // Local schema type — replace with Supabase generated types when available
 type JournalEntry = {
@@ -134,6 +135,11 @@ export async function POST(req: Request) {
 
   const body = await req.json().catch(() => ({}));
   const entryId = typeof body?.entryId === "string" ? body.entryId.trim() : "";
+  // Locale: prefer what the client sends, fall back to the cookie
+  const cookieLocale = getLocaleFromCookieString(req.headers.get("cookie") ?? "");
+  const locale: string = (typeof body?.locale === "string" && body.locale.trim())
+    ? body.locale.trim()
+    : cookieLocale;
 
   if (!entryId) {
     return NextResponse.json({ error: "Missing entryId" }, { status: 400, headers: noStoreHeaders() });
@@ -262,6 +268,7 @@ export async function POST(req: Request) {
       title,
       plan: effectiveTier,
       recentThemes,
+      locale,
     });
 
     const { error: updErr } = await supabase
