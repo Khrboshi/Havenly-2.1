@@ -57,6 +57,8 @@ function UpgradeButton({
   label?: string;
 }) {
   const router = useRouter();
+  const { t } = useTranslation();
+  const up = t.upgradePage;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
