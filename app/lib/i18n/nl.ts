@@ -271,7 +271,7 @@ export const nl: Translations = {
     premiumItem4:         "Diepere inzichten zonder meer te schrijven",
     freeItem1:            "Onbeperkt dagboek",
     freeItem2:            "Zachte prompts om te beginnen",
-    freeItem3:            (n) => `${n} AI-reflecties per maand`,
+    freeItem3:            (n) => `${n} ${n === 1 ? "AI-reflectie" : "AI-reflecties"} per maand`,
     freeItem4:            "Standaard privé",
     priceLabel:           "Prijs",
     nextBillingLabel:     "Volgende afschrijving",
