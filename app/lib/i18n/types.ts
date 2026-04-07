@@ -752,4 +752,113 @@ export interface Translations {
     noSpam:          string;
   };
 
+  // ── Upgrade page (remaining hardcoded strings) ────────────────────────────
+  upgradeFull: {
+    // Hero
+    heroTag:              string;
+    heroH1:               string;
+    heroH1Accent:         string;
+    heroDesc:             (appName: string) => string;
+    pF3Sub:               string;
+    // Proof card labels
+    proofCardHeader:      string;
+    proofCardBadge:       string;
+    proofFromEntries:     string;
+    proofBar1:            string;
+    proofBar2:            string;
+    proofBar3:            string;
+    proofBar4:            string;
+    proofStat1:           string;
+    proofStat2:           string;
+    proofReflects:        string;
+    proofQuote:           string;
+    proofNote:            string;
+    proofPrivacy:         string;
+    // Price / billing
+    perMonth:             string;
+    trialNoCharge:        string;
+    trialExplainer:       (trialLabel: string) => string;
+    previewInsights:      string;
+    bySubscribing:        string;
+    termsOfService:       string;
+    privacyPolicy:        string;
+    alreadyFree:          string;
+    alreadyFreeDesc:      string;
+    // What Premium surfaces section
+    surfacesTag:          string;
+    surfacesH2:           string;
+    surfacesH2Accent:     string;
+    surfacesDesc:         (appName: string) => string;
+    surfacesNote:         string;
+    // Proof cards
+    card1Tag:             string;
+    card1Headline:        string;
+    card2Tag:             string;
+    card2Headline:        string;
+    card2PerMonth:        string;
+    card3Tag:             string;
+    card3Quote:           string;
+    card3Note:            string;
+    card4Tag:             string;
+    card4Text:            string;
+    card4Note:            string;
+    card5Tag:             string;
+    card5Text:            string;
+    card5Note:            string;
+    card6Tag:             string;
+    card6Quote:           string;
+    card6Note:            string;
+    cardLabel1:           string;
+    cardLabel2:           string;
+    cardLabel3:           string;
+    cardLabel4:           string;
+    seeFullExample:       string;
+    // Mid CTA
+    midH:                 string;
+    midAccent:            string;
+    // FAQ
+    faqHeading:           string;
+    faq1Q:                string;
+    faq1A:                string;
+    faq2Q:                string;
+    faq2A:                (n: number) => string;
+    faq3Q:                string;
+    faq3A:                (trialLabel: string, noChargeUntil: string, email: string) => string;
+    faq4Q:                string;
+    faq4A:                string;
+    faq5Q:                string;
+    faq5A:                string;
+    faq6Q:                string;
+    faq6A:                (appName: string) => string;
+    faq7Q:                (cadence: string) => string;
+    faq7A:                (appName: string, cadence: string) => string;
+    faqTerms:             string;
+    faqPrivacy:           string;
+    // Closing CTA
+    closingH:             string;
+    closingAccent:        string;
+    closingDesc:          (appName: string) => string;
+    closingStartFree:     string;
+    closingTrust:         string;
+  };
+
+  // ── Blog page chrome ─────────────────────────────────────────────────────
+  blogPage: {
+    tag:            (appName: string) => string;
+    heading:        string;
+    subheading:     string;
+    note:           (appName: string) => string;
+    topic1:         string;
+    topic2:         string;
+    topic3:         string;
+    ctaJournal:     string;
+    ctaPremium:     string;
+    minRead:        (n: number) => string;
+    readArticle:    string;
+    bottomH:        string;
+    bottomDesc:     (appName: string) => string;
+    bottomCta:      string;
+    bottomPrivacy:  string;
+  };
+
 }

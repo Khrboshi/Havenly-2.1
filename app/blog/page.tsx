@@ -1,24 +1,18 @@
+"use client";
+
 import Link from "next/link";
 import { ARTICLES } from "./articles";
 import EmailCapture from "@/app/components/EmailCapture";
 import ScrollReveal from "@/app/components/ScrollReveal";
 import { CONFIG } from "@/app/lib/config";
-
-export const metadata = {
-  title: `${CONFIG.appName} Journal — Articles for Overloaded Minds`,
-  description:
-    "Gentle articles about emotional load, rest, journaling, and self-awareness. No productivity hacks — just softer ways to understand what you're feeling.",
-  openGraph: {
-    title: `${CONFIG.appName} Journal — Articles for Overloaded Minds`,
-    description:
-      "Gentle articles about emotional load, rest, and self-awareness. No productivity hacks.",
-    url: CONFIG.siteUrl + "/blog",
-  },
-};
-
-const featuredTopics = ["Emotional load", "Journaling", "Rest & burnout"];
+import { useTranslation } from "@/app/components/I18nProvider";
 
 export default function BlogPage() {
+  const { t } = useTranslation();
+  const bp = t.blogPage;
+
+  const featuredTopics = [bp.topic1, bp.topic2, bp.topic3];
+
   return (
     <main className="min-h-screen bg-qm-bg text-qm-primary">
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
@@ -29,24 +23,19 @@ export default function BlogPage() {
         <div className="relative mx-auto max-w-6xl px-6 pb-14 pt-12 sm:pb-16 sm:pt-16">
           <div className="max-w-4xl">
             <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-qm-accent">
-              {CONFIG.appName} Journal
+              {bp.tag(CONFIG.appName)}
             </p>
 
             <h1 className="mt-4 font-display text-[2.2rem] font-semibold leading-[1.08] tracking-tight text-qm-primary sm:text-5xl">
-              Gentle articles for overloaded minds.
+              {bp.heading}
             </h1>
 
             <p className="mt-5 max-w-3xl text-[15px] leading-relaxed text-qm-secondary sm:text-[17px]">
-              These pieces are for people who are doing their best with a lot on
-              their plate. No productivity hacks, no optimization — just softer
-              ways to understand what you&apos;re feeling and why it makes
-              sense.
+              {bp.subheading}
             </p>
 
             <p className="mt-4 max-w-2xl text-sm leading-relaxed text-qm-muted">
-              {CONFIG.appName} articles are written to be read quietly. Nothing
-              here is clinical, diagnostic, or designed to push you into
-              action. Reflection is allowed to stay slow.
+              {bp.note(CONFIG.appName)}
             </p>
 
             <div className="mt-6 flex flex-wrap gap-2 text-xs">
@@ -65,13 +54,13 @@ export default function BlogPage() {
                 href="/magic-login"
                 className="inline-flex items-center justify-center rounded-full bg-qm-accent px-5 py-3 text-sm font-semibold text-white shadow-md transition-colors hover:bg-qm-accent-hover"
               >
-                Start a free private journal
+                {bp.ctaJournal}
               </Link>
               <Link
                 href="/upgrade"
                 className="inline-flex items-center justify-center rounded-full border border-qm-border-card bg-qm-elevated px-5 py-3 text-sm font-medium text-qm-secondary transition-colors hover:bg-qm-soft"
               >
-                See what Premium adds
+                {bp.ctaPremium}
               </Link>
             </div>
           </div>
@@ -90,25 +79,22 @@ export default function BlogPage() {
                 <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-qm-accent">
                   {article.category}
                 </p>
-
                 <h2 className="mt-3 text-xl font-semibold leading-snug text-qm-primary">
                   {article.title}
                 </h2>
-
                 <p className="mt-3 text-sm leading-relaxed text-qm-secondary">
                   {article.summary}
                 </p>
               </div>
-
               <div className="mt-6 flex items-center justify-between gap-4">
                 <span className="text-xs text-qm-faint">
-                  {article.minutes} min read
+                  {bp.minRead(article.minutes)}
                 </span>
                 <Link
                   href={`/blog/${article.slug}`}
                   className="text-sm font-medium text-qm-accent transition-colors group-hover:text-qm-accent-hover"
                 >
-                  Read article &rarr;
+                  {bp.readArticle}
                 </Link>
               </div>
             </article>
@@ -125,27 +111,23 @@ export default function BlogPage() {
       <section className="mx-auto max-w-6xl px-6 pb-16 sm:pb-20">
         <div className="rounded-[1.8rem] border border-qm-border-card bg-qm-elevated p-6 sm:p-7">
           <h2 className="text-xl font-semibold text-qm-primary sm:text-2xl">
-            Reading can clarify things. Writing often clarifies them more.
+            {bp.bottomH}
           </h2>
-
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-qm-secondary">
-            {CONFIG.appName} gives you a private place to put what you&apos;re
-            carrying. The AI does not judge, diagnose, or rush you — it reflects
-            patterns back gently, only when you ask.
+            {bp.bottomDesc(CONFIG.appName)}
           </p>
-
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="/magic-login"
               className="inline-flex items-center justify-center rounded-full bg-qm-accent px-5 py-3 text-sm font-semibold text-white shadow-md transition-colors hover:bg-qm-accent-hover"
             >
-              Start free reflection
+              {bp.bottomCta}
             </Link>
             <Link
               href="/privacy"
               className="inline-flex items-center justify-center rounded-full border border-qm-border-card bg-qm-elevated px-5 py-3 text-sm font-medium text-qm-secondary transition-colors hover:bg-qm-soft"
             >
-              How your data is protected &rarr;
+              {bp.bottomPrivacy}
             </Link>
           </div>
         </div>
