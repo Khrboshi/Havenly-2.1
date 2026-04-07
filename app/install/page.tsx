@@ -7,6 +7,21 @@ import { useInstallAvailability } from "@/app/hooks/useInstallAvailability";
 import { CONFIG } from "@/app/lib/config";
 import { useTranslation } from "@/app/components/I18nProvider";
 
+// Renders **bold** markdown within translation strings as <b> elements.
+// Translators wrap the UI label name in ** to preserve bold formatting.
+function BoldText({ text }: { text: string }) {
+  const parts = text.split(/\*\*(.*?)\*\*/g);
+  return (
+    <>
+      {parts.map((part, i) =>
+        i % 2 === 1
+          ? <b key={i} className="text-qm-primary">{part}</b>
+          : part
+      )}
+    </>
+  );
+}
+
 export default function InstallPage() {
   const { t } = useTranslation();
   const ip = t.installPage;
@@ -27,10 +42,10 @@ export default function InstallPage() {
   ];
 
   const iosSteps = [
-    { step: "1", text: ip.iosStep1, bold: null },
-    { step: "2", text: ip.iosStep2, bold: null },
-    { step: "3", text: ip.iosStep3, bold: null },
-    { step: "4", text: ip.iosStep4(CONFIG.appName), bold: null },
+    { step: "1", node: <BoldText text={ip.iosStep1} /> },
+    { step: "2", node: <BoldText text={ip.iosStep2} /> },
+    { step: "3", node: <BoldText text={ip.iosStep3} /> },
+    { step: "4", node: <>{ip.iosStep4(CONFIG.appName)}</> },
   ];
 
   return (
@@ -139,13 +154,13 @@ export default function InstallPage() {
                       <div className="mt-4">
                         <p className="mb-4 text-sm text-qm-muted">{ip.iosSafariIntro}</p>
                         <ol className="space-y-3">
-                          {iosSteps.map(({ step, text }) => (
+                          {iosSteps.map(({ step, node }) => (
                             <li key={step} className="flex items-start gap-3">
                               <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-qm-positive-border bg-qm-positive-soft text-xs font-bold text-qm-positive">
                                 {step}
                               </span>
                               <span className="text-sm leading-relaxed text-qm-secondary">
-                                {text}
+                                {node}
                               </span>
                             </li>
                           ))}
