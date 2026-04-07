@@ -259,7 +259,7 @@ export default function Navbar() {
                   <LanguageSwitcher variant="full" />
                 </div>
                 <p className="mt-4 text-center text-xs leading-relaxed text-qm-faint">
-                  {t.navbar.privateTagline}
+                  {t.navbar.mobileFooterNote}
                 </p>
               </div>
             </div>

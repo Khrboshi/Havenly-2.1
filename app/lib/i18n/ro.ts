@@ -133,6 +133,7 @@ export const ro: Translations = {
     privateNoCred:  "Fără feed, fără presiune, fără card necesar. Doar un loc mai liniștit pentru ce vă trece prin minte.",
     privateTagline: "Începeți cu o înregistrare privată în jurnal.",
     privateJournalingTagline: "Jurnal privat care reflectă înapoi",
+    mobileFooterNote: "Quiet Mirror este construit pentru reflecție liniștită și privată — nu pentru performanță.",
   },
 
   insights: {

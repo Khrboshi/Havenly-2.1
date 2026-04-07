@@ -97,8 +97,8 @@ export const fr: Translations = {
     loading:          "…",
     questionsHeading: (count) => {
       if (count <= 0) return "Questions";
-      if (count === 1) return "1 Question";
-      return `${count} Questions`;
+      if (count === 1) return "1 question";
+      return `${count} questions`;
     },
     wordCount:          (n) => `${n} ${n === 1 ? "mot" : "mots"}`,
     entryCount:         (current, total) => `${current}/${total}`,
@@ -132,6 +132,7 @@ export const fr: Translations = {
     privateNoCred:  "Pas de fil d'actualité, pas de pression, pas de carte requise. Juste un endroit plus calme pour poser ce qui vous occupe l'esprit.",
     privateTagline: "Commencez par une entrée de journal privée.",
     privateJournalingTagline: "Journal privé qui vous reflète",
+    mobileFooterNote: "Quiet Mirror est conçu pour une réflexion calme et privée — pas pour la performance.",
   },
 
   insights: {
@@ -251,7 +252,7 @@ export const fr: Translations = {
     insightsFull:         "Accès complet",
     weeklySummaryIncluded:"Inclus",
     reflectionsNone:      "0 restante",
-    reflectionsRemaining: (n, total) => `${n} sur ${total} restante${n === 1 ? "" : "s"}`,
+    reflectionsRemaining: (n, total) => `${n} sur ${total} restante${n <= 1 ? "" : "s"}`,
     reflectionsResume:    (date) => `Les réflexions reprennent le ${date}. Passez à Premium pour un accès illimité.`,
     reflectionsFreeNote:  (n) => `Le plan gratuit inclut ${n} réflexions IA par mois.`,
     upgradeUnlimited:     "Passer à illimité →",
@@ -566,7 +567,7 @@ export const fr: Translations = {
     faq1Q:"Que me montre réellement Quiet Mirror avec Premium ?",
     faq1A:"Premium débloque la couche qui lit à travers toutes vos entrées dans le temps — pas seulement celle que vous avez écrite aujourd'hui. Vous commencez à voir quels thèmes émotionnels apparaissent le plus souvent, comment ils se connectent les uns aux autres, ce qui a évolué et pourquoi quelque chose peut continuer à arriver.",
     faq2Q:"Combien de réflexions ai-je avec le plan gratuit ?",
-    faq2A:(n)=>`Le plan gratuit inclut ${n} réflexions IA par mois — assez pour découvrir comment fonctionne Quiet Mirror. Premium vous donne des réflexions illimitées sur chaque entrée.`,
+    faq2A:(n)=>`Le plan gratuit inclut ${n} ${n === 1 ? "réflexion" : "réflexions"} IA par mois — assez pour découvrir comment fonctionne Quiet Mirror. Premium vous donne des réflexions illimitées sur chaque entrée.`,
     faq3Q:"Quelle est votre politique de remboursement ?",
     faq3A:"Si vous n'êtes pas satisfait, envoyez-nous un e-mail dans la première semaine pour un remboursement complet — sans questions posées.",
     faq4Q:"Et si je n'écris pas très souvent ?",

@@ -133,6 +133,7 @@ export const nl: Translations = {
     privateNoCred:  "Geen feed, geen druk, geen kaart nodig. Gewoon een rustiger plek voor wat er in je hoofd speelt.",
     privateTagline: "Begin met een privé dagboekbericht.",
     privateJournalingTagline: "Privé dagboek dat terugspiegelt",
+    mobileFooterNote: "Quiet Mirror is gebouwd voor rustige, privé reflectie — niet voor prestaties.",
   },
 
   insights: {
