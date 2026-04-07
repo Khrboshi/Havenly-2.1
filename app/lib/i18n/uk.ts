@@ -704,7 +704,7 @@ export const uk: Translations = {
     iOSPart1:    "На iPhone Safari: натисніть",
     iOSShare:    "Поділитися",
     iOSThen:     "потім",
-    iOSAddHome:  "На екран «Початок»",
+    iOSAddHome:  "Додати на головний екран",
     androidDesc: "Отримайте швидший досвід, схожий на додаток, зі значком на вашому пристрої.",
     close:       "Закрити",
     install:     "Встановити",
@@ -716,7 +716,7 @@ export const uk: Translations = {
   authComplete: {
     signingIn:       "Виконую вхід\u2026",
     signedIn:        "Ви увійшли.",
-    closeTab:        "Вихідна вкладка готова. Ви можете закрити цю.",
+    closeTab:        "Початкова вкладка готова. Ви можете закрити цю.",
     continuePremium: "Перейти до Premium \u2192",
     gotoDashboard:   "Перейти до панелі \u2192",
   },
