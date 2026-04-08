@@ -1,4 +1,4 @@
-// app/lib/config.ts
+// app/lib/config.ts — audited 2026-04-08
 // Single source of truth for all site-wide constants.
 // To rebrand: update the values below — every title, metadata, email,
 // AI persona, and UI string updates automatically in one pass.

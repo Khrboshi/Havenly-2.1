@@ -1,4 +1,4 @@
-// app/lib/payment.ts
+// app/lib/payment.ts — audited 2026-04-08
 // Payment provider abstraction layer.
 // All UI components and API routes reference this file — never the provider directly.
 // To switch from Stripe to Lemon Squeezy (or any other provider):

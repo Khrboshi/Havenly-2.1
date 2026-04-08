@@ -1,4 +1,4 @@
-// app/lib/pricing.ts
+// app/lib/pricing.ts — audited 2026-04-08
 // Single source of truth for Quiet Mirror pricing.
 // Update here and every reference in the app updates automatically.
 //
