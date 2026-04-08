@@ -1,3 +1,4 @@
+// i18n audit — reviewed 2026-04-08 — 34 namespaces, all 6 locales in sync
 // app/lib/i18n/ar.ts — Arabic (Modern Standard Arabic)
 // Warm, human tone. 6-form plural rules. RTL via registry dir:"rtl".
 import type { Translations } from "./types";

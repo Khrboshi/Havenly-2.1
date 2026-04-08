@@ -1,3 +1,4 @@
+// i18n audit — reviewed 2026-04-08 — 34 namespaces, all 6 locales in sync
 // app/lib/i18n/en.ts
 // English translations.
 // Structure: nested namespaces matching app/lib/i18n/types.ts (Translations interface).

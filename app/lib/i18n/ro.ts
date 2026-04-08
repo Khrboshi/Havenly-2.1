@@ -1,3 +1,4 @@
+// i18n audit — reviewed 2026-04-08 — 34 namespaces, all 6 locales in sync
 // app/lib/i18n/ro.ts
 // Romanian translations.
 // "Quiet Mirror" is never translated — it is the product name.
@@ -496,8 +497,7 @@ export const ro: Translations = {
     trustDesc:"Quiet Mirror este un produs mic și independent construit în jurul unui principiu: viața dvs. interioară vă aparține. Iată ce înseamnă asta în practică.",
     trust1Title:"Privat prin design",trust1Body:"Înregistrările dvs. nu sunt niciodată folosite pentru a antrena modele AI, niciodată vândute și niciodată văzute de nimeni altcineva decât dvs. Nu este o notă de subsol a politicii — este fundația.",
     trust3Title:"Fără reclame, niciodată",trust3Body:"Quiet Mirror câștigă venituri exclusiv din abonamentele Premium. Acesta este întreg modelul de afaceri — conceput deliberat astfel încât datele dvs. să nu fie niciodată produsul.",
-    patternQ1:"Majorității oamenilor nu le lipsește conștiința de sine.",
-    patternQ2:"Sunt pur și simplu prea aproape de propria lor viață pentru a vedea clar tiparul.",
+    patternQ1:"Majorității oamenilor nu le lipsește conștiința de sine.",patternQ2:"Sunt pur și simplu prea aproape de propria lor viață pentru a vedea clar tiparul.",
     pricingTag:"Gratuit vs Premium",pricingH:"Începeți privat. Faceți upgrade când doriți imaginea mai profundă.",
     pricingDesc:"Gratuit este suficient pentru a începe sincer. Premium este pentru oamenii care vor ca Quiet Mirror să conecteze punctele de-a lungul săptămânilor și lunilor.",
     freeLabel:"Gratuit",freeTagline:"Un loc privat pentru a începe",

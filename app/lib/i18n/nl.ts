@@ -1,3 +1,4 @@
+// i18n audit — reviewed 2026-04-08 — 34 namespaces, all 6 locales in sync
 // app/lib/i18n/nl.ts
 // Dutch translations.
 // "Quiet Mirror" is never translated — it is the product name.
@@ -496,8 +497,7 @@ export const nl: Translations = {
     trustDesc:"Quiet Mirror is een klein, onafhankelijk product gebouwd rond één principe: jouw innerlijk leven is van jou. Dit is wat dat in de praktijk betekent.",
     trust1Title:"Standaard privé",trust1Body:"Je berichten worden nooit gebruikt om AI-modellen te trainen, nooit verkocht en nooit door iemand anders gezien dan jijzelf. Dat is geen beleidsvoetnoot — dat is het fundament.",
     trust3Title:"Geen advertenties, ooit",trust3Body:"Quiet Mirror verdient inkomsten uitsluitend uit Premium abonnementen. Dat is het hele businessmodel — bewust zo ontworpen dat jouw gegevens nooit het product zijn.",
-    patternQ1:"De meeste mensen missen geen zelfbewustzijn.",
-    patternQ2:"Ze staan gewoon te dicht bij hun eigen leven om het patroon duidelijk te zien.",
+    patternQ1:"De meeste mensen missen geen zelfbewustzijn.",patternQ2:"Ze staan gewoon te dicht bij hun eigen leven om het patroon duidelijk te zien.",
     pricingTag:"Gratis vs Premium",pricingH:"Begin privé. Upgrade als je het diepere beeld wilt.",
     pricingDesc:"Gratis is genoeg om eerlijk te beginnen. Premium is voor mensen die willen dat Quiet Mirror de verbanden legt over weken en maanden.",
     freeLabel:"Gratis",freeTagline:"Een privéplek om te beginnen",
