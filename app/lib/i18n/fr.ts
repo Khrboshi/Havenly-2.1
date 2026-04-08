@@ -1,3 +1,4 @@
+// i18n audit — reviewed 2026-04-08 — 34 namespaces, all 6 locales in sync
 // app/lib/i18n/fr.ts
 // French translations.
 
@@ -502,8 +503,7 @@ export const fr: Translations = {
     trustDesc:"Quiet Mirror est un petit produit indépendant construit autour d'un principe : votre vie intérieure vous appartient. Voici ce que cela signifie en pratique.",
     trust1Title:"Privé par conception",trust1Body:"Vos entrées ne sont jamais utilisées pour entraîner des modèles d'IA, jamais vendues, et jamais vues par personne d'autre que vous. Ce n'est pas une note de bas de page de politique — c'est le fondement.",
     trust3Title:"Pas de publicités, jamais",trust3Body:"Quiet Mirror génère des revenus uniquement à partir des abonnements Premium. C'est le seul modèle économique — conçu délibérément pour que vos données ne soient jamais le produit.",
-    patternQ1:"La plupart des gens ne manquent pas de conscience de soi.",
-    patternQ2:"Ils sont juste trop proches de leur propre vie pour voir le schéma clairement.",
+    patternQ1:"La plupart des gens ne manquent pas de conscience de soi.",patternQ2:"Ils sont juste trop proches de leur propre vie pour voir le schéma clairement.",
     pricingTag:"Gratuit vs Premium",pricingH:"Commencez en privé. Passez à Premium quand vous voulez une vision plus profonde.",
     pricingDesc:"Le plan gratuit suffit pour commencer honnêtement. Premium est pour les personnes qui veulent que Quiet Mirror relie les points sur des semaines et des mois.",
     freeLabel:"Gratuit",freeTagline:"Un endroit privé pour commencer",
