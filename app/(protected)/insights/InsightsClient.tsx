@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "@/app/components/I18nProvider";
+import { DOMAIN_COLOR, QM } from "@/app/lib/colors";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -62,7 +63,7 @@ function friendlyDate(iso: string) {
 
 function Sparkline({
   values,
-  color = "var(--qm-dv-positive)",
+  color = QM.dv.positive,
   height = 32,
   width = 80,
 }: {
@@ -155,7 +156,7 @@ function BarRow({
   count,
   max,
   rank,
-  accent = "var(--qm-dv-positive)",
+  accent = QM.dv.positive,
 }: {
   label: string;
   count: number;
@@ -255,15 +256,15 @@ const DOMAIN_LABELS: Record<
   string,
   { label: string; emoji: string; color: string }
 > = {
-  MONEY: { label: "Money", emoji: "💰", color: "var(--qm-dv-positive)" },
-  WORK: { label: "Work", emoji: "💼", color: "var(--qm-dv-work)" },
-  RELATIONSHIP: { label: "Relationships", emoji: "🤝", color: "var(--qm-dv-love)" },
-  HEALTH: { label: "Health", emoji: "🫀", color: "var(--qm-dv-health)" },
-  GRIEF: { label: "Grief", emoji: "🕊️", color: "var(--qm-dv-grief)" },
-  PARENTING: { label: "Parenting", emoji: "🌱", color: "var(--qm-dv-growth)" },
-  CREATIVE: { label: "Creative", emoji: "✍️", color: "var(--qm-dv-creative)" },
-  IDENTITY: { label: "Identity", emoji: "🪞", color: "var(--qm-dv-identity)" },
-  FITNESS: { label: "Fitness", emoji: "⚡", color: "var(--qm-dv-fitness)" },
+  MONEY: { label: "Money", emoji: "💰", color: DOMAIN_COLOR.MONEY },
+  WORK: { label: "Work", emoji: "💼", color: DOMAIN_COLOR.WORK },
+  RELATIONSHIP: { label: "Relationships", emoji: "🤝", color: DOMAIN_COLOR.RELATIONSHIP },
+  HEALTH: { label: "Health", emoji: "🫀", color: DOMAIN_COLOR.HEALTH },
+  GRIEF: { label: "Grief", emoji: "🕊️", color: DOMAIN_COLOR.GRIEF },
+  PARENTING: { label: "Parenting", emoji: "🌱", color: DOMAIN_COLOR.PARENTING },
+  CREATIVE: { label: "Creative", emoji: "✍️", color: DOMAIN_COLOR.CREATIVE },
+  IDENTITY: { label: "Identity", emoji: "🪞", color: DOMAIN_COLOR.IDENTITY },
+  FITNESS: { label: "Fitness", emoji: "⚡", color: DOMAIN_COLOR.FITNESS },
   GENERAL: { label: "General", emoji: "📝", color: "var(--qm-text-muted)" },
 };
 
@@ -288,7 +289,7 @@ function DomainSection({
   const topMeta = DOMAIN_LABELS[top] ?? {
     label: top,
     emoji: "📝",
-    color: "var(--qm-dv-positive)",
+    color: QM.dv.positive,
   };
 
   const topCount = sorted[0]?.[1] ?? 0;
@@ -477,7 +478,7 @@ function WeeklyTrends({
                 </span>
                 <Sparkline
                   values={tSparklines[k]}
-                  color="var(--qm-dv-positive)"
+                  color={QM.dv.positive}
                   width={80}
                   height={28}
                 />
@@ -498,7 +499,7 @@ function WeeklyTrends({
                 </span>
                 <Sparkline
                   values={eSparklines[k]}
-                  color="var(--qm-dv-grief)"
+                  color={QM.dv.grief}
                   width={80}
                   height={28}
                 />
@@ -721,10 +722,10 @@ export default function InsightsClient() {
       Object.keys(data?.weeklyTrend?.emotions ?? {}).length > 0);
 
   const momentumColor: Record<string, string> = {
-    Lifting: "var(--qm-dv-positive)",
-    Shifting: "var(--qm-dv-creative)",
+    Lifting: QM.dv.positive,
+    Shifting: QM.dv.creative,
     Softening: "var(--qm-text-secondary)",
-    Heavy: "var(--qm-dv-fear)",
+    Heavy: QM.dv.fear,
     Steady: "var(--qm-text-muted)",
   };
   const mColor = momentumColor[data?.momentum ?? "Steady"] ?? "var(--qm-text-muted)";
@@ -818,13 +819,13 @@ export default function InsightsClient() {
               label={t.insights.topEmotion}
               value={topEmotion ?? "—"}
               sub={allEmotions[0] ? `${allEmotions[0][1]} ${allEmotions[0][1] === 1 ? "time" : "times"}` : undefined}
-              accent="var(--qm-dv-grief)"
+              accent={QM.dv.grief}
             />
             <StatCard
               label={t.insights.topTheme}
               value={topTheme ?? "—"}
               sub={allThemes[0] ? `${allThemes[0][1]} entries` : undefined}
-              accent="var(--qm-dv-positive)"
+              accent={QM.dv.positive}
             />
             <StatCard
               label={t.insights.momentum}
@@ -969,7 +970,7 @@ export default function InsightsClient() {
                       count={v}
                       max={maxTheme}
                       rank={i}
-                      accent="var(--qm-dv-positive)"
+                      accent={QM.dv.positive}
                     />
                   ))}
                 </ul>
@@ -1014,7 +1015,7 @@ export default function InsightsClient() {
                       count={v}
                       max={maxEmotion}
                       rank={i}
-                      accent="var(--qm-dv-grief)"
+                      accent={QM.dv.grief}
                     />
                   ))}
                 </ul>

@@ -5,53 +5,54 @@ import Link from "next/link";
 import { getTranslations, getLocaleFromCookieString, getIntlLocale } from "@/app/lib/i18n";
 import { cookies } from "next/headers";
 import { parseAIResponse } from "@/lib/planUtils";
+import { DOMAIN_COLOR, QM } from "@/app/lib/colors";
 
 export const dynamic = "force-dynamic";
 
 // ── Domain metadata ────────────────────────────────────────────────────────────
 
 const DOMAIN_META: Record<string, { emoji: string; color: string }> = {
-  MONEY:        { emoji: "💰", color: "var(--qm-dv-positive)" },
-  WORK:         { emoji: "💼", color: "var(--qm-dv-work)" },
-  RELATIONSHIP: { emoji: "🤝", color: "var(--qm-dv-love)" },
-  HEALTH:       { emoji: "🫀", color: "var(--qm-dv-health)" },
-  GRIEF:        { emoji: "🕊️", color: "var(--qm-dv-grief)" },
-  PARENTING:    { emoji: "🌱", color: "var(--qm-dv-growth)" },
-  CREATIVE:     { emoji: "✍️", color: "var(--qm-dv-creative)" },
-  IDENTITY:     { emoji: "🪞", color: "var(--qm-dv-identity)" },
-  FITNESS:      { emoji: "⚡", color: "var(--qm-dv-fitness)" },
-  GENERAL:      { emoji: "📝", color: "var(--qm-text-muted)" },
+  MONEY:        { emoji: "💰", color: DOMAIN_COLOR.MONEY },
+  WORK:         { emoji: "💼", color: DOMAIN_COLOR.WORK },
+  RELATIONSHIP: { emoji: "🤝", color: DOMAIN_COLOR.RELATIONSHIP },
+  HEALTH:       { emoji: "🫀", color: DOMAIN_COLOR.HEALTH },
+  GRIEF:        { emoji: "🕊️", color: DOMAIN_COLOR.GRIEF },
+  PARENTING:    { emoji: "🌱", color: DOMAIN_COLOR.PARENTING },
+  CREATIVE:     { emoji: "✍️", color: DOMAIN_COLOR.CREATIVE },
+  IDENTITY:     { emoji: "🪞", color: DOMAIN_COLOR.IDENTITY },
+  FITNESS:      { emoji: "⚡", color: DOMAIN_COLOR.FITNESS },
+  GENERAL:      { emoji: "📝", color: QM.textMuted },
 };
 
 // ── Emotion color mapping (matches JournalEntryClient) ─────────────────────────
 
 const EMOTION_COLORS: Record<string, string> = {
   // Reds / danger
-  fear: "var(--qm-dv-fear)", panic: "var(--qm-dv-fear)", terror: "var(--qm-dv-fear)", dread: "var(--qm-dv-fear)",
-  rage: "var(--qm-dv-fear)", fury: "var(--qm-dv-fear)", anger: "var(--qm-dv-fear)",
+  fear: QM.dv.fear, panic: QM.dv.fear, terror: QM.dv.fear, dread: QM.dv.fear,
+  rage: QM.dv.fear, fury: QM.dv.fear, anger: QM.dv.fear,
   // Oranges
-  anxiety: "var(--qm-dv-health)", worry: "var(--qm-dv-health)", stress: "var(--qm-dv-health)", overwhelmed: "var(--qm-dv-health)",
-  frustration: "var(--qm-dv-health)", irritation: "var(--qm-dv-health)",
+  anxiety: QM.dv.health, worry: QM.dv.health, stress: QM.dv.health, overwhelmed: QM.dv.health,
+  frustration: QM.dv.health, irritation: QM.dv.health,
   // Yellows
-  shame: "var(--qm-dv-creative)", guilt: "var(--qm-dv-creative)", embarrassment: "var(--qm-dv-creative)",
+  shame: QM.dv.creative, guilt: QM.dv.creative, embarrassment: QM.dv.creative,
   // Slates / grey-blue
-  sadness: "var(--qm-text-secondary)", grief: "var(--qm-text-secondary)", loneliness: "var(--qm-text-secondary)",
-  exhaustion: "var(--qm-text-secondary)", numbness: "var(--qm-text-secondary)", emptiness: "var(--qm-text-secondary)",
-  disconnection: "var(--qm-text-secondary)", resignation: "var(--qm-text-secondary)",
+  sadness: QM.textSecondary, grief: QM.textSecondary, loneliness: QM.textSecondary,
+  exhaustion: QM.textSecondary, numbness: QM.textSecondary, emptiness: QM.textSecondary,
+  disconnection: QM.textSecondary, resignation: QM.textSecondary,
   // Purples
-  confusion: "var(--qm-dv-grief)", doubt: "var(--qm-dv-grief)", uncertainty: "var(--qm-dv-grief)",
-  invisibility: "var(--qm-dv-grief)", "self-doubt": "var(--qm-dv-grief)",
+  confusion: QM.dv.grief, doubt: QM.dv.grief, uncertainty: QM.dv.grief,
+  invisibility: QM.dv.grief, "self-doubt": QM.dv.grief,
   // Greens
-  hope: "var(--qm-dv-positive)", relief: "var(--qm-dv-positive)", calm: "var(--qm-dv-positive)", gratitude: "var(--qm-dv-positive)",
-  pride: "var(--qm-dv-positive)", joy: "var(--qm-dv-positive)", contentment: "var(--qm-dv-positive)",
+  hope: QM.dv.positive, relief: QM.dv.positive, calm: QM.dv.positive, gratitude: QM.dv.positive,
+  pride: QM.dv.positive, joy: QM.dv.positive, contentment: QM.dv.positive,
   // Blues
-  curiosity: "var(--qm-dv-work)", openness: "var(--qm-dv-work)", clarity: "var(--qm-dv-work)",
+  curiosity: QM.dv.work, openness: QM.dv.work, clarity: QM.dv.work,
   // Pinks
-  love: "var(--qm-dv-love)", connection: "var(--qm-dv-love)", tenderness: "var(--qm-dv-love)",
+  love: QM.dv.love, connection: QM.dv.love, tenderness: QM.dv.love,
 };
 
 function emotionColor(e: string): string {
-  return EMOTION_COLORS[e.toLowerCase().trim()] ?? "var(--qm-text-muted)";
+  return EMOTION_COLORS[e.toLowerCase().trim()] ?? QM.textMuted;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
