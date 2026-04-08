@@ -105,6 +105,7 @@ export default function Footer() {
   const year = new Date().getFullYear();
   const { session } = useSupabase();
   const { t } = useTranslation();
+  const ps = t.pricingStrings;
   const isSignedIn = !!session;
 
   return (
@@ -155,7 +156,7 @@ export default function Footer() {
             </span>
             <span className="inline-flex items-center gap-1 text-qm-accent">
               <span aria-hidden="true">✨</span>
-              <span>{PRICING.trialLabel}</span>
+              <span>{ps.trialLabel(PRICING.trialDays)}</span>
             </span>
           </div>
         </div>
