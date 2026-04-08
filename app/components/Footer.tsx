@@ -107,6 +107,8 @@ export default function Footer() {
   const { t } = useTranslation();
   const ps = t.pricingStrings;
   const isSignedIn = !!session;
+
+  return (
     <footer className="mt-16 border-t border-qm-border-subtle bg-qm-bg" role="contentinfo">
       <div className="mx-auto max-w-6xl px-6 py-10">
         <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
