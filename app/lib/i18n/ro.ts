@@ -529,10 +529,6 @@ export const ro: Translations = {
   requirePremium: {
     checking:"Se verifică planul dvs.…",heading:"Aceasta este o funcție Premium.",
     desc:"Faceți upgrade pentru a vedea ce continuă să apară în toate înregistrările dvs.",
-f1Sub:"Reflectați la fiecare înregistrare, nu doar câteva pe lună",
-f2Sub:"Vedeți ce teme și emoții continuă să apară",
-f3Sub:"O oglindă concisă a ceea ce a observat Quiet Mirror săptămâna aceasta",
-f4Sub:"Înțelegeți buclele recurente de sub înregistrările dvs.",
     cta:"Upgrade la Premium →",
     noPressure: (n) => `Fără presiune de upgrade. Gratuit include ${n} reflecții pe lună și jurnal complet.`,
   },

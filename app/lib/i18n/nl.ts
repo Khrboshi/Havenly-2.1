@@ -529,10 +529,6 @@ export const nl: Translations = {
   requirePremium: {
     checking:"Je plan controleren…",heading:"Dit is een Premium functie.",
     desc:"Upgrade om te zien wat er steeds terugkomt in al je berichten.",
-f1Sub:"Reflecteer op elk bericht, niet alleen een paar per maand",
-f2Sub:"Zie welke thema's en emoties blijven opduiken",
-f3Sub:"Een beknopte spiegel van wat Quiet Mirror deze week opmerkte",
-f4Sub:"Begrijp de terugkerende lussen onder je berichten",
     cta:"Upgraden naar Premium →",
     noPressure: (n) => `Geen druk om te upgraden. Gratis bevat ${n} reflecties per maand en volledig dagboek.`,
   },

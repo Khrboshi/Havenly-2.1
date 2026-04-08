@@ -535,10 +535,6 @@ export const fr: Translations = {
   requirePremium: {
     checking:"Vérification de votre abonnement…",heading:"C'est une fonctionnalité Premium.",
     desc:"Passez à Premium pour voir ce qui revient à travers toutes vos entrées.",
-f1Sub:"Réfléchissez à chaque entrée, pas seulement quelques-unes par mois",
-f2Sub:"Voyez quels thèmes et émotions continuent à remonter",
-f3Sub:"Un miroir concis de ce que Quiet Mirror a remarqué cette semaine",
-f4Sub:"Comprenez les boucles récurrentes sous vos entrées",
     cta:"Passer à Premium →",
     noPressure: (n) => `Pas de pression pour mettre à niveau. Gratuit inclut ${n} réflexions par mois et le journal complet.`,
   },

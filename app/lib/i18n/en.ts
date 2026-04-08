@@ -536,10 +536,6 @@ export const en: Translations = {
   requirePremium: {
     checking:"Checking your plan…",heading:"This is a Premium feature.",
     desc:"Upgrade to see what keeps surfacing across all your entries.",
-f1Sub:"Reflect on every entry, not just a few each month",
-f2Sub:"See what themes and emotions keep surfacing",
-f3Sub:"A concise mirror of what Quiet Mirror noticed this week",
-f4Sub:"Understand the recurring loops underneath your entries",
     cta:"Upgrade to Premium →",
     noPressure: (n) => `No pressure to upgrade. Free includes ${n} reflections per month and full journaling — enough to keep writing honestly at your own pace.`,
   },
