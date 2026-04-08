@@ -72,6 +72,7 @@ export default function UpgradePage() {
   const up = t.upgradePage;
   const uf = t.upgradeFull;
   const ps = t.pricingStrings;
+  const pf = t.premiumFeatures;
 
   const faqs = [
     { q: uf.faq1Q, a: uf.faq1A },
@@ -111,11 +112,11 @@ export default function UpgradePage() {
               {/* Feature list */}
               <ul className="mt-7 space-y-3">
                 {[
-                  { label: up.pF1Label, sub: up.pF1Sub,       color: "text-qm-positive" },
-                  { label: up.pF2Label, sub: up.pF2Sub,       color: "text-qm-premium"  },
-                  { label: up.pF3Label, sub: uf.pF3Sub,       color: "text-qm-warning"  },
-                  { label: up.pF4Label, sub: up.pF4Sub,       color: "text-qm-premium"  },
-                  { label: up.pF5Label, sub: t.reflection.nothingRemoved, color: "text-qm-faint" },
+                  { label: pf.f1Label, sub: pf.f1Sub,       color: "text-qm-positive" },
+                  { label: pf.f2Label, sub: pf.f2Sub,       color: "text-qm-premium"  },
+                  { label: pf.f3Label, sub: pf.f3Sub,       color: "text-qm-warning"  },
+                  { label: pf.f4Label, sub: pf.f4Sub,       color: "text-qm-premium"  },
+                  { label: pf.f5Label, sub: pf.f5Sub, color: "text-qm-faint" },
                 ].map(({ label, sub, color }) => (
                   <li key={label} className="flex items-start gap-3 text-sm text-qm-secondary">
                     <span className={`mt-0.5 shrink-0 text-sm ${color}`}>✓</span>

@@ -8,6 +8,7 @@ import { PAYMENT } from "@/app/lib/payment";
 export default function HomeBelowFold() {
   const { t } = useTranslation();
   const ps = t.pricingStrings;
+  const pf = t.premiumFeatures;
   const h = t.homeBelowFold;
 
   return (
@@ -384,9 +385,9 @@ export default function HomeBelowFold() {
               </div>
               <ul className="mt-5 space-y-3 text-sm text-qm-primary">
                 {[
-                  {label:h.pF1Label,sub:h.pF1Sub},{label:h.pF2Label,sub:h.pF2Sub},
-                  {label:h.pF3Label,sub:h.pF3Sub},{label:h.pF4Label,sub:h.pF4Sub},
-                  {label:h.pF5Label,sub:h.pF5Sub},
+                  {label:pf.f1Label,sub:pf.f1Sub},{label:pf.f2Label,sub:pf.f2Sub},
+                  {label:pf.f3Label,sub:pf.f3Sub},{label:pf.f4Label,sub:pf.f4Sub},
+                  {label:pf.f5Label,sub:pf.f5Sub},
                 ].map(({label,sub})=>(
                   <li key={label} className="flex items-start gap-2">
                     <span className="mt-0.5 shrink-0 text-qm-positive">✓</span>

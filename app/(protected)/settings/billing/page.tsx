@@ -56,6 +56,7 @@ export default async function BillingPage() {
   const _t = getTranslations(getLocaleFromCookieString(cookies().toString()));
   const s  = _t.settingsPage;
   const ps = _t.pricingStrings;
+  const pf = _t.premiumFeatures;
 
   const {
     data: { user },
@@ -174,10 +175,10 @@ title={s.planSectionTitle}
               <ul className="mt-3 space-y-2 text-sm text-qm-secondary">
                 {isPaid ? (
                   <>
-                    <li>• {s.premiumItem1}</li>
-                    <li>• {s.premiumItem2}</li>
-                    <li>• {s.premiumItem3}</li>
-                    <li>• {s.premiumItem4}</li>
+                    <li>• {pf.f1Label}</li>
+                    <li>• {pf.f2Label}</li>
+                    <li>• {pf.f3Label}</li>
+                    <li>• {pf.f4Label}</li>
                   </>
                 ) : (
                   <>

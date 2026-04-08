@@ -14,6 +14,7 @@ export default function RequirePremium({ children }: RequirePremiumProps) {
   const { t } = useTranslation();
   const rp = t.requirePremium;
   const ps = t.pricingStrings;
+  const pf = t.premiumFeatures;
   const { loading, planType } = useUserPlan();
 
   if (loading) {
@@ -58,23 +59,23 @@ export default function RequirePremium({ children }: RequirePremiumProps) {
             <div className="mt-6 space-y-3">
               {[
                 {
-                  label: rp.f1Label,
-                  sub: rp.f1Sub,
+                  label: pf.f1Label,
+                  sub: pf.f1Sub,
                   dot: "bg-qm-accent",
                 },
                 {
-                  label: rp.f2Label,
-                  sub: rp.f2Sub,
+                  label: pf.f2Label,
+                  sub: pf.f2Sub,
                   dot: "bg-qm-premium",
                 },
                 {
-                  label: rp.f3Label,
-                  sub: rp.f3Sub,
+                  label: pf.f3Label,
+                  sub: pf.f3Sub,
                   dot: "bg-qm-warning",
                 },
                 {
-                  label: rp.f4Label,
-                  sub: rp.f4Sub,
+                  label: pf.f4Label,
+                  sub: pf.f4Sub,
                   dot: "bg-qm-premium",
                 },
               ].map(({ label, sub, dot }) => (
