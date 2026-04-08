@@ -1,10 +1,12 @@
 // app/privacy/page.tsx
-// Server component — no "use client" needed.
+// Server component — legal content stays in English, notice banner translates.
 
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { CONFIG } from "@/app/lib/config";
 import { PAYMENT } from "@/app/lib/payment";
+import { getTranslations, getLocaleFromCookieString } from "@/app/lib/i18n";
 
 // ─── Update this date whenever the policy changes ────────────────────────────
 const LAST_UPDATED = "June 1, 2025";
@@ -27,6 +29,9 @@ export const metadata: Metadata = {
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function PrivacyPolicyPage() {
+  const lp = getTranslations(getLocaleFromCookieString(cookies().toString())).legalPages;
+  const isEnglish = lp.languageNotice === getTranslations("en").legalPages.languageNotice;
+
   return (
     <main className="min-h-screen bg-qm-bg text-qm-primary">
       {/* Skip link for keyboard users */}
@@ -38,12 +43,27 @@ export default function PrivacyPolicyPage() {
       </a>
 
       <section id="privacy-content" className="mx-auto max-w-4xl px-6 pb-16 pt-24">
+
+        {/* Language notice — shown only for non-English locales */}
+        {!isEnglish && (
+          <div className="mb-8 rounded-xl border border-qm-border-card bg-qm-elevated px-5 py-3 text-sm text-qm-secondary">
+            {lp.languageNotice.split(lp.contactUs)[0]}
+            <a
+              href={`mailto:${CONFIG.supportEmail}`}
+              className="font-semibold text-qm-accent underline underline-offset-2 hover:text-qm-accent-hover"
+            >
+              {lp.contactUs}
+            </a>
+            {lp.languageNotice.split(lp.contactUs)[1]}
+          </div>
+        )}
+
         <p className="qm-eyebrow text-qm-accent">
-          Privacy Policy
+          {lp.privacyTitle}
         </p>
 
         <h1 className="font-display mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-          Your privacy comes first.
+          {lp.privacyHeadline}
         </h1>
 
         <p className="mt-3 max-w-2xl text-qm-secondary">
@@ -55,11 +75,11 @@ export default function PrivacyPolicyPage() {
         {/* Meta box - updated with design tokens */}
         <div className="mt-6 rounded-2xl border border-qm-border-card bg-qm-elevated p-5 text-sm shadow-qm-card">
           <p className="text-xs text-qm-secondary">
-            <span className="font-semibold text-qm-primary">Last updated:</span>{" "}
+            <span className="font-semibold text-qm-primary">{lp.lastUpdated}:</span>{" "}
             {LAST_UPDATED}
           </p>
           <p className="mt-2 text-xs text-qm-secondary">
-            Questions? Email us at{" "}
+            {lp.questions}{" "}
             <a
               href={`mailto:${CONFIG.supportEmail}`}
               className="font-semibold text-qm-accent underline underline-offset-2 transition-colors duration-150 hover:text-qm-accent-hover"
@@ -284,7 +304,7 @@ export default function PrivacyPolicyPage() {
             href="/terms"
             className="text-qm-accent transition-colors duration-150 hover:text-qm-accent-hover"
           >
-            Terms of Service →
+            {lp.termsOfService} →
           </Link>
         </div>
 

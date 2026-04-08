@@ -920,4 +920,19 @@ export const ar: Translations = {
     f5Sub:   "لم يُحذف شيء — فقط أُضيفت طبقة أعمق",
   },
 
+
+  // ── legalPages ──
+  legalPages: {
+    languageNotice: "هذه السياسة مكتوبة باللغة الإنجليزية. للاستفسارات، تواصل معنا.",
+    contactUs: "تواصل معنا",
+    privacyTitle: "سياسة الخصوصية",
+    privacyHeadline: "خصوصيتك في المقام الأول.",
+    termsTitle: "شروط الخدمة",
+    termsHeadline: "شروط بسيطة وصادقة.",
+    lastUpdated: "آخر تحديث",
+    questions: "أسئلة؟ راسلنا على",
+    termsOfService: "شروط الخدمة",
+    privacyPolicy: "سياسة الخصوصية",
+  },
+
 };

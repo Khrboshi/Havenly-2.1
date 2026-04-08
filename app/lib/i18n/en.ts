@@ -918,4 +918,19 @@ export const en: Translations = {
     f5Sub:   "Nothing removed — just a deeper layer added",
   },
 
+
+  // ── legalPages ──
+  legalPages: {
+    languageNotice: "This policy is written in English. For questions, contact us.",
+    contactUs: "contact us",
+    privacyTitle: "Privacy Policy",
+    privacyHeadline: "Your privacy comes first.",
+    termsTitle: "Terms of Service",
+    termsHeadline: "Simple, honest terms.",
+    lastUpdated: "Last updated",
+    questions: "Questions? Email us at",
+    termsOfService: "Terms of Service",
+    privacyPolicy: "Privacy Policy",
+  },
+
 };

@@ -950,4 +950,19 @@ export const uk: Translations = {
     f5Sub:   "Нічого не прибрано — лише додано глибший шар",
   },
 
+
+  // ── legalPages ──
+  legalPages: {
+    languageNotice: "Ця політика написана англійською. З питаннями зверніться до нас.",
+    contactUs: "зверніться до нас",
+    privacyTitle: "Політика конфіденційності",
+    privacyHeadline: "Ваша конфіденційність — перш за все.",
+    termsTitle: "Умови використання",
+    termsHeadline: "Прості та чесні умови.",
+    lastUpdated: "Останнє оновлення",
+    questions: "Питання? Напишіть нам на",
+    termsOfService: "Умови використання",
+    privacyPolicy: "Політика конфіденційності",
+  },
+
 };
