@@ -1,4 +1,4 @@
-// app/lib/i18n/types.ts
+// app/lib/i18n/types.ts — audited 2026-04-08
 //
 // Shared TypeScript interface for all translation files.
 // Every locale (en, uk, …) must satisfy this shape exactly.

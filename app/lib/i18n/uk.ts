@@ -1,4 +1,4 @@
-// i18n audit — reviewed 2026-04-08 — 34 namespaces, all 6 locales in sync
+// i18n audit — reviewed 2026-04-08 — 35 namespaces, 765 keys, all 6 locales in sync
 // app/lib/i18n/uk.ts
 // Ukrainian (Українська) translations.
 // Natural, modern Ukrainian — not machine-translated.
