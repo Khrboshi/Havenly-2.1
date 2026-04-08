@@ -11,12 +11,13 @@ export default function UpgradeConfirmedPage() {
   const _t = getTranslations(getLocaleFromCookieString(cookies().toString()));
   const uc = _t.upgradeConfirmed;
   const ps = _t.pricingStrings;
+  const pf = _t.premiumFeatures;
 
   const features = [
-    { label: uc.feature1Label, sub: uc.feature1Sub, color: "text-qm-positive" },
-    { label: uc.feature2Label, sub: uc.feature2Sub, color: "text-qm-premium" },
-    { label: uc.feature3Label, sub: uc.feature3Sub, color: "text-qm-warning" },
-    { label: uc.feature4Label, sub: uc.feature4Sub, color: "text-qm-premium" },
+    { label: pf.f1Label, sub: pf.f1Sub, color: "text-qm-positive" },
+    { label: pf.f2Label, sub: pf.f2Sub, color: "text-qm-premium" },
+    { label: pf.f3Label, sub: pf.f3Sub, color: "text-qm-warning" },
+    { label: pf.f4Label, sub: pf.f4Sub, color: "text-qm-premium" },
   ];
 
   return (

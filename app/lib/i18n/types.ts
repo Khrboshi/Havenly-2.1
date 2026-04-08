@@ -270,10 +270,6 @@ export interface Translations {
     planStatusFree:   string;
     premiumIncludes:  string;
     freeIncludes:     string;
-    premiumItem1:     string;
-    premiumItem2:     string;
-    premiumItem3:     string;
-    premiumItem4:     string;
     freeItem1:        string;
     freeItem2:        string;
     freeItem3:        (n: number) => string;
@@ -388,14 +384,6 @@ export interface Translations {
     headline1:        string;
     headline2:        string;
     whatUnlocked:     string;
-    feature1Label:    string;
-    feature1Sub:      string;
-    feature2Label:    string;
-    feature2Sub:      string;
-    feature3Label:    string;
-    feature3Sub:      string;
-    feature4Label:    string;
-    feature4Sub:      string;
     ctaWrite:         string;
     ctaInsights:      string;
     refreshOnce:      string;
@@ -489,9 +477,6 @@ export interface Translations {
     premiumLabel: string; premiumTagline: string;
     premiumCancelNote: string; premiumDesc: string;
     premiumWithout: string; premiumWith: string;
-    pF1Label: string; pF1Sub: string; pF2Label: string; pF2Sub: string;
-    pF3Label: string; pF3Sub: string; pF4Label: string; pF4Sub: string;
-    pF5Label: string; pF5Sub: string;
     premiumCta: string; premiumPreview: string;
     faqH: string;
     faq1Q: string; faq1A: string; faq2Q: string; faq2A: string;
@@ -514,8 +499,6 @@ export interface Translations {
   };
   requirePremium: {
     checking: string; heading: string; desc: string;
-    f1Label: string; f1Sub: string; f2Label: string; f2Sub: string;
-    f3Label: string; f3Sub: string; f4Label: string; f4Sub: string;
     cta: string;
     noPressure: (n: number) => string;
   };
@@ -537,9 +520,6 @@ export interface Translations {
     compRow1: string; compRow2: string; compRow3: string;
     compRow4: string; compRow5: string; compRow6: string;
     compUnlimited: string;
-    pF1Label: string; pF1Sub: string; pF2Label: string; pF2Sub: string;
-    pF3Label: string; pF3Sub: string; pF4Label: string; pF4Sub: string;
-    pF5Label: string; pF5Sub: string;
     redirecting: string;
   };
 
@@ -890,6 +870,18 @@ export interface Translations {
     step:               string;
     startTrialCta:      (label: string) => string;
     cancelAnytimeLong:  string;
+  };
+
+
+  // ── Premium feature labels — single source of truth ─────────────────────────
+  // Referenced by: HomeBelowFold, RequirePremium, UpgradeTriggerModal,
+  //                upgrade/page, upgrade/confirmed, settings/billing
+  premiumFeatures: {
+    f1Label: string; f1Sub: string;
+    f2Label: string; f2Sub: string;
+    f3Label: string; f3Sub: string;
+    f4Label: string; f4Sub: string;
+    f5Label: string; f5Sub: string;
   };
 
 }

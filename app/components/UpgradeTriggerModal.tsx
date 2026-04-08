@@ -73,9 +73,9 @@ export default function UpgradeTriggerModal({
           {/* Feature list */}
           <div className="space-y-2.5">
             {[
-              { label: t.requirePremium.f1Label, dot: "bg-qm-accent" },
-              { label: t.requirePremium.f2Label, dot: "bg-qm-premium" },
-              { label: t.requirePremium.f3Label, dot: "bg-qm-warning" },
+              { label: t.premiumFeatures.f1Label, dot: "bg-qm-accent" },
+              { label: t.premiumFeatures.f2Label, dot: "bg-qm-premium" },
+              { label: t.premiumFeatures.f3Label, dot: "bg-qm-warning" },
             ].map(({ label, dot }) => (
               <div key={label} className="flex items-center gap-2.5">
                 <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
