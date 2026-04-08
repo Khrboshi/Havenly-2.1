@@ -746,7 +746,6 @@ export interface Translations {
     heroH1:               string;
     heroH1Accent:         string;
     heroDesc:             (appName: string) => string;
-    pF3Sub:               string;
     // Proof card labels
     proofCardHeader:      string;
     proofCardBadge:       string;
