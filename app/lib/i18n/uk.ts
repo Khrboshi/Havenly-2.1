@@ -311,6 +311,9 @@ export const uk: Translations = {
     priceLabel:           "Ціна",
     nextBillingLabel:     "Наступне списання",
     cancellationsLabel:   "Скасування",
+    cancelVia:          (provider) => `Скасуйте в будь-який час через Керування підпискою в ${provider}.`,
+    premiumUnlocksDesc: "Premium відкриває необмежені відображення та глибші аналітичні дані.",
+    nextCharge:         "Наступне списання",
     noPressure:            "Без тиску. Безкоштовний тариф залишається повністю доступним.",
     refundWindowLast:     (days) => `Останній день вашого ${days}-денного вікна повернення коштів`,
     refundWindowDays:     (days) => `${days} днів залишилось у вашому ${days}-денному вікні повернення`,
@@ -912,6 +915,7 @@ export const uk: Translations = {
     closingDesc: (appName) => `Почніть з одного запису. Коли захочете глибшу картину, Premium допомагає ${appName} з'єднати крапки.`,
     closingStartFree: "Спочатку почати безкоштовно",
     closingTrust: "Без оплати сьогодні · Скасування в будь-який час · Без реклами, ніколи",
+    andConnector: "та",
   },
 
   // ── blogPage ────────────────────────────────────────────────
@@ -931,6 +935,10 @@ export const uk: Translations = {
     bottomDesc: (appName) => `${appName} дає вам приватне місце для того, що ви несете. ШІ не судить, не діагностує і не поспішає — він м'яко відображає паттерни, лише коли ви просите.`,
     bottomCta: "Почати безкоштовну рефлексію",
     bottomPrivacy: "Як захищені ваші дані →",
+    catEmotionalLoad: "Емоційне навантаження",
+    catJournaling:    "Ведення щоденника",
+    catRest:          "Відпочинок",
+    catSelfAwareness: "Самоусвідомлення",
   },
 
 

@@ -284,6 +284,9 @@ export const en: Translations = {
     priceLabel:           "Price",
     nextBillingLabel:     "Next billing",
     cancellationsLabel:   "Cancellations",
+    cancelVia:          (provider) => `Cancel anytime via Manage subscription in ${provider}.`,
+    premiumUnlocksDesc: "Premium unlocks unlimited reflections and deeper insights.",
+    nextCharge:         "Next charge",
     noPressure:            "No pressure. Free remains fully usable.",
     refundWindowLast:     (days) => `Last day of your ${days}-day refund window`,
     refundWindowDays:     (days) => `${days} days left in your ${days}-day refund window`,
@@ -880,6 +883,7 @@ export const en: Translations = {
     closingDesc:          (appName) => `Start with a single entry. When you want the deeper picture, Premium helps ${appName} connect the dots.`,
     closingStartFree:     "Start free first",
     closingTrust:         "No charge today \u00b7 Cancel anytime \u00b7 No ads, ever",
+    andConnector: "and",
   },
 
   // ── Blog page chrome ─────────────────────────────────────────────────────
@@ -899,6 +903,10 @@ export const en: Translations = {
     bottomDesc:     (appName) => `${appName} gives you a private place to put what you\u2019re carrying. The AI does not judge, diagnose, or rush you \u2014 it reflects patterns back gently, only when you ask.`,
     bottomCta:      "Start free reflection",
     bottomPrivacy:  "How your data is protected \u2192",
+    catEmotionalLoad: "Emotional load",
+    catJournaling:    "Journaling",
+    catRest:          "Rest",
+    catSelfAwareness: "Self-awareness",
   },
 
 

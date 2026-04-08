@@ -291,6 +291,9 @@ export const ar: Translations = {
     priceLabel:           "السعر",
     nextBillingLabel:     "الفاتورة القادمة",
     cancellationsLabel:   "الإلغاءات",
+    cancelVia:          (provider) => `ألغِ في أي وقت عبر إدارة الاشتراك في ${provider}.`,
+    premiumUnlocksDesc: "Premium يفتح تأملات غير محدودة ورؤى أعمق.",
+    nextCharge:         "الرسوم التالية",
     noPressure:            "لا ضغط. الخطة المجانية تظل قابلة للاستخدام الكامل.",
     refundWindowLast:     (days) => `آخر يوم في نافذة استرداد ${days} أيام`,
     refundWindowDays:     (days) => `${days} أيام متبقية في نافذة استرداد ${days} أيام`,
@@ -882,6 +885,7 @@ export const ar: Translations = {
     closingDesc: (appName) => `ابدأ بمدخلة واحدة. عندما تريد الصورة الأعمق، يساعد Premium ${appName} على ربط النقاط.`,
     closingStartFree: "ابدأ مجانًا أولاً",
     closingTrust: "بدون رسوم اليوم · إلغاء في أي وقت · بدون إعلانات أبدًا",
+    andConnector: "و",
   },
 
   // ── blogPage ────────────────────────────────────────────────
@@ -901,6 +905,10 @@ export const ar: Translations = {
     bottomDesc: (appName) => `${appName} يمنحك مكانًا خاصًا لوضع ما تحمله. الذكاء الاصطناعي لا يحكم ولا يشخّص ولا يتسرع — يعكس الأنماط بلطف فقط عندما تطلب.`,
     bottomCta: "ابدأ تأملاً مجانيًا",
     bottomPrivacy: "كيف تُحمى بياناتك →",
+    catEmotionalLoad: "الحمل العاطفي",
+    catJournaling:    "التدوين",
+    catRest:          "الراحة",
+    catSelfAwareness: "الوعي الذاتي",
   },
 
 

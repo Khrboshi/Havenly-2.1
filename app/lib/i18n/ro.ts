@@ -279,6 +279,9 @@ export const ro: Translations = {
     priceLabel:           "Preț",
     nextBillingLabel:     "Următoarea facturare",
     cancellationsLabel:   "Anulări",
+    cancelVia:          (provider) => `Anulați oricând prin Gestionați abonamentul în ${provider}.`,
+    premiumUnlocksDesc: "Premium deblochează reflecții nelimitate și perspective mai profunde.",
+    nextCharge:         "Următoarea taxă",
     noPressure:           "Fără presiune. Planul Gratuit rămâne pe deplin utilizabil.",
     refundWindowLast:     (days) => `Ultima zi a ferestrei de rambursare de ${days} zile`,
     refundWindowDays:     (days) => `${days} zile rămase în fereastra de rambursare de ${days} zile`,
@@ -873,6 +876,7 @@ export const ro: Translations = {
     closingDesc: (appName) => `Începeți cu o singură înregistrare. Când doriți imaginea mai profundă, Premium ajută ${appName} să conecteze punctele.`,
     closingStartFree: "Începeți gratuit mai întâi",
     closingTrust: "Fără taxe astăzi · Anulați oricând · Fără reclame, niciodată",
+    andConnector: "și",
   },
 
   // ── blogPage ────────────────────────────────────────────────
@@ -892,6 +896,10 @@ export const ro: Translations = {
     bottomDesc: (appName) => `${appName} vă oferă un loc privat pentru ce purtați. AI-ul nu judecă, nu diagnostichează, nu vă grăbește — reflectă tiparele blând, doar când cereți.`,
     bottomCta: "Începeți o reflecție gratuită",
     bottomPrivacy: "Cum sunt protejate datele dvs. →",
+    catEmotionalLoad: "Sarcină emoțională",
+    catJournaling:    "Jurnal",
+    catRest:          "Odihnă",
+    catSelfAwareness: "Conștiință de sine",
   },
 
 
