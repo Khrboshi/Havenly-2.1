@@ -84,15 +84,23 @@ export async function POST() {
     let customerId = profile?.paddle_customer_id ?? null;
 
     if (!customerId && user.email) {
-      const customer = await paddle.customers.create({
-        email: user.email,
-        customData: { supabase_user_id: user.id } as Record<string, unknown>,
-      });
-      customerId = customer.id;
+      // Get-or-create: search by email first to avoid duplicate customers
+      // on retry. customers.create() returns 409 if the email already exists.
+      const existing = await paddle.customers.list({ email: [user.email] });
+      const firstPage = await existing.next();
+      const existingCustomer = firstPage?.[0] ?? null;
 
-      // Store customer ID — log if it fails but don't block checkout.
-      // On retry the customer lookup above will find the Paddle record via
-      // the customers.list API (idempotent by email in Paddle).
+      if (existingCustomer) {
+        customerId = existingCustomer.id;
+      } else {
+        const created = await paddle.customers.create({
+          email: user.email,
+          customData: { supabase_user_id: user.id } as Record<string, unknown>,
+        });
+        customerId = created.id;
+      }
+
+      // Persist the customer ID — log if it fails but don't block checkout.
       const { error: upsertErr } = await supabase
         .from("profiles")
         .update({ paddle_customer_id: customerId })
@@ -100,7 +108,7 @@ export async function POST() {
 
       if (upsertErr) {
         console.error(
-          "[paddle/checkout] failed to store paddle_customer_id — user may get duplicate customers on retry:",
+          "[paddle/checkout] failed to store paddle_customer_id:",
           upsertErr
         );
       }
