@@ -129,9 +129,11 @@ export async function POST() {
 
     const txnId = transaction.id;
     if (!txnId) {
+      // Log only safe diagnostic fields — never the full transaction object
+      // as it may contain user-linked metadata (email, customData, etc.)
       console.error(
-        "[paddle/checkout] no transaction ID in response:",
-        transaction
+        "[paddle/checkout] no transaction ID in response. status:",
+        transaction.status ?? "unknown"
       );
       return NextResponse.json(
         { error: "Paddle did not return a transaction ID" },
