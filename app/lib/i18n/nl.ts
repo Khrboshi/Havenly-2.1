@@ -444,7 +444,7 @@ export const nl: Translations = {
     demoBadge1:"Eerlijk",demoBadge2:"Ongefilterd",demoBadge3:"Geen structuur nodig",
     demoOutput:"Quiet Mirror spiegelt",demoImmediate:"Direct",
     demoReflection:"Er is een patroon dat het opmerken waard is: je absorbeert de behoeften van anderen tot aan uitputting, en voelt je dan schuldig voor het willen van verlichting. Die schuld is geen bewijs dat je te veel vraagt.",
-    demoTag1:"Emotionele belasting",demoTag2:"People-pleasing",demoTag3:"Wrokscyclus",
+    demoTag1:"Emotionele belasting",demoTag2:"Anderen pleasen",demoTag3:"Wrokscyclus",
     step1Label:"Schrijf de versie die echt waar is",step1Sub:"Één eerlijke zin is genoeg om te beginnen.",
     step2Label:"Krijg een reflectie die benoemt wat je voelt",step2Sub:"Geen advies. Een spiegel. Kort, doordacht, eerlijk.",
     step3Label:"Zie wat er over tijd blijft terugkomen",step3Sub:"Patronen over weken en maanden, niet alleen vandaag.",
