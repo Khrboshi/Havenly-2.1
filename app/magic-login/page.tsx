@@ -204,7 +204,7 @@ function MagicLoginInner() {
           </p>
 
           <Link href="/" className="mt-6 inline-flex items-center gap-1 text-xs font-medium text-qm-faint transition-colors hover:text-qm-muted">
-            ← Back to home
+            {mlp.backToHome}
           </Link>
         </div>
 
@@ -268,7 +268,7 @@ function MagicLoginInner() {
             {/* Email input */}
             <div className="mt-5">
               <label className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.18em] text-qm-faint">
-                Email address
+                {mlp.emailAddressLabel}
               </label>
               <input required type="email" value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -316,7 +316,7 @@ function MagicLoginInner() {
 
             <div className="mt-6 flex flex-col items-center gap-2 text-center lg:hidden">
               <Link href="/" className="text-sm font-medium text-qm-positive transition-colors hover:text-qm-positive-hover">
-                ← Back to Home
+                {mlp.backToHome}
               </Link>
             </div>
           </div>
