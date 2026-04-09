@@ -27,7 +27,7 @@ export const PAYMENT = {
   invoicesApiRoute: "/api/paddle/transactions",
 
   /** Returns the URL to the billing portal with a return URL */
-  portalUrl: (_returnUrl: string) => `/api/paddle/portal`,
+  portalUrl: (_returnUrl?: string) => `/api/paddle/portal`,
 
   /** Label for the button that opens the billing portal */
   portalLabel: "Open billing portal",

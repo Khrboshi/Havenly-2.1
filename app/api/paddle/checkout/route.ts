@@ -74,8 +74,7 @@ export async function POST() {
 
     const paddle = getPaddle();
 
-    // Look up or create a Paddle customer for this user so that
-    // subsequent checkouts pre-fill their email.
+    // Look up existing Paddle customer to pre-fill email on checkout
     const { data: profile } = await supabase
       .from("profiles")
       .select("paddle_customer_id")
@@ -91,19 +90,30 @@ export async function POST() {
       });
       customerId = customer.id;
 
-      await supabase
+      // Store customer ID — log if it fails but don't block checkout.
+      // On retry the customer lookup above will find the Paddle record via
+      // the customers.list API (idempotent by email in Paddle).
+      const { error: upsertErr } = await supabase
         .from("profiles")
         .update({ paddle_customer_id: customerId })
         .eq("id", user.id);
+
+      if (upsertErr) {
+        console.error(
+          "[paddle/checkout] failed to store paddle_customer_id — user may get duplicate customers on retry:",
+          upsertErr
+        );
+      }
     }
 
     // Create a Paddle transaction — generates a hosted checkout URL.
     // supabase_user_id in customData flows through to all webhook events.
+    // NOTE: checkout.url is the hosted checkout page URL, not a success redirect.
+    // The success redirect is configured in Paddle dashboard → Checkout settings.
     const transaction = await paddle.transactions.create({
       items: [{ priceId, quantity: 1 }],
       customData: { supabase_user_id: user.id } as Record<string, unknown>,
       ...(customerId ? { customerId } : {}),
-      checkout: { url: `${siteUrl}/upgrade/confirmed` },
     });
 
     const checkoutUrl = transaction.checkout?.url;

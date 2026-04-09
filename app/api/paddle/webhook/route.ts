@@ -105,14 +105,23 @@ export async function POST(req: Request) {
 
         await setUserPlan({ supabase: supabase as any, userId, planType: "PREMIUM" });
 
-        // Store Paddle IDs so portal + transactions routes can use them
-        await supabase
+        // Store Paddle IDs so portal + transactions routes can use them.
+        // Log if it fails — setUserPlan succeeded so user is PREMIUM,
+        // but portal/transactions routes won't work until this is stored.
+        const { error: profileErr } = await supabase
           .from("profiles")
           .update({
             paddle_customer_id:     sub.customerId ?? null,
             paddle_subscription_id: sub.id         ?? null,
           })
           .eq("id", userId);
+
+        if (profileErr) {
+          console.error(
+            "[paddle/webhook] failed to store paddle IDs on profiles — portal/transactions will fail for user:",
+            userId, profileErr
+          );
+        }
 
         console.log("[paddle/webhook] upgraded to PREMIUM:", userId, event.eventType);
         break;

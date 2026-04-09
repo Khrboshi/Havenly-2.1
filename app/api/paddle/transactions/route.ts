@@ -1,6 +1,6 @@
 // app/api/paddle/transactions/route.ts
 // Returns the user's Paddle transaction history (equivalent to Stripe invoices).
-// Iterates the Collection using the async iterator — .data is private in the SDK.
+// Invoice PDF URLs are fetched via the Paddle API (signed, expire after ~1 hour).
 
 import { NextResponse } from "next/server";
 import { Paddle, Environment } from "@paddle/paddle-node-sdk";
@@ -59,16 +59,30 @@ export async function GET() {
 
     const page = await collection.next();
 
-    const items = (page ?? []).map((tx) => ({
-      id:         tx.id,
-      status:     tx.status,
-      currency:   tx.currencyCode,
-      amount:     tx.details?.totals?.total ?? "0",
-      created:    tx.createdAt,
-      invoiceUrl: tx.invoiceNumber
-        ? `https://invoice.paddle.com/${tx.invoiceNumber}`
-        : null,
-    }));
+    // Fetch invoice PDF URLs via API — cannot be constructed manually.
+    // URLs are signed and expire after ~1 hour so we fetch on demand.
+    const items = await Promise.all(
+      (page ?? []).map(async (tx) => {
+        let invoiceUrl: string | null = null;
+        if (tx.invoiceNumber) {
+          try {
+            const pdf = await paddle.transactions.getInvoicePDF(tx.id);
+            invoiceUrl = pdf.url ?? null;
+          } catch (e) {
+            console.error(`[paddle/transactions] failed to get invoice for ${tx.id}:`, e);
+          }
+        }
+
+        return {
+          id:         tx.id,
+          status:     tx.status,
+          currency:   tx.currencyCode,
+          amount:     tx.details?.totals?.total ?? "0",
+          created:    tx.createdAt,
+          invoiceUrl,
+        };
+      })
+    );
 
     return NextResponse.json({ items });
   } catch (e: any) {
