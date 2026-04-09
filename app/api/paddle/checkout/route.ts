@@ -41,11 +41,16 @@ export async function POST() {
     }
 
     // Guard: never create a second checkout for an already-Premium user.
-    const { data: creditsRow } = await supabase
+    const { data: creditsRow, error: creditsErr } = await supabase
       .from("user_credits")
       .select("plan_type")
       .eq("user_id", user.id)
       .maybeSingle();
+
+    if (creditsErr) {
+      console.error("[paddle/checkout] failed to read user_credits:", creditsErr);
+      return NextResponse.json({ error: "Failed to verify plan status" }, { status: 500 });
+    }
 
     const currentPlan = String(creditsRow?.plan_type ?? "FREE").toUpperCase();
     if (currentPlan === "PREMIUM" || currentPlan === "TRIAL") {
@@ -59,15 +64,6 @@ export async function POST() {
     if (!priceId) {
       return NextResponse.json(
         { error: "Paddle price not configured" },
-        { status: 500 }
-      );
-    }
-
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-    if (!siteUrl) {
-      console.error("[paddle/checkout] NEXT_PUBLIC_SITE_URL is not set");
-      return NextResponse.json(
-        { error: "Site URL not configured" },
         { status: 500 }
       );
     }
@@ -137,10 +133,11 @@ export async function POST() {
     }
 
     return NextResponse.json({ url: checkoutUrl });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to create checkout";
     console.error("[paddle/checkout] error:", err);
     return NextResponse.json(
-      { error: err?.message || "Failed to create checkout" },
+      { error: message },
       { status: 500 }
     );
   }
