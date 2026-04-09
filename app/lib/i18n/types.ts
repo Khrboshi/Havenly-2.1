@@ -883,4 +883,20 @@ export interface Translations {
     f5Label: string; f5Sub: string;
   };
 
+  // ── Legal pages — language notice banner ─────────────────────────────────
+  // Privacy Policy and Terms of Service stay in English.
+  // Only this notice banner and the page titles are translated.
+  legalPages: {
+    languageNotice:  string;
+    contactUs:       string;
+    privacyTitle:    string;
+    privacyHeadline: string;
+    termsTitle:      string;
+    termsHeadline:   string;
+    lastUpdated:     string;
+    questions:       string;
+    termsOfService:  string;
+    privacyPolicy:   string;
+  };
+
 }

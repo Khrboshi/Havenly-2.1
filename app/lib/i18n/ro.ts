@@ -910,4 +910,19 @@ export const ro: Translations = {
     f5Sub:   "Nimic eliminat — doar un strat mai profund adăugat",
   },
 
+
+  // ── legalPages ──
+  legalPages: {
+    languageNotice: "Această politică este redactată în engleză. Pentru întrebări, contactați-ne.",
+    contactUs: "contactați-ne",
+    privacyTitle: "Politică de confidențialitate",
+    privacyHeadline: "Confidențialitatea dvs. este prioritară.",
+    termsTitle: "Termeni de serviciu",
+    termsHeadline: "Termeni simpli și onești.",
+    lastUpdated: "Ultima actualizare",
+    questions: "Întrebări? Scrieți-ne la",
+    termsOfService: "Termeni de serviciu",
+    privacyPolicy: "Politică de confidențialitate",
+  },
+
 };

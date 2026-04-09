@@ -918,4 +918,19 @@ export const fr: Translations = {
     f5Sub:   "Rien de retiré — juste une couche plus profonde ajoutée",
   },
 
+
+  // ── legalPages ──
+  legalPages: {
+    languageNotice: "Cette politique est rédigée en anglais. Pour toute question, contactez-nous.",
+    contactUs: "contactez-nous",
+    privacyTitle: "Politique de confidentialité",
+    privacyHeadline: "Votre vie privée passe en premier.",
+    termsTitle: "Conditions d'utilisation",
+    termsHeadline: "Des conditions simples et honnêtes.",
+    lastUpdated: "Dernière mise à jour",
+    questions: "Questions ? Écrivez-nous à",
+    termsOfService: "Conditions d'utilisation",
+    privacyPolicy: "Politique de confidentialité",
+  },
+
 };

@@ -910,4 +910,19 @@ export const nl: Translations = {
     f5Sub:   "Niets verwijderd — alleen een diepere laag toegevoegd",
   },
 
+
+  // ── legalPages ──
+  legalPages: {
+    languageNotice: "Dit beleid is geschreven in het Engels. Voor vragen, neem contact met ons op.",
+    contactUs: "neem contact op",
+    privacyTitle: "Privacybeleid",
+    privacyHeadline: "Jouw privacy staat voorop.",
+    termsTitle: "Servicevoorwaarden",
+    termsHeadline: "Eenvoudige, eerlijke voorwaarden.",
+    lastUpdated: "Laatst bijgewerkt",
+    questions: "Vragen? Stuur ons een e-mail op",
+    termsOfService: "Servicevoorwaarden",
+    privacyPolicy: "Privacybeleid",
+  },
+
 };
