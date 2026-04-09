@@ -316,7 +316,7 @@ function MagicLoginInner() {
 
             <div className="mt-6 flex flex-col items-center gap-2 text-center lg:hidden">
               <Link href="/" className="text-sm font-medium text-qm-positive transition-colors hover:text-qm-positive-hover">
-                ← Back to Home
+                {mlp.backToHome}
               </Link>
             </div>
           </div>
