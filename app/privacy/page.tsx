@@ -6,7 +6,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { CONFIG } from "@/app/lib/config";
 import { PAYMENT } from "@/app/lib/payment";
-import { getTranslations, getLocaleFromCookieString } from "@/app/lib/i18n";
+import { getTranslations, getLocaleFromCookieString, DEFAULT_LOCALE } from "@/app/lib/i18n";
 import LegalLanguageNotice from "@/app/components/LegalLanguageNotice";
 
 // ─── Update this date whenever the policy changes ────────────────────────────
@@ -30,8 +30,9 @@ export const metadata: Metadata = {
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function PrivacyPolicyPage() {
-  const lp = getTranslations(getLocaleFromCookieString(cookies().toString())).legalPages;
-  const isEnglish = lp.languageNotice === getTranslations("en").legalPages.languageNotice;
+  const locale    = getLocaleFromCookieString(cookies().toString());
+  const lp        = getTranslations(locale).legalPages;
+  const isEnglish = locale === DEFAULT_LOCALE;
 
   return (
     <main className="min-h-screen bg-qm-bg text-qm-primary">

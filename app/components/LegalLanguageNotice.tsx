@@ -13,9 +13,20 @@ type Props = {
 };
 
 export default function LegalLanguageNotice({ notice, linkLabel }: Props) {
-  const parts = notice.split(linkLabel);
-  const before = parts[0] ?? "";
-  const after  = parts[1] ?? "";
+  // If the linkLabel placeholder isn't found in the notice string,
+  // render the notice as plain text to avoid malformed output.
+  if (!notice.includes(linkLabel)) {
+    return (
+      <div className="mb-8 rounded-xl border border-qm-border-card bg-qm-elevated px-5 py-3 text-sm text-qm-secondary">
+        {notice}
+      </div>
+    );
+  }
+
+  const parts  = notice.split(linkLabel);
+  const before = parts[0];
+  // Join remaining parts in case linkLabel appears more than once
+  const after  = parts.slice(1).join(linkLabel);
 
   return (
     <div className="mb-8 rounded-xl border border-qm-border-card bg-qm-elevated px-5 py-3 text-sm text-qm-secondary">

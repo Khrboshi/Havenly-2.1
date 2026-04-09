@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 import { CONFIG } from "@/app/lib/config";
 import { PRICING } from "@/app/lib/pricing";
 import { PAYMENT } from "@/app/lib/payment";
-import { getTranslations, getLocaleFromCookieString } from "@/app/lib/i18n";
+import { getTranslations, getLocaleFromCookieString, DEFAULT_LOCALE } from "@/app/lib/i18n";
 import LegalLanguageNotice from "@/app/components/LegalLanguageNotice";
 
 const LAST_UPDATED = "June 1, 2025";
@@ -26,8 +26,9 @@ export const metadata: Metadata = {
 };
 
 export default function TermsOfServicePage() {
-  const lp = getTranslations(getLocaleFromCookieString(cookies().toString())).legalPages;
-  const isEnglish = lp.languageNotice === getTranslations("en").legalPages.languageNotice;
+  const locale    = getLocaleFromCookieString(cookies().toString());
+  const lp        = getTranslations(locale).legalPages;
+  const isEnglish = locale === DEFAULT_LOCALE;
 
   return (
     <main className="min-h-screen bg-qm-bg text-qm-primary">
