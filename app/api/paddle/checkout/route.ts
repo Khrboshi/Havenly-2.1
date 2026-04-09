@@ -134,10 +134,10 @@ export async function POST() {
 
     return NextResponse.json({ url: checkoutUrl });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Failed to create checkout";
+    // Log full error server-side — never expose vendor/SDK details to client
     console.error("[paddle/checkout] error:", err);
     return NextResponse.json(
-      { error: message },
+      { error: "Failed to create checkout. Please try again." },
       { status: 500 }
     );
   }
