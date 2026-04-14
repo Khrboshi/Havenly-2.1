@@ -23,8 +23,8 @@ const nextConfig = {
     // middleware — see: https://nextjs.org/docs/app/building-your-application/configuring/content-security-policy
     const ContentSecurityPolicy = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com https://cdn.paddle.com",
-      "style-src 'self' 'unsafe-inline' https://cdn.paddle.com https://sandbox-cdn.paddle.com",
+      "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
+      "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "font-src 'self'",
       [
@@ -33,9 +33,8 @@ const nextConfig = {
         "wss://*.supabase.co",
         "https://*.posthog.com",
         "https://va.vercel-scripts.com",
-        "https://*.paddle.com",
       ].join(" "),
-      "frame-src https://*.paddle.com",
+      "frame-src 'none'",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
