@@ -66,7 +66,11 @@ export async function POST() {
       return NextResponse.json({ error: "Product not configured" }, { status: 500 });
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://quietmirror.me";
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+    if (!siteUrl) {
+      console.error("[dodo/checkout] NEXT_PUBLIC_SITE_URL is not set");
+      return NextResponse.json({ error: "Site URL not configured" }, { status: 500 });
+    }
 
     // Require email — Dodo needs it to create a customer.
     // Users who signed up via phone auth or anonymous sessions won't have one.

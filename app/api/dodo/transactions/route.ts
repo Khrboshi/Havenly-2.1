@@ -57,14 +57,22 @@ export async function GET() {
 
     const page = await dodo.payments.list({ customer_id: customerId, page_size: 20 });
 
+    // Normalize to the InvoiceItem shape consumed by
+    // app/(protected)/settings/transactions/page.tsx
     const items = (page.items ?? []).map((payment: any) => ({
-      id:         payment.payment_id,
-      status:     payment.status,
-      currency:   payment.currency,
-      // Dodo returns amount in smallest currency unit (cents)
-      amount:     payment.total_amount ?? 0,
-      created:    payment.created_at,
-      invoiceUrl: payment.payment_link ?? null,
+      id:                payment.payment_id ?? payment.id ?? null,
+      number:            payment.payment_id ?? null,
+      status:            payment.status     ?? null,
+      currency:          payment.currency   ?? null,
+      // amount_paid / amount_due: Dodo returns in smallest currency unit (cents)
+      amount_paid:       payment.total_amount ?? null,
+      amount_due:        payment.total_amount ?? null,
+      // created: billing page expects unix seconds — convert ISO string
+      created:           payment.created_at
+                           ? Math.floor(new Date(payment.created_at).getTime() / 1000)
+                           : 0,
+      hosted_invoice_url: payment.payment_link ?? null,
+      invoice_pdf:        null, // Dodo does not expose a separate PDF URL
     }));
 
     return NextResponse.json({ items });

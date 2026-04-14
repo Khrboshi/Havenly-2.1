@@ -167,9 +167,19 @@ export async function POST(req: Request) {
       const incomingSubId = sub.subscription_id ?? null;
       const storedSubId   = profile?.dodo_subscription_id ?? null;
 
-      // Only skip if BOTH IDs are present and don't match — if storedSubId is
-      // null (edge case: never stored) we allow the downgrade conservatively.
-      if (incomingSubId && storedSubId && incomingSubId !== storedSubId) {
+      // Fail closed if no stored subscription ID — without it the guard cannot
+      // protect against stale events. Return 500 so Dodo retries; this should
+      // only happen if the PREMIUM upsert previously failed.
+      if (!storedSubId) {
+        console.error("[dodo/webhook] no stored dodo_subscription_id for user:", userId, "— returning 500 for retry");
+        return NextResponse.json(
+          { error: "No stored subscription ID — cannot safely process downgrade" },
+          { status: 500 }
+        );
+      }
+
+      // Only skip if BOTH IDs are present and don't match.
+      if (incomingSubId && incomingSubId !== storedSubId) {
         console.log(
           "[dodo/webhook] ignoring stale downgrade — incoming sub:",
           incomingSubId, "stored sub:", storedSubId
