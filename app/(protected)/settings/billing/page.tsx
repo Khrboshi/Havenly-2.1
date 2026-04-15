@@ -58,6 +58,13 @@ export default async function BillingPage() {
   const ps = _t.pricingStrings;
   const pf = _t.premiumFeatures;
 
+  // Precompute once — avoids calling split() twice in JSX
+  const cancelPromptFull = s.cancelContactPrompt(CONFIG.supportEmail);
+  const cancelPromptParts = cancelPromptFull.includes(CONFIG.supportEmail)
+    ? cancelPromptFull.split(CONFIG.supportEmail)
+    : [cancelPromptFull, ""];
+  const [cancelPrefix, cancelSuffix = ""] = cancelPromptParts;
+
   const {
     data: { user },
     error: userErr,
@@ -235,14 +242,14 @@ title={s.planSectionTitle}
                     🛡️ {ps.trialFreeFor(PRICING.trialDays)} {ps.fullAccess} — {ps.trialNoChargeUntil(PRICING.trialDays + 1)}
                   </p>
                   <p className="mt-0.5 text-xs text-qm-faint">
-                    Email{" "}
+                    {cancelPrefix}
                     <a
                       href={`mailto:${CONFIG.supportEmail}`}
                       className="text-qm-secondary underline underline-offset-2 hover:text-qm-positive-hover"
                     >
                       {CONFIG.supportEmail}
-                    </a>{" "}
-                    — no questions asked.
+                    </a>
+                    {cancelSuffix}
                   </p>
                 </div>
               )}
@@ -252,7 +259,7 @@ title={s.planSectionTitle}
                   href="/upgrade"
                   className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-qm-accent px-4 py-2 text-sm font-semibold text-white hover:bg-qm-accent-hover"
                 >
-                  Upgrade to Premium
+                  {s.upgradeToPremium}
                 </a>
               ) : null}
             </div>
@@ -260,7 +267,7 @@ title={s.planSectionTitle}
 
           <p className="mt-6 text-xs text-qm-faint">
             {isPaid
-              ? `Thank you for supporting ${CONFIG.appName}.`
+              ? s.thankYouSupporting(CONFIG.appName)
               : s.noPressure}
           </p>
         </section>
@@ -270,14 +277,14 @@ title={s.planSectionTitle}
           <SectionTitle title={s.accountSectionTitle} subtitle={s.accountBillingSubtitle} />
 
           <div className="rounded-xl border border-qm-border-subtle bg-qm-bg p-5">
-            <div className="text-xs font-semibold text-qm-muted">Email</div>
+            <div className="text-xs font-semibold text-qm-muted">{s.emailLabel}</div>
             <div className="mt-1 text-sm text-qm-primary">{user.email ?? "—"}</div>
           </div>
 
           <div className="mt-4 rounded-xl border border-qm-border-subtle bg-qm-bg p-5">
-            <div className="text-xs font-semibold text-qm-muted">Support</div>
+            <div className="text-xs font-semibold text-qm-muted">{s.supportSidebarLabel}</div>
             <p className="mt-2 text-sm text-qm-muted">
-              Billing questions or cancellations:{" "}
+              {s.supportSidebarText}{" "}
               <a
                 href={`mailto:${CONFIG.supportEmail}`}
                 className="text-qm-primary underline underline-offset-2 hover:text-qm-positive-hover"
@@ -299,7 +306,7 @@ title={s.planSectionTitle}
               href="/upgrade"
               className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-qm-accent px-4 py-2 text-sm font-semibold text-white hover:bg-qm-accent-hover"
             >
-              View Premium
+              {s.viewPremium}
             </a>
           )}
         </aside>
