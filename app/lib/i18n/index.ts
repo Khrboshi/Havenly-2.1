@@ -3,6 +3,6 @@ export type { Translations } from "./types";
 export {
   LOCALE_REGISTRY, SUPPORTED_LOCALES, DEFAULT_LOCALE, LOCALE_STORAGE_KEY,
   LOCALE_META, getTranslations, getDir, getAiLanguageName,
-  getLocaleFromCookieString, getIntlLocale,
+  getLocaleFromCookieString, getIntlLocale, detectLocale,
 } from "./locales";
 export type { Locale, LocaleDefinition } from "./locales";
