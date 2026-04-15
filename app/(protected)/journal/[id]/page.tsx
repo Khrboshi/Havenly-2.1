@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { createServerSupabase } from "@/lib/supabase/server";
+import { getTranslations, getLocaleFromCookieString } from "@/app/lib/i18n";
 import JournalEntryClient from "./JournalEntryClient";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +27,9 @@ export default async function Page({
     .maybeSingle();
 
   if (!entry) {
-    return <div className="p-10 text-qm-primary">Entry not found</div>;
+    const locale = getLocaleFromCookieString(cookies().toString());
+    const t = getTranslations(locale);
+    return <div className="p-10 text-qm-primary">{t.errors.entryNotFound}</div>;
   }
 
   let initialReflection = null;

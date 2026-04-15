@@ -188,7 +188,7 @@ export default function Navbar() {
           {/* Backdrop */}
           <button
             type="button"
-            aria-label="Close menu backdrop"
+            aria-label={t.ui.closeMenuBackdrop}
             onClick={() => setMobileOpen(false)}
             className="fixed inset-0 z-40 backdrop-blur-sm"
             style={{ backgroundColor: "rgba(10, 13, 26, 0.75)" }}

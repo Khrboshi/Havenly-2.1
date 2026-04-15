@@ -11,7 +11,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import InstallPrompt from "@/app/components/InstallPrompt";
 import { CONFIG, BRAND } from "@/app/lib/config";
 import { cookies } from "next/headers";
-import { getLocaleFromCookieString, getDir } from "@/app/lib/i18n";
+import { getLocaleFromCookieString, getDir, getTranslations } from "@/app/lib/i18n";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -119,6 +119,7 @@ export default async function RootLayout({
 }) {
   const locale = getLocaleFromCookieString(cookies().toString());
   const dir    = getDir(locale);
+  const t      = getTranslations(locale);
   return (
     <html lang={locale} dir={dir}>
       <head>
@@ -160,7 +161,7 @@ export default async function RootLayout({
           <InstallPrompt />
 
           {/* Content anchor for skip link - added role and aria-label for accessibility */}
-          <main id="content" role="main" tabIndex={-1} aria-label="Main content">
+          <main id="content" role="main" tabIndex={-1} aria-label={t.ui.mainContentLabel}>
             {children}
           </main>
 

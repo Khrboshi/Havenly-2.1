@@ -14,6 +14,7 @@ export interface Translations {
     entryLoadFailed:   string;
     entryDeleteFailed: string;
     entryGenericFail:  string;
+    entryNotFound:     string;
     reflectionFailed:  string;
     insightsFailed:    string;
     insightsNoData:    string;
@@ -109,6 +110,11 @@ export interface Translations {
     // Language switcher aria-labels
     switchToLanguage: (label: string) => string;
     currentLanguage:  (label: string) => string;
+    // Accessibility labels and placeholders
+    mainContentLabel:    string;
+    closeMenuBackdrop:   string;
+    selectLanguage:      string;
+    emailPlaceholder:    string;
   };
 
   navbar: {
@@ -151,6 +157,28 @@ export interface Translations {
     pageSubheading:   string;
     recentlyLabel:    string;
     patternsNote:     string;
+    // Domain section
+    domainSectionLabel:      string;
+    domainSectionSub:        string;
+    domainEntryOf:           (count: number, total: number) => string;
+    domainClearLeader:       string;
+    domainPatternsClearer:   string;
+    // Weekly trends section
+    weeklyTrendsLabel:       string;
+    weeklyTrendsSub:         string;
+    weeklyTrendsLast:        (n: number) => string;
+    weeklyTrendsThemes:      string;
+    weeklyTrendsEmotions:    string;
+    // Recurring themes / emotions sections
+    recurringThemesLabel:    string;
+    recurringThemesSub:      (n: number) => string;
+    notEnoughThemes:         string;
+    whatKeepsSurfacingLabel: string;
+    whatKeepsSurfacingSub:   (n: number) => string;
+    notEnoughEmotions:       string;
+    // Show more / less
+    showLess:                string;
+    showMore:                (n: number) => string;
   };
 
   dashboard: {

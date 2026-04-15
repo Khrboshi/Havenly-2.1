@@ -86,7 +86,7 @@ export default function LanguageSwitcher({ variant = "dropdown" }: Props) {
       {open && (
         <div
           role="listbox"
-          aria-label="Select language"
+          aria-label={t.ui.selectLanguage}
           className="absolute end-0 top-full z-[60] mt-1.5 w-44 overflow-hidden rounded-2xl border py-1 shadow-lg"
           style={{
             borderColor: "var(--qm-border-card)",
