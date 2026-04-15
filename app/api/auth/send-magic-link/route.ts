@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
     const redirectTo = redirectedFrom || "/dashboard";
 
-    const supabase = createServerSupabase();
+    const supabase = await createServerSupabase();
 
     const { error } = await supabase.auth.signInWithOtp({
       email,

@@ -62,7 +62,7 @@ export async function GET(req: Request) {
   const languageInstruction = targetLanguage
     ? `\nLANGUAGE RULE: Respond entirely in ${targetLanguage}. The question must be in ${targetLanguage} only.\n`
     : "";
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
 
   const {
     data: { user },

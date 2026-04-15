@@ -30,7 +30,7 @@ function safeJson(data: {
 
 export async function GET() {
   try {
-    const supabase = createServerSupabase();
+    const supabase = await createServerSupabase();
 
     const {
       data: { user },

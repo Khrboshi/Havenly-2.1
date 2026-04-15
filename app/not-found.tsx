@@ -1,13 +1,11 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
-import { getTranslations, getLocaleFromCookieString } from "@/app/lib/i18n";
 import { CONFIG } from "@/app/lib/config";
 
-// Note: Next.js 14 does not support metadata exports in not-found.tsx.
-// The root layout.tsx robots config handles noindex for unknown routes.
+// Note: Next.js 15 does not support async request APIs (cookies, headers)
+// in not-found.tsx. This page falls back to English — it is a rare edge
+// case and the nav links remain functional in all locales.
 
 export default function NotFound() {
-  const t = getTranslations(getLocaleFromCookieString(cookies().toString()));
   return (
     <div className="flex min-h-[80vh] items-center justify-center bg-qm-bg px-4">
       <div className="mx-auto max-w-md text-center space-y-4">
@@ -26,13 +24,13 @@ export default function NotFound() {
             href="/dashboard"
             className="rounded-full bg-qm-accent px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-qm-accent-hover"
           >
-            {t.nav.goToDashboard}
+            Go to dashboard
           </Link>
           <Link
             href="/"
             className="rounded-full border border-qm-border-subtle px-5 py-2.5 text-sm font-medium text-qm-secondary transition-colors hover:bg-qm-soft"
           >
-            {t.nav.backToHome}
+            Back to {CONFIG.appName}
           </Link>
         </div>
       </div>

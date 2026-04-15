@@ -3,9 +3,10 @@ import { createServerSupabase } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const supabase = createServerSupabase();
+    const { id } = await params;
+    const supabase = await createServerSupabase();
 
     const {
       data: { user },
@@ -19,7 +20,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     const { data, error } = await supabase
       .from("journal_entries")
       .select("id,title,content,created_at,ai_response")
-      .eq("id", params.id)
+      .eq("id", id)
       .eq("user_id", user.id)
       .single();
 
@@ -33,9 +34,10 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   }
 }
 
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const supabase = createServerSupabase();
+    const { id: entryId } = await params;
+    const supabase = await createServerSupabase();
 
     const {
       data: { user },
@@ -46,7 +48,6 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const entryId = params.id;
     if (!entryId) {
       return NextResponse.json({ error: "Missing entry id" }, { status: 400 });
     }

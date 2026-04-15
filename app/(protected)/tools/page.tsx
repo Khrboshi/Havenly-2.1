@@ -4,8 +4,8 @@ import { getTranslations, getLocaleFromCookieString } from "@/app/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
-export default function ToolsPage() {
-  const t = getTranslations(getLocaleFromCookieString(cookies().toString()));
+export default async function ToolsPage() {
+  const t = getTranslations(getLocaleFromCookieString((await cookies()).toString()));
   return (
     <div className="mx-auto max-w-5xl px-6 py-10 space-y-8">
       <header className="space-y-2">

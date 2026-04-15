@@ -9,9 +9,10 @@ export const dynamic = "force-dynamic";
 export default async function Page({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const supabase = createServerSupabase();
+  const { id } = await params;
+  const supabase = await createServerSupabase();
 
   // ✅ getSession reads from cookie locally — no network call
   const {
@@ -22,12 +23,12 @@ export default async function Page({
   const { data: entry } = await supabase
     .from("journal_entries")
     .select("id,title,content,created_at,ai_response")
-    .eq("id", params.id)
+    .eq("id", id)
     .eq("user_id", session.user.id)
     .maybeSingle();
 
   if (!entry) {
-    const locale = getLocaleFromCookieString(cookies().toString());
+    const locale = getLocaleFromCookieString((await cookies()).toString());
     const t = getTranslations(locale);
     return <div className="p-10 text-qm-primary">{t.errors.entryNotFound}</div>;
   }

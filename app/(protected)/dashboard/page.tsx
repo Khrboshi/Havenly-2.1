@@ -60,7 +60,7 @@ export type DashboardData = {
 };
 
 export default async function DashboardPage() {
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
 
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.user) redirect("/magic-login?reason=not_authenticated");

@@ -22,7 +22,7 @@ function getClientIp(req: Request): string {
 
 async function isRateLimited(ip: string): Promise<boolean> {
   try {
-    const supabase = createServerSupabase();
+    const supabase = await createServerSupabase();
     const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString();
 
     const { count, error } = await supabase
@@ -40,7 +40,7 @@ async function isRateLimited(ip: string): Promise<boolean> {
 
 async function recordAttempt(ip: string): Promise<void> {
   try {
-    const supabase = createServerSupabase();
+    const supabase = await createServerSupabase();
     await supabase
       .from("email_subscribe_attempts")
       .insert({ ip, created_at: new Date().toISOString() });
@@ -142,7 +142,7 @@ export async function POST(req: Request) {
     }
     await recordAttempt(ip);
 
-    const supabase = createServerSupabase();
+    const supabase = await createServerSupabase();
 
     const { error: dbError, data: upsertData } = await supabase
       .from("email_subscribers")

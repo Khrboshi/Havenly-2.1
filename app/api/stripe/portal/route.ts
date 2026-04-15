@@ -50,7 +50,7 @@ export async function GET(req: Request) {
   const fallbackReturn = "/settings/transactions";
 
   try {
-    const supabase = createServerSupabase();
+    const supabase = await createServerSupabase();
 
     const {
       data: { user },

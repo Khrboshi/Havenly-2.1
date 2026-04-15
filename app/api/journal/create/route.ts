@@ -8,7 +8,7 @@ const MAX_CONTENT_LENGTH = 20000;
 
 export async function POST(req: Request) {
   try {
-    const supabase = createServerSupabase();
+    const supabase = await createServerSupabase();
     const body = await req.json();
 
     const {

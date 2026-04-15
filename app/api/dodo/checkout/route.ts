@@ -33,7 +33,7 @@ function getDodo() {
 
 export async function POST() {
   try {
-    const supabase = createServerSupabase();
+    const supabase = await createServerSupabase();
 
     const {
       data: { user },

@@ -25,8 +25,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function TermsOfServicePage() {
-  const locale    = getLocaleFromCookieString(cookies().toString());
+export default async function TermsOfServicePage() {
+  const locale    = getLocaleFromCookieString((await cookies()).toString());
   const lp        = getTranslations(locale).legalPages;
   const isEnglish = locale === DEFAULT_LOCALE;
 

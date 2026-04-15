@@ -29,8 +29,8 @@ export const metadata: Metadata = {
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
-export default function PrivacyPolicyPage() {
-  const locale    = getLocaleFromCookieString(cookies().toString());
+export default async function PrivacyPolicyPage() {
+  const locale    = getLocaleFromCookieString((await cookies()).toString());
   const lp        = getTranslations(locale).legalPages;
   const isEnglish = locale === DEFAULT_LOCALE;
 
