@@ -2,7 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import type { Translations } from "@/app/lib/i18n/types";
 import type { LocaleDefinition } from "@/app/lib/i18n";
-import { DEFAULT_LOCALE, LOCALE_STORAGE_KEY, LOCALE_REGISTRY, SUPPORTED_LOCALES, getTranslations, getDir } from "@/app/lib/i18n";
+import { DEFAULT_LOCALE, LOCALE_STORAGE_KEY, LOCALE_REGISTRY, SUPPORTED_LOCALES, getTranslations, getDir, detectLocale } from "@/app/lib/i18n";
 
 interface I18nContextValue {
   locale:    string;
@@ -16,15 +16,6 @@ const I18nContext = createContext<I18nContextValue>({
   locale: DEFAULT_LOCALE, t: getTranslations(DEFAULT_LOCALE),
   dir: getDir(DEFAULT_LOCALE), setLocale: () => {}, locales: LOCALE_REGISTRY,
 });
-
-function detectLocale(): string {
-  if (typeof window === "undefined") return DEFAULT_LOCALE;
-  try {
-    const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
-    if (stored && SUPPORTED_LOCALES.includes(stored)) return stored;
-  } catch {}
-  return DEFAULT_LOCALE;
-}
 
 function applyToDocument(code: string) {
   if (typeof document === "undefined") return;

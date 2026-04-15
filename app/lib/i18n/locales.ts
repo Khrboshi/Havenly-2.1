@@ -74,3 +74,17 @@ export function getIntlLocale(code: string): string {
   };
   return map[code] ?? code;
 }
+
+/**
+ * Reads the user's preferred locale from localStorage on the client.
+ * Safe to call during SSR — returns DEFAULT_LOCALE when window is undefined.
+ * Used by I18nProvider and not-found.tsx (which cannot use server cookies).
+ */
+export function detectLocale(): string {
+  if (typeof window === "undefined") return DEFAULT_LOCALE;
+  try {
+    const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
+    if (stored && SUPPORTED_LOCALES.includes(stored)) return stored;
+  } catch {}
+  return DEFAULT_LOCALE;
+}

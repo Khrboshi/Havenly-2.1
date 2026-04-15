@@ -2,34 +2,18 @@
 // app/not-found.tsx
 // Client component — Next.js 15 does not support async request APIs
 // (cookies, headers) in not-found.tsx, so we read locale from localStorage
-// using the same detectLocale() pattern as I18nProvider.
+// via the shared detectLocale() utility from @/app/lib/i18n.
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CONFIG } from "@/app/lib/config";
-import {
-  DEFAULT_LOCALE,
-  LOCALE_STORAGE_KEY,
-  SUPPORTED_LOCALES,
-  getTranslations,
-} from "@/app/lib/i18n";
-
-function detectLocale(): string {
-  if (typeof window === "undefined") return DEFAULT_LOCALE;
-  try {
-    const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
-    if (stored && SUPPORTED_LOCALES.includes(stored)) return stored;
-  } catch {}
-  return DEFAULT_LOCALE;
-}
+import { detectLocale, getTranslations } from "@/app/lib/i18n";
 
 export default function NotFound() {
-  const [locale, setLocale] = useState<string>(DEFAULT_LOCALE);
-
-  useEffect(() => {
-    setLocale(detectLocale());
-  }, []);
-
+  // Lazy initializer: reads localStorage on first render (client only).
+  // Avoids the extra render + useEffect while still guarding against
+  // window being undefined during SSR.
+  const [locale] = useState(() => detectLocale());
   const t = getTranslations(locale);
 
   return (
