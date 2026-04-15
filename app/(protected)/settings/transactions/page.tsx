@@ -52,7 +52,7 @@ export default function TransactionsPage() {
   const email = session?.user?.email ?? "Unknown user";
 
   const readablePlan =
-    planType === "PREMIUM" ? "Premium" : planType === "TRIAL" ? "Trial" : "Free";
+    planType === "PREMIUM" ? t.settingsPage.planPremium : planType === "TRIAL" ? t.settingsPage.planTrial : t.settingsPage.planFree;
 
   const [invLoading, setInvLoading] = useState(true);
   const [invError, setInvError] = useState<string | null>(null);

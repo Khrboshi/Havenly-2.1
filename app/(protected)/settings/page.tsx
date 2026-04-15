@@ -233,11 +233,11 @@ export default async function SettingsPage() {
             right={
               isPremium ? (
                 <ActionLink href="/settings/billing" variant="secondary">
-                  Billing
+                  {s.billingTitle}
                 </ActionLink>
               ) : (
                 <ActionLink href="/upgrade" variant="primary">
-                  Upgrade
+                  {s.upgradeLabel}
                 </ActionLink>
               )
             }

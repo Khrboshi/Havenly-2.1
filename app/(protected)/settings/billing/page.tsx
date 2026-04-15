@@ -58,6 +58,13 @@ export default async function BillingPage() {
   const ps = _t.pricingStrings;
   const pf = _t.premiumFeatures;
 
+  // Precompute once — avoids calling split() twice in JSX
+  const cancelPromptFull = s.cancelContactPrompt(CONFIG.supportEmail);
+  const cancelPromptParts = cancelPromptFull.includes(CONFIG.supportEmail)
+    ? cancelPromptFull.split(CONFIG.supportEmail)
+    : [cancelPromptFull, ""];
+  const [cancelPrefix, cancelSuffix = ""] = cancelPromptParts;
+
   const {
     data: { user },
     error: userErr,
@@ -235,14 +242,14 @@ title={s.planSectionTitle}
                     🛡️ {ps.trialFreeFor(PRICING.trialDays)} {ps.fullAccess} — {ps.trialNoChargeUntil(PRICING.trialDays + 1)}
                   </p>
                   <p className="mt-0.5 text-xs text-qm-faint">
-                    {s.cancelContactPrompt(CONFIG.supportEmail).split(CONFIG.supportEmail)[0]}
+                    {cancelPrefix}
                     <a
                       href={`mailto:${CONFIG.supportEmail}`}
                       className="text-qm-secondary underline underline-offset-2 hover:text-qm-positive-hover"
                     >
                       {CONFIG.supportEmail}
                     </a>
-                    {s.cancelContactPrompt(CONFIG.supportEmail).split(CONFIG.supportEmail)[1] ?? ""}
+                    {cancelSuffix}
                   </p>
                 </div>
               )}
