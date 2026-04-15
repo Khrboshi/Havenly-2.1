@@ -252,29 +252,34 @@ function TrendPill({ label, dir }: { label: string; dir: "up" | "down" }) {
 
 // ─── Domain distribution ─────────────────────────────────────────────────────
 
-const DOMAIN_LABELS: Record<
+function getDomainLabels(t: ReturnType<typeof useTranslation>["t"]): Record<
   string,
   { label: string; emoji: string; color: string }
-> = {
-  MONEY: { label: "Money", emoji: "💰", color: DOMAIN_COLOR.MONEY },
-  WORK: { label: "Work", emoji: "💼", color: DOMAIN_COLOR.WORK },
-  RELATIONSHIP: { label: "Relationships", emoji: "🤝", color: DOMAIN_COLOR.RELATIONSHIP },
-  HEALTH: { label: "Health", emoji: "🫀", color: DOMAIN_COLOR.HEALTH },
-  GRIEF: { label: "Grief", emoji: "🕊️", color: DOMAIN_COLOR.GRIEF },
-  PARENTING: { label: "Parenting", emoji: "🌱", color: DOMAIN_COLOR.PARENTING },
-  CREATIVE: { label: "Creative", emoji: "✍️", color: DOMAIN_COLOR.CREATIVE },
-  IDENTITY: { label: "Identity", emoji: "🪞", color: DOMAIN_COLOR.IDENTITY },
-  FITNESS: { label: "Fitness", emoji: "⚡", color: DOMAIN_COLOR.FITNESS },
-  GENERAL: { label: "General", emoji: "📝", color: "var(--qm-text-muted)" },
-};
+> {
+  return {
+    MONEY:        { label: t.insightPreview.domainMoney,        emoji: "💰", color: DOMAIN_COLOR.MONEY },
+    WORK:         { label: t.insightPreview.domainWork,         emoji: "💼", color: DOMAIN_COLOR.WORK },
+    RELATIONSHIP: { label: t.insightPreview.domainRelationship, emoji: "🤝", color: DOMAIN_COLOR.RELATIONSHIP },
+    HEALTH:       { label: t.insightPreview.domainHealth,       emoji: "🫀", color: DOMAIN_COLOR.HEALTH },
+    GRIEF:        { label: t.insightPreview.domainGrief,        emoji: "🕊️", color: DOMAIN_COLOR.GRIEF },
+    PARENTING:    { label: t.insightPreview.domainParenting,    emoji: "🌱", color: DOMAIN_COLOR.PARENTING },
+    CREATIVE:     { label: t.insightPreview.domainCreative,     emoji: "✍️", color: DOMAIN_COLOR.CREATIVE },
+    IDENTITY:     { label: t.insightPreview.domainIdentity,     emoji: "🪞", color: DOMAIN_COLOR.IDENTITY },
+    FITNESS:      { label: t.insightPreview.domainFitness,      emoji: "⚡", color: DOMAIN_COLOR.FITNESS },
+    GENERAL:      { label: "General", emoji: "📝", color: "var(--qm-text-muted)" },
+  };
+}
 
 function DomainSection({
   domains,
   entryCount,
+  t,
 }: {
   domains: Record<string, number>;
   entryCount: number;
+  t: ReturnType<typeof useTranslation>["t"];
 }) {
+  const DOMAIN_LABELS = getDomainLabels(t);
   const sorted = Object.entries(domains)
     .filter(([k]) => k !== "GENERAL")
     .sort((a, b) => b[1] - a[1]);
@@ -302,10 +307,10 @@ function DomainSection({
     <section className="rounded-2xl border border-qm-border-subtle bg-qm-bg p-6">
       <div className="mb-1">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-qm-faint">
-          What you write about most
+          {t.insights.domainSectionLabel}
         </h2>
         <p className="mt-0.5 text-xs text-qm-faint">
-          Based on domain detection across all reflected entries.
+          {t.insights.domainSectionSub}
         </p>
       </div>
 
@@ -316,8 +321,8 @@ function DomainSection({
             {topMeta.label}
           </p>
           <p className="text-xs text-qm-faint">
-            {sorted[0][1]} of {total} {total === 1 ? "entry" : "entries"}
-            {hasClearLeader ? " — your most written-about area" : " — patterns become clearer as you write more"}
+            {t.insights.domainEntryOf(sorted[0][1], total)}
+            {hasClearLeader ? ` ${t.insights.domainClearLeader}` : ` ${t.insights.domainPatternsClearer}`}
           </p>
         </div>
       </div>
@@ -441,8 +446,10 @@ function NotEnoughData({ entryCount }: { entryCount: number }) {
 
 function WeeklyTrends({
   data,
+  t,
 }: {
   data: NonNullable<InsightData["weeklyTrend"]>;
+  t: ReturnType<typeof useTranslation>["t"];
 }) {
   const { weeks, themes: tSparklines, emotions: eSparklines } = data;
 
@@ -456,20 +463,20 @@ function WeeklyTrends({
       <div className="mb-5 flex items-center justify-between">
         <div>
           <h2 className="text-xs font-semibold uppercase tracking-widest text-qm-faint">
-            Weekly trends
+            {t.insights.weeklyTrendsLabel}
           </h2>
           <p className="mt-0.5 text-xs text-qm-faint">
-            How your top patterns have moved week-to-week.
+            {t.insights.weeklyTrendsSub}
           </p>
         </div>
-        <span className="text-xs text-qm-faint">Last {weeks.length} weeks</span>
+        <span className="text-xs text-qm-faint">{t.insights.weeklyTrendsLast(weeks.length)}</span>
       </div>
 
       <div className="grid gap-8 sm:grid-cols-2">
         {themeKeys.length > 0 && (
           <div className="space-y-3">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-qm-faint">
-              Themes
+              {t.insights.weeklyTrendsThemes}
             </p>
             {themeKeys.map((k) => (
               <div key={k} className="flex items-center justify-between gap-3">
@@ -490,7 +497,7 @@ function WeeklyTrends({
         {emotionKeys.length > 0 && (
           <div className="space-y-3">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-qm-faint">
-              Emotions
+              {t.insights.weeklyTrendsEmotions}
             </p>
             {emotionKeys.map((k) => (
               <div key={k} className="flex items-center justify-between gap-3">
@@ -847,7 +854,7 @@ export default function InsightsClient() {
 
           {/* ── Domain distribution ── */}
           {hasDomains && (
-            <DomainSection domains={data.domains!} entryCount={entryCount} />
+            <DomainSection domains={data.domains!} entryCount={entryCount} t={t} />
           )}
 
           <section className="rounded-2xl border border-qm-border-subtle bg-gradient-to-br from-qm-bg to-qm-elevated p-7">
@@ -931,19 +938,17 @@ export default function InsightsClient() {
             </section>
           )}
 
-          {hasWeeklyData && <WeeklyTrends data={data.weeklyTrend!} />}
+          {hasWeeklyData && <WeeklyTrends data={data.weeklyTrend!} t={t} />}
 
           <div className="grid gap-6 md:grid-cols-2">
             <section className="rounded-2xl border border-qm-border-subtle bg-qm-bg p-6">
               <div className="mb-5 flex items-center justify-between">
                 <div>
                   <h2 className="text-xs font-semibold uppercase tracking-widest text-qm-faint">
-                    Recurring themes
+                    {t.insights.recurringThemesLabel}
                   </h2>
                   <p className="mt-0.5 text-xs text-qm-faint">
-                    {allThemes.length} distinct{" "}
-                    {allThemes.length === 1 ? "theme" : "themes"} · cleaned +
-                    merged
+                    {t.insights.recurringThemesSub(allThemes.length)}
                   </p>
                 </div>
                 {allThemes.length > 6 && (
@@ -952,14 +957,14 @@ export default function InsightsClient() {
                     onClick={() => setShowAllThemes((v) => !v)}
                     className="text-xs text-qm-positive hover:text-qm-positive-hover transition font-medium"
                   >
-                    {showAllThemes ? "Show less" : `+${allThemes.length - 6} more`}
+                    {showAllThemes ? t.insights.showLess : t.insights.showMore(allThemes.length - 6)}
                   </button>
                 )}
               </div>
 
               {allThemes.length === 0 ? (
                 <p className="text-sm text-qm-faint">
-                  Not enough personal theme data yet.
+                  {t.insights.notEnoughThemes}
                 </p>
               ) : (
                 <ul className="space-y-4">
@@ -981,12 +986,10 @@ export default function InsightsClient() {
               <div className="mb-5 flex items-center justify-between">
                 <div>
                   <h2 className="text-xs font-semibold uppercase tracking-widest text-qm-faint">
-                    What keeps surfacing
+                    {t.insights.whatKeepsSurfacingLabel}
                   </h2>
                   <p className="mt-0.5 text-xs text-qm-faint">
-                    {allEmotions.length} distinct{" "}
-                    {allEmotions.length === 1 ? "emotion" : "emotions"} ·
-                    cleaned + merged
+                    {t.insights.whatKeepsSurfacingSub(allEmotions.length)}
                   </p>
                 </div>
                 {allEmotions.length > 6 && (
@@ -996,15 +999,15 @@ export default function InsightsClient() {
                     className="text-xs text-qm-positive hover:text-qm-positive-hover transition font-medium"
                   >
                     {showAllEmotions
-                      ? "Show less"
-                      : `+${allEmotions.length - 6} more`}
+                      ? t.insights.showLess
+                      : t.insights.showMore(allEmotions.length - 6)}
                   </button>
                 )}
               </div>
 
               {allEmotions.length === 0 ? (
                 <p className="text-sm text-qm-faint">
-                  Not enough personal emotion data yet.
+                  {t.insights.notEnoughEmotions}
                 </p>
               ) : (
                 <ul className="space-y-4">

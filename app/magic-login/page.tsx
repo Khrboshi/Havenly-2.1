@@ -273,7 +273,7 @@ function MagicLoginInner() {
               <input required type="email" value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && email && mode === "link") onSendEmail(); }}
-                placeholder="you@example.com"
+                placeholder={t.ui.emailPlaceholder}
                 className="w-full rounded-2xl border border-qm-border-card bg-qm-elevated px-4 py-3 text-sm text-qm-primary outline-none transition placeholder:text-qm-muted focus:border-[color:var(--qm-accent)]"
               />
             </div>

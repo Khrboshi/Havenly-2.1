@@ -15,6 +15,7 @@ export const en: Translations = {
     entryLoadFailed:   "Failed to load this entry.",
     entryDeleteFailed: "Could not delete this entry. Please try again.",
     entryGenericFail:  "Something went wrong. Please try again.",
+    entryNotFound:     "Entry not found.",
     reflectionFailed:  "We couldn't generate a reflection right now.",
     insightsFailed:    "Failed to load insights.",
     insightsNoData:    "Not enough data yet — keep writing and generating reflections.",
@@ -118,6 +119,11 @@ export const en: Translations = {
     summaryFailed:      "Couldn't generate summary.",
     switchToLanguage:   (label: string) => `Switch to ${label}`,
     currentLanguage:    (label: string) => `Language: ${label}. Click to switch.`,
+    // Accessibility labels and placeholders
+    mainContentLabel:   "Main content",
+    closeMenuBackdrop:  "Close menu",
+    selectLanguage:     "Select language",
+    emailPlaceholder:   "you@example.com",
   },
 
   navbar: {
@@ -164,6 +170,28 @@ export const en: Translations = {
     pageSubheading: "What Quiet Mirror has noticed across your reflections",
     recentlyLabel:  "Recently:",
     patternsNote:   "These are patterns, not diagnoses. They shift as you keep writing.",
+    // Domain section
+    domainSectionLabel:      "What you write about most",
+    domainSectionSub:        "Based on domain detection across all reflected entries.",
+    domainEntryOf:           (count: number, total: number) => `${count} of ${total} ${total === 1 ? "entry" : "entries"}`,
+    domainClearLeader:       "— your most written-about area",
+    domainPatternsClearer:   "— patterns become clearer as you write more",
+    // Weekly trends section
+    weeklyTrendsLabel:       "Weekly trends",
+    weeklyTrendsSub:         "How your top patterns have moved week-to-week.",
+    weeklyTrendsLast:        (n: number) => `Last ${n} weeks`,
+    weeklyTrendsThemes:      "Themes",
+    weeklyTrendsEmotions:    "Emotions",
+    // Recurring themes / emotions sections
+    recurringThemesLabel:    "Recurring themes",
+    recurringThemesSub:      (n: number) => `${n} distinct ${n === 1 ? "theme" : "themes"} · found + grouped`,
+    notEnoughThemes:         "Not enough personal theme data yet.",
+    whatKeepsSurfacingLabel: "What keeps surfacing",
+    whatKeepsSurfacingSub:   (n: number) => `${n} distinct ${n === 1 ? "emotion" : "emotions"} · found + grouped`,
+    notEnoughEmotions:       "Not enough personal emotion data yet.",
+    // Show more / less
+    showLess:                "Show less",
+    showMore:                (n: number) => `+${n} more`,
   },
 
   dashboard: {
