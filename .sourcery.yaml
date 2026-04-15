@@ -4,39 +4,73 @@
 # https://docs.sourcery.ai/Configuration/
 
 rule_settings:
-  # Default severity for new issues
   default_severity: warning
 
 ignore:
-  # ── Known false positives ────────────────────────────────────────────────────
-
-  # dangerouslySetInnerHTML in app/blog/[slug]/page.tsx is used exclusively
-  # for injecting a JSON-LD structured data <script> tag (standard SEO pattern).
-  # The data source is ARTICLES in app/blog/articles.ts — a hardcoded static
-  # TypeScript file with no user input, no database content, and no external
-  # data. There is no XSS attack surface.
+  # ── False positive: dangerouslySetInnerHTML ───────────────────────────────────
+  # Used exclusively for JSON-LD structured data <script> injection (SEO pattern).
+  # Data source: app/blog/articles.ts — hardcoded static TypeScript file.
+  # No user input, no database content, no external data. Zero XSS surface.
   - rule: react/no-danger
     path: app/blog/[slug]/page.tsx
 
-  # @img/sharp-libvips-darwin-arm64 is flagged for LGPL-3.0 license.
-  # LGPL requires open-sourcing modifications to the LGPL library itself,
-  # not the application that links to it. This does not affect Quiet Mirror's
-  # proprietary SaaS codebase.
+  # ── False positive: LGPL license on sharp platform binaries ──────────────────
+  # LGPL-3.0 requires open-sourcing modifications to the LGPL library itself,
+  # not the application that dynamically links to it.
+  # Scoped to specific assessed packages — new LGPL findings elsewhere still surface.
   - rule: license/lgpl
-    path: "**"
-
-  # ── Dependency CVEs requiring Next.js 15 upgrade ─────────────────────────────
-  # The following CVEs (picomatch ReDoS, yaml DoS, Next.js DoS) are fixed in
-  # Next.js 15.x. Upgrading from 14.x is a breaking change requiring a
-  # dedicated migration PR. Tracked as a planned task.
-  # Target: upgrade Next.js to 15.x in a dedicated PR after regression testing.
-  - rule: npm/audit
-    path: package.json
+    path: node_modules/@img/sharp-libvips-darwin-arm64
+  - rule: license/lgpl
+    path: node_modules/@img/sharp-libvips-linux-x64
+  - rule: license/lgpl
+    path: node_modules/@img/sharp-libvips-linux-arm64
+  - rule: license/lgpl
+    path: node_modules/@img/sharp-libvips-linuxmusl-x64
 
 security:
-  # Suppress transitive dependency alerts for packages we cannot update
-  # without a major Next.js version bump
-  ignore_paths:
-    - node_modules/picomatch
-    - node_modules/yaml
-    - node_modules/next
+  ignore:
+    # ── picomatch ReDoS — GHSA-c2c7-rcm5-vvqj ───────────────────────────────
+    # Transitive dependency of Next.js 14. Fixed in Next.js 15.x.
+    # Upgrade is a breaking change tracked as a planned separate PR.
+    # New picomatch issues outside this advisory will still surface.
+    - rule: npm/audit
+      package: picomatch
+      id: GHSA-c2c7-rcm5-vvqj
+      reason: "Transitive dep of Next.js 14 — fixed by Next.js 15 upgrade (planned PR)"
+      until: "2026-12-31"
+
+    # ── yaml DoS — GHSA-48c2-rrv3-qjmp ──────────────────────────────────────
+    # Transitive dependency of Next.js 14. Fixed in Next.js 15.x.
+    - rule: npm/audit
+      package: yaml
+      id: GHSA-48c2-rrv3-qjmp
+      reason: "Transitive dep of Next.js 14 — fixed by Next.js 15 upgrade (planned PR)"
+      until: "2026-12-31"
+
+    # ── Next.js DoS CVEs — all fixed in Next.js 15.x ─────────────────────────
+    # Breaking change upgrade tracked as a planned separate PR.
+    - rule: npm/audit
+      package: next
+      id: GHSA-h25m-26qc-wcjf
+      reason: "Fixed in Next.js 15.x — breaking change upgrade tracked as planned PR"
+      until: "2026-12-31"
+    - rule: npm/audit
+      package: next
+      id: GHSA-9g9p-9gw9-jx7f
+      reason: "Fixed in Next.js 15.x — breaking change upgrade tracked as planned PR"
+      until: "2026-12-31"
+    - rule: npm/audit
+      package: next
+      id: GHSA-ggv3-7p47-pfv8
+      reason: "Fixed in Next.js 15.x — breaking change upgrade tracked as planned PR"
+      until: "2026-12-31"
+    - rule: npm/audit
+      package: next
+      id: GHSA-3x4c-7xq6-9pq8
+      reason: "Fixed in Next.js 15.x — breaking change upgrade tracked as planned PR"
+      until: "2026-12-31"
+    - rule: npm/audit
+      package: next
+      id: GHSA-q4gf-8mx6-v5v3
+      reason: "Fixed in Next.js 15.x — breaking change upgrade tracked as planned PR"
+      until: "2026-12-31"
