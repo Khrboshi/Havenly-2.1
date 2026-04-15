@@ -7,8 +7,8 @@ import { getTranslations, getLocaleFromCookieString } from "@/app/lib/i18n";
 
 export const metadata = { title: `Welcome to Premium | ${CONFIG.appName}` };
 
-export default function UpgradeConfirmedPage() {
-  const _t = getTranslations(getLocaleFromCookieString(cookies().toString()));
+export default async function UpgradeConfirmedPage() {
+  const _t = getTranslations(getLocaleFromCookieString((await cookies()).toString()));
   const uc = _t.upgradeConfirmed;
   const ps = _t.pricingStrings;
   const pf = _t.premiumFeatures;

@@ -91,7 +91,7 @@ export async function GET(req: Request) {
   const languageInstruction = targetLanguage
     ? `\nLANGUAGE RULE: Respond entirely in ${targetLanguage}. Both suggestions and both journal prompts must be in ${targetLanguage} only.\n`
     : "";
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
 
   const {
     data: { user },

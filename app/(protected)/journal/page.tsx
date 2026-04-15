@@ -95,10 +95,10 @@ function parseAI(raw: string | Record<string, unknown> | null): Record<string, u
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function JournalPage() {
-  const cookieHeader = cookies().toString();
+  const cookieHeader = (await cookies()).toString();
   const locale = getLocaleFromCookieString(cookieHeader);
   const t = getTranslations(locale);
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
 
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) redirect("/magic-login");

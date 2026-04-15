@@ -168,7 +168,7 @@ Rules:
 }
 
 export async function GET(req: Request) {
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
 
   const {
     data: { user },
@@ -478,7 +478,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST() {
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
 
   const {
     data: { user },

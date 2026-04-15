@@ -37,7 +37,7 @@ function getBaseUrl(reqUrl: string): string {
 
 export async function GET(req: Request) {
   try {
-    const supabase = createServerSupabase();
+    const supabase = await createServerSupabase();
 
     const {
       data: { user },

@@ -6,7 +6,7 @@ import JournalForm from "@/app/components/JournalForm";
 export const dynamic = "force-dynamic";
 
 export default async function NewJournalPage() {
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
 
   // ✅ getSession reads from cookie locally — no network call
   const { data: { session } } = await supabase.auth.getSession();

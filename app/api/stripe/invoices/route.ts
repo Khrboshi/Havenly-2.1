@@ -8,7 +8,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function GET() {
   try {
-    const supabase = createServerSupabase();
+    const supabase = await createServerSupabase();
 
     const {
       data: { user },

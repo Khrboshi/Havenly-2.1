@@ -52,8 +52,8 @@ function SectionTitle({
 }
 
 export default async function BillingPage() {
-  const supabase = createServerSupabase();
-  const _t = getTranslations(getLocaleFromCookieString(cookies().toString()));
+  const supabase = await createServerSupabase();
+  const _t = getTranslations(getLocaleFromCookieString((await cookies()).toString()));
   const s  = _t.settingsPage;
   const ps = _t.pricingStrings;
   const pf = _t.premiumFeatures;

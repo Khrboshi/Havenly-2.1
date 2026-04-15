@@ -117,7 +117,7 @@ export default async function RootLayout({
 }: {
   children: ReactNode;
 }) {
-  const locale = getLocaleFromCookieString(cookies().toString());
+  const locale = getLocaleFromCookieString((await cookies()).toString());
   const dir    = getDir(locale);
   const t      = getTranslations(locale);
   return (

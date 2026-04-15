@@ -17,7 +17,7 @@ export async function sendMagicLink(formData: FormData) {
   const email = String(formData.get("email") || "").trim();
   if (!email) return { success: false, message: "Email is required." };
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

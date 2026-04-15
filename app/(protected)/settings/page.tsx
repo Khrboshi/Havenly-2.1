@@ -95,8 +95,8 @@ function DataRow({ label, value }: { label: string; value: React.ReactNode }) {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function SettingsPage() {
-  const supabase = createServerSupabase();
-  const t = getTranslations(getLocaleFromCookieString(cookies().toString()));
+  const supabase = await createServerSupabase();
+  const t = getTranslations(getLocaleFromCookieString((await cookies()).toString()));
   const s = t.settingsPage;
 
   const {

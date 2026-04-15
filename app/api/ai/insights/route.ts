@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 async function getUserPlanType(
-  supabase: ReturnType<typeof createServerSupabase>,
+  supabase: Awaited<ReturnType<typeof createServerSupabase>>,
   userId: string
 ): Promise<PlanType> {
   await ensureCreditsFresh({ supabase, userId });
@@ -38,7 +38,7 @@ function sortedWeeks(keys: string[]): string[] {
 }
 
 export async function GET() {
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
 
   const {
     data: { user },

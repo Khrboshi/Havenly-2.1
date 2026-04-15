@@ -11,7 +11,7 @@ import { getLocaleFromCookieString, getTranslations } from "@/app/lib/i18n";
 // ── Data fetching ─────────────────────────────────────────────────────────────
 
 async function getUserInsightData(userId: string) {
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
 
   const { data: rows } = await supabase
     .from("journal_entries")
@@ -78,11 +78,11 @@ function sc(s: string) { return s.charAt(0).toUpperCase() + s.slice(1); }
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function InsightsPreviewPage() {
-  const locale = getLocaleFromCookieString(cookies().toString());
+  const locale = getLocaleFromCookieString((await cookies()).toString());
   const t      = getTranslations(locale);
   const ip     = t.insightPreview;
   const ps     = t.pricingStrings;
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
 
   const insightData = user

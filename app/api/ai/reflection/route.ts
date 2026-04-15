@@ -120,7 +120,7 @@ function tryParseReflection(aiResponse: unknown) {
 }
 
 export async function POST(req: Request) {
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
 
   const {
     data: { user },

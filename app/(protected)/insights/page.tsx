@@ -11,7 +11,7 @@ function normalizePlan(v: unknown): PlanType {
 }
 
 export default async function InsightsPage() {
-  const supabase = createServerSupabase();
+  const supabase = await createServerSupabase();
 
   // ✅ Use getUser() once — middleware already validated session
   const { data: { user } } = await supabase.auth.getUser();

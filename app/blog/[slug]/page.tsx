@@ -8,15 +8,16 @@ import { PRICING } from "@/app/lib/pricing";
 const SITE_URL = CONFIG.siteUrl;
 
 type BlogArticlePageProps = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 export function generateStaticParams() {
   return ARTICLES.map((article) => ({ slug: article.slug }));
 }
 
-export function generateMetadata({ params }: BlogArticlePageProps): Metadata {
-  const article = getArticle(params.slug);
+export async function generateMetadata({ params }: BlogArticlePageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const article = getArticle(slug);
   if (!article) return { title: "Article not found" };
 
   return {
@@ -26,7 +27,7 @@ export function generateMetadata({ params }: BlogArticlePageProps): Metadata {
       type: "article",
       title: article.title,
       description: article.summary,
-      url: `${SITE_URL}/blog/${article.slug}`,
+      url: `${SITE_URL}/blog/${slug}`,
       siteName: CONFIG.appName,
     },
     twitter: {
@@ -37,8 +38,9 @@ export function generateMetadata({ params }: BlogArticlePageProps): Metadata {
   };
 }
 
-export default function BlogArticlePage({ params }: BlogArticlePageProps) {
-  const article = getArticle(params.slug);
+export default async function BlogArticlePage({ params }: BlogArticlePageProps) {
+  const { slug } = await params;
+  const article = getArticle(slug);
 
   if (!article) {
     return (

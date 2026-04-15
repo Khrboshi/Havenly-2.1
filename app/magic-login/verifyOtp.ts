@@ -10,7 +10,7 @@ export async function verifyOtp(formData: FormData) {
   if (!email) return { success: false, message: "Email is required." };
   if (!token) return { success: false, message: "Code is required." };
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
