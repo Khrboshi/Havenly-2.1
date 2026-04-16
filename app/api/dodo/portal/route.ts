@@ -8,8 +8,10 @@
 
 import { NextResponse } from "next/server";
 import DodoPayments from "dodopayments";
-// CustomerPortalSession is the SDK's typed response for customerPortal.create().
-// It has { link: string } — no cast needed, no optional chaining on .link.
+// CustomerPortalSession is the SDK's typed response for customerPortal.create():
+// { link: string }. Imported from the resource module — the package's index.d.ts
+// and client.d.ts declare it but do not export it in a tsc-resolvable way, so
+// the resource path is the correct stable entrypoint for this type.
 import type { CustomerPortalSession } from "dodopayments/resources/customers/customers.js";
 import { createServerSupabase } from "@/lib/supabase/server";
 
@@ -72,18 +74,20 @@ export async function GET(req: Request) {
     const session: CustomerPortalSession =
       await dodo.customers.customerPortal.create(profile.dodo_customer_id);
 
-    // .link is typed string (non-optional) but guard anyway in case the API
-    // returns an unexpected shape at runtime.
-    const portalUrl = session.link;
-    if (!portalUrl) {
-      console.error("[dodo/portal] no link in portal session response:", session);
+    // session.link is typed string (non-optional) in the SDK. This typeof guard
+    // defends against live API drift — i.e. the API returning a shape that does
+    // not match the current SDK types — rather than a TypeScript-level concern.
+    if (typeof session.link !== "string" || !session.link) {
+      console.error("[dodo/portal] unexpected portal session shape:", session);
       return NextResponse.redirect(new URL(FALLBACK, getBaseUrl(req.url)), 303);
     }
 
-    return NextResponse.redirect(portalUrl, 303);
+    return NextResponse.redirect(session.link, 303);
   } catch (err: unknown) {
+    // Log both the full error object (preserves stack trace and additional
+    // properties for production debugging) and a readable message summary.
     const msg = err instanceof Error ? err.message : String(err);
-    console.error("[dodo/portal] error:", msg);
+    console.error("[dodo/portal] error:", msg, err);
     return NextResponse.redirect(
       new URL(FALLBACK, new URL(req.url).origin),
       303
