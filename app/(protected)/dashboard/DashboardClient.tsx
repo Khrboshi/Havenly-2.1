@@ -146,6 +146,7 @@ function PremiumInsightCard({
   corepattern: string | null;
   reflectedThisWeek: boolean;
 }) {
+  const { t } = useTranslation();
   const safePattern = sanitiseCorePattern(corepattern);
   const hasData = emotion || theme || safePattern;
   if (!hasData) return null;
