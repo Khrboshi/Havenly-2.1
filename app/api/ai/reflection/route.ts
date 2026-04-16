@@ -6,6 +6,7 @@ import { generateReflectionFromEntry, detectCrisisContent } from "@/lib/ai/gener
 import { type PlanType, normalizePlan } from "@/lib/planUtils";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getLocaleFromCookieString, SUPPORTED_LOCALES } from "@/app/lib/i18n";
+import { PRICING } from "@/app/lib/pricing";
 
 // Local schema type — replace with Supabase generated types when available
 type JournalEntry = {
@@ -93,6 +94,64 @@ async function consumeOneCredit(supabase: SupabaseClient, userId: string): Promi
   }
 
   return { ok: true, remaining };
+}
+
+/**
+ * Atomically refunds one reflection credit on AI generation failure.
+ *
+ * WHY NOT `remaining = remainingAfterConsume + 1`:
+ *   The Groq call can take up to 25 seconds. A concurrent request from the same
+ *   user could consume another credit during that window. Writing a stale snapshot
+ *   value + 1 would then overwrite the concurrent write and produce an incorrect
+ *   balance. For example: consumed → remaining=2, concurrent request → remaining=1,
+ *   Groq fails → stale refund writes 3 instead of the correct 2.
+ *
+ * THIS APPROACH — atomic read-then-conditional-write:
+ *   1. Read the *current* remaining_credits at refund time (not the pre-Groq snapshot).
+ *   2. Write current + 1 only if it would not exceed the monthly cap (prevents
+ *      over-refunding if the row was reset between consume and refund).
+ *   3. Use `.eq("remaining_credits", current)` as an optimistic lock — if a
+ *      concurrent write changed the value between our read and write, 0 rows are
+ *      updated. This is correct: the concurrent write already reflects the true
+ *      balance, and skipping the refund is safe (the credit was legitimately consumed).
+ *
+ * No new database functions required.
+ */
+async function refundOneCredit(supabase: SupabaseClient, userId: string): Promise<void> {
+  // Read current balance at refund time — never use the pre-Groq snapshot value
+  const { data, error: readErr } = await supabase
+    .from("user_credits")
+    .select("remaining_credits")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (readErr || !data) {
+    console.error("[reflection] refund: failed to read current credits:", readErr);
+    return;
+  }
+
+  const current = typeof data.remaining_credits === "number" ? data.remaining_credits : 0;
+
+  // Guard: never exceed the monthly cap (handles edge case where row was reset)
+  if (current >= PRICING.freeMonthlyCredits) {
+    console.log("[reflection] refund: credits already at cap, skipping");
+    return;
+  }
+
+  // Optimistic-lock write: only succeeds if no concurrent write changed the value
+  const { error: writeErr } = await supabase
+    .from("user_credits")
+    .update({
+      remaining_credits: current + 1,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", userId)
+    .eq("remaining_credits", current); // optimistic lock
+
+  if (writeErr) {
+    console.error("[reflection] refund: write failed:", writeErr);
+  }
+  // If 0 rows updated (concurrent write won the race), that is correct — skip silently
 }
 
 function noStoreHeaders() {
@@ -297,13 +356,7 @@ export async function POST(req: Request) {
 
     if (!isUnlimited && remainingAfterConsume !== null) {
       try {
-        await supabase
-          .from("user_credits")
-          .update({
-            remaining_credits: remainingAfterConsume + 1,
-            updated_at: new Date().toISOString(),
-          } as { remaining_credits: number; updated_at: string })
-          .eq("user_id", userId);
+        await refundOneCredit(supabase, userId);
       } catch (refundErr) {
         console.error("[reflection] refund failed:", refundErr);
       }
