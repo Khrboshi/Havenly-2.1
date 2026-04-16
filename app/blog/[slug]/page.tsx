@@ -58,7 +58,11 @@ export default async function BlogArticlePage({ params }: BlogArticlePageProps) 
     );
   }
 
-  // JSON-LD structured data for Google rich results
+  // JSON-LD structured data for Google rich results.
+  // Escape </script> sequences in the serialized JSON to prevent any
+  // script-injection if article fields ever contain attacker-controlled text.
+  // Unicode escapes for <, >, & are valid JSON and parsed correctly by search
+  // engines — this is the OWASP-recommended defence for JSON-LD blocks.
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -73,12 +77,16 @@ export default async function BlogArticlePage({ params }: BlogArticlePageProps) 
     articleSection: article.category,
     timeRequired: `PT${article.minutes}M`,
   };
+  const jsonLdString = JSON.stringify(jsonLd)
+    .replace(/</g, "\u003c")
+    .replace(/>/g, "\u003e")
+    .replace(/&/g, "\u0026");
 
   return (
     <main className="min-h-screen bg-qm-bg text-qm-primary">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdString }}
       />
       <section className="mx-auto max-w-3xl px-6 pb-16 pt-24">
         <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-qm-accent">
