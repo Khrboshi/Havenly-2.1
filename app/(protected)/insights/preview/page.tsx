@@ -33,26 +33,28 @@ async function getUserInsightData(userId: string) {
     "pride", "tiredness", "determination", "frustration", "hurt", "longing", "confusion"]);
 
   for (const row of rows ?? []) {
-    let parsed: any = null;
+    let parsed: unknown = null;
     try {
       parsed = typeof row.ai_response === "string"
         ? JSON.parse(row.ai_response) : row.ai_response;
     } catch { continue; }
+    if (!parsed || typeof parsed !== "object") continue;
+    const parsedObj = parsed as Record<string, unknown>;
 
     entryCount++;
 
-    for (const t of Array.isArray(parsed?.themes) ? parsed.themes : []) {
+    for (const t of Array.isArray(parsedObj.themes) ? parsedObj.themes : []) {
       const k = String(t || "").trim().toLowerCase();
       if (!k || NOISE_THEMES.has(k)) continue;
       themes[k] = (themes[k] || 0) + 1;
     }
-    for (const e of Array.isArray(parsed?.emotions) ? parsed.emotions : []) {
+    for (const e of Array.isArray(parsedObj.emotions) ? parsedObj.emotions : []) {
       const k = String(e || "").trim().toLowerCase();
       if (!k || NOISE_EMOTIONS.has(k)) continue;
       emotions[k] = (emotions[k] || 0) + 1;
     }
-    const domain = typeof parsed?.domain === "string"
-      ? parsed.domain.trim().toUpperCase() : "";
+    const domain = typeof parsedObj.domain === "string"
+      ? parsedObj.domain.trim().toUpperCase() : "";
     if (domain && domain !== "GENERAL") {
       domains[domain] = (domains[domain] || 0) + 1;
     }

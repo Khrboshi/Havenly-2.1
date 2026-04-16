@@ -124,11 +124,12 @@ export async function POST(req: Request) {
   const locale = getLocaleFromCookieString(req.headers.get("cookie") ?? "");
   const dir    = getDir(locale);
   try {
-    let body: any = {};
+    let body: unknown = {};
     try { body = await req.json(); } catch { body = {}; }
+    const bodyObj = (typeof body === "object" && body !== null) ? body as Record<string, unknown> : {};
 
-    const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
-    const source = typeof body?.source === "string" ? body.source : "blog";
+    const email = typeof bodyObj.email === "string" ? bodyObj.email.trim().toLowerCase() : "";
+    const source = typeof bodyObj.source === "string" ? bodyObj.source : "blog";
 
     if (!email || !EMAIL_RE.test(email)) {
       return NextResponse.json({ ok: false, error: "invalid_email" }, { status: 400 });

@@ -46,6 +46,7 @@ export interface JournalAIRow {
 export interface ProfileSummaryRow {
   weekly_summary: string | null;
   weekly_summary_generated_at: string | null;
+  weekly_summary_locale: string | null;
 }
 
 // ── Groq API response shape ───────────────────────────────────────────────────

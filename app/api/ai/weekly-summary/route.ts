@@ -207,7 +207,7 @@ export async function GET(req: Request) {
 
   const cachedSummary = profile?.weekly_summary ?? null;
   const cachedAt = profile?.weekly_summary_generated_at ?? null;
-  const cachedLocale = (profile as any)?.weekly_summary_locale ?? "en";
+  const cachedLocale = profile?.weekly_summary_locale ?? "en";
 
   // Cache is fresh only if it's within TTL AND was generated in the same language
   const isFresh =

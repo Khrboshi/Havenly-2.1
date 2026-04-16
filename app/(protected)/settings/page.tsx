@@ -8,6 +8,7 @@ import { PAYMENT } from "@/app/lib/payment";
 import { PRICING } from "@/app/lib/pricing";
 import { CONFIG } from "@/app/lib/config";
 import { getTranslations, getLocaleFromCookieString } from "@/app/lib/i18n";
+import type { UserCreditsRow } from "@/lib/supabaseTypes";
 
 export const dynamic = "force-dynamic";
 
@@ -109,23 +110,24 @@ export default async function SettingsPage() {
   // Ensure credits row is fresh before reading it
   await ensureCreditsFresh({ supabase, userId: user.id });
 
-  const { data: creditsRow } = await supabase
+  const { data: creditsData } = await supabase
     .from("user_credits")
     .select("plan_type, remaining_credits, renewal_date")
     .eq("user_id", user.id)
     .maybeSingle();
+  const creditsRow = creditsData as UserCreditsRow | null;
 
-  const planType = String((creditsRow as any)?.plan_type ?? "FREE").toUpperCase();
+  const planType = String(creditsRow?.plan_type ?? "FREE").toUpperCase();
   const plan = (["PREMIUM", "TRIAL"].includes(planType) ? planType : "FREE") as
     | "PREMIUM" | "TRIAL" | "FREE";
 
   const isPremium = plan === "PREMIUM" || plan === "TRIAL";
   const remainingCredits: number = isPremium
     ? Infinity
-    : typeof (creditsRow as any)?.remaining_credits === "number"
-    ? (creditsRow as any).remaining_credits
+    : typeof creditsRow?.remaining_credits === "number"
+    ? creditsRow.remaining_credits
     : 0;
-  const renewalDate: string | null = (creditsRow as any)?.renewal_date ?? null;
+  const renewalDate: string | null = creditsRow?.renewal_date ?? null;
 
   // Entry count
   const { count: entryCount } = await supabase

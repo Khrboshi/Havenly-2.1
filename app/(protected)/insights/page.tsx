@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { type PlanType } from "@/lib/planUtils";
 import InsightsClient from "./InsightsClient";
+import type { UserPlanRow } from "@/lib/supabaseTypes";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,7 @@ export default async function InsightsPage() {
     .eq("user_id", user.id)
     .maybeSingle();
 
-  const planType = normalizePlan((data as any)?.plan_type);
+  const planType = normalizePlan((data as UserPlanRow | null)?.plan_type);
 
   if (planType !== "PREMIUM" && planType !== "TRIAL") {
     redirect("/insights/preview");

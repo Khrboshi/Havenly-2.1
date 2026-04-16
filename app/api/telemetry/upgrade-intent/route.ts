@@ -5,14 +5,15 @@ export const runtime = "nodejs"; // safe default
 export async function POST(req: Request) {
   try {
     // Best-effort parse (never fail)
-    let body: any = {};
+    let body: unknown = {};
     try {
       body = await req.json();
     } catch {
       body = {};
     }
+    const bodyObj = (typeof body === "object" && body !== null) ? body as Record<string, unknown> : {};
 
-    const source = typeof body?.source === "string" ? body.source : "upgrade-page";
+    const source = typeof bodyObj.source === "string" ? bodyObj.source : "upgrade-page";
 
     // Online-verifiable telemetry for now (Vercel Runtime Logs)
     console.log("[telemetry] upgrade_intent", {
