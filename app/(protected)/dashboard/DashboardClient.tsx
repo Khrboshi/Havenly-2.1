@@ -295,9 +295,9 @@ function ThreadCard({
   const body = wroteToday
     ? t.dashboard.dayEvolved
     : lastEntryId && lastTopEmotion
-    ? t.dashboard.threadBodyWritten(when!, lastTopEmotion)
+    ? t.dashboard.threadBodyWritten(when ?? "", lastTopEmotion)
     : lastEntryId
-    ? t.dashboard.threadBodyWrittenNoEmotion(when!)
+    ? t.dashboard.threadBodyWrittenNoEmotion(when ?? "")
     : t.dashboard.oneHonestSentence;
 
   const threadPrompt = wroteToday

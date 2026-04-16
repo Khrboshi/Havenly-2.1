@@ -243,7 +243,7 @@ export const ro: Translations = {
     ],
     welcomeTag:                 "Bun venit la Quiet Mirror",
     welcomeHeading:             "Acesta este spațiul tău privat pentru a gândi cu voce tare.",
-    welcomeBody:                (appName) => `Scrie ce se întâmplă cu adevărat — ${appName} citește, reflectă blând înaoi și începe să observe ce se repetă tăcut în intrările tale. O singură propoziție este întotdeauna suficientă pentru a începe.`,
+    welcomeBody:                (appName) => `Scrie ce se întâmplă cu adevărat — ${appName} citește, reflectă blând înapoi și începe să observe ce se repetă tăcut în intrările tale. O singură propoziție este întotdeauna suficientă pentru a începe.`,
     writeFirstEntry:            "Scrie prima ta intrare →",
     welcomePrivacy:             "Durează mai puțin de un minut · rămâne privat · nu antrenează niciodată AI",
     patternStartedTag:          "Istoricul tiparelor tale a început",

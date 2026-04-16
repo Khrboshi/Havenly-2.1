@@ -249,6 +249,10 @@ export const en: Translations = {
       { q: "What are you proud of, even quietly?",     sub: "Small things count.",                                   accent: "emerald" },
       { q: "Just free write",                          sub: "No structure. No rules. Start anywhere.",               accent: "slate"   },
     ],
+    // NOTE: welcomeTag and patternStartedBody intentionally hardcode "Quiet Mirror"
+    // per brand rules (the name is never translated). Strings that take `appName`
+    // as a parameter are mid-sentence interpolations where the function form is
+    // required for grammar. Tag-style labels use the name as a proper noun directly.
     welcomeTag:                 "Welcome to Quiet Mirror",
     welcomeHeading:             "This is your private space to think out loud.",
     welcomeBody:                (appName) => `Write what’s actually going on — ${appName} reads it, reflects it back gently, and starts noticing what quietly repeats across your entries over time. One sentence is always enough to start.`,
