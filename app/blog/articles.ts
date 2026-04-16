@@ -5,14 +5,14 @@ export type BlogArticle = {
   minutes: number;
   summary: string;
   body: string[];
-  /** ISO 8601 date — used by sitemap.xml for lastModified freshness signals */
-  publishedAt: string;
+  /** Publication date — used by sitemap.xml for lastModified freshness signals */
+  publishedAt: Date;
 };
 
 export const ARTICLES: BlogArticle[] = [
   {
     slug: "when-you-feel-behind-on-your-own-life",
-    publishedAt: "2024-11-01",
+    publishedAt: new Date("2024-11-01"),
     category: "Emotional load",
     minutes: 5,
     title: "When you feel behind on your own life",
@@ -27,7 +27,7 @@ export const ARTICLES: BlogArticle[] = [
   },
   {
     slug: "tiny-check-ins-for-a-very-busy-brain",
-    publishedAt: "2024-11-08",
+    publishedAt: new Date("2024-11-08"),
     category: "Journaling",
     minutes: 4,
     title: "Tiny check-ins for a very busy brain",
@@ -43,7 +43,7 @@ export const ARTICLES: BlogArticle[] = [
   },
   {
     slug: "difference-between-distraction-and-rest",
-    publishedAt: "2024-11-15",
+    publishedAt: new Date("2024-11-15"),
     category: "Rest",
     minutes: 6,
     title: "The difference between distraction and real rest",
@@ -60,7 +60,7 @@ export const ARTICLES: BlogArticle[] = [
 
   {
     slug: "the-sunday-dread",
-    publishedAt: "2024-11-22",
+    publishedAt: new Date("2024-11-22"),
     category: "Emotional load",
     minutes: 5,
     title: "The Sunday dread",
@@ -76,7 +76,7 @@ export const ARTICLES: BlogArticle[] = [
   },
   {
     slug: "when-youre-the-strong-one",
-    publishedAt: "2024-12-01",
+    publishedAt: new Date("2024-12-01"),
     category: "Self-awareness",
     minutes: 6,
     title: "When you're the strong one",
@@ -92,7 +92,7 @@ export const ARTICLES: BlogArticle[] = [
   },
   {
     slug: "why-good-things-feel-hard-to-hold",
-    publishedAt: "2024-12-08",
+    publishedAt: new Date("2024-12-08"),
     category: "Self-awareness",
     minutes: 5,
     title: "Why good things feel hard to hold onto",
@@ -108,7 +108,7 @@ export const ARTICLES: BlogArticle[] = [
   },
   {
     slug: "saying-fine-when-you-dont-mean-it",
-    publishedAt: "2024-12-15",
+    publishedAt: new Date("2024-12-15"),
     category: "Emotional load",
     minutes: 5,
     title: "Saying fine when you don't mean it",
@@ -124,7 +124,7 @@ export const ARTICLES: BlogArticle[] = [
   },
   {
     slug: "emotional-backlog-why-you-feel-so-tired",
-    publishedAt: "2025-01-05",
+    publishedAt: new Date("2025-01-05"),
     category: "Self-awareness",
     minutes: 7,
     title: "Emotional backlog: why you feel so tired",
