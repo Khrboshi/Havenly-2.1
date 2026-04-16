@@ -18,13 +18,21 @@ const base = CONFIG.siteUrl.replace(/\/$/, "");
 export default function sitemap(): MetadataRoute.Sitemap {
   const currentDate = new Date();
   
-  // Blog posts — using currentDate since your BlogArticle type doesn't have publishedAt/updatedAt
-  const blogPosts: MetadataRoute.Sitemap = ARTICLES.map((article) => ({
-    url: `${base}/blog/${article.slug}`,
-    lastModified: currentDate,
-    changeFrequency: "monthly" as const,
-    priority: 0.7,
-  }));
+  // Blog posts — each article has a real publishedAt Date for accurate
+  // lastModified signals. Search engines use this to prioritise recrawls.
+  // Guard against invalid Date objects to avoid "Invalid Date" sitemap entries.
+  const blogPosts: MetadataRoute.Sitemap = ARTICLES.flatMap((article) => {
+    if (isNaN(article.publishedAt.getTime())) {
+      console.warn(`[sitemap] invalid publishedAt for article: ${article.slug}`);
+      return [];
+    }
+    return [{
+      url: `${base}/blog/${article.slug}`,
+      lastModified: article.publishedAt,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    }];
+  });
 
   // Main marketing pages
   const mainPages: MetadataRoute.Sitemap = [
