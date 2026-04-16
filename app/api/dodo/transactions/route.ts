@@ -7,6 +7,7 @@
 
 import { NextResponse } from "next/server";
 import DodoPayments from "dodopayments";
+import type { PaymentListResponse } from "dodopayments/resources/payments.js";
 import { createServerSupabase } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -59,8 +60,8 @@ export async function GET() {
 
     // Normalize to the InvoiceItem shape consumed by
     // app/(protected)/settings/transactions/page.tsx
-    const items = (page.items ?? []).map((payment: any) => ({
-      id:                payment.payment_id ?? payment.id ?? null,
+    const items = (page.items ?? []).map((payment: PaymentListResponse) => ({
+      id:                payment.payment_id ?? null,
       number:            payment.payment_id ?? null,
       status:            payment.status     ?? null,
       currency:          payment.currency   ?? null,
@@ -71,13 +72,14 @@ export async function GET() {
       created:           payment.created_at
                            ? Math.floor(new Date(payment.created_at).getTime() / 1000)
                            : 0,
-      hosted_invoice_url: payment.payment_link ?? null,
+      hosted_invoice_url: payment.invoice_url ?? null,
       invoice_pdf:        null, // Dodo does not expose a separate PDF URL
     }));
 
     return NextResponse.json({ items });
-  } catch (e: any) {
-    console.error("[dodo/transactions] error:", e?.message || e);
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("[dodo/transactions] error:", msg, e);
     return NextResponse.json({ error: "Transactions error" }, { status: 500 });
   }
 }

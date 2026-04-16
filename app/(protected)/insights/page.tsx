@@ -5,6 +5,9 @@ import InsightsClient from "./InsightsClient";
 
 export const dynamic = "force-dynamic";
 
+// Local type — replace with generated Supabase types when available
+type UserPlanRow = { plan_type: string | null };
+
 function normalizePlan(v: unknown): PlanType {
   const p = String(v ?? "FREE").toUpperCase();
   return p === "PREMIUM" || p === "TRIAL" ? (p as PlanType) : "FREE";
@@ -24,7 +27,7 @@ export default async function InsightsPage() {
     .eq("user_id", user.id)
     .maybeSingle();
 
-  const planType = normalizePlan((data as any)?.plan_type);
+  const planType = normalizePlan((data as UserPlanRow | null)?.plan_type);
 
   if (planType !== "PREMIUM" && planType !== "TRIAL") {
     redirect("/insights/preview");

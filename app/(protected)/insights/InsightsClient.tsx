@@ -533,7 +533,7 @@ function WeeklySummarySection({ hasRealData }: { hasRealData: boolean }) {
       }
       const res = await fetch("/api/ai/weekly-summary", { cache: "no-store" });
       if (!res.ok) {
-        const j = await res.json().catch(() => ({} as any));
+        const j = await res.json().catch(() => ({}) as Record<string, unknown>);
         setState({
           status: "error",
           message: j?.error || t.ui.summaryFailed,
@@ -676,8 +676,8 @@ export default function InsightsClient() {
       try {
         const res = await fetch("/api/ai/insights", { cache: "no-store" });
         if (!res.ok) {
-          const j = await res.json().catch(() => ({} as any));
-          setError(j?.error || t.errors.insightsFailed);
+          const j = await res.json().catch(() => ({}) as Record<string, unknown>);
+          setError((j as Record<string, unknown>)?.error as string || t.errors.insightsFailed);
           return;
         }
         setData(await res.json());

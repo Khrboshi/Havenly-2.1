@@ -10,6 +10,9 @@ import { getTranslations, getLocaleFromCookieString } from "@/app/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
+// Local type — replace with generated Supabase types when available
+type UserCreditsRow = { plan_type: string | null; renewal_date: string | null };
+
 type PlanType = "PREMIUM" | "TRIAL" | "FREE";
 
 function PlanBadge({ plan, labels }: { plan: PlanType; labels: { planPremium: string; planTrial: string; planFree: string } }) {
@@ -80,14 +83,14 @@ export default async function BillingPage() {
     .eq("user_id", user.id)
     .maybeSingle();
 
-  const rawPlan = String((credits as any)?.plan_type ?? "FREE").toUpperCase();
+  const rawPlan = String((credits as UserCreditsRow | null)?.plan_type ?? "FREE").toUpperCase();
   const plan: PlanType =
     rawPlan === "PREMIUM" ? "PREMIUM" : rawPlan === "TRIAL" ? "TRIAL" : "FREE";
 
   const isPaid = plan === "PREMIUM" || plan === "TRIAL";
 
-  const nextBillingLabel = isPaid && (credits as any)?.renewal_date
-    ? new Date((credits as any).renewal_date).toLocaleDateString("en-GB", {
+  const nextBillingLabel = isPaid && (credits as UserCreditsRow | null)?.renewal_date
+    ? new Date((credits as UserCreditsRow | null).renewal_date).toLocaleDateString("en-GB", {
         day: "numeric",
         month: "long",
         year: "numeric",
@@ -99,8 +102,8 @@ export default async function BillingPage() {
   // We derive the start date from renewal_date - 30 days.
   // PRICING.trialDays is the single source of truth — change it in pricing.ts.
   let refundDaysLeft: number | null = null;
-  if (isPaid && (credits as any)?.renewal_date) {
-    const renewalDate = new Date((credits as any).renewal_date);
+  if (isPaid && (credits as UserCreditsRow | null)?.renewal_date) {
+    const renewalDate = new Date((credits as UserCreditsRow | null).renewal_date);
     const startDate = new Date(renewalDate.getTime() - 30 * 24 * 60 * 60 * 1000);
     const daysSinceStart = Math.floor(
       (Date.now() - startDate.getTime()) / (1000 * 60 * 60 * 24)

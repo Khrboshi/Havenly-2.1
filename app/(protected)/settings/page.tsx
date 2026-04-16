@@ -11,6 +11,9 @@ import { getTranslations, getLocaleFromCookieString } from "@/app/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
+// Local type — replace with generated Supabase types when available
+type UserCreditsRow = { plan_type: string | null; remaining_credits: number | null; renewal_date: string | null };
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function PlanBadge({ plan, labels }: { plan: "PREMIUM" | "TRIAL" | "FREE"; labels: { planPremium: string; planTrial: string; planFree: string } }) {
@@ -115,17 +118,17 @@ export default async function SettingsPage() {
     .eq("user_id", user.id)
     .maybeSingle();
 
-  const planType = String((creditsRow as any)?.plan_type ?? "FREE").toUpperCase();
+  const planType = String((creditsRow as UserCreditsRow | null)?.plan_type ?? "FREE").toUpperCase();
   const plan = (["PREMIUM", "TRIAL"].includes(planType) ? planType : "FREE") as
     | "PREMIUM" | "TRIAL" | "FREE";
 
   const isPremium = plan === "PREMIUM" || plan === "TRIAL";
   const remainingCredits: number = isPremium
     ? Infinity
-    : typeof (creditsRow as any)?.remaining_credits === "number"
-    ? (creditsRow as any).remaining_credits
+    : typeof (creditsRow as UserCreditsRow | null)?.remaining_credits === "number"
+    ? (creditsRow as UserCreditsRow | null).remaining_credits
     : 0;
-  const renewalDate: string | null = (creditsRow as any)?.renewal_date ?? null;
+  const renewalDate: string | null = (creditsRow as UserCreditsRow | null)?.renewal_date ?? null;
 
   // Entry count
   const { count: entryCount } = await supabase
