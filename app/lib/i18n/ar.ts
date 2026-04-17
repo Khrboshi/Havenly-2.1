@@ -147,6 +147,11 @@ export const ar: Translations = {
     closeMenuBackdrop:  "إغلاق القائمة",
     selectLanguage:     "اختر اللغة",
     emailPlaceholder:   "you@example.com",
+    skipToMainContent:  "تخطَّ إلى المحتوى الرئيسي",
+    skipToLoginForm:    "تخطَّ إلى نموذج تسجيل الدخول",
+    protectedAreaSRLabel: "منطقة محمية: محتوى يومياتك خاص",
+    homeAriaLabel:      (appName) => `${appName} — الصفحة الرئيسية`,
+    opensInNewTab:      "يُفتح في علامة تبويب جديدة",
   },
   navbar: {
     signIn:         "تسجيل الدخول",
@@ -382,6 +387,7 @@ export const ar: Translations = {
     supportSidebarLabel:  "الدعم",
     supportSidebarText:   "استفسارات الفواتير أو الإلغاء:",
     viewPremium:          "عرض Premium",
+    readArrow:            "اقرأ ←",
     transactionsHeading:  "المعاملات",
     backToSettings:       "العودة إلى الإعدادات",
     subscriptionHeading:  "الاشتراك",
@@ -643,6 +649,7 @@ export const ar: Translations = {
     emailAddressLabel: "عنوان البريد الإلكتروني",
     backToHome:        "→ العودة إلى الرئيسية",
     codePlaceholder:"أدخل رمز 6-8 أرقام",verify:"تحقق وسجّل الدخول",verifying:"جارٍ التحقق…",
+    formAriaLabel:     "نموذج تسجيل الدخول عبر رابط سحري",
   },
   upgradePage: {
     faq1Q:"ما الذي يُظهره لي Quiet Mirror فعلاً مع Premium؟",
@@ -977,6 +984,7 @@ export const ar: Translations = {
     catJournaling:    "التدوين",
     catRest:          "الراحة",
     catSelfAwareness: "الوعي الذاتي",
+    articleNotFound:  "المقال غير موجود.",
   },
 
 

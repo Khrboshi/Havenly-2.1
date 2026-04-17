@@ -18,6 +18,7 @@ interface FooterLinkProps {
 function FooterLink({ href, children, isExternal = false }: FooterLinkProps) {
   const pathname = usePathname();
   const isActive = pathname === href;
+  const { t } = useTranslation();
 
   const baseClasses = `
     transition-colors duration-150 
@@ -33,7 +34,7 @@ function FooterLink({ href, children, isExternal = false }: FooterLinkProps) {
         className={baseClasses}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label={`${children} (opens in new tab)`}
+        aria-label={`${children} (${t.ui.opensInNewTab})`}
       >
         {children}
       </a>
@@ -116,7 +117,7 @@ export default function Footer() {
             <Link
               href="/"
               className="group flex items-center gap-2 rounded-md transition-opacity duration-150 hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-qm-accent focus:ring-offset-2 focus:ring-offset-qm-bg"
-              aria-label={`${CONFIG.appName} home`}
+              aria-label={t.ui.homeAriaLabel(CONFIG.appName)}
             >
               <Image
                 src="/pwa/icon-192.png"

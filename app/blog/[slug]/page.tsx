@@ -1,9 +1,11 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { ARTICLES, getArticle } from "../articles";
 import EmailCapture from "@/app/components/EmailCapture";
 import { CONFIG } from "@/app/lib/config";
 import { PRICING } from "@/app/lib/pricing";
+import { getLocaleFromCookieString, getTranslations } from "@/app/lib/i18n";
 import { serializeJsonLd } from "@/lib/serializeJsonLd";
 
 const SITE_URL = CONFIG.siteUrl;
@@ -42,12 +44,15 @@ export async function generateMetadata({ params }: BlogArticlePageProps): Promis
 export default async function BlogArticlePage({ params }: BlogArticlePageProps) {
   const { slug } = await params;
   const article = getArticle(slug);
+  const t = getTranslations(
+    getLocaleFromCookieString((await cookies()).toString()),
+  );
 
   if (!article) {
     return (
       <main className="min-h-screen bg-qm-bg text-qm-primary">
         <section className="mx-auto flex min-h-[60vh] max-w-3xl flex-col items-center justify-center px-6 pt-24 text-center">
-          <p className="text-sm text-qm-muted">Article not found.</p>
+          <p className="text-sm text-qm-muted">{t.blogPage.articleNotFound}</p>
           <Link
             href="/blog"
             className="mt-4 text-sm text-qm-accent hover:text-qm-accent-hover"

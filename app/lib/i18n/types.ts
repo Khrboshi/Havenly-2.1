@@ -125,6 +125,14 @@ export interface Translations {
     closeMenuBackdrop:   string;
     selectLanguage:      string;
     emailPlaceholder:    string;
+    // Skip-to-content links (keyboard / screen-reader a11y)
+    skipToMainContent:   string;
+    skipToLoginForm:     string;
+    // Protected area announcement (SR-only)
+    protectedAreaSRLabel: string;
+    // Reusable aria labels
+    homeAriaLabel:       (appName: string) => string;
+    opensInNewTab:       string;
   };
 
   navbar: {
@@ -384,6 +392,8 @@ export interface Translations {
     supportSidebarLabel:  string;
     supportSidebarText:   string;
     viewPremium:          string;
+    // Settings page misc
+    readArrow:            string;
     // Transactions page
     transactionsHeading:  string;
     backToSettings:       string;
@@ -617,6 +627,7 @@ export interface Translations {
     codePlaceholder: string; verify: string; verifying: string;
     emailAddressLabel: string;
     backToHome:        string;
+    formAriaLabel:     string;
   };
   upgradePage: {
     faq1Q: string; faq1A: string; faq2Q: string; faq2A: (n: number) => string;
@@ -957,6 +968,8 @@ export interface Translations {
     catJournaling:    string;
     catRest:          string;
     catSelfAwareness: string;
+    // Article slug page
+    articleNotFound:  string;
   };
 
   // ── Locale-aware pricing display strings ─────────────────────────────────

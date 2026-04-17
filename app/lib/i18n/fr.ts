@@ -129,6 +129,11 @@ export const fr: Translations = {
     closeMenuBackdrop:  "Fermer le menu",
     selectLanguage:     "Choisir la langue",
     emailPlaceholder:   "vous@exemple.com",
+    skipToMainContent:  "Aller au contenu principal",
+    skipToLoginForm:    "Aller au formulaire de connexion",
+    protectedAreaSRLabel: "Zone protégée : le contenu de votre journal est privé",
+    homeAriaLabel:      (appName) => `${appName} — accueil`,
+    opensInNewTab:      "ouvre dans un nouvel onglet",
   },
 
   navbar: {
@@ -371,6 +376,7 @@ export const fr: Translations = {
     supportSidebarLabel:  "Assistance",
     supportSidebarText:   "Questions sur la facturation ou les annulations :",
     viewPremium:          "Voir Premium",
+    readArrow:            "Lire →",
     transactionsHeading:  "Transactions",
     backToSettings:       "Retour aux paramètres",
     subscriptionHeading:  "Abonnement",
@@ -646,6 +652,7 @@ export const fr: Translations = {
     emailAddressLabel: "Adresse e-mail",
     backToHome:        "← Retour à l'accueil",
     codePlaceholder:"Entrez le code à 6–8 chiffres",verify:"Vérifier et se connecter",verifying:"Vérification…",
+    formAriaLabel:     "Formulaire de connexion par lien magique",
   },
 
   upgradePage: {
@@ -975,6 +982,7 @@ export const fr: Translations = {
     catJournaling:    "Journaling",
     catRest:          "Repos",
     catSelfAwareness: "Conscience de soi",
+    articleNotFound:  "Article introuvable.",
   },
 
 

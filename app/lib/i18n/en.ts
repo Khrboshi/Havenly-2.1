@@ -134,6 +134,14 @@ export const en: Translations = {
     closeMenuBackdrop:  "Close menu",
     selectLanguage:     "Select language",
     emailPlaceholder:   "you@example.com",
+    // Skip-to-content links
+    skipToMainContent:  "Skip to main content",
+    skipToLoginForm:    "Skip to login form",
+    // Protected area announcement (SR-only)
+    protectedAreaSRLabel: "Protected area: Your journal content is private",
+    // Reusable aria labels
+    homeAriaLabel:      (appName) => `${appName} home`,
+    opensInNewTab:      "opens in new tab",
   },
 
   navbar: {
@@ -384,6 +392,7 @@ export const en: Translations = {
     supportSidebarLabel:  "Support",
     supportSidebarText:   "Billing questions or cancellations:",
     viewPremium:          "View Premium",
+    readArrow:            "Read →",
     transactionsHeading:  "Transactions",
     backToSettings:       "Back to Settings",
     subscriptionHeading:  "Subscription",
@@ -655,6 +664,7 @@ export const en: Translations = {
     emailAddressLabel: "Email address",
     backToHome:        "← Back to home",
     codePlaceholder:"Enter 6–8 digit code",verify:"Verify and sign in",verifying:"Verifying…",
+    formAriaLabel:     "Magic link sign in form",
   },
   upgradePage: {
     faq1Q:"What does Quiet Mirror actually show me with Premium?",
@@ -984,6 +994,7 @@ export const en: Translations = {
     catJournaling:    "Journaling",
     catRest:          "Rest",
     catSelfAwareness: "Self-awareness",
+    articleNotFound:  "Article not found.",
   },
 
 

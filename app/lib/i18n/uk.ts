@@ -154,6 +154,11 @@ export const uk: Translations = {
     closeMenuBackdrop:  "Закрити меню",
     selectLanguage:     "Обрати мову",
     emailPlaceholder:   "ти@приклад.ua",
+    skipToMainContent:  "Перейти до основного вмісту",
+    skipToLoginForm:    "Перейти до форми входу",
+    protectedAreaSRLabel: "Захищена зона: вміст щоденника приватний",
+    homeAriaLabel:      (appName) => `${appName} — головна`,
+    opensInNewTab:      "відкривається в новій вкладці",
   },
 
   navbar: {
@@ -402,6 +407,7 @@ export const uk: Translations = {
     supportSidebarLabel:  "Підтримка",
     supportSidebarText:   "Питання про оплату або скасування:",
     viewPremium:          "Переглянути Premium",
+    readArrow:            "Читати →",
     transactionsHeading:  "Транзакції",
     backToSettings:       "Назад до налаштувань",
     subscriptionHeading:  "Підписка",
@@ -678,6 +684,7 @@ export const uk: Translations = {
     emailAddressLabel: "Електронна адреса",
     backToHome:        "← На головну",
     codePlaceholder:"Введи 6–8 цифровий код",verify:"Підтвердити та увійти",verifying:"Перевірка…",
+    formAriaLabel:     "Форма входу за magic-посиланням",
   },
   upgradePage: {
     faq1Q:"Що насправді показує мені Quiet Mirror з Premium?",
@@ -1007,6 +1014,7 @@ export const uk: Translations = {
     catJournaling:    "Ведення щоденника",
     catRest:          "Відпочинок",
     catSelfAwareness: "Самоусвідомлення",
+    articleNotFound:  "Статтю не знайдено.",
   },
 
 

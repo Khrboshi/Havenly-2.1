@@ -309,15 +309,13 @@ export default async function SettingsPage() {
                     href="/privacy"
                     className="text-qm-positive hover:text-qm-positive-hover text-xs transition-colors"
                   >
-                    Read →
+                    {s.readArrow}
                   </Link>
                 }
               />
             </div>
             <p className="mt-3 text-xs text-qm-faint">
-              To request data export or account deletion, email{" "}
-              <span className="text-qm-muted">{CONFIG.supportEmail}</span> from
-              your account address.
+              {s.dataRequestNote(CONFIG.supportEmail)}
             </p>
           </Card>
 
@@ -335,7 +333,7 @@ export default async function SettingsPage() {
               prefetch={false}
               className="inline-flex w-full items-center justify-center rounded-full bg-qm-accent px-4 py-2 text-sm font-semibold text-white hover:bg-qm-accent-hover transition-colors"
             >
-              Install app
+              {s.installAppLabel}
             </Link>
           </Card>
 
