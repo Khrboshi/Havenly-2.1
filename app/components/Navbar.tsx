@@ -110,7 +110,7 @@ export default function Navbar() {
             href="/"
             prefetch
             className="flex items-center gap-2 text-lg font-semibold text-qm-primary transition-opacity hover:opacity-90"
-            aria-label={`${CONFIG.appName} home`}
+            aria-label={t.ui.homeAriaLabel(CONFIG.appName)}
           >
             <Image
               src="/pwa/icon-192.png"

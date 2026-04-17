@@ -2,11 +2,10 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { cookies } from "next/headers";
 import { createServerSupabase } from "@/lib/supabase/server";
 import UpgradeIntentTracker from "@/app/components/UpgradeIntentTracker";
 import { PRICING } from "@/app/lib/pricing";
-import { getLocaleFromCookieString, getTranslations } from "@/app/lib/i18n";
+import { getRequestTranslations } from "@/app/lib/i18n/server";
 
 // ── Data fetching ─────────────────────────────────────────────────────────────
 
@@ -80,8 +79,7 @@ function sc(s: string) { return s.charAt(0).toUpperCase() + s.slice(1); }
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function InsightsPreviewPage() {
-  const locale = getLocaleFromCookieString((await cookies()).toString());
-  const t      = getTranslations(locale);
+  const t      = await getRequestTranslations();
   const ip     = t.insightPreview;
   const ps     = t.pricingStrings;
   const supabase = await createServerSupabase();

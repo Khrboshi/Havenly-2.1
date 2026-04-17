@@ -130,6 +130,11 @@ export const nl: Translations = {
     closeMenuBackdrop:  "Menu sluiten",
     selectLanguage:     "Taal kiezen",
     emailPlaceholder:   "jij@voorbeeld.nl",
+    skipToMainContent:  "Ga naar hoofdinhoud",
+    skipToLoginForm:    "Ga naar het inlogformulier",
+    protectedAreaSRLabel: "Beveiligd gebied: je dagboekinhoud is privé",
+    homeAriaLabel:      (appName) => `${appName} — home`,
+    opensInNewTab:      "opent in nieuw tabblad",
   },
 
   navbar: {
@@ -370,6 +375,7 @@ export const nl: Translations = {
     supportSidebarLabel:  "Ondersteuning",
     supportSidebarText:   "Vragen over facturering of annulering:",
     viewPremium:          "Bekijk Premium",
+    readArrow:            "Lees →",
     transactionsHeading:  "Transacties",
     backToSettings:       "Terug naar instellingen",
     subscriptionHeading:  "Abonnement",
@@ -640,6 +646,7 @@ export const nl: Translations = {
     emailAddressLabel: "E-mailadres",
     backToHome:        "← Terug naar begin",
     codePlaceholder:"Voer 6–8 cijferige code in",verify:"Verifiëren en aanmelden",verifying:"Verifiëren…",
+    formAriaLabel:     "Inlogformulier met magische link",
   },
 
   upgradePage: {
@@ -967,6 +974,7 @@ export const nl: Translations = {
     catJournaling:    "Dagboekschrijven",
     catRest:          "Rust",
     catSelfAwareness: "Zelfbewustzijn",
+    articleNotFound:  "Artikel niet gevonden.",
   },
 
 

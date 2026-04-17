@@ -1,14 +1,13 @@
 // app/upgrade/confirmed/page.tsx
 import Link from "next/link";
-import { cookies } from "next/headers";
 import { PRICING } from "@/app/lib/pricing";
 import { CONFIG } from "@/app/lib/config";
-import { getTranslations, getLocaleFromCookieString } from "@/app/lib/i18n";
+import { getRequestTranslations } from "@/app/lib/i18n/server";
 
 export const metadata = { title: `Welcome to Premium | ${CONFIG.appName}` };
 
 export default async function UpgradeConfirmedPage() {
-  const _t = getTranslations(getLocaleFromCookieString((await cookies()).toString()));
+  const _t = await getRequestTranslations();
   const uc = _t.upgradeConfirmed;
   const ps = _t.pricingStrings;
   const pf = _t.premiumFeatures;

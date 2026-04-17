@@ -15,8 +15,7 @@
 // Both variants share the same pill markup; only the outer container and
 // dot colour differ, matching the visuals the app used before this DRY pass.
 
-import { cookies } from "next/headers";
-import { getLocaleFromCookieString, getTranslations } from "@/app/lib/i18n";
+import { getRequestTranslations } from "@/app/lib/i18n/server";
 
 type Variant = "route" | "inline";
 
@@ -63,7 +62,6 @@ export default async function LoadingIndicator({
 }: {
   variant?: Variant;
 } = {}) {
-  const locale = getLocaleFromCookieString((await cookies()).toString());
-  const t      = getTranslations(locale);
+  const t = await getRequestTranslations();
   return <Pill label={t.ui.loadingLabel} variant={variant} />;
 }

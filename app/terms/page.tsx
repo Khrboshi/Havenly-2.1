@@ -2,11 +2,11 @@
 // Server component — legal content stays in English, notice banner translates.
 import Link from "next/link";
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { CONFIG } from "@/app/lib/config";
 import { PRICING } from "@/app/lib/pricing";
 import { PAYMENT } from "@/app/lib/payment";
-import { getTranslations, getLocaleFromCookieString, DEFAULT_LOCALE } from "@/app/lib/i18n";
+import { getTranslations, DEFAULT_LOCALE } from "@/app/lib/i18n";
+import { getRequestLocale } from "@/app/lib/i18n/server";
 import LegalLanguageNotice from "@/app/components/LegalLanguageNotice";
 
 const LAST_UPDATED = "June 1, 2025";
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 };
 
 export default async function TermsOfServicePage() {
-  const locale    = getLocaleFromCookieString((await cookies()).toString());
+  const locale    = await getRequestLocale();
   const lp        = getTranslations(locale).legalPages;
   const isEnglish = locale === DEFAULT_LOCALE;
 

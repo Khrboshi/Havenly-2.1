@@ -1,5 +1,6 @@
 // app/(protected)/layout.tsx
 import type { ReactNode } from "react";
+import { getRequestTranslations } from "@/app/lib/i18n/server";
 
 /**
  * Protected layout (visual shell only)
@@ -20,21 +21,22 @@ export const metadata = {
   },
 };
 
-export default function ProtectedLayout({
+export default async function ProtectedLayout({
   children,
 }: {
   children: ReactNode;
 }) {
+  const t = await getRequestTranslations();
   return (
     <div className="min-h-screen bg-qm-bg text-qm-primary">
-      {/* 
-        Accessibility: Announce that this is a protected area 
+      {/*
+        Accessibility: Announce that this is a protected area
         This is a visual-only indicator for screen readers
       */}
       <div className="sr-only" aria-live="polite" aria-atomic="true">
-        Protected area: Your journal content is private
+        {t.ui.protectedAreaSRLabel}
       </div>
-      
+
       {children}
     </div>
   );

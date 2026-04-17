@@ -10,8 +10,8 @@ import DeepLinkBootstrap from "./components/DeepLinkBootstrap";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import InstallPrompt from "@/app/components/InstallPrompt";
 import { CONFIG, BRAND } from "@/app/lib/config";
-import { cookies } from "next/headers";
-import { getLocaleFromCookieString, getDir, getTranslations } from "@/app/lib/i18n";
+import { getDir, getTranslations } from "@/app/lib/i18n";
+import { getRequestLocale } from "@/app/lib/i18n/server";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -117,7 +117,7 @@ export default async function RootLayout({
 }: {
   children: ReactNode;
 }) {
-  const locale = getLocaleFromCookieString((await cookies()).toString());
+  const locale = await getRequestLocale();
   const dir    = getDir(locale);
   const t      = getTranslations(locale);
   return (
@@ -151,7 +151,7 @@ export default async function RootLayout({
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-full focus:bg-qm-accent focus:px-5 focus:py-3 focus:text-sm focus:text-white focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-qm-accent focus:ring-offset-2 focus:ring-offset-qm-bg"
           style={{ zIndex: 9999 }}
         >
-          Skip to main content
+          {t.ui.skipToMainContent}
         </a>
 
         <DeepLinkBootstrap />

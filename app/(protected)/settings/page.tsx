@@ -1,14 +1,14 @@
 // app/(protected)/settings/page.tsx
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { ensureCreditsFresh } from "@/lib/creditRules";
 import { PAYMENT } from "@/app/lib/payment";
 import { PRICING } from "@/app/lib/pricing";
 import { CONFIG } from "@/app/lib/config";
-import { getTranslations, getLocaleFromCookieString } from "@/app/lib/i18n";
+
 import type { UserCreditsRow } from "@/lib/supabaseTypes";
+import { getRequestTranslations } from "@/app/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -97,7 +97,7 @@ function DataRow({ label, value }: { label: string; value: React.ReactNode }) {
 
 export default async function SettingsPage() {
   const supabase = await createServerSupabase();
-  const t = getTranslations(getLocaleFromCookieString((await cookies()).toString()));
+  const t = await getRequestTranslations();
   const s = t.settingsPage;
 
   const {
@@ -309,15 +309,13 @@ export default async function SettingsPage() {
                     href="/privacy"
                     className="text-qm-positive hover:text-qm-positive-hover text-xs transition-colors"
                   >
-                    Read →
+                    {s.readArrow}
                   </Link>
                 }
               />
             </div>
             <p className="mt-3 text-xs text-qm-faint">
-              To request data export or account deletion, email{" "}
-              <span className="text-qm-muted">{CONFIG.supportEmail}</span> from
-              your account address.
+              {s.dataRequestNote(CONFIG.supportEmail)}
             </p>
           </Card>
 
@@ -335,7 +333,7 @@ export default async function SettingsPage() {
               prefetch={false}
               className="inline-flex w-full items-center justify-center rounded-full bg-qm-accent px-4 py-2 text-sm font-semibold text-white hover:bg-qm-accent-hover transition-colors"
             >
-              Install app
+              {s.installAppLabel}
             </Link>
           </Card>
 

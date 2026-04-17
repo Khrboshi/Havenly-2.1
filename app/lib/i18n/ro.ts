@@ -130,6 +130,11 @@ export const ro: Translations = {
     closeMenuBackdrop:  "Închide meniul",
     selectLanguage:     "Alege limba",
     emailPlaceholder:   "tu@exemplu.ro",
+    skipToMainContent:  "Sari la conținutul principal",
+    skipToLoginForm:    "Sari la formularul de autentificare",
+    protectedAreaSRLabel: "Zonă protejată: conținutul jurnalului tău este privat",
+    homeAriaLabel:      (appName) => `${appName} — pagina principală`,
+    opensInNewTab:      "se deschide într-o filă nouă",
   },
 
   navbar: {
@@ -370,6 +375,7 @@ export const ro: Translations = {
     supportSidebarLabel:  "Asistență",
     supportSidebarText:   "Întrebări despre facturare sau anulare:",
     viewPremium:          "Vezi Premium",
+    readArrow:            "Citește →",
     transactionsHeading:  "Tranzacții",
     backToSettings:       "Înapoi la setări",
     subscriptionHeading:  "Abonament",
@@ -640,6 +646,7 @@ export const ro: Translations = {
     emailAddressLabel: "Adresă de e-mail",
     backToHome:        "← Înapoi acasă",
     codePlaceholder:"Introdu codul de 6–8 cifre",verify:"Verifică și conectează-te",verifying:"Se verifică…",
+    formAriaLabel:     "Formular de autentificare prin magic link",
   },
 
   upgradePage: {
@@ -967,6 +974,7 @@ export const ro: Translations = {
     catJournaling:    "Jurnal",
     catRest:          "Odihnă",
     catSelfAwareness: "Conștiință de sine",
+    articleNotFound:  "Articolul nu a fost găsit.",
   },
 
 
