@@ -223,6 +223,32 @@ export const uk: Translations = {
     notEnoughEmotions:       "Ще недостатньо персональних даних про емоції.",
     showLess:                "Показати менше",
     showMore:                (n: number) => `+${n} більше`,
+    // AI-summary card
+    aiSummaryHeading:        (appName) => `Що помітив ${appName}`,
+    aiSummarySubheading:     "Персональне зведення на основі твоєї історії рефлексій.",
+    aiSummaryRefresh:        "↻ Оновити",
+    aiSummaryGenerating:     "Генерація…",
+    aiSummaryEmpty:          (appName) => `Створи ще кілька рефлексій, і ${appName} напише персональне зведення про те, що помітив.`,
+    aiSummaryTryAgain:       "Спробувати знову →",
+    // Pattern sections
+    patternUnderneathHeading:"Паттерн під поверхнею",
+    whatYouKeepComingBackTo: "До чого ти постійно повертаєшся",
+    patternUnderneathSub:    (appName) => `Конкретна динаміка, яку ${appName} найчастіше помічає у твоїх записах.`,
+    mostRecurringPattern:    "Твій найчастіший глибинний паттерн",
+    corepatternCount:        (count, total) => {
+      // Ukrainian locative case after "у":
+      //   1, 21, 31…       → записі    (loc. singular)
+      //   everything else  → записах   (loc. plural — the few/many
+      //                                  distinction only applies in
+      //                                  nominative/accusative, not locative)
+      const singular = total % 10 === 1 && total % 100 !== 11;
+      return `${count}× у ${total} ${singular ? "записі" : "записах"}`;
+    },
+    // Closing CTA
+    patternClearer:          "Паттерн став чіткішим.",
+    patternNextEntry:        "Наступний запис — це місце, де ти зробиш ще один крок.",
+    writeAboutThisCta:       "Написати про це →",
+    insightsDeepen:          "Аналітика поглиблюється в міру того, як росте історія твоїх рефлексій.",
   },
 
   dashboard: {

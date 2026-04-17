@@ -198,6 +198,24 @@ export const fr: Translations = {
     notEnoughEmotions:       "Pas encore assez de données émotionnelles personnelles.",
     showLess:                "Voir moins",
     showMore:                (n: number) => `+${n} de plus`,
+    // AI-summary card
+    aiSummaryHeading:        (appName) => `Ce que ${appName} a remarqué`,
+    aiSummarySubheading:     "Un résumé personnel généré à partir de votre historique de réflexions.",
+    aiSummaryRefresh:        "↻ Actualiser",
+    aiSummaryGenerating:     "Génération…",
+    aiSummaryEmpty:          (appName) => `Générez quelques réflexions supplémentaires et ${appName} écrira un résumé personnel de ce qu'il a remarqué.`,
+    aiSummaryTryAgain:       "Réessayer →",
+    // Pattern sections
+    patternUnderneathHeading:"Le schéma sous-jacent",
+    whatYouKeepComingBackTo: "Ce à quoi vous revenez sans cesse",
+    patternUnderneathSub:    (appName) => `La dynamique spécifique que ${appName} a remarquée le plus souvent sous vos entrées.`,
+    mostRecurringPattern:    "Votre schéma sous-jacent le plus récurrent",
+    corepatternCount:        (count, total) => `${count}× sur ${total} ${total === 1 ? "entrée" : "entrées"}`,
+    // Closing CTA
+    patternClearer:          "Le schéma est plus clair maintenant.",
+    patternNextEntry:        "La prochaine entrée est où vous allez plus loin.",
+    writeAboutThisCta:       "Écrire à ce sujet →",
+    insightsDeepen:          "Les aperçus s'approfondissent à mesure que votre historique de réflexions grandit.",
   },
 
   dashboard: {

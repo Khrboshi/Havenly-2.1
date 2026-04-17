@@ -214,6 +214,30 @@ export const ar: Translations = {
     notEnoughEmotions:       "لا توجد بيانات كافية للمشاعر الشخصية بعد.",
     showLess:                "عرض أقل",
     showMore:                (n: number) => `+${n} المزيد`,
+    // AI-summary card
+    aiSummaryHeading:        (appName) => `ما لاحظه ${appName}`,
+    aiSummarySubheading:     "ملخص شخصي مُولَّد من سجل تأملاتك.",
+    aiSummaryRefresh:        "↻ تحديث",
+    aiSummaryGenerating:     "جارٍ التوليد…",
+    aiSummaryEmpty:          (appName) => `أنشئ بضع تأملات أخرى وسيكتب ${appName} ملخصًا شخصيًا لما لاحظه.`,
+    aiSummaryTryAgain:       "حاول مرة أخرى ←",
+    // Pattern sections
+    patternUnderneathHeading:"النمط الكامن",
+    whatYouKeepComingBackTo: "ما تعود إليه دائمًا",
+    patternUnderneathSub:    (appName) => `الديناميكية المحددة التي لاحظها ${appName} الأكثر تحت مدخلاتك.`,
+    mostRecurringPattern:    "النمط الأساسي الأكثر تكرارًا لديك",
+    corepatternCount:        (count, total) => {
+      const word =
+        total === 1 ? "مدخل" :
+        total === 2 ? "مدخلين" :
+        total <= 10 ? "مدخلات" : "مدخلًا";
+      return `${count}× عبر ${total} ${word}`;
+    },
+    // Closing CTA
+    patternClearer:          "أصبح النمط أكثر وضوحًا الآن.",
+    patternNextEntry:        "المدخل التالي هو حيث تمضي به قدمًا.",
+    writeAboutThisCta:       "اكتب عن هذا ←",
+    insightsDeepen:          "تتعمق الأفكار كلما نما سجل تأملاتك.",
   },
   dashboard: {
     goodMorning:       "صباح الخير",

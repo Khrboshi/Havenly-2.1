@@ -210,6 +210,24 @@ export const en: Translations = {
     // Show more / less
     showLess:                "Show less",
     showMore:                (n: number) => `+${n} more`,
+    // AI-summary card
+    aiSummaryHeading:        (appName) => `What ${appName} has noticed`,
+    aiSummarySubheading:     "A personal summary generated from your reflection history.",
+    aiSummaryRefresh:        "↻ Refresh",
+    aiSummaryGenerating:     "Generating…",
+    aiSummaryEmpty:          (appName) => `Generate a few more reflections and ${appName} will write a personal summary of what it's noticed.`,
+    aiSummaryTryAgain:       "Try again →",
+    // Pattern sections
+    patternUnderneathHeading:"The pattern underneath",
+    whatYouKeepComingBackTo: "What you keep coming back to",
+    patternUnderneathSub:    (appName) => `The specific dynamic ${appName} noticed most often beneath your entries.`,
+    mostRecurringPattern:    "Your most recurring underlying pattern",
+    corepatternCount:        (count, total) => `${count}× across ${total} ${total === 1 ? "entry" : "entries"}`,
+    // Closing CTA
+    patternClearer:          "The pattern is clearer now.",
+    patternNextEntry:        "The next entry is where you take it further.",
+    writeAboutThisCta:       "Write about this →",
+    insightsDeepen:          "Insights deepen as your reflection history grows.",
   },
 
   dashboard: {

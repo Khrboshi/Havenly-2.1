@@ -199,6 +199,24 @@ export const nl: Translations = {
     notEnoughEmotions:       "Nog niet genoeg persoonlijke emotiedata.",
     showLess:                "Minder tonen",
     showMore:                (n: number) => `+${n} meer`,
+    // AI-summary card
+    aiSummaryHeading:        (appName) => `Wat ${appName} heeft opgemerkt`,
+    aiSummarySubheading:     "Een persoonlijke samenvatting op basis van je reflectiegeschiedenis.",
+    aiSummaryRefresh:        "↻ Vernieuwen",
+    aiSummaryGenerating:     "Genereren…",
+    aiSummaryEmpty:          (appName) => `Genereer nog een paar reflecties en ${appName} schrijft een persoonlijke samenvatting van wat het heeft opgemerkt.`,
+    aiSummaryTryAgain:       "Opnieuw proberen →",
+    // Pattern sections
+    patternUnderneathHeading:"Het patroon eronder",
+    whatYouKeepComingBackTo: "Waar je steeds op terugkomt",
+    patternUnderneathSub:    (appName) => `De specifieke dynamiek die ${appName} het vaakst onder je berichten heeft opgemerkt.`,
+    mostRecurringPattern:    "Jouw meest terugkerende onderliggende patroon",
+    corepatternCount:        (count, total) => `${count}× in ${total} ${total === 1 ? "bericht" : "berichten"}`,
+    // Closing CTA
+    patternClearer:          "Het patroon is nu duidelijker.",
+    patternNextEntry:        "Het volgende bericht is waar je het verder brengt.",
+    writeAboutThisCta:       "Hierover schrijven →",
+    insightsDeepen:          "Inzichten verdiepen naarmate je reflectiegeschiedenis groeit.",
   },
 
   dashboard: {

@@ -199,6 +199,29 @@ export const ro: Translations = {
     notEnoughEmotions:       "Nu există încă suficiente date despre emoții personale.",
     showLess:                "Arată mai puțin",
     showMore:                (n: number) => `+${n} mai mult`,
+    // AI-summary card
+    aiSummaryHeading:        (appName) => `Ce a observat ${appName}`,
+    aiSummarySubheading:     "Un rezumat personal generat din istoricul tău de reflecții.",
+    aiSummaryRefresh:        "↻ Reîmprospătează",
+    aiSummaryGenerating:     "Se generează…",
+    aiSummaryEmpty:          (appName) => `Generează câteva reflecții în plus și ${appName} va scrie un rezumat personal cu ce a observat.`,
+    aiSummaryTryAgain:       "Încearcă din nou →",
+    // Pattern sections
+    patternUnderneathHeading:"Tiparul de dedesubt",
+    whatYouKeepComingBackTo: "La ce te întorci mereu",
+    patternUnderneathSub:    (appName) => `Dinamica specifică pe care ${appName} a observat-o cel mai des sub înregistrările tale.`,
+    mostRecurringPattern:    "Tiparul tău de bază care revine cel mai des",
+    corepatternCount:        (count, total) => {
+      const word =
+        total === 1 ? "înregistrare" :
+        total < 20 ? "înregistrări" : "de înregistrări";
+      return `${count}× în ${total} ${word}`;
+    },
+    // Closing CTA
+    patternClearer:          "Tiparul e mai clar acum.",
+    patternNextEntry:        "Următoarea înregistrare e locul în care mergi mai departe.",
+    writeAboutThisCta:       "Scrie despre asta →",
+    insightsDeepen:          "Perspectivele se adâncesc pe măsură ce istoricul tău de reflecții crește.",
   },
 
   dashboard: {
