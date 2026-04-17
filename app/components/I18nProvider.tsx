@@ -30,6 +30,11 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => { const d = detectLocale(); setLocaleState(d); applyToDocument(d); }, []);
   const setLocale = useCallback((next: string) => {
     if (!SUPPORTED_LOCALES.includes(next)) return;
+    // Short-circuit when the user re-selects the already-active locale.
+    // Without this guard, re-clicking the current language would write the
+    // cookie + localStorage unchanged AND trigger a full router.refresh()
+    // below, causing a pointless server refetch of every page.
+    if (next === locale) return;
     setLocaleState(next);
     applyToDocument(next);
     try {
@@ -45,7 +50,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     // server-rendered shell drifts out of sync. router.refresh() refetches
     // the server tree while preserving in-memory client state.
     router.refresh();
-  }, [router]);
+  }, [locale, router]);
   return (
     <I18nContext.Provider value={{ locale, t: getTranslations(locale), dir: getDir(locale), setLocale, locales: LOCALE_REGISTRY }}>
       {children}
