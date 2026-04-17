@@ -1,11 +1,10 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
-import { getTranslations, getLocaleFromCookieString } from "@/app/lib/i18n";
+import { getRequestTranslations } from "@/app/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function ToolsPage() {
-  const t = getTranslations(getLocaleFromCookieString((await cookies()).toString()));
+  const t = await getRequestTranslations();
   return (
     <div className="mx-auto max-w-5xl px-6 py-10 space-y-8">
       <header className="space-y-2">

@@ -1,14 +1,14 @@
 // app/(protected)/settings/page.tsx
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { ensureCreditsFresh } from "@/lib/creditRules";
 import { PAYMENT } from "@/app/lib/payment";
 import { PRICING } from "@/app/lib/pricing";
 import { CONFIG } from "@/app/lib/config";
-import { getTranslations, getLocaleFromCookieString } from "@/app/lib/i18n";
+
 import type { UserCreditsRow } from "@/lib/supabaseTypes";
+import { getRequestTranslations } from "@/app/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -97,7 +97,7 @@ function DataRow({ label, value }: { label: string; value: React.ReactNode }) {
 
 export default async function SettingsPage() {
   const supabase = await createServerSupabase();
-  const t = getTranslations(getLocaleFromCookieString((await cookies()).toString()));
+  const t = await getRequestTranslations();
   const s = t.settingsPage;
 
   const {

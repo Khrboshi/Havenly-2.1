@@ -1,12 +1,12 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { ARTICLES, getArticle } from "../articles";
 import EmailCapture from "@/app/components/EmailCapture";
 import { CONFIG } from "@/app/lib/config";
 import { PRICING } from "@/app/lib/pricing";
-import { getLocaleFromCookieString, getTranslations } from "@/app/lib/i18n";
+
 import { serializeJsonLd } from "@/lib/serializeJsonLd";
+import { getRequestTranslations } from "@/app/lib/i18n/server";
 
 const SITE_URL = CONFIG.siteUrl;
 
@@ -44,9 +44,7 @@ export async function generateMetadata({ params }: BlogArticlePageProps): Promis
 export default async function BlogArticlePage({ params }: BlogArticlePageProps) {
   const { slug } = await params;
   const article = getArticle(slug);
-  const t = getTranslations(
-    getLocaleFromCookieString((await cookies()).toString()),
-  );
+  const t = await getRequestTranslations();
 
   if (!article) {
     return (

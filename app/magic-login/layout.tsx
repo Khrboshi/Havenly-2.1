@@ -1,8 +1,8 @@
 // app/magic-login/layout.tsx
-import { cookies } from "next/headers";
 import { CONFIG } from "@/app/lib/config";
-import { getLocaleFromCookieString, getTranslations } from "@/app/lib/i18n";
+
 import type { Metadata } from "next";
+import { getRequestTranslations } from "@/app/lib/i18n/server";
 
 export const metadata: Metadata = {
   title: `Sign in to ${CONFIG.appName}`,
@@ -24,9 +24,7 @@ export default async function MagicLoginLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const t = getTranslations(
-    getLocaleFromCookieString((await cookies()).toString()),
-  );
+  const t = await getRequestTranslations();
   return (
     <>
       {/*

@@ -10,8 +10,8 @@ import DeepLinkBootstrap from "./components/DeepLinkBootstrap";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import InstallPrompt from "@/app/components/InstallPrompt";
 import { CONFIG, BRAND } from "@/app/lib/config";
-import { cookies } from "next/headers";
-import { getLocaleFromCookieString, getDir, getTranslations } from "@/app/lib/i18n";
+import { getDir, getTranslations } from "@/app/lib/i18n";
+import { getRequestLocale } from "@/app/lib/i18n/server";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -117,7 +117,7 @@ export default async function RootLayout({
 }: {
   children: ReactNode;
 }) {
-  const locale = getLocaleFromCookieString((await cookies()).toString());
+  const locale = await getRequestLocale();
   const dir    = getDir(locale);
   const t      = getTranslations(locale);
   return (

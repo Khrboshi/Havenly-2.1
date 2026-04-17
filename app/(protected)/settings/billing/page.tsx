@@ -1,13 +1,13 @@
 // app/settings/billing/page.tsx
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { ensureCreditsFresh } from "@/lib/creditRules";
 import { PRICING } from "@/app/lib/pricing";
 import { PAYMENT } from "@/app/lib/payment";
 import { CONFIG } from "@/app/lib/config";
-import { getTranslations, getLocaleFromCookieString } from "@/app/lib/i18n";
+
 import type { UserCreditsRow } from "@/lib/supabaseTypes";
+import { getRequestTranslations } from "@/app/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -54,7 +54,7 @@ function SectionTitle({
 
 export default async function BillingPage() {
   const supabase = await createServerSupabase();
-  const _t = getTranslations(getLocaleFromCookieString((await cookies()).toString()));
+  const _t = await getRequestTranslations();
   const s  = _t.settingsPage;
   const ps = _t.pricingStrings;
   const pf = _t.premiumFeatures;

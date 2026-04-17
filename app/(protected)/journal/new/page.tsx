@@ -1,10 +1,9 @@
 import { Suspense } from "react";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import JournalForm from "@/app/components/JournalForm";
 import { LoadingIndicatorInline } from "@/app/components/LoadingIndicator";
-import { getLocaleFromCookieString, getTranslations } from "@/app/lib/i18n";
+import { getRequestTranslations } from "@/app/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -15,9 +14,7 @@ export default async function NewJournalPage() {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.user) redirect("/magic-login");
 
-  const t = getTranslations(
-    getLocaleFromCookieString((await cookies()).toString()),
-  );
+  const t = await getRequestTranslations();
 
   return (
     <div className="mx-auto max-w-3xl px-4">

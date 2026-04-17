@@ -1,7 +1,6 @@
 // app/(protected)/layout.tsx
 import type { ReactNode } from "react";
-import { cookies } from "next/headers";
-import { getLocaleFromCookieString, getTranslations } from "@/app/lib/i18n";
+import { getRequestTranslations } from "@/app/lib/i18n/server";
 
 /**
  * Protected layout (visual shell only)
@@ -27,9 +26,7 @@ export default async function ProtectedLayout({
 }: {
   children: ReactNode;
 }) {
-  const t = getTranslations(
-    getLocaleFromCookieString((await cookies()).toString()),
-  );
+  const t = await getRequestTranslations();
   return (
     <div className="min-h-screen bg-qm-bg text-qm-primary">
       {/*
