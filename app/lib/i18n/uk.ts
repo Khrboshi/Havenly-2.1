@@ -223,6 +223,31 @@ export const uk: Translations = {
     notEnoughEmotions:       "Ще недостатньо персональних даних про емоції.",
     showLess:                "Показати менше",
     showMore:                (n: number) => `+${n} більше`,
+    // AI-summary card
+    aiSummaryHeading:        (appName) => `Що помітив ${appName}`,
+    aiSummarySubheading:     "Персональне зведення на основі твоєї історії рефлексій.",
+    aiSummaryRefresh:        "↻ Оновити",
+    aiSummaryGenerating:     "Генерація…",
+    aiSummaryEmpty:          (appName) => `Створи ще кілька рефлексій, і ${appName} напише персональне зведення про те, що помітив.`,
+    aiSummaryTryAgain:       "Спробувати знову →",
+    // Pattern sections
+    patternUnderneathHeading:"Паттерн під поверхнею",
+    whatYouKeepComingBackTo: "До чого ти постійно повертаєшся",
+    patternUnderneathSub:    (appName) => `Конкретна динаміка, яку ${appName} найчастіше помічає у твоїх записах.`,
+    mostRecurringPattern:    "Твій найчастіший глибинний паттерн",
+    corepatternCount:        (count, total) => {
+      const form = total % 10 === 1 && total % 100 !== 11
+        ? "записі"
+        : (total % 10 >= 2 && total % 10 <= 4 && (total % 100 < 10 || total % 100 >= 20))
+          ? "записах"
+          : "записах";
+      return `${count}× у ${total} ${form}`;
+    },
+    // Closing CTA
+    patternClearer:          "Паттерн став чіткішим.",
+    patternNextEntry:        "Наступний запис — це місце, де ти зробиш ще один крок.",
+    writeAboutThisCta:       "Написати про це →",
+    insightsDeepen:          "Аналітика поглиблюється в міру того, як росте історія твоїх рефлексій.",
   },
 
   dashboard: {

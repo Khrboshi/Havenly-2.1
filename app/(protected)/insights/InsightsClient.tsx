@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "@/app/components/I18nProvider";
 import { DOMAIN_COLOR, QM } from "@/app/lib/colors";
+import { CONFIG } from "@/app/lib/config";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -578,10 +579,10 @@ function WeeklySummarySection({ hasRealData }: { hasRealData: boolean }) {
       <div className="mb-4 flex items-center justify-between gap-4">
         <div>
           <h2 className="text-xs font-semibold uppercase tracking-widest text-qm-faint">
-            What Quiet Mirror has noticed
+            {t.insights.aiSummaryHeading(CONFIG.appName)}
           </h2>
           <p className="mt-0.5 text-xs text-qm-faint">
-            A personal summary generated from your reflection history.
+            {t.insights.aiSummarySubheading}
           </p>
         </div>
 
@@ -592,20 +593,19 @@ function WeeklySummarySection({ hasRealData }: { hasRealData: boolean }) {
             className="shrink-0 text-xs text-qm-faint hover:text-qm-muted transition"
             title={t.insights.regenerateSummary}
           >
-            ↻ Refresh
+            {t.insights.aiSummaryRefresh}
           </button>
         )}
         {state.status === "loading" && (
           <span className="shrink-0 text-xs text-qm-faint animate-pulse">
-            Generating…
+            {t.insights.aiSummaryGenerating}
           </span>
         )}
       </div>
 
       {state.status === "idle" && !hasRealData && (
         <p className="text-sm text-qm-faint">
-          Generate a few more reflections and Quiet Mirror will write a personal
-          summary of what it's noticed.
+          {t.insights.aiSummaryEmpty(CONFIG.appName)}
         </p>
       )}
 
@@ -627,7 +627,7 @@ function WeeklySummarySection({ hasRealData }: { hasRealData: boolean }) {
             onClick={() => fetchSummary()}
             className="text-xs font-medium text-qm-positive hover:text-qm-positive-hover transition"
           >
-            Try again →
+            {t.insights.aiSummaryTryAgain}
           </button>
         </div>
       )}
@@ -865,7 +865,7 @@ export default function InsightsClient() {
 
           <section className="rounded-2xl border border-qm-border-subtle bg-gradient-to-br from-qm-bg to-qm-elevated p-7">
             <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-qm-faint">
-              The pattern underneath
+              {t.insights.patternUnderneathHeading}
             </p>
 
             <p
@@ -895,11 +895,10 @@ export default function InsightsClient() {
           {topCorepatterns.length > 0 && (
             <section className="rounded-2xl border border-qm-border-subtle bg-qm-bg p-6">
               <h2 className="text-xs font-semibold uppercase tracking-widest text-qm-faint">
-                What you keep coming back to
+                {t.insights.whatYouKeepComingBackTo}
               </h2>
               <p className="mt-0.5 mb-5 text-xs text-qm-faint">
-                The specific dynamic Quiet Mirror noticed most often beneath your
-                entries.
+                {t.insights.patternUnderneathSub(CONFIG.appName)}
               </p>
 
               <div className="mb-4 rounded-xl border border-qm-positive-border bg-qm-positive-bg p-4">
@@ -909,11 +908,11 @@ export default function InsightsClient() {
                     {toSentenceCase(topCorepatterns[0][0])}
                   </p>
                   <span className="shrink-0 rounded-full bg-qm-positive-soft px-2 py-0.5 text-xs tabular-nums text-qm-positive">
-                    {topCorepatterns[0][1]}× across {entryCount} {entryCount === 1 ? "entry" : "entries"}
+                    {t.insights.corepatternCount(topCorepatterns[0][1], entryCount)}
                   </span>
                 </div>
                 <p className="mt-2 text-xs text-qm-faint ps-4">
-                  Your most recurring underlying pattern
+                  {t.insights.mostRecurringPattern}
                 </p>
               </div>
 
@@ -1035,10 +1034,10 @@ export default function InsightsClient() {
           {topCorepatterns.length > 0 && (
             <section className="rounded-2xl border border-qm-border-subtle bg-qm-positive-bg p-6 text-center">
               <p className="text-sm font-medium text-qm-primary">
-                The pattern is clearer now.
+                {t.insights.patternClearer}
               </p>
               <p className="mt-1 text-xs leading-relaxed text-qm-muted">
-                The next entry is where you take it further.
+                {t.insights.patternNextEntry}
               </p>
               <Link
                 href={`/journal/new?prompt=${encodeURIComponent(
@@ -1046,10 +1045,10 @@ export default function InsightsClient() {
                 )}`}
                 className="mt-4 inline-flex items-center justify-center rounded-full bg-qm-accent px-5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-qm-accent-hover"
               >
-                Write about this →
+                {t.insights.writeAboutThisCta}
               </Link>
               <p className="mt-3 text-xs text-qm-faint">
-                Insights deepen as your reflection history grows.
+                {t.insights.insightsDeepen}
               </p>
             </section>
           )}

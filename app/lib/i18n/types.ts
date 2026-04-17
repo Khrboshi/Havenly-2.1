@@ -197,6 +197,24 @@ export interface Translations {
     // Show more / less
     showLess:                string;
     showMore:                (n: number) => string;
+    // AI-summary card (top of page)
+    aiSummaryHeading:        (appName: string) => string;
+    aiSummarySubheading:     string;
+    aiSummaryRefresh:        string;
+    aiSummaryGenerating:     string;
+    aiSummaryEmpty:          (appName: string) => string;
+    aiSummaryTryAgain:       string;
+    // "The pattern underneath" section + "What you keep coming back to" section
+    patternUnderneathHeading:string;
+    whatYouKeepComingBackTo: string;
+    patternUnderneathSub:    (appName: string) => string;
+    mostRecurringPattern:    string;
+    corepatternCount:        (count: number, total: number) => string;
+    // Closing CTA card
+    patternClearer:          string;
+    patternNextEntry:        string;
+    writeAboutThisCta:       string;
+    insightsDeepen:          string;
   };
 
   dashboard: {
