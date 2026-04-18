@@ -4,6 +4,12 @@ A private AI journal that reads what you write and gently reflects it back.
 
 Live site: https://quietmirror.me
 
+## Languages
+
+Quiet Mirror currently ships in six languages, including one right-to-left script. The authoritative list lives in `app/lib/i18n/locales.ts` (`LOCALE_REGISTRY`).
+
+The i18n system is custom TypeScript (no `next-intl`, no JSON catalogues). See [`docs/I18N.md`](docs/I18N.md) for the architecture, the metadata rule enforced by ESLint, and how to add translations.
+
 ## Environment Variables
 
 Copy `.env.example` to `.env.local` and fill in your values:
