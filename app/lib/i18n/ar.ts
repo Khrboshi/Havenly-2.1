@@ -691,6 +691,8 @@ export const ar: Translations = {
     formAriaLabel:     "نموذج تسجيل الدخول عبر رابط سحري",
   },
   upgradePage: {
+    metaTitle:(appName)=>`الترقية إلى Premium | ${appName}`,
+    metaDescription:(appName,cadence)=>`افتح تأملات الذكاء الاصطناعي غير المحدودة، وملخصات الأنماط الأسبوعية، وتتبع الرؤى العميقة مع ${appName} Premium. ${cadence}.`,
     faq1Q:"ما الذي يُظهره لي Quiet Mirror فعلاً مع Premium؟",
     faq1A:"يفتح Premium الطبقة التي تقرأ جميع مدخلاتك بمرور الوقت — المواضيع العاطفية الأكثر ظهوراً وكيفية ارتباطها ببعضها.",
     faq2Q:"كم عدد التأملات التي أحصل عليها في الخطة المجانية؟",

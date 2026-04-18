@@ -689,6 +689,8 @@ export const fr: Translations = {
   },
 
   upgradePage: {
+    metaTitle:(appName)=>`Passer à Premium | ${appName}`,
+    metaDescription:(appName,cadence)=>`Débloquez des réflexions IA illimitées, des résumés hebdomadaires de schémas et un suivi approfondi des aperçus avec ${appName} Premium. ${cadence}.`,
     faq1Q:"Que me montre réellement Quiet Mirror avec Premium ?",
     faq1A:"Premium débloque la couche qui lit à travers toutes vos entrées dans le temps — pas seulement celle que vous avez écrite aujourd'hui. Vous commencez à voir quels thèmes émotionnels apparaissent le plus souvent, comment ils se connectent les uns aux autres, ce qui a évolué et pourquoi quelque chose peut continuer à arriver.",
     faq2Q:"Combien de réflexions ai-je avec le plan gratuit ?",

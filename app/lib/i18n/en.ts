@@ -700,6 +700,8 @@ export const en: Translations = {
     formAriaLabel:     "Magic link sign in form",
   },
   upgradePage: {
+    metaTitle:(appName)=>`Upgrade to Premium | ${appName}`,
+    metaDescription:(appName,cadence)=>`Unlock unlimited AI reflections, weekly pattern summaries, and deep insight tracking with ${appName} Premium. ${cadence}.`,
     faq1Q:"What does Quiet Mirror actually show me with Premium?",
     faq1A:"Premium unlocks the layer that reads across all your entries over time — not just the one you wrote today. You start seeing which emotional themes appear most often, how they connect to each other, what has been shifting, and why something may keep happening.",
     faq2Q:"How many reflections do I get on the free plan?",

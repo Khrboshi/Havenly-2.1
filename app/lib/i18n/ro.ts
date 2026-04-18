@@ -688,6 +688,8 @@ export const ro: Translations = {
   },
 
   upgradePage: {
+    metaTitle:(appName)=>`Upgradează la Premium | ${appName}`,
+    metaDescription:(appName,cadence)=>`Deblochează reflecții AI nelimitate, rezumate săptămânale de tipare și urmărire profundă a perspectivelor cu ${appName} Premium. ${cadence}.`,
     faq1Q:"Ce îmi arată Quiet Mirror cu adevărat cu Premium?",
     faq1A:"Premium deblochează stratul care citește toate înregistrările tale în timp — nu doar cea pe care ai scris-o astăzi. Începe să vezi ce teme emoționale apar cel mai des, cum se conectează, ce s-a schimbat și de ce ceva continuă să se întâmple.",
     faq2Q:"Câte reflecții primesc pe planul gratuit?",

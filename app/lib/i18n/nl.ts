@@ -683,6 +683,8 @@ export const nl: Translations = {
   },
 
   upgradePage: {
+    metaTitle:(appName)=>`Upgrade naar Premium | ${appName}`,
+    metaDescription:(appName,cadence)=>`Ontgrendel onbeperkte AI-reflecties, wekelijkse patroonsamenvattingen en diepgaande inzichten met ${appName} Premium. ${cadence}.`,
     faq1Q:"Wat toont Quiet Mirror me echt met Premium?",
     faq1A:"Premium ontgrendelt de laag die al je berichten over tijd leest — niet alleen die van vandaag. Je begint te zien welke emotionele thema's het vaakst voorkomen, hoe ze verbonden zijn, wat er is verschoven en waarom iets blijft gebeuren.",
     faq2Q:"Hoeveel reflecties krijg ik op het gratis plan?",
