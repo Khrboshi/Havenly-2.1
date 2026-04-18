@@ -1,17 +1,22 @@
 // app/upgrade/confirmed/page.tsx
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PRICING } from "@/app/lib/pricing";
 import { CONFIG } from "@/app/lib/config";
 import { getRequestTranslations } from "@/app/lib/i18n/server";
 
-// eslint-disable-next-line no-restricted-syntax -- TODO(i18n): migrate to generateMetadata + getRequestTranslations. Tracked in issue #91.
-export const metadata = { title: `Welcome to Premium | ${CONFIG.appName}` };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getRequestTranslations();
+  return {
+    title: t.upgradeConfirmed.metaTitle(CONFIG.appName),
+  };
+}
 
 export default async function UpgradeConfirmedPage() {
-  const _t = await getRequestTranslations();
-  const uc = _t.upgradeConfirmed;
-  const ps = _t.pricingStrings;
-  const pf = _t.premiumFeatures;
+  const t = await getRequestTranslations();
+  const uc = t.upgradeConfirmed;
+  const ps = t.pricingStrings;
+  const pf = t.premiumFeatures;
 
   const features = [
     { label: pf.f1Label, sub: pf.f1Sub, color: "text-qm-positive" },
