@@ -4,6 +4,12 @@
 // THE ONE FILE TO EDIT WHEN ADDING A NEW LANGUAGE
 // ════════════════════════════════════════════════════════
 //
+// For the full i18n architecture (the Translations interface, the
+// metadata rule, how server/client resolution works, RTL, AI language
+// awareness), see docs/I18N.md. This file is the source of truth for
+// the locale list and the mechanics below; docs/I18N.md covers the
+// surrounding patterns and policy.
+//
 // TO ADD A NEW LANGUAGE:
 //   1. Create app/lib/i18n/[code].ts  (implement the Translations interface)
 //   2. import { [code] } from "./[code]"  below
