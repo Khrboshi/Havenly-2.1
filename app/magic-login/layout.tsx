@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title:       t.magicLoginPage.ogTitle(CONFIG.appName),
       description: t.magicLoginPage.ogDescription,
-      url:         `/magic-login`,
+      url:         new URL("/magic-login", CONFIG.siteUrl).toString(),
       siteName:    CONFIG.appName,
     },
   };
