@@ -1,12 +1,15 @@
+import type { Metadata } from "next";
 import { CONFIG } from "@/app/lib/config";
 import { PRICING } from "@/app/lib/pricing";
-import type { Metadata } from "next";
+import { getRequestTranslations } from "@/app/lib/i18n/server";
 
-// eslint-disable-next-line no-restricted-syntax -- TODO(i18n): migrate to generateMetadata + getRequestTranslations. Tracked in issue #90.
-export const metadata: Metadata = {
-  title: `Upgrade to Premium | ${CONFIG.appName}`,
-  description: `Unlock unlimited AI reflections, weekly pattern summaries, and deep insight tracking. ${PRICING.monthlyCadence}.`,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getRequestTranslations();
+  return {
+    title:       t.upgradePage.metaTitle(CONFIG.appName),
+    description: t.upgradePage.metaDescription(CONFIG.appName, PRICING.monthlyCadence),
+  };
+}
 
 export default function UpgradeLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;

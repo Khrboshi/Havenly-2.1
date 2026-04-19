@@ -666,6 +666,8 @@ export interface Translations {
     formAriaLabel:     string;
   };
   upgradePage: {
+    metaTitle: (appName: string) => string;
+    metaDescription: (appName: string, cadence: string) => string;
     faq1Q: string; faq1A: string; faq2Q: string; faq2A: (n: number) => string;
     faq3Q: string; faq3A: string; faq4Q: string; faq4A: string;
     faq5Q: string; faq5A: string;

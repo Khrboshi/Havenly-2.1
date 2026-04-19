@@ -728,6 +728,8 @@ export const uk: Translations = {
     formAriaLabel:     "Форма входу за magic-посиланням",
   },
   upgradePage: {
+    metaTitle:(appName)=>`Перейти на Premium | ${appName}`,
+    metaDescription:(appName,cadence)=>`Відкрий необмежені AI-відображення, щотижневі підсумки патернів та глибоке відстеження інсайтів із ${appName} Premium. ${cadence}.`,
     faq1Q:"Що насправді показує мені Quiet Mirror з Premium?",
     faq1A:"Premium відкриває шар, який читає всі твої записи з часом — які емоційні теми з'являються найчастіше, як вони пов'язані одна з одною.",
     faq2Q:"Скільки відображень я отримую на безкоштовному плані?",
