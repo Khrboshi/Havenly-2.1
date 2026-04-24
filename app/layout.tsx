@@ -11,7 +11,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import InstallPrompt from "@/app/components/InstallPrompt";
 import { CONFIG, BRAND } from "@/app/lib/config";
 import { getDir, getTranslations } from "@/app/lib/i18n";
-import { getRequestLocale } from "@/app/lib/i18n/server";
+import { getRequestLocale, getRequestTranslations } from "@/app/lib/i18n/server";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -30,75 +30,81 @@ const dmSans = DM_Sans({
 
 const SITE_URL = CONFIG.siteUrl;
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: BRAND.fullTitle,
-    template: BRAND.titleTemplate,
-  },
-  description: CONFIG.description,
-  // Add keywords for better SEO (optional but recommended)
-  keywords: [
-    "private journal",
-    "AI journal",
-    "journaling app",
-    "emotional awareness",
-    "pattern recognition",
-    "mental wellness",
-    "reflective writing",
-  ],
-  manifest: "/manifest.json",
-  icons: {
-    icon: [
-      { url: "/pwa/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/pwa/icon-512.png", sizes: "512x512", type: "image/png" },
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getRequestTranslations();
+  const title       = t.homepage.metaTitle(CONFIG.appName);
+  const description = t.homepage.metaDescription;
+  const ogTitle       = t.homepage.ogTitle(CONFIG.appName);
+  const ogDescription = t.homepage.ogDescription;
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default:  title,
+      template: BRAND.titleTemplate,
+    },
+    description,
+    // Add keywords for better SEO (optional but recommended)
+    keywords: [
+      "private journal",
+      "AI journal",
+      "journaling app",
+      "emotional awareness",
+      "pattern recognition",
+      "mental wellness",
+      "reflective writing",
     ],
-    apple: [{ url: "/pwa/icon-192.png" }],
-  },
-  appleWebApp: {
-    capable: true,
-    title: CONFIG.appName,
-    statusBarStyle: "black-translucent",
-  },
-  openGraph: {
-    type: "website",
-    siteName: CONFIG.appName,
-    title: BRAND.fullTitle,
-    description: CONFIG.ogDescription,
-    url: SITE_URL,
-    // Add OpenGraph image for better social sharing
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: BRAND.fullTitle,
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image", // Changed to summary_large_image for better visibility
-    title: BRAND.fullTitle,
-    description: CONFIG.ogDescription,
-    images: ["/og-image.png"],
-  },
-  // Add robots meta for better SEO control
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+    manifest: "/manifest.json",
+    icons: {
+      icon: [
+        { url: "/pwa/icon-192.png", sizes: "192x192", type: "image/png" },
+        { url: "/pwa/icon-512.png", sizes: "512x512", type: "image/png" },
+      ],
+      apple: [{ url: "/pwa/icon-192.png" }],
+    },
+    appleWebApp: {
+      capable: true,
+      title: CONFIG.appName,
+      statusBarStyle: "black-translucent",
+    },
+    openGraph: {
+      type: "website",
+      siteName: CONFIG.appName,
+      title:       ogTitle,
+      description: ogDescription,
+      url: SITE_URL,
+      // Add OpenGraph image for better social sharing
+      images: [
+        {
+          url: "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: ogTitle,
+        },
+      ],
+    },
+    twitter: {
+      // summary_large_image renders a full-width preview card, giving the
+      // site's OG image the prominence it was sized for (1200x630) instead
+      // of the cropped thumbnail that `summary` uses.
+      card: "summary_large_image",
+      title:       ogTitle,
+      description: ogDescription,
+      images: ["/og-image.png"],
+    },
+    // Add robots meta for better SEO control
+    robots: {
       index: true,
       follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
     },
-  },
-  // Add verification tags if needed (optional)
-  // verification: {
-  //   google: "your-google-site-verification-code",
-  // },
-};
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: [
@@ -126,10 +132,7 @@ export default async function RootLayout({
         {/* Mobile web app capabilities */}
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="apple-touch-icon" href="/pwa/icon-192.png" />
-        
-        {/* Improved meta description - ensures it's always present */}
-        <meta name="description" content={CONFIG.description} />
-        
+
         {/* Additional SEO meta tags */}
         <meta name="author" content={CONFIG.appName} />
         <meta name="copyright" content={`${new Date().getFullYear()} ${CONFIG.appName}`} />

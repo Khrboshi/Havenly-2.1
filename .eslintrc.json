@@ -5,7 +5,6 @@
     {
       "files": ["app/**/*.tsx", "app/**/*.ts"],
       "excludedFiles": [
-        "app/layout.tsx",
         "app/(protected)/layout.tsx",
         "app/api/**"
       ],

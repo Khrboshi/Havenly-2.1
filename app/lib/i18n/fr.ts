@@ -512,6 +512,10 @@ export const fr: Translations = {
   },
 
   homepage: {
+    metaTitle:        (appName) => `${appName} — Le Journal Qui Lit en Dessous`,
+    metaDescription:  "Écrivez ce qui vous pèse. Recevez une réflexion douce en retour. Commencez à voir les schémas que vous étiez trop proche pour nommer. Gratuit au départ, sans carte de crédit.",
+    ogTitle:          (appName) => `${appName} — Le Journal Qui Lit en Dessous`,
+    ogDescription:    "Écrivez honnêtement. Recevez une réflexion douce en retour. Voyez les schémas qui façonnent votre vie.",
     heroTag:          "Journal IA privé · Écrire → Réfléchir → Voir les schémas",
     heroHeadline1:    "Vous portez ça",
     heroHeadline2:    "depuis un moment maintenant.",
