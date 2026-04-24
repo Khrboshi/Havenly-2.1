@@ -532,6 +532,10 @@ export interface Translations {
   };
   // ── Homepage (marketing page) ────────────────────────────────────────────────
   homepage: {
+    metaTitle:        (appName: string) => string;
+    metaDescription:  string;
+    ogTitle:          (appName: string) => string;
+    ogDescription:    string;
     heroTag:          string;
     heroHeadline1:    string;
     heroHeadline2:    string;

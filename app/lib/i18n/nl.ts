@@ -506,6 +506,10 @@ export const nl: Translations = {
   },
 
   homepage: {
+    metaTitle:        (appName) => `${appName} — Het dagboek dat onderhuids leest`,
+    metaDescription:  "Schrijf op wat op je drukt. Krijg een zachte reflectie terug. Begin de patronen te zien waar je te dichtbij stond om ze te benoemen. Gratis om te beginnen, geen creditcard.",
+    ogTitle:          (appName) => `${appName} — Het dagboek dat onderhuids leest`,
+    ogDescription:    "Schrijf eerlijk. Krijg een zachte reflectie terug. Zie de patronen die je leven vormgeven.",
     heroTag:          "Privé AI-dagboek · Schrijven → Reflecteren → Patronen zien",
     heroHeadline1:    "Je draagt dit al",
     heroHeadline2:    "een tijdje met je mee.",

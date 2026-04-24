@@ -527,6 +527,10 @@ export const en: Translations = {
     billingSettings: "billing settings",
   },
   homepage: {
+    metaTitle:        (appName) => `${appName} — The Journal That Reads Underneath`,
+    metaDescription:  "Write what's weighing on you. Get a gentle reflection back. Start seeing the patterns you've been too close to name. Free to start, no credit card.",
+    ogTitle:          (appName) => `${appName} — The Journal That Reads Underneath`,
+    ogDescription:    "Write honestly. Get a gentle reflection back. See the patterns shaping your life.",
     heroTag:          "Private AI journal · Write → Reflect → See patterns",
     heroHeadline1:    "You've been carrying this",
     heroHeadline2:    "for a while now.",

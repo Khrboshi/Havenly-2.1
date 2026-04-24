@@ -511,6 +511,10 @@ export const ro: Translations = {
   },
 
   homepage: {
+    metaTitle:        (appName) => `${appName} — Jurnalul care citește dedesubt`,
+    metaDescription:  "Scrie ce te apasă. Primește o reflecție blândă înapoi. Începe să vezi tiparele pe care ai fost prea aproape ca să le numești. Gratuit la început, fără card de credit.",
+    ogTitle:          (appName) => `${appName} — Jurnalul care citește dedesubt`,
+    ogDescription:    "Scrie sincer. Primește o reflecție blândă înapoi. Vezi tiparele care îți modelează viața.",
     heroTag:          "Jurnal AI privat · Scrie → Reflectați → Vedeți tipare",
     heroHeadline1:    "Poartă asta",
     heroHeadline2:    "de ceva timp acum.",
