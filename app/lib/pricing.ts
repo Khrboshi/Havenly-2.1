@@ -11,12 +11,9 @@ const TRIAL_DAY_WORD: string = TRIAL_DAYS === 1 ? "day" : "days";
 
 export const PRICING = {
   /**
-   * Monthly price in USD as a raw number — defensive escape hatch for
-   * arithmetic or non-string consumers (e.g. analytics payloads, future
-   * currency formatters). Has zero callers today; the display siblings
-   * `monthly` ("$9") and `monthlyCadence` ("$9/month") cover every
-   * current use site. Kept deliberately so future numeric needs don't
-   * parse the formatted string — do not delete in dead-code sweeps.
+   * Monthly price in USD as a raw number. Use this when a consumer
+   * needs numeric input (arithmetic, analytics payloads, currency
+   * formatters); use `monthly` or `monthlyCadence` for display.
    */
   monthlyUsd: 9,
 
