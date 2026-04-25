@@ -4,8 +4,6 @@ import { ARTICLES, getArticle } from "../articles";
 import EmailCapture from "@/app/components/EmailCapture";
 import { CONFIG } from "@/app/lib/config";
 import { PRICING } from "@/app/lib/pricing";
-
-import { serializeJsonLd } from "@/lib/serializeJsonLd";
 import { getRequestTranslations } from "@/app/lib/i18n/server";
 
 const SITE_URL = CONFIG.siteUrl;
@@ -23,6 +21,24 @@ export async function generateMetadata({ params }: BlogArticlePageProps): Promis
   const article = getArticle(slug);
   if (!article) return { title: "Article not found" };
 
+  // JSON-LD structured data for Google rich results.
+  // Rendered via Next.js metadata.other — no dangerouslySetInnerHTML needed.
+  // Next.js serializes and escapes the value server-side.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description: article.summary,
+    url: `${SITE_URL}/blog/${article.slug}`,
+    publisher: {
+      "@type": "Organization",
+      name: CONFIG.appName,
+      url: SITE_URL,
+    },
+    articleSection: article.category,
+    timeRequired: `PT${article.minutes}M`,
+  };
+
   return {
     title: article.title,
     description: article.summary,
@@ -37,6 +53,9 @@ export async function generateMetadata({ params }: BlogArticlePageProps): Promis
       card: "summary",
       title: article.title,
       description: article.summary,
+    },
+    other: {
+      "script:ld+json": JSON.stringify(jsonLd),
     },
   };
 }
@@ -62,29 +81,8 @@ export default async function BlogArticlePage({ params }: BlogArticlePageProps) 
     );
   }
 
-  // JSON-LD structured data for Google rich results.
-  // serializeJsonLd applies OWASP-recommended Unicode escaping for <, >, &
-  // so attacker-controlled field values cannot break out of the script tag.
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: article.title,
-    description: article.summary,
-    url: `${SITE_URL}/blog/${article.slug}`,
-    publisher: {
-      "@type": "Organization",
-      name: CONFIG.appName,
-      url: SITE_URL,
-    },
-    articleSection: article.category,
-    timeRequired: `PT${article.minutes}M`,
-  };
   return (
     <main className="min-h-screen bg-qm-bg text-qm-primary">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: serializeJsonLd(jsonLd) }}
-      />
       <section className="mx-auto max-w-3xl px-6 pb-16 pt-24">
         <p className="text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-qm-accent">
           {article.category}
