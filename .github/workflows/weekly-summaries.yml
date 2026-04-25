@@ -18,7 +18,7 @@ jobs:
           response=$(curl -s -o response.json -w "%{http_code}" \
             -X GET \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            https://havenly-2-1.vercel.app/api/cron/weekly-summaries)
+            https://quietmirror.me/api/cron/weekly-summaries)
 
           echo "HTTP status: $response"
           echo "Response body:"
