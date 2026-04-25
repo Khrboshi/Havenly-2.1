@@ -10,7 +10,11 @@ const TRIAL_DAYS: number = 3; // ← the one number to change
 const TRIAL_DAY_WORD: string = TRIAL_DAYS === 1 ? "day" : "days";
 
 export const PRICING = {
-  /** Monthly price in USD */
+  /**
+   * Monthly price in USD as a raw number. Use this when a consumer
+   * needs numeric input (arithmetic, analytics payloads, currency
+   * formatters); use `monthly` or `monthlyCadence` for display.
+   */
   monthlyUsd: 9,
 
   /** Display string — price only */
