@@ -121,7 +121,7 @@ export default function Navbar() {
               priority
               unoptimized
             />
-            <span>{CONFIG.appName}</span>
+            <span className="font-brand-name">{CONFIG.appName}</span>
           </Link>
 
           {/* Desktop nav links */}

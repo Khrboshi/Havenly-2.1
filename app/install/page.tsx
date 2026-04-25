@@ -79,7 +79,7 @@ export default function InstallPage() {
               </span>
             </div>
             <div>
-              <p className="text-sm font-semibold text-qm-primary">{CONFIG.appName}</p>
+              <p className="font-brand-name text-sm font-semibold text-qm-primary">{CONFIG.appName}</p>
               <p className="text-xs text-qm-faint">{ip.appTagline}</p>
               <p className="mt-1.5 text-xs text-qm-faint">{ip.appSubTagline}</p>
             </div>
