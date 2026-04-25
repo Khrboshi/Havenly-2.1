@@ -35,7 +35,7 @@ app/lib/payment.ts     — payment provider name, routes, labels
 
 ## The token system
 
-All tokens are declared in `app/globals.css`. The dark-mode values live on `:root`; the light-mode overrides live inside `@media (prefers-color-scheme: light)`. Every token is exposed as a Tailwind class through the `qm.*` map in `tailwind.config.ts`.
+All tokens are declared in `app/globals.css`. The dark-mode values live on `:root`; the light-mode overrides live inside `@media (prefers-color-scheme: light)`. Surface, text, accent, and semantic-status tokens are exposed as Tailwind classes through the `qm.*` map in `tailwind.config.ts`; data-viz, shadow, focus, glass, and signal-warm tokens are CSS-variable-only — reference them with `var(--qm-…)` rather than a `qm-…` Tailwind class.
 
 ### Brand surfaces and text
 
@@ -43,7 +43,7 @@ All tokens are declared in `app/globals.css`. The dark-mode values live on `:roo
 
 ### Accent
 
-`--qm-accent` is the primary brand colour — indigo (`#5b6de8`) in light, periwinkle (`#8b9dff`) in dark. `--qm-accent-2` is the muted violet companion used for secondary highlights and gradient stops. Both ship with `-hover`, `-soft`, and `-border` variants. The `-soft` and `-border` variants are pre-computed rgba values with the right alpha for each theme — don't recompute them at the call site.
+`--qm-accent` is the primary brand colour — indigo (`#5b6de8`) in light, periwinkle (`#8b9dff`) in dark. `--qm-accent-2` is the muted violet companion used for secondary highlights and gradient stops. `--qm-accent` ships with `-hover`, `-soft`, and `-border` variants; `--qm-accent-2` ships with a `-soft` variant only. The `-soft` and `-border` variants are pre-computed rgba values with the right alpha for each theme — don't recompute them at the call site.
 
 ### Semantic status
 
@@ -66,7 +66,7 @@ The light-mode values are intentionally darker than the dark-mode values — eme
 
 ### Misc
 
-`--qm-border-subtle` and `--qm-border-card` are the two border weights. `--qm-shadow-soft`, `-card`, `-card-lift` are the three elevation levels. `--qm-focus-ring-color/-width/-offset` drive the `:focus-visible` outline. `--qm-bg-glass-80` and `--qm-bg-glass-95` are pre-composed rgba equivalents of the background with alpha, for use where `backdrop-filter` is insufficient. `--qm-signal-warm` is a single-variant warm gold used for a handful of hand-picked accents (e.g. the "what you wrote" signal badge).
+`--qm-border-subtle` and `--qm-border-card` are the two border weights. `--qm-shadow-soft`, `-card`, `-card-lift` are the three elevation levels. `--qm-focus-ring-color/-width/-offset` drive the `:focus-visible` outline. `--qm-bg-glass-80` and `--qm-bg-glass-95` are pre-composed rgba equivalents of the background with alpha, for use where `backdrop-filter` is insufficient. `--qm-signal-warm` (with `-bg` and `-border` companions) is a warm gold used for a handful of hand-picked accents (e.g. the "what you wrote" signal badge).
 
 ---
 
@@ -102,7 +102,7 @@ RTL rules (Arabic) are covered in `docs/I18N.md`; the Arabic font stack is defin
 
 `app/lib/config.ts` exports two objects:
 
-- `CONFIG` — the raw values: `appName`, `tagline`, `description`, `ogDescription`, `supportEmail`, `newsletterName`, `emailFromAddress`, `emailConfirmSubject`, `aiPersonaName`, `themeColorDark`, `themeColorLight`, `siteUrl`.
+- `CONFIG` — the raw values: `appName`, `tagline`, `supportEmail`, `newsletterName`, `emailFromAddress`, `emailConfirmSubject`, `aiPersonaName`, `themeColorDark`, `themeColorLight`, `siteUrl`.
 - `BRAND` — derived helpers: `fullTitle` (`"Quiet Mirror — The Journal That Reads Underneath"`) and `titleTemplate` (`"%s | Quiet Mirror"`).
 
 The theme colours on `CONFIG` (`themeColorDark: #0b1120`, `themeColorLight: #f5f0eb`) are the **PWA browser-chrome colours** — the strip at the top of the browser on mobile. They're intentionally different from `--qm-bg` (the page background): `#f5f0eb` is a warmer cream for browser chrome vs `#faf9f7` for the page, and `#0b1120` is a deeper indigo for chrome vs `#0a0d1a` for the page. If you touch either, touch both in proportion.
@@ -129,7 +129,7 @@ Never write `"3 days"` inline — use `trialDayWord` with `trialDays`, or pick t
 
 ## Legacy Tailwind remapping
 
-The bottom third of `globals.css` (from "LEGACY TAILWIND → QUIET MIRROR REMAPPING" through "SVG FILL / STROKE OVERRIDES") is a safety net. It intercepts any use of Tailwind's `emerald-*`, `green-*`, `teal-*`, `slate-*`, `gray-*` palette classes — background, text, border, ring, divide, placeholder, decoration, accent, shadow-colour, fill, stroke, gradient stops — and redirects them to the right `--qm-*` token. This exists so that inherited code and AI-generated components don't visually regress.
+The bottom third of `globals.css` (from "LEGACY TAILWIND → QUIET MIRROR REMAPPING" through "SVG FILL / STROKE OVERRIDES") is a safety net. It intercepts any use of Tailwind's `emerald-*`, `green-*`, `teal-*`, `slate-*`, `gray-*` palette classes — background, text, border, ring, divide, placeholder, decoration, accent, shadow-colour, gradient stops — and redirects them to the right `--qm-*` token. SVG `fill-*` and `stroke-*` classes are intercepted in a separate, narrower block below the main remap: `emerald-` and `green-` only, in `-400/-500/-600` shades, all redirected to `--qm-accent`. This exists so that inherited code and AI-generated components don't visually regress.
 
 It is not a licence to keep writing `bg-emerald-500`. The remap uses `!important`, which makes legitimate overrides harder and makes specificity debugging painful. **Migrate on sight.** If you touch a file that uses these classes, convert them to `bg-qm-accent` or the appropriate semantic token in the same commit.
 
