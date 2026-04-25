@@ -127,7 +127,7 @@ export default function Footer() {
                 className="rounded-md"
                 aria-hidden="true"
               />
-              <span className="text-sm font-semibold text-qm-primary">
+              <span className="font-brand-name text-sm font-semibold text-qm-primary">
                 {CONFIG.appName}
               </span>
             </Link>

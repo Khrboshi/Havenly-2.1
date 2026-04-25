@@ -173,7 +173,7 @@ function MagicLoginInner() {
         <div className="hidden lg:flex lg:flex-col lg:justify-start">
           <div className="mb-8 flex items-center gap-2.5">
             <Image src="/pwa/icon-192.png" alt={CONFIG.appName} width={32} height={32} className="rounded-xl" priority />
-            <span className="text-sm font-semibold text-qm-secondary">{CONFIG.appName}</span>
+            <span className="font-brand-name text-sm font-semibold text-qm-secondary">{CONFIG.appName}</span>
           </div>
 
           <h1 className="font-display max-w-sm text-4xl font-semibold leading-[1.1] tracking-tight text-qm-primary">
@@ -216,7 +216,7 @@ function MagicLoginInner() {
             <div className="mb-5 lg:hidden">
               <div className="mb-4 flex items-center gap-2">
                 <Image src="/pwa/icon-192.png" alt={CONFIG.appName} width={28} height={28} className="rounded-lg" />
-                <span className="text-sm font-semibold text-qm-secondary">{CONFIG.appName}</span>
+                <span className="font-brand-name text-sm font-semibold text-qm-secondary">{CONFIG.appName}</span>
               </div>
               <h1 className="font-display text-3xl font-semibold tracking-tight text-qm-primary">
                 {isReturning ? mlp.returningGreeting : mlp.newGreeting}
