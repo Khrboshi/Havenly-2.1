@@ -80,18 +80,22 @@ const EMOTION_TOKEN: Record<string, string> = {
 
 // Returns inline style props for an emotion pill — bg, text, and border all
 // derived from the same --qm-dv-* token at different opacities.
+// Template-literal color-mix() works with any valid CSS color or var(),
+// avoiding brittle string-replace on the token's internal format.
 function emotionStyle(e: string): CSSProperties {
   const token = EMOTION_TOKEN[e.toLowerCase()];
+  // Fallback: unknown emotions use the existing border-card / text-muted / accent-soft
+  // tokens so the default state stays aligned with the design system.
   if (!token) return {
-    backgroundColor: "rgba(255,255,255,0.05)",
-    color:           "rgba(255,255,255,0.60)",
-    borderColor:     "rgba(255,255,255,0.10)",
+    backgroundColor: "var(--qm-accent-soft)",
+    color:           "var(--qm-text-muted)",
+    borderColor:     "var(--qm-border-card)",
   };
-  // alpha channels chosen to match the previous Tailwind /15 bg, full text, /25 border pattern
+  // alpha channels match the previous Tailwind /15 bg, full text, /25 border pattern
   return {
-    backgroundColor: token.replace("var(", "color-mix(in srgb, ").replace(")", " 15%, transparent)"),
+    backgroundColor: `color-mix(in srgb, ${token} 15%, transparent)`,
     color:           token,
-    borderColor:     token.replace("var(", "color-mix(in srgb, ").replace(")", " 25%, transparent)"),
+    borderColor:     `color-mix(in srgb, ${token} 25%, transparent)`,
   };
 }
 
