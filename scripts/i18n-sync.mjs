@@ -5,8 +5,9 @@
 // │  Quiet Mirror — i18n translation sync tool                      │
 // │                                                                  │
 // │  USAGE:                                                          │
-// │    node scripts/i18n-sync.mjs          ← audit only (safe)      │
-// │    node scripts/i18n-sync.mjs --write  ← translate & write      │
+// │    node scripts/i18n-sync.mjs                 ← audit missing keys (safe) │
+// │    node scripts/i18n-sync.mjs --write         ← translate & write         │
+// │    node scripts/i18n-sync.mjs --audit-values  ← flag values still in EN   │
 // │                                                                  │
 // │  REQUIRES:                                                       │
 // │    GROQAPIKEY env var (same key the app uses)                    │
@@ -33,7 +34,33 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT      = path.join(__dirname, "..");
 const I18N_DIR  = path.join(ROOT, "app", "lib", "i18n");
-const WRITE     = process.argv.includes("--write");
+const WRITE         = process.argv.includes("--write");
+const AUDIT_VALUES  = process.argv.includes("--audit-values");
+
+// Words that are legitimately identical across languages — international tech/brand terms,
+// letter labels, symbols, and words borrowed from English into most target languages.
+// A value matching English AND in this set is NOT flagged as untranslated.
+const INTL_OK = new Set([
+  // Brand term — intentionally kept in English in all locales
+  "Premium",
+  // Tech/product terms used internationally
+  "Blog", "Dashboard", "Account", "Status", "Contact", "Upgrade",
+  "Tools", "Product", "Legal", "Plan:", "Fitness", "Momentum",
+  "Communication", "Journaling",
+  // Finance/billing terms identical across languages
+  "Transactions", "credits:",
+  // French/Dutch/Romanian words identical to English spelling
+  "Journal",       // French word
+  "Date",          // French/Dutch word
+  "Active",        // French feminine form
+  "Option A", "Option B",  // letter labels — same everywhere
+  "Later",         // Dutch word identical
+  // Symbols and placeholders — legitimately same in all languages
+  "you@example.com",
+  "/ mo",
+  // Brand name fragments that must stay Latin
+  "Quiet Mirror is",
+]);
 
 const LOCALES = [
   { code: "uk", label: "Ukrainian (Українська)",    dir: "ltr" },
@@ -367,6 +394,49 @@ async function main() {
   }
 
   console.log("");
+
+  // ── --audit-values mode ──────────────────────────────────────────────────────
+  if (AUDIT_VALUES) {
+    console.log("");
+    console.log(bold("Scanning for locale values that are still in English..."));
+    console.log(muted("(Values in the INTL_OK allowlist are skipped — they are intentionally identical)"));
+    console.log("");
+    let totalSuspect = 0;
+    for (const locale of LOCALES) {
+      const filePath   = path.join(I18N_DIR, `${locale.code}.ts`);
+      const localeKeys = extractKeyValues(fs.readFileSync(filePath, "utf8"));
+      const suspect    = [];
+      for (const [k, enVal] of Object.entries(enKeys)) {
+        const locVal = localeKeys[k];
+        if (!locVal || locVal !== enVal) continue;
+        // Skip function-valued and array-valued keys (too complex to diff meaningfully)
+        // Strip trailing comma and quotes (raw TS source includes them)
+        const stripped = enVal.replace(/["'`]/g, "").replace(/,\s*$/, "").trim();
+        if (stripped.length < 3)         continue; // symbols
+        if (/^\(/.test(stripped))        continue; // arrow functions
+        if (/^(readonly )?\[/.test(stripped)) continue; // arrays
+        if (INTL_OK.has(stripped))       continue; // whitelisted international terms
+        suspect.push({ k, val: stripped.slice(0, 60) });
+      }
+      totalSuspect += suspect.length;
+      if (suspect.length === 0) {
+        console.log(ok(`  ✅ ${locale.code} — no untranslated values found`));
+      } else {
+        console.log(warn(`  ⚠  ${locale.code} (${locale.label}) — ${suspect.length} value(s) still in English:`));
+        suspect.forEach(({ k, val }) => console.log(muted(`       ${k} = "${val}"`)));
+      }
+    }
+    console.log("");
+    if (totalSuspect === 0) {
+      console.log(ok(bold("All locale values look translated.")));
+    } else {
+      console.log(warn(`${totalSuspect} value(s) may need translation.`));
+      console.log(muted("Review each one — some may be legitimately international words."));
+      console.log(muted("To suppress a word, add it to the INTL_OK set in scripts/i18n-sync.mjs."));
+    }
+    console.log("");
+    return;
+  }
 
   if (totalMissing === 0) {
     console.log(ok(bold("All 6 locales are in sync. Nothing to do.")));
