@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type SetAllCookies } from "@supabase/ssr";
 
 async function signOutAndRedirect(request: Request) {
   const cookieStore = await cookies();
@@ -11,11 +11,11 @@ async function signOutAndRedirect(request: Request) {
     {
       cookies: {
         getAll: () => cookieStore.getAll(),
-        setAll: (cookiesToSet) => {
+        setAll: (cookiesToSet => {
           cookiesToSet.forEach(({ name, value, options }) =>
             cookieStore.set(name, value, options)
           );
-        },
+        }) satisfies SetAllCookies,
       },
     }
   );
