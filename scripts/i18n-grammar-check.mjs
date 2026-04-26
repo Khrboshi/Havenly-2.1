@@ -37,7 +37,13 @@ const I18N_DIR  = path.join(ROOT, "app", "lib", "i18n");
 
 const DRY_RUN   = process.argv.includes("--dry-run");
 const LANG_IDX  = process.argv.indexOf("--lang");
-const ONLY_LANG = LANG_IDX !== -1 ? process.argv[LANG_IDX + 1] : null;
+const _rawLang  = LANG_IDX !== -1 ? process.argv[LANG_IDX + 1] : null;
+const VALID_CODES = new Set(["uk", "ar", "fr", "nl", "ro"]);
+if (_rawLang !== null && !VALID_CODES.has(_rawLang)) {
+  console.error(`\x1b[31mInvalid --lang value: "${_rawLang}". Must be one of: uk, ar, fr, nl, ro\x1b[0m`);
+  process.exit(1);
+}
+const ONLY_LANG = _rawLang;
 
 const LOCALES = [
   { code: "uk", label: "Ukrainian", dir: "ltr" },
@@ -95,9 +101,15 @@ function isPlainString(val) {
   return (s.startsWith('"') || s.startsWith("'")) && !s.startsWith("(");
 }
 
-// Strip surrounding quotes for display / sending to Groq
+// Strip the single outermost quote pair for display / sending to Groq.
+// Uses slice rather than a global regex so internal quotes are never touched.
 function unquote(val) {
-  return val.trim().replace(/^["']|["'],?$/g, "");
+  const s = val.trim().replace(/,\s*$/, ""); // strip trailing comma first
+  if ((s.startsWith('"') && s.endsWith('"')) ||
+      (s.startsWith("'") && s.endsWith("'"))) {
+    return s.slice(1, -1);
+  }
+  return s;
 }
 
 // Re-wrap in double quotes with trailing comma
@@ -186,7 +198,9 @@ Rules:
 
 // ─── File patcher ─────────────────────────────────────────────────────────────
 // Replaces the value of a specific key in the locale file source.
-// Finds the key by its leaf name within its namespace block, replaces the value.
+// Namespace-aware: locates the top-level namespace block first, then matches
+// the leaf key only within that region — avoiding false matches on duplicate
+// leaf key names across different namespaces (e.g. profile.title vs settings.title).
 function applyCorrections(src, corrections, enKeys) {
   let patched = src;
   const applied = [];
@@ -194,26 +208,50 @@ function applyCorrections(src, corrections, enKeys) {
   for (const [fullKey, correctedText] of Object.entries(corrections)) {
     if (correctedText === null) continue;
 
-    const parts  = fullKey.split(".");
+    const parts   = fullKey.split(".");
+    const topNs   = parts[0];
     const leafKey = parts[parts.length - 1];
 
-    // Find the line containing this key assignment
-    // Match: optional whitespace + leafKey + : + old value
-    const lineRegex = new RegExp(
-      `^([ \\t]+${leafKey}\\s*:\\s*)("(?:[^"\\\\]|\\\\.)*"|'(?:[^'\\\\]|\\\\.)*'),?`,
-      "m"
-    );
-    const match = lineRegex.exec(patched);
-    if (!match) {
-      console.warn(warn(`  ⚠ Could not locate "${fullKey}" in source — skipping`));
+    // Step 1: find the top-level namespace block in the source
+    const nsRegex = new RegExp(`^  ${topNs}:\s*\{`, "m");
+    const nsStart = patched.search(nsRegex);
+    if (nsStart === -1) {
+      console.warn(warn(`  ⚠ Namespace "${topNs}" not found — skipping "${fullKey}"`));
       continue;
     }
 
-    const oldLine = match[0];
-    const indent  = match[1];
-    const newLine = `${indent}${requote(correctedText)}`;
+    // Step 2: find the closing brace of this namespace block
+    let depth = 0, nsEnd = -1, inStr = false, strCh = "";
+    for (let j = nsStart; j < patched.length; j++) {
+      const ch = patched[j], prev = patched[j - 1];
+      if (inStr) { if (ch === strCh && prev !== "\\") inStr = false; continue; }
+      if (ch === '"' || ch === "'" || ch === "\`") { inStr = true; strCh = ch; continue; }
+      if (ch === "{") depth++;
+      if (ch === "}") { depth--; if (depth === 0) { nsEnd = j; break; } }
+    }
+    if (nsEnd === -1) {
+      console.warn(warn(`  ⚠ Could not find closing brace for "${topNs}" — skipping "${fullKey}"`));
+      continue;
+    }
 
-    patched = patched.slice(0, match.index) + newLine + patched.slice(match.index + oldLine.length);
+    // Step 3: within the namespace block, match exactly this leaf key
+    const region   = patched.slice(nsStart, nsEnd);
+    const leafRegex = new RegExp(
+      `^([ \t]+${leafKey}\s*:\s*)("(?:[^"\\\\]|\\\\.)*"|'(?:[^'\\\\]|\\\\.)*'),?`,
+      "m"
+    );
+    const match = leafRegex.exec(region);
+    if (!match) {
+      console.warn(warn(`  ⚠ Could not locate "${fullKey}" within namespace — skipping`));
+      continue;
+    }
+
+    const absIndex = nsStart + match.index;
+    const oldLine  = match[0];
+    const indent   = match[1];
+    const newLine  = `${indent}${requote(correctedText)}`;
+
+    patched = patched.slice(0, absIndex) + newLine + patched.slice(absIndex + oldLine.length);
     applied.push({
       key:     fullKey,
       before:  unquote(match[2]),
