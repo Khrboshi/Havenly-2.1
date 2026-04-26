@@ -228,7 +228,7 @@ export default function JournalForm(_props: Props) {
             opacity: wordCount > 0 ? 0.7 : 0,
           }}
         >
-          {t.journal.wordCount(wordCount)}
+          {t.ui.wordCount(wordCount)}
         </span>
       </div>
 
@@ -267,7 +267,7 @@ export default function JournalForm(_props: Props) {
             <path d="M2.5 4.5V3A2 2 0 016.5 3v1.5"
               stroke="var(--qm-text-faint)" strokeWidth="1.1" fill="none" />
           </svg>
-          {t.journal.privacyReminder.split(".")[0]}
+          {t.journal.privacyReminderShort}
         </span>
       </div>
 
