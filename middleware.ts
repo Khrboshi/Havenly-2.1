@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createServerClient, type SetAllCookies } from "@supabase/ssr";
 
 const AUTH_PATHS = ["/magic-login", "/auth/callback", "/logout", "/install", "/insights/preview"];
 const PROTECTED_PREFIXES = ["/dashboard", "/journal", "/tools", "/insights", "/settings"];
@@ -28,18 +28,18 @@ export async function middleware(req: NextRequest) {
   const supabase = createServerClient(supabaseUrl, supabaseAnon, {
     cookies: {
       getAll: () => req.cookies.getAll(),
-      setAll: (cookies: Array<{ name: string; value: string; options: CookieOptions }>) => {
+      setAll: (cookies => {
         cookies.forEach(({ name, value, options }) => {
           res.cookies.set({
             name,
             value,
             ...options,
             path: options?.path ?? "/",
-            sameSite: (options?.sameSite as any) ?? "lax",
+            sameSite: (options?.sameSite as "lax" | "strict" | "none" | boolean | undefined) ?? "lax",
             secure: options?.secure ?? process.env.NODE_ENV === "production",
           });
         });
-      },
+      }) satisfies SetAllCookies,
     },
   });
 
