@@ -211,8 +211,16 @@ Target language: ${targetLang}`;
   const data = await response.json();
   const raw  = data.choices?.[0]?.message?.content ?? "";
 
-  // Strip any accidental markdown fences
-  const clean = raw.replace(/^```(?:json)?\n?/m, "").replace(/\n?```$/m, "").trim();
+  // Extract the first top-level JSON object, tolerating any leading/trailing
+  // text or markdown fences the model might emit.
+  const start = raw.indexOf("{");
+  const end   = raw.lastIndexOf("}");
+  if (start === -1 || end === -1 || end <= start) {
+    console.error(err("Groq response contains no JSON object. Raw output:"));
+    console.error(muted(raw.slice(0, 500)));
+    throw new Error("No JSON object found in response");
+  }
+  const clean = raw.slice(start, end + 1);
 
   let parsed;
   try {
@@ -246,27 +254,36 @@ function patchLocaleFile(filePath, translations, enKeyValues) {
   let changeCount = 0;
 
   for (const [ns, keys] of Object.entries(byNs)) {
-    // Find the namespace block in the source.
-    // The top-level namespace looks like: "  ns: {" (2-space indent)
-    // Nested namespaces: "    ns: {" (4-space indent)
-    const nsParts    = ns.split(".");
-    const topNs      = nsParts[0];
-    const nsRegex    = new RegExp(`^  ${topNs}:\\s*\\{`, "m");
-    const nsStart    = src.search(nsRegex);
+    // Find the namespace block in the source, supporting nested namespaces.
+    // e.g. "insights.momentumDescriptions.Heavy" drills through
+    //   insights: { → momentumDescriptions: { → finds the closing } of momentumDescriptions
+    const nsParts = ns.split(".");
+
+    // Walk through each namespace segment to find the correct insertion point.
+    // searchFrom tracks where to start looking for the next segment.
+    let searchFrom = 0;
+    let nsStart    = -1;
+    for (const segment of nsParts) {
+      const segRegex = new RegExp(`(^|\n)([ \t]*)${segment}\s*:\s*\{`);
+      const match    = src.slice(searchFrom).match(segRegex);
+      if (!match) { nsStart = -1; break; }
+      nsStart    = searchFrom + src.slice(searchFrom).indexOf(match[0]) + match[0].indexOf(segment);
+      searchFrom = searchFrom + src.slice(searchFrom).indexOf(match[0]) + match[0].length;
+    }
 
     if (nsStart === -1) {
-      console.warn(warn(`  ⚠ Namespace "${topNs}" not found in ${path.basename(filePath)} — skipping`));
+      console.warn(warn(`  ⚠ Namespace "${ns}" not found in ${path.basename(filePath)} — skipping`));
       continue;
     }
 
-    // Find the closing of this top-level namespace block
-    // Walk forward counting braces
+    // Find the closing of this (possibly nested) namespace block.
+    // Walk forward from where the last segment's opening brace was found.
     let depth    = 0;
     let nsEnd    = -1;
     let inString = false;
     let strChar  = "";
 
-    for (let j = nsStart; j < src.length; j++) {
+    for (let j = searchFrom - 1; j < src.length; j++) {
       const ch   = src[j];
       const prev = src[j - 1];
 
@@ -386,16 +403,20 @@ async function main() {
       continue;
     }
 
-    // Validate: every requested key should be in the response
-    const receivedKeys = Object.keys(translated);
-    const missingFromResponse = missing.filter((k) => !(k in translated));
+    // Validate: filter out any unexpected keys Groq may have hallucinated,
+    // and warn about any requested keys that were not returned.
+    const requestedSet  = new Set(missing);
+    const filteredTranslation = Object.fromEntries(
+      Object.entries(translated).filter(([k]) => requestedSet.has(k))
+    );
+    const missingFromResponse = missing.filter((k) => !(k in filteredTranslation));
     if (missingFromResponse.length > 0) {
       console.warn(warn(`  ⚠ Groq didn't return ${missingFromResponse.length} key(s) — they will be skipped:`));
       missingFromResponse.forEach((k) => console.warn(muted(`    • ${k}`)));
     }
 
     // Patch the file
-    const patched = patchLocaleFile(filePath, translated, enKeys);
+    const patched = patchLocaleFile(filePath, filteredTranslation, enKeys);
     console.log(ok(`  ✓ Wrote ${patched} key(s) to ${path.basename(filePath)}`));
 
     // Show what was added
