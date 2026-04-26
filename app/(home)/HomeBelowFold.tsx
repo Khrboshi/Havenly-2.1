@@ -204,7 +204,7 @@ export default function HomeBelowFold() {
             <div className="relative rounded-[1.5rem] border border-qm-warning-border bg-qm-warning-strong/[0.04] p-6 sm:col-span-2 lg:col-span-1">
               <div className="flex items-start justify-between gap-3">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-qm-warning">{h.cardCTitle}</p>
-                <span className="shrink-0 rounded-full border border-qm-warning-border bg-qm-warning-soft px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.15em] text-qm-warning">Premium</span>
+                <span className="shrink-0 rounded-full border border-qm-warning-border bg-qm-warning-soft px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.15em] text-qm-warning">{t.settingsPage.planPremium}</span>
               </div>
               <p className="mt-3 text-[15px] leading-[1.7] text-qm-primary">{h.cardCHead}</p>
               <div className="mt-4 rounded-xl border border-qm-warning-border bg-qm-warning-strong/[0.04] p-3"><p className="text-xs leading-relaxed text-qm-muted">{h.cardCNote}</p></div>
@@ -213,7 +213,7 @@ export default function HomeBelowFold() {
             <div className="relative rounded-[1.5rem] border border-qm-premium-border bg-qm-premium-strong/[0.04] p-6">
               <div className="flex items-start justify-between gap-3">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-qm-premium">{h.cardDTitle}</p>
-                <span className="shrink-0 rounded-full border border-qm-premium-border bg-qm-premium-soft px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.15em] text-qm-premium">Premium</span>
+                <span className="shrink-0 rounded-full border border-qm-premium-border bg-qm-premium-soft px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.15em] text-qm-premium">{t.settingsPage.planPremium}</span>
               </div>
               <p className="mt-3 text-[15px] leading-[1.7] text-qm-primary">{h.cardDHead}</p>
               <div className="mt-4 flex items-center gap-2 text-xs text-qm-faint"><span className="text-qm-premium">↑</span><span>{h.cardDNote}</span></div>
@@ -222,7 +222,7 @@ export default function HomeBelowFold() {
             <div className="relative rounded-[1.5rem] border border-qm-danger-border bg-qm-danger-strong/[0.04] p-6">
               <div className="flex items-start justify-between gap-3">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-qm-danger">{h.cardETitle}</p>
-                <span className="shrink-0 rounded-full border border-qm-danger-border bg-qm-danger-soft px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.15em] text-qm-danger">Premium</span>
+                <span className="shrink-0 rounded-full border border-qm-danger-border bg-qm-danger-soft px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.15em] text-qm-danger">{t.settingsPage.planPremium}</span>
               </div>
               <p className="mt-3 text-[15px] leading-[1.7] text-qm-primary">{h.cardEHead}</p>
               <p className="mt-3 text-[11px] text-qm-faint">{h.cardENote}</p>

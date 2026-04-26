@@ -298,7 +298,7 @@ export const ro: Translations = {
   footer: {
     product:           "Produs",
     account:           "Cont",
-    legal:             "Legal",
+    legal:             "Juridic",
     serviceGuarantees: "Garanții de serviciu",
     about:             "Despre",
     pricing:           "Prețuri",

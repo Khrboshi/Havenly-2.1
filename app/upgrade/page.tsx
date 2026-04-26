@@ -136,7 +136,7 @@ export default function UpgradePage() {
                 <div className="grid grid-cols-[1fr_auto_auto] border-b border-white/[0.06] px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-qm-faint">
                   <span />
                   <span className="w-16 text-center">{t.dashboard.free}</span>
-                  <span className="w-16 text-center text-qm-positive">Premium</span>
+                  <span className="w-16 text-center text-qm-positive">{t.settingsPage.planPremium}</span>
                 </div>
                 {[
                   { label: up.compRow1, free: "✓",  premium: "✓" },

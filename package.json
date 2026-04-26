@@ -9,7 +9,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint \"**/*.{ts,tsx}\" --ignore-pattern .next --ignore-pattern node_modules"
+    "lint": "eslint \"**/*.{ts,tsx}\" --ignore-pattern .next --ignore-pattern node_modules",
+    "i18n:check":         "node scripts/i18n-sync.mjs",
+    "i18n:sync":          "node scripts/i18n-sync.mjs --write",
+    "i18n:audit-values":  "node scripts/i18n-sync.mjs --audit-values"
   },
   "dependencies": {
     "@dodopayments/nextjs": "^0.3.5",
