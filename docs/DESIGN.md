@@ -1,8 +1,8 @@
 # Design System — Quiet Mirror
 
 > **This file is the canonical design system reference.**
-> When this file and any other source conflict, this file wins.
-> The canonical _values_ live in `app/globals.css` (CSS tokens) and `tailwind.config.ts` (Tailwind aliases). This doc describes the system, the rules, and the decisions behind them.
+> The actual source of truth for values is always the code: `app/globals.css` owns CSS tokens, `tailwind.config.ts` owns Tailwind aliases, and `app/lib/config.ts` / `pricing.ts` / `payment.ts` own brand constants.
+> This doc describes the system, the rules, and the decisions — read it to understand _how_ and _why_; read the source files for the exact current values.
 
 ---
 
@@ -70,18 +70,20 @@ All tokens are defined in `app/globals.css`. Dark mode values are in `:root`; li
 
 ### Surface & text
 
-| Token | Dark mode | Light mode | Usage |
-|---|---|---|---|
-| `--qm-bg` | `#0a0d1a` | `#faf9f7` | Page background |
-| `--qm-bg-elevated` | `#0f121f` | `#ffffff` | Cards, modals, nav |
-| `--qm-bg-soft` | `#141828` | `#f2f0ed` | Tinted sections, inputs |
-| `--qm-bg-card` | `#181c2e` | `#fdfcfb` | Inner card surfaces |
-| `--qm-text-primary` | `#e8ebf5` | `#1c1916` | Body text, headings |
-| `--qm-text-secondary` | `#bcc3db` | `#4a453f` | Supporting text |
-| `--qm-text-muted` | `#8089a8` | `#706b63` | Captions, placeholders |
-| `--qm-text-faint` | `#5a6178` | `#9d968d` | Timestamps, metadata |
-| `--qm-border-subtle` | `rgba(184,195,219,0.10)` | `rgba(28,25,22,0.12)` | Section dividers |
-| `--qm-border-card` | `rgba(184,195,219,0.08)` | `rgba(28,25,22,0.08)` | Card outlines |
+Exact values live in `app/globals.css` — `:root` for dark mode, `@media (prefers-color-scheme: light)` for light overrides.
+
+| Token | Usage |
+|---|---|
+| `--qm-bg` | Page background |
+| `--qm-bg-elevated` | Cards, modals, nav |
+| `--qm-bg-soft` | Tinted sections, inputs |
+| `--qm-bg-card` | Inner card surfaces |
+| `--qm-text-primary` | Body text, headings |
+| `--qm-text-secondary` | Supporting text |
+| `--qm-text-muted` | Captions, placeholders |
+| `--qm-text-faint` | Timestamps, metadata |
+| `--qm-border-subtle` | Section dividers |
+| `--qm-border-card` | Card outlines |
 
 **Tailwind aliases** (see §4): `bg-qm-bg`, `bg-qm-elevated`, `bg-qm-soft`, `bg-qm-card`, `text-qm-primary`, `text-qm-secondary`, `text-qm-muted`, `text-qm-faint`, `border-qm-subtle`, `border-qm-card`.
 
@@ -89,14 +91,16 @@ All tokens are defined in `app/globals.css`. Dark mode values are in `:root`; li
 
 The primary interactive colour. Periwinkle in dark mode, royal blue in light mode.
 
-| Token | Dark | Light | Usage |
-|---|---|---|---|
-| `--qm-accent` | `#8b9dff` | `#5b6de8` | Buttons, links, focus rings |
-| `--qm-accent-hover` | `#a1b1ff` | `#4a5bcc` | Hover state of above |
-| `--qm-accent-soft` | `rgba(139,157,255,0.11)` | `rgba(91,109,232,0.10)` | Tinted backgrounds |
-| `--qm-accent-border` | `rgba(139,157,255,0.20)` | `rgba(91,109,232,0.22)` | Accent-tinted borders |
-| `--qm-accent-2` | `#9a8dc0` | `#8676ae` | Secondary accent (muted violet) |
-| `--qm-accent-2-soft` | `rgba(154,141,192,0.11)` | `rgba(134,118,174,0.10)` | Accent-2 tinted backgrounds |
+Exact values in `app/globals.css`. Periwinkle in dark mode, royal blue in light mode — see `:root` and `@media (prefers-color-scheme: light)`.
+
+| Token | Usage |
+|---|---|
+| `--qm-accent` | Buttons, links, focus rings |
+| `--qm-accent-hover` | Hover state of above |
+| `--qm-accent-soft` | Tinted backgrounds |
+| `--qm-accent-border` | Accent-tinted borders |
+| `--qm-accent-2` | Secondary accent (muted violet) |
+| `--qm-accent-2-soft` | Accent-2 tinted backgrounds |
 
 **Tailwind aliases**: `text-qm-accent`, `bg-qm-accent`, `bg-qm-accent-soft`, `border-qm-accent`, `bg-qm-accent-soft`.
 
@@ -104,11 +108,7 @@ The primary interactive colour. Periwinkle in dark mode, royal blue in light mod
 
 Amber/gold — used for journaling streaks, warmth cues, and amber-toned editorial moments. Not the same as `--qm-warning` (which is for caution/error states).
 
-| Token | Dark | Light |
-|---|---|---|
-| `--qm-signal-warm` | `#c8aa64` | `#9a7a32` |
-| `--qm-signal-warm-bg` | `rgba(200,170,100,0.10)` | `rgba(154,122,50,0.10)` |
-| `--qm-signal-warm-border` | `rgba(200,170,100,0.25)` | `rgba(154,122,50,0.25)` |
+Tokens: `--qm-signal-warm` · `--qm-signal-warm-bg` · `--qm-signal-warm-border` — values in `app/globals.css`.
 
 No Tailwind alias — use `var(--qm-signal-warm)` inline or via `QM.signalWarm` in JS.
 
@@ -147,20 +147,20 @@ Four semantic categories, each with **7 variants** that adapt between dark and l
 
 ### Data-visualisation tokens
 
-Fixed across themes — emotional colour associations are consistent regardless of dark/light mode. Used for journal insight charts, domain tags, and category highlights.
+Fixed across themes — emotional colour associations are consistent regardless of dark/light mode. Used for journal insight charts, domain tags, and category highlights. Exact hex values in `app/globals.css`.
 
-| Token | Hex | Emotional domain |
-|---|---|---|
-| `--qm-dv-positive` | `#7c9fff` | Calm, hope, gratitude, joy |
-| `--qm-dv-work` | `#60a5fa` | Work, curiosity, clarity |
-| `--qm-dv-love` | `#f472b6` | Love, relationship, connection |
-| `--qm-dv-health` | `#fb923c` | Health, anxiety, stress |
-| `--qm-dv-grief` | `#a78bfa` | Grief, confusion, doubt |
-| `--qm-dv-growth` | `#86efac` | Parenting, growth |
-| `--qm-dv-creative` | `#fbbf24` | Creative, shame, guilt |
-| `--qm-dv-identity` | `#e879f9` | Identity, transformation |
-| `--qm-dv-fitness` | `#2dd4bf` | Fitness, energy |
-| `--qm-dv-fear` | `#f87171` | Fear, anger, panic |
+| Token | Emotional domain |
+|---|---|
+| `--qm-dv-positive` | Calm, hope, gratitude, joy |
+| `--qm-dv-work` | Work, curiosity, clarity |
+| `--qm-dv-love` | Love, relationship, connection |
+| `--qm-dv-health` | Health, anxiety, stress |
+| `--qm-dv-grief` | Grief, confusion, doubt |
+| `--qm-dv-growth` | Parenting, growth |
+| `--qm-dv-creative` | Creative, shame, guilt |
+| `--qm-dv-identity` | Identity, transformation |
+| `--qm-dv-fitness` | Fitness, energy |
+| `--qm-dv-fear` | Fear, anger, panic |
 
 **No Tailwind aliases** — these are CSS-variable-only. Use `var(--qm-dv-*)` in inline styles, or `QM.dv.*` in JS (see §11).
 
@@ -377,53 +377,21 @@ import { PAYMENT } from "@/app/lib/payment";
 
 ### CONFIG keys
 
-| Key | Value |
-|---|---|
-| `appName` | `"Quiet Mirror"` |
-| `tagline` | `"The Journal That Reads Underneath"` |
-| `supportEmail` | `"hello@quietmirror.me"` |
-| `newsletterName` | `"Quiet Mirror Letters"` |
-| `emailFromAddress` | `"Quiet Mirror <hello@quietmirror.me>"` |
-| `emailConfirmSubject` | `"You're in — Quiet Mirror Letters"` |
-| `aiPersonaName` | `"Quiet Mirror"` |
-| `themeColorDark` | `"#0b1120"` |
-| `themeColorLight` | `"#f5f0eb"` |
-| `siteUrl` | `process.env.NEXT_PUBLIC_SITE_URL ?? "https://quietmirror.me"` |
+10 keys in `app/lib/config.ts`: `appName` · `tagline` · `supportEmail` · `newsletterName` · `emailFromAddress` · `emailConfirmSubject` · `aiPersonaName` · `themeColorDark` · `themeColorLight` · `siteUrl`.
 
-`BRAND.fullTitle` = `"Quiet Mirror — The Journal That Reads Underneath"`  
-`BRAND.titleTemplate` = `"%s | Quiet Mirror"`
+Derived: `BRAND.fullTitle` (`appName + " — " + tagline`) and `BRAND.titleTemplate` (`"%s | " + appName`).
 
-> **Note:** `themeColorDark`/`themeColorLight` are the browser chrome colours for the PWA — intentionally distinct from `--qm-bg`. They are warmer/lighter than the page background to create a softer chrome edge.
+> **Note:** `themeColorDark`/`themeColorLight` are the PWA browser chrome colours — intentionally distinct from `--qm-bg`. They are slightly warmer/lighter than the page background to create a softer chrome edge.
 
 ### PRICING keys
 
-Everything derives from `TRIAL_DAYS = 3`. To change the trial length, edit that one constant — every UI string and logic gate updates automatically.
+Everything derives from `TRIAL_DAYS` in `app/lib/pricing.ts`. To change the trial length, edit that one constant — every UI string and logic gate updates automatically.
 
-| Key | Current value |
-|---|---|
-| `monthlyUsd` | `9` |
-| `monthly` | `"$9"` |
-| `monthlyCadence` | `"$9/month"` |
-| `freeMonthlyCredits` | `3` |
-| `trialDays` | `3` |
-| `trialLabel` | `"3-day free trial"` |
-| `valueLabel` | `"3-day free trial included"` |
-| `trialDayWord` | `"days"` |
-| `trialFreeFor` | `"Free for 3 days"` |
-| `trialNoChargeUntil` | `"no charge until day 4"` |
+Keys: `monthlyUsd` · `monthly` · `monthlyCadence` · `freeMonthlyCredits` · `trialDays` · `trialLabel` · `valueLabel` · `trialDayWord` · `trialFreeFor` · `trialNoChargeUntil`
 
 ### PAYMENT keys
 
-| Key | Value |
-|---|---|
-| `providerName` | `"Dodo Payments"` |
-| `checkoutApiRoute` | `"/api/dodo/checkout"` |
-| `invoicesApiRoute` | `"/api/dodo/transactions"` |
-| `portalUrl()` | `"/api/dodo/portal"` |
-| `portalLabel` | `"Open billing portal"` |
-| `manageLabel` | `"Manage subscription"` |
-| `checkoutTrustLine` | `"Secure checkout via Dodo Payments"` |
-| `billingManagedLine` | `"Billing is managed securely by Dodo Payments."` |
+8 keys in `app/lib/payment.ts` (provider-agnostic): `providerName` · `checkoutApiRoute` · `invoicesApiRoute` · `portalUrl()` · `portalLabel` · `manageLabel` · `checkoutTrustLine` · `billingManagedLine`
 
 ---
 
