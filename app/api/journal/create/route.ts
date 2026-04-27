@@ -1,3 +1,12 @@
+/**
+ * app/api/journal/create/route.ts
+ *
+ * POST — Creates a new journal entry for the authenticated user.
+ *
+ * Validates: auth session, content presence, max content length (20,000 chars).
+ * Inserts into journal_entries with user_id, title, content.
+ * Returns the new entry id on success.
+ */
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 

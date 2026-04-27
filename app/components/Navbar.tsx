@@ -1,3 +1,16 @@
+/**
+ * app/components/Navbar.tsx
+ *
+ * Main navigation bar — rendered on every authenticated and public page.
+ *
+ * Responsibilities:
+ * - Responsive: collapses to hamburger menu on mobile
+ * - Auth-aware: shows Sign In or user menu based on session state
+ * - Route-aware: highlights active link via usePathname()
+ * - Install prompt: shows PWA install CTA when available (useInstallAvailability)
+ * - Logout: calls Supabase signOut then navigates to home
+ * - i18n: all labels via useTranslation(); language switcher included
+ */
 "use client";
 
 import Link from "next/link";
