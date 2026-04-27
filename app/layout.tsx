@@ -1,4 +1,10 @@
 // app/layout.tsx
+/**
+ * app/layout.tsx
+ *
+ * Root layout — wraps every page with fonts, metadata, providers,
+ * and global CSS. Sets default Open Graph and Twitter card metadata.
+ */
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
