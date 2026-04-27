@@ -1,3 +1,13 @@
+/**
+ * app/components/UpgradeTriggerModal.tsx
+ *
+ * Modal shown when a free user attempts a Premium-only action
+ * (e.g. requesting a reflection after credits are exhausted).
+ *
+ * Controlled by parent via open/onClose props.
+ * Locks body scroll while open. Links to /upgrade for conversion.
+ * Domain-aware: shows a contextual headline based on the entry's domain.
+ */
 "use client";
 
 import Link from "next/link";
