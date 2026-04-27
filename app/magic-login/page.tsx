@@ -1,3 +1,18 @@
+/**
+ * app/magic-login/page.tsx
+ *
+ * Passwordless authentication entry point — handles both the email submission
+ * step and the OTP verification step in a single client component.
+ *
+ * Flow:
+ * 1. User enters email → sendMagicLink() → Supabase sends OTP email
+ * 2. User enters 6-digit OTP → verifyOtp() → Supabase session created
+ * 3. On success: router.push() to /dashboard (or ?next= param if present)
+ *
+ * Also handles the magic link click path: Supabase redirects to
+ * /auth/callback which exchanges the token, then redirects here with
+ * the session already established.
+ */
 "use client";
 
 export const dynamic = "force-dynamic";

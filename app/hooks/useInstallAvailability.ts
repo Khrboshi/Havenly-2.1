@@ -1,6 +1,32 @@
+/**
+ * app/hooks/useInstallAvailability.ts
+ *
+ * Detects whether the PWA install prompt is available and manages
+ * the beforeinstallprompt lifecycle across browsers.
+ *
+ * Returns:
+ *   isInstalled   — true if already running as a PWA (standalone mode)
+ *   isInstallable — true if the browser has a deferred install prompt ready
+ *   isIOS         — true if on iOS Safari (which uses a manual Add to Home Screen flow)
+ *   promptInstall — call to trigger the native install prompt (non-iOS only)
+ *
+ * Uses useSyncExternalStore for SSR-safe subscription to the prompt store.
+ * iOS standalone detection uses the non-standard navigator.standalone property
+ * via a typed interface extension rather than a cast.
+ */
 "use client";
 
 import { useEffect, useMemo, useSyncExternalStore } from "react";
+
+// navigator.standalone is a non-standard iOS Safari property not in TypeScript's
+// built-in lib.dom.d.ts — declare it here rather than casting to any.
+interface IOSNavigator extends Navigator {
+  standalone?: boolean;
+}
+
+function isIOSNavigator(nav: Navigator): nav is IOSNavigator {
+  return "standalone" in nav;
+}
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -17,7 +43,7 @@ type StoreState = {
 function isStandaloneNow(): boolean {
   if (typeof window === "undefined") return false;
 
-  const navStandalone = (window.navigator as any).standalone === true; // iOS Safari
+  const navStandalone = isIOSNavigator(window.navigator) && window.navigator.standalone === true;
   const modes = [
     "(display-mode: standalone)",
     "(display-mode: minimal-ui)",
