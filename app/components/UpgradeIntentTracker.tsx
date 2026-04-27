@@ -1,3 +1,9 @@
+/**
+ * app/components/UpgradeIntentTracker.tsx
+ *
+ * Fires a telemetry event when a free user views an upgrade trigger.
+ * Mounts invisibly — no UI rendered. Used to track upgrade funnel entry points.
+ */
 "use client";
 
 import { useEffect } from "react";

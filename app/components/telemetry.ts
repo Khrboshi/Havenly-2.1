@@ -1,5 +1,10 @@
-// telemetry.ts — thin wrapper that routes events to PostHog if loaded,
-// or falls back to the server-side log endpoint.
+/**
+ * app/components/telemetry.ts
+ *
+ * Thin analytics wrapper — routes events to PostHog when initialised,
+ * or falls back to the server-side /api/telemetry endpoint.
+ * All call sites use track() so the underlying provider is swappable.
+ */
 import posthog from "posthog-js";
 
 export function track(event: string, data?: Record<string, unknown>) {

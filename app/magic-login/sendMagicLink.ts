@@ -1,4 +1,11 @@
-// app/magic-login/sendMagicLink.ts
+/**
+ * app/magic-login/sendMagicLink.ts
+ *
+ * Server action — sends a one-time-password (OTP) email to the given address
+ * via Supabase Auth. The user enters the 6-digit code on the next step.
+ *
+ * Uses shouldCreateUser: true so new addresses are automatically registered.
+ */
 "use server";
 
 import { createServerClient, type CookieOptions } from "@supabase/ssr";

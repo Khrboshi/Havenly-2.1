@@ -1,3 +1,12 @@
+/**
+ * app/providers.tsx
+ *
+ * Root client provider tree — wraps the entire app with:
+ *   SupabaseSessionProvider  — auth session + PostHog identify
+ *   PostHogProvider          — analytics initialisation
+ *   I18nProvider             — locale-aware translation context
+ *   ServiceWorkerRegister    — PWA service worker registration
+ */
 "use client";
 
 import { SupabaseSessionProvider } from "@/app/components/SupabaseSessionProvider";

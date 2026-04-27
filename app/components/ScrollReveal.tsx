@@ -1,3 +1,9 @@
+/**
+ * app/components/ScrollReveal.tsx
+ *
+ * Intersection Observer wrapper that fades and slides children into view
+ * as they enter the viewport. Used on marketing pages for scroll animations.
+ */
 "use client";
 
 import { useEffect, useRef } from "react";

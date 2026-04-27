@@ -1,3 +1,9 @@
+/**
+ * app/blog/[slug]/page.tsx
+ *
+ * Individual blog article page — statically generated from articles.ts.
+ * Returns 404 for unknown slugs via notFound().
+ */
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ARTICLES, getArticle } from "../articles";

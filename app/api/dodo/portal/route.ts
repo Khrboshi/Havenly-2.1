@@ -1,9 +1,15 @@
-// app/api/dodo/portal/route.ts
-// Creates a Dodo customer portal session and redirects the user there.
-// The portal lets users update payment methods, view invoices, and cancel.
-//
-// ENV VARS REQUIRED (Vercel):
-//   DODO_PAYMENTS_API_KEY     — Dodo secret API key
+/**
+ * app/api/dodo/portal/route.ts
+ *
+ * GET — Creates a Dodo customer portal session and redirects the user there.
+ * The portal lets subscribers manage payment methods, view invoices, and cancel.
+ *
+ * Requires dodo_customer_id stored on profiles (set at checkout creation).
+ * Returns 400 if the user has no Dodo customer record (Stripe-legacy subscriber).
+ *
+ * ENV VARS REQUIRED:
+ *   DODO_PAYMENTS_API_KEY, DODO_PAYMENTS_ENVIRONMENT
+ */
 //   DODO_PAYMENTS_ENVIRONMENT — "test_mode" | "live_mode"
 
 import { NextResponse } from "next/server";

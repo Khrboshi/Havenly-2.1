@@ -1,4 +1,10 @@
 // app/(protected)/tools/suggestions/page.tsx
+/**
+ * app/(protected)/tools/suggestions/page.tsx
+ *
+ * AI-powered journal prompt suggestions — fetches personalised writing
+ * prompts based on the user's recent themes. Premium/Trial only.
+ */
 "use client";
 
 export const dynamic = "force-dynamic";

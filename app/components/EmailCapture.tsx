@@ -1,4 +1,10 @@
-// app/components/EmailCapture.tsx
+/**
+ * app/components/EmailCapture.tsx
+ *
+ * Newsletter signup form — used on the marketing homepage and blog.
+ * POSTs to /api/email/subscribe, shows inline success/error states.
+ * Validates email format client-side before submitting.
+ */
 "use client";
 
 import { useState } from "react";

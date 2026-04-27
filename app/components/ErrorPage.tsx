@@ -17,6 +17,12 @@ type ErrorPageProps = {
   backLabel?: string;
 };
 
+/**
+ * app/components/ErrorPage.tsx
+ *
+ * Reusable error UI — used by all error.tsx boundary files.
+ * Shows a friendly message and a "Go back" button.
+ */
 export default function ErrorPage({
   reset,
   message,

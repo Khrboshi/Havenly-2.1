@@ -1,3 +1,10 @@
+/**
+ * app/install/page.tsx
+ *
+ * PWA install landing page — shown when users tap "Install App" from
+ * the install prompt. Provides platform-specific installation instructions
+ * for iOS Safari, Android Chrome, and desktop browsers.
+ */
 "use client";
 
 import { useMemo } from "react";

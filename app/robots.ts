@@ -1,3 +1,9 @@
+/**
+ * app/robots.ts
+ *
+ * Generates robots.txt — allows all crawlers on public pages
+ * and disallows indexing of authenticated/private routes.
+ */
 import type { MetadataRoute } from "next";
 import { CONFIG } from "@/app/lib/config";
 
