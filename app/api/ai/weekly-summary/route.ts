@@ -1,4 +1,17 @@
-// app/api/ai/weekly-summary/route.ts
+/**
+ * app/api/ai/weekly-summary/route.ts
+ *
+ * GET  — Returns the cached weekly AI summary for the current user.
+ *        Returns 204 if no summary exists yet, 403 if not Premium/Trial.
+ * POST — Forces regeneration of the weekly summary (ignores cache TTL).
+ *
+ * Caching: summaries are stored in profiles.weekly_summary and
+ * profiles.weekly_summary_generated_at. The cache TTL is 7 days.
+ * A service-role client is used for writes to bypass RLS.
+ *
+ * Locale: reads qm:locale cookie and instructs the model to reply in the
+ * user's language via getAiLanguageName().
+ */
 import { NextResponse } from "next/server";
 import { CONFIG } from "@/app/lib/config";
 import { getGroqConfig } from "@/app/lib/ai/groq";
