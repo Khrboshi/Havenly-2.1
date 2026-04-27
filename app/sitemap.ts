@@ -1,3 +1,10 @@
+/**
+ * app/sitemap.ts
+ *
+ * Generates the XML sitemap for search engine indexing.
+ * Includes all public routes with appropriate change frequencies.
+ * Excludes authenticated routes (/dashboard, /journal, /settings, etc.).
+ */
 import type { MetadataRoute } from "next";
 import { ARTICLES } from "./blog/articles";
 import { CONFIG } from "@/app/lib/config";
