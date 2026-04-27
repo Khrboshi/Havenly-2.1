@@ -206,6 +206,7 @@ export const fr: Translations = {
     aiSummaryGenerating:     "Génération…",
     aiSummaryEmpty:          (appName) => `Générez quelques réflexions supplémentaires et ${appName} écrira un résumé personnel de ce qu'il a remarqué.`,
     aiSummaryTryAgain:       "Réessayer →",
+    aiSummaryLastUpdated:    "Dernière mise à jour",
     // Pattern sections
     patternUnderneathHeading:"Le schéma sous-jacent",
     whatYouKeepComingBackTo: "Ce à quoi vous revenez sans cesse",

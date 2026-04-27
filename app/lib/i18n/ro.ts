@@ -207,6 +207,7 @@ export const ro: Translations = {
     aiSummaryGenerating:     "Se generează…",
     aiSummaryEmpty:          (appName) => `Generează câteva reflecții în plus și ${appName} va scrie un rezumat personal cu ce a observat.`,
     aiSummaryTryAgain:       "Încearcă din nou →",
+    aiSummaryLastUpdated:    "Ultima actualizare",
     // Pattern sections
     patternUnderneathHeading:"Tiparul de dedesubt",
     whatYouKeepComingBackTo: "La ce te întorci mereu",

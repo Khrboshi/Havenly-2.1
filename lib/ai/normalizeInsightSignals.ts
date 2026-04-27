@@ -1,7 +1,15 @@
-// lib/ai/normalizeInsightSignals.ts
-// FIX Issue 4: expanded FALLBACK_THEMES and FALLBACK_EMOTIONS to cover all domain-specific
-// defaults from DOMAIN_DEFAULTS in generateReflection.ts, so they never appear in
-// the insights dashboard as if they were real user-generated signals.
+/**
+ * lib/ai/normalizeInsightSignals.ts
+ *
+ * Post-processing layer between raw AI JSON and the Insights dashboard.
+ *
+ * Responsibilities:
+ * - Strip AI-generated fallback/placeholder themes and emotions that were
+ *   injected by the model when it had nothing real to say (e.g. "processing",
+ *   "self-awareness") so they don't pollute pattern charts.
+ * - Bucket free-text corepatterns into canonical short labels for grouping.
+ * - Provide normalizeAIResponseSignals() as the single call sites use.
+ */
 
 export type ParsedAIResponse = {
   domain?: string;

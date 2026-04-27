@@ -1,31 +1,30 @@
-// app/api/dodo/webhook/route.ts
-// Handles Dodo Payments subscription lifecycle events and updates user plans in Supabase.
-//
-// ENV VARS REQUIRED (Vercel):
-//   DODO_PAYMENTS_WEBHOOK_KEY  — from Dodo dashboard → Developer → Webhooks → secret
-//
-// EVENTS HANDLED:
-//   subscription.active    → PREMIUM  (initial activation or trial conversion)
-//   subscription.renewed   → PREMIUM  (recurring payment succeeded)
-//   subscription.cancelled → FREE
-//   subscription.expired   → FREE
-//   subscription.on_hold   → FREE     (payment failed, grace period)
-//   subscription.failed    → FREE     (could not activate)
-//
-// USER IDENTIFICATION:
-//   metadata.supabase_user_id is passed at checkout creation and flows
-//   through to all subscription webhook events automatically.
-//
-// IDEMPOTENCY:
-//   PREMIUM events: upsert must succeed — if it fails we return 500 so Dodo
-//   retries. Without a stored dodo_subscription_id the stale-event guard is
-//   untrustworthy.
-//   FREE events: only downgrade if incoming subscription_id matches stored one,
-//   preventing late retries from overwriting a newer active subscription.
-//
-// SUPABASE COLUMNS REQUIRED on profiles table:
-//   dodo_customer_id TEXT
-//   dodo_subscription_id TEXT
+/**
+ * app/api/dodo/webhook/route.ts
+ *
+ * Handles Dodo Payments subscription lifecycle events and updates user plans in Supabase.
+ *
+ * ENV VARS REQUIRED (Vercel):
+ *   DODO_PAYMENTS_WEBHOOK_KEY  — from Dodo dashboard → Developer → Webhooks → secret
+ *
+ * EVENTS HANDLED:
+ *   subscription.active    → PREMIUM  (initial activation or trial conversion)
+ *   subscription.renewed   → PREMIUM  (recurring payment succeeded)
+ *   subscription.cancelled → FREE
+ *   subscription.expired   → FREE
+ *   subscription.on_hold   → FREE     (payment failed, grace period)
+ *   subscription.failed    → FREE     (could not activate)
+ *
+ * USER IDENTIFICATION:
+ *   metadata.supabase_user_id is passed at checkout creation and flows
+ *   through to all subscription webhook events automatically.
+ *
+ * IDEMPOTENCY:
+ *   PREMIUM events: upsert must succeed — if it fails we return 500 so Dodo
+ *   retries. Without a stored dodo_subscription_id the stale-event guard is
+ *   untrustworthy.
+ *   FREE events: only downgrade if incoming subscription_id matches stored one,
+ *   preventing late retries from overwriting a newer active subscription.
+ */
 
 import { NextResponse } from "next/server";
 import { Webhook } from "standardwebhooks";

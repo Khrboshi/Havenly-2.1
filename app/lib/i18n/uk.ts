@@ -231,6 +231,7 @@ export const uk: Translations = {
     aiSummaryGenerating:     "Генерація…",
     aiSummaryEmpty:          (appName) => `Створи ще кілька рефлексій, і ${appName} напише персональне зведення про те, що помітив.`,
     aiSummaryTryAgain:       "Спробувати знову →",
+    aiSummaryLastUpdated:    "Оновлено",
     // Pattern sections
     patternUnderneathHeading:"Паттерн під поверхнею",
     whatYouKeepComingBackTo: "До чого ти постійно повертаєшся",

@@ -205,6 +205,7 @@ export interface Translations {
     aiSummaryGenerating:     string;
     aiSummaryEmpty:          (appName: string) => string;
     aiSummaryTryAgain:       string;
+    aiSummaryLastUpdated:    string;
     // "The pattern underneath" section + "What you keep coming back to" section
     patternUnderneathHeading:string;
     whatYouKeepComingBackTo: string;
