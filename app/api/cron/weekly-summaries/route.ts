@@ -1,17 +1,20 @@
-// app/api/cron/weekly-summaries/route.ts
-//
-// Automatically generates weekly summaries for all Premium users whose
-// summary is stale (older than 6 days or never generated).
-//
-// Triggered by GitHub Actions every Monday at 09:00 UTC — free, no Vercel Pro needed.
-// GitHub Actions sends: GET /api/cron/weekly-summaries
-//                       Authorization: Bearer <CRON_SECRET>
-//
-// REQUIREMENTS:
-// - CRON_SECRET env var in Vercel dashboard (any strong random string)
-// - CRON_SECRET secret in GitHub repo (same value)
-// - SUPABASE_SERVICE_ROLE_KEY env var (already configured)
-//
+/**
+ * app/api/cron/weekly-summaries/route.ts
+ *
+ * Batch cron — generates weekly AI summaries for all Premium/Trial users
+ * whose summary is stale (older than 6 days or never generated).
+ *
+ * Trigger: GitHub Actions every Monday at 09:00 UTC (free, no Vercel Pro needed).
+ *   GET /api/cron/weekly-summaries
+ *   Authorization: Bearer <CRON_SECRET>
+ *
+ * ENV VARS REQUIRED:
+ *   CRON_SECRET             — must match GitHub Actions secret of the same name
+ *   SUPABASE_SERVICE_ROLE_KEY — required to read all profiles (bypasses RLS)
+ *
+ * Time-guard: stops processing after 50 seconds to stay within Vercel's
+ * function timeout. Remaining users are picked up on the next run.
+ */
 // On Vercel Hobby the function timeout is 10 seconds.
 // Each user takes ~3-5s (DB query + Groq call + save).
 // MAX_USERS_PER_RUN = 3 keeps us safely within the 10s limit at pre-launch scale.
