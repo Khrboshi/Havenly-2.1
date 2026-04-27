@@ -5,7 +5,6 @@
  * or falls back to the server-side /api/telemetry endpoint.
  * All call sites use track() so the underlying provider is swappable.
  */
-// Original: routes to PostHog if loaded, or falls back to server-side log.
 import posthog from "posthog-js";
 
 export function track(event: string, data?: Record<string, unknown>) {
