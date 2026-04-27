@@ -1,4 +1,10 @@
-// app/auth/complete/CompleteClient.tsx
+/**
+ * app/auth/complete/CompleteClient.tsx
+ *
+ * Post-auth landing page shown after magic link verification completes.
+ * Confirms the session is active then redirects to /dashboard.
+ * Handles edge cases where the session token takes a moment to propagate.
+ */
 "use client";
 
 import { useEffect, useState } from "react";
