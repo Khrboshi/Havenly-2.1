@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * app/components/PostHogProvider.tsx
+ *
+ * Initialises PostHog analytics on the client.
+ * No-ops silently if NEXT_PUBLIC_POSTHOG_KEY is not set (safe for local dev).
+ * Uses memory persistence and disables autocapture to respect user privacy.
+ */
 import posthog from "posthog-js";
 import { PostHogProvider as PHProvider, usePostHog } from "posthog-js/react";
 import { usePathname, useSearchParams } from "next/navigation";
