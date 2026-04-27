@@ -1,3 +1,10 @@
+/**
+ * app/(home)/HomeBelowFold.tsx
+ *
+ * Below-the-fold sections of the marketing homepage.
+ * Includes features grid, testimonials, pricing CTA, and FAQ.
+ * Client component for scroll-reveal animations via ScrollReveal.
+ */
 "use client";
 import Link from "next/link";
 import ScrollReveal from "@/app/components/ScrollReveal";
