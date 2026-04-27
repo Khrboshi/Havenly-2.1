@@ -4,6 +4,11 @@
 // (cookies, headers) in not-found.tsx, so we read locale from localStorage
 // via the shared detectLocale() utility from @/app/lib/i18n.
 
+/**
+ * app/not-found.tsx
+ *
+ * Global 404 page — rendered by Next.js for any unmatched route.
+ */
 import Link from "next/link";
 import { useState } from "react";
 import { CONFIG } from "@/app/lib/config";
