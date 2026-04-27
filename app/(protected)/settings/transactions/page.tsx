@@ -1,3 +1,10 @@
+/**
+ * app/(protected)/settings/transactions/page.tsx
+ *
+ * Payment history page — fetches and displays the user's Dodo transaction list.
+ * Shows amount, date, and status for each payment.
+ * Returns an empty state for legacy Stripe subscribers with no Dodo record.
+ */
 "use client";
 
 import Link from "next/link";
