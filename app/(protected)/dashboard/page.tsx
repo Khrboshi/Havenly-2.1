@@ -1,4 +1,10 @@
 // app/(protected)/dashboard/page.tsx
+/**
+ * app/(protected)/dashboard/page.tsx
+ *
+ * Server component — fetches dashboard data (entries, credits, plan, streak)
+ * and passes it to DashboardClient. Redirects unauthenticated users to /magic-login.
+ */
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { parseAIResponse } from "@/lib/planUtils";
