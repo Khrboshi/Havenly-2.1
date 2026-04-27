@@ -1,5 +1,6 @@
 // app/api/ai/tools/reflection/route.ts
 import { NextResponse } from "next/server";
+import { getGroqConfig } from "@/app/lib/ai/groq";
 import { CONFIG } from "@/app/lib/config";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { ensureCreditsFresh } from "@/lib/creditRules";
@@ -11,10 +12,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 async function callGroq(system: string, user: string): Promise<string> {
-  const apiKey = process.env.GROQAPIKEY || process.env.GROQ_API_KEY;
-  if (!apiKey) throw new Error("Missing GROQAPIKEY");
-
-  const model = process.env.GROQMODEL || "llama-4-scout-17b-16e-instruct";
+  const { apiKey, model } = getGroqConfig();
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 25_000);
 
