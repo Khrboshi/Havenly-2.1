@@ -1,3 +1,10 @@
+/**
+ * app/magic-login/verifyOtp.ts
+ *
+ * Server action — verifies the 6-digit OTP entered by the user.
+ * On success Supabase creates a session and sets auth cookies.
+ * Returns { error } on failure so the client can show an inline message.
+ */
 "use server";
 
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
