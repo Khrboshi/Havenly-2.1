@@ -13,11 +13,6 @@
  * ENV VARS REQUIRED:
  *   DODO_PAYMENTS_API_KEY, DODO_PAYMENTS_PRODUCT_ID, DODO_PAYMENTS_ENVIRONMENT
  */
-//   2. Create a Dodo checkout session with the product + user metadata
-//   3. Return { checkoutUrl } → client does window.location.href = checkoutUrl
-//
-// ENV VARS REQUIRED (Vercel):
-//   DODO_PAYMENTS_API_KEY        — Dodo secret API key
 //   DODO_PAYMENTS_ENVIRONMENT    — "test_mode" | "live_mode"
 //   DODO_PAYMENTS_PRODUCT_ID     — pdt_... from Dodo dashboard
 //   NEXT_PUBLIC_SITE_URL         — https://quietmirror.me (for return_url)
