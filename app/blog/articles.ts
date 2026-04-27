@@ -1,3 +1,10 @@
+/**
+ * app/blog/articles.ts
+ *
+ * Static content registry for all blog articles.
+ * Each entry defines slug, title, description, date, and MDX content.
+ * Add new articles here — the blog index and sitemap update automatically.
+ */
 export type BlogArticle = {
   slug: string;
   title: string;
