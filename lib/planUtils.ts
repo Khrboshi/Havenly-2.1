@@ -1,14 +1,20 @@
-// lib/planUtils.ts
-// Single source of truth for plan type definitions and normalisation.
-//
-// Previously duplicated in:
-//   - app/api/ai/reflection/route.ts
-//   - app/api/ai/insights/route.ts
-//   - app/api/ai/weekly-summary/route.ts
-//   - app/api/user/plan/route.ts
-//   - app/components/useUserPlan.ts
-//
-// To add a new plan tier: update PlanType here — all routes update automatically.
+/**
+ * lib/planUtils.ts
+ *
+ * Single source of truth for plan type definitions and shared row shapes.
+ *
+ * Exports:
+ *   PlanType              — union "FREE" | "TRIAL" | "PREMIUM"
+ *   normalizePlan(v)      — coerce any DB value to PlanType, defaults to "FREE"
+ *   parseAIResponse(raw)  — safely parse ai_response column (string | object | null)
+ *   UserCreditsRow        — narrow row shape for user_credits queries
+ *   JournalAIRow          — narrow row shape for journal_entries AI queries
+ *   ProfileSummaryRow     — narrow row shape for profiles weekly summary queries
+ *   GroqChatResponse      — subset of Groq chat completions API response
+ *
+ * To add a new plan tier: update PlanType and normalizePlan here —
+ * all routes update automatically.
+ */
 
 export type PlanType = "FREE" | "TRIAL" | "PREMIUM";
 

@@ -1,3 +1,16 @@
+/**
+ * app/(protected)/journal/[id]/JournalEntryClient.tsx
+ *
+ * Client component for the individual journal entry view.
+ *
+ * Responsibilities:
+ * - Renders the entry content and its AI reflection (themes, emotions,
+ *   corepattern, questions, next step) with domain-aware colour coding
+ * - Handles the "Get Reflection" flow: calls POST /api/ai/reflection,
+ *   shows upgrade modal for free users who hit their credit limit
+ * - Supports entry deletion with confirmation
+ * - Crisis content detection result passed through from the server
+ */
 "use client";
 
 import Link from "next/link";

@@ -1,3 +1,15 @@
+/**
+ * app/components/JournalForm.tsx
+ *
+ * The journal entry composer — the most user-facing component in the app.
+ *
+ * Responsibilities:
+ * - Auto-expanding textarea with character limit enforcement
+ * - Optional title field
+ * - Submits to POST /api/journal/entries (create) or PATCH (update)
+ * - Reads ?prompt= query param to pre-fill content from dashboard CTAs
+ * - Locale-aware placeholder text via useTranslation()
+ */
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";

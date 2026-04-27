@@ -1,4 +1,16 @@
-// app/api/ai/insights/route.ts
+/**
+ * app/api/ai/insights/route.ts
+ *
+ * GET — Aggregates journal entry AI responses into insight signals for the
+ *       Insights dashboard. Returns themes, emotions, corepatterns, domain
+ *       distribution, weekly trend sparklines, and momentum score.
+ *
+ * Access: Premium/Trial only — free users are redirected to /insights/preview.
+ * Requires at least 5 entries with reflections to return hasRealData: true.
+ *
+ * All signals pass through normalizeAIResponseSignals() to strip AI-injected
+ * fallback placeholders before counting.
+ */
 import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { ensureCreditsFresh } from "@/lib/creditRules";
