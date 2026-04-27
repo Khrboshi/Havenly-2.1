@@ -1,4 +1,10 @@
-// app/(protected)/layout.tsx
+/**
+ * app/(protected)/layout.tsx
+ *
+ * Shell layout for all authenticated routes.
+ * Renders the Navbar, main content area, and Footer.
+ * Auth enforcement is handled by middleware — this layout is visual only.
+ */
 import type { ReactNode } from "react";
 import { getRequestTranslations } from "@/app/lib/i18n/server";
 
