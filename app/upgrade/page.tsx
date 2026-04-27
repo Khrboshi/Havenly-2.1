@@ -1,3 +1,15 @@
+/**
+ * app/upgrade/page.tsx
+ *
+ * Upgrade / paywall page — shown to free users who want Premium.
+ *
+ * Responsibilities:
+ * - Displays pricing, trial offer, and feature list from PRICING constants
+ * - Initiates checkout via POST /api/dodo/checkout → redirects to Dodo payment page
+ * - Handles loading and error states for the checkout flow
+ * - Domain-aware social proof: shows contextual copy based on ?domain= query param
+ *   passed through from the upgrade trigger modal
+ */
 "use client";
 
 import Link from "next/link";
