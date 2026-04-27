@@ -24,6 +24,10 @@ interface IOSNavigator extends Navigator {
   standalone?: boolean;
 }
 
+function isIOSNavigator(nav: Navigator): nav is IOSNavigator {
+  return "standalone" in nav;
+}
+
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
@@ -39,7 +43,7 @@ type StoreState = {
 function isStandaloneNow(): boolean {
   if (typeof window === "undefined") return false;
 
-  const navStandalone = (window.navigator as IOSNavigator).standalone === true; // iOS Safari
+  const navStandalone = isIOSNavigator(window.navigator) && window.navigator.standalone === true;
   const modes = [
     "(display-mode: standalone)",
     "(display-mode: minimal-ui)",
