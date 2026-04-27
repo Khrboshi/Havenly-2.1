@@ -1,6 +1,13 @@
 // app/(protected)/insights/preview/page.tsx
 export const dynamic = "force-dynamic";
 
+/**
+ * app/(protected)/insights/preview/page.tsx
+ *
+ * Insights upgrade teaser for free users — shows a blurred/locked preview
+ * of the insights dashboard with an upgrade CTA.
+ * Redirects Premium/Trial users directly to /insights.
+ */
 import Link from "next/link";
 import { createServerSupabase } from "@/lib/supabase/server";
 import UpgradeIntentTracker from "@/app/components/UpgradeIntentTracker";
