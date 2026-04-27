@@ -6,8 +6,6 @@
  * previous page (or home if no referrer).
  */
 "use client";
-// app/language/page.tsx
-// Dedicated language selection page — shows all languages from LOCALE_REGISTRY
 // Adding a language to locales.ts automatically adds it here.
 
 import { useTranslation } from "@/app/components/I18nProvider";
