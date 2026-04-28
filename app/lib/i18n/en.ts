@@ -578,7 +578,7 @@ export const en: Translations = {
     proofTag:"After 3 weeks of entries — what Quiet Mirror noticed",
     proofH1:"The pattern you've been living",proofH2:"but couldn't quite name.",
     proofCardTitle:"Your hidden pattern",proofBadge:"Premium insight",
-    proofQuote:`"${MARKETING.proofQuote}"`,
+    proofQuote:`\u201c${MARKETING.proofQuote}\u201d`,
     proofBarsLabel:"What keeps appearing in your entries",
     proofBar1:MARKETING.proofBar1,proofBar2:MARKETING.proofBar2,proofBar3:MARKETING.proofBar3,proofBar4:MARKETING.proofBar4,
     proofStat1:MARKETING.proofStat1,proofStat2:MARKETING.proofStat2,

@@ -65,9 +65,13 @@ export const MARKETING = {
 
   // ── Privacy trust line ──────────────────────────────────────────────────
   /**
-   * Canonical privacy trust sentence — appears in footer.privacyAssurance,
-   * requirePremium.trustLine, and upgradeFull.proofPrivacy.
-   * Update here once; all three keys update automatically.
+   * Canonical privacy trust sentence — appears in footer.privacyAssurance
+   * and requirePremium.trustLine.
+   * Update here once; both keys update automatically.
+   *
+   * Note: upgradeFull.proofPrivacy is a different, shorter sentence
+   * ("Only you can see this. Never shared, never used to train AI.") and
+   * is intentionally kept separate.
    */
   privacyTrustLine:
     "Your entries are private, never shared, and never used to train AI models.",
@@ -92,6 +96,11 @@ export const MARKETING = {
   /**
    * The illustrative AI-generated insight quote in the proof card.
    * Used in both the homepage proof section and the upgrade page proof card.
+   *
+   * Display forms:
+   * - homeBelowFold.proofQuote wraps this in Unicode curly quotes (\u201c…\u201d)
+   *   for the pull-quote display style.
+   * - upgradeFull.proofQuote and card3Quote use it bare (prose context).
    */
   proofQuote:
     "You often sound most overwhelmed when you feel responsible for keeping everything steady for everyone else \u2014 and rarely give yourself the same patience.",
