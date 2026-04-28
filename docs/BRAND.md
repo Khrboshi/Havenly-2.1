@@ -58,6 +58,7 @@ Atomic trust/positioning phrases that appear in multiple i18n keys are extracted
 | `Private by default` | `MARKETING.privateByDefault` | `upgradePage.ctaT1`, `upgrade.trust1`, `upgradeFull.freeItem4` |
 
 > When any of these phrases needs to change, edit `app/lib/marketing.ts` only — do not edit individual keys in `en.ts`.
+> The call-site column above must be kept in sync with `en.ts` when usages are added or removed.
 
 ---
 

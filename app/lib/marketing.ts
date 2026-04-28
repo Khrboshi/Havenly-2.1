@@ -45,12 +45,16 @@ export const MARKETING = {
   noAdsSubscriptionSupported: "No ads — subscription supported",
 
   /**
-   * AI training claim — short form used in trust badges and bullet lists.
+   * AI training claim — short form for badges and compact bullet lists.
+   * Use this in icon-badge rows, CTA trust lines, or anywhere the subject
+   * "Entries" would feel redundant (e.g. alongside other badge-style items).
    */
   neverTrainsAI: "Never trains AI models",
 
   /**
-   * AI training claim — sentence form used in prose trust blocks.
+   * AI training claim — sentence form for prose trust blocks.
+   * Use this when the phrase stands alone or follows a full sentence,
+   * where "Entries" provides clarity about what is not being trained on.
    */
   entriesNeverTrainAI: "Entries never train AI models",
 
