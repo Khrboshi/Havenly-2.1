@@ -11,9 +11,11 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { useEffect } from "react";
 import { useTranslation } from "@/app/components/I18nProvider";
 import { useUserPlan } from "@/app/components/useUserPlan";
 import { PRICING } from "@/app/lib/pricing";
+import { track } from "@/app/components/telemetry";
 
 interface RequirePremiumProps {
   children: ReactNode;
@@ -26,6 +28,15 @@ export default function RequirePremium({ children }: RequirePremiumProps) {
   const pf = t.premiumFeatures;
   const { loading, planType } = useUserPlan();
 
+  const isPremium = planType === "PREMIUM" || planType === "TRIAL";
+
+  // Must be declared before any conditional returns (rules-of-hooks)
+  useEffect(() => {
+    if (!loading && !isPremium) {
+      track("paywall_hit", { plan: planType ?? "FREE" });
+    }
+  }, [loading, isPremium, planType]);
+
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center bg-qm-bg">
@@ -36,8 +47,6 @@ export default function RequirePremium({ children }: RequirePremiumProps) {
       </div>
     );
   }
-
-  const isPremium = planType === "PREMIUM" || planType === "TRIAL";
 
   if (!isPremium) {
     return (

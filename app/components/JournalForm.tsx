@@ -15,8 +15,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslation } from "@/app/components/I18nProvider";
+import { track } from "@/app/components/telemetry";
 
 type Props = Record<string, never>;
+
+function getWordCountBucket(count: number): string {
+  if (count < 50)  return "<50";
+  if (count < 150) return "50-149";
+  if (count < 300) return "150-299";
+  return "300+";
+}
 
 function safeSlice(value: string, max: number) {
   const s = (value || "").trim();
@@ -118,6 +126,12 @@ export default function JournalForm(_props: Props) {
         return;
       }
       setStatus("success");
+      track("journal_submitted", {
+        word_count: wordCount,
+        word_count_bucket: getWordCountBucket(wordCount),
+        has_title: Boolean(title.trim()),
+        had_prompt: hasIncomingPrompt,
+      });
       try {
         sessionStorage.setItem("havenly:show_insight_preview", "1");
         sessionStorage.setItem("havenly:last_seed", pickSeed(title, contentTrimmed));
