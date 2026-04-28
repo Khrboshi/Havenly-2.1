@@ -19,6 +19,13 @@ import { track } from "@/app/components/telemetry";
 
 type Props = Record<string, never>;
 
+function getWordCountBucket(count: number): string {
+  if (count < 50)  return "<50";
+  if (count < 150) return "50-149";
+  if (count < 300) return "150-299";
+  return "300+";
+}
+
 function safeSlice(value: string, max: number) {
   const s = (value || "").trim();
   if (!s) return "";
@@ -121,8 +128,7 @@ export default function JournalForm(_props: Props) {
       setStatus("success");
       track("journal_submitted", {
         word_count: wordCount,
-        word_count_bucket:
-          wordCount < 50 ? "<50" : wordCount < 150 ? "50-149" : wordCount < 300 ? "150-299" : "300+",
+        word_count_bucket: getWordCountBucket(wordCount),
         has_title: Boolean(title.trim()),
         had_prompt: hasIncomingPrompt,
       });

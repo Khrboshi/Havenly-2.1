@@ -45,13 +45,14 @@ export default function UpgradeTriggerModal({
 
   useEffect(() => {
     if (!open) return;
-    track("upgrade_modal_opened", { source: source ?? "unknown" });
+    const snapshotSource = source ?? "unknown";
+    track("upgrade_modal_opened", { source: snapshotSource });
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
+  }, [open, onClose, source]);
 
   if (!open) return null;
 
