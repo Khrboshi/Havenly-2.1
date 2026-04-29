@@ -5,7 +5,8 @@
  *
  * Initialises PostHog analytics on the client.
  * No-ops silently if NEXT_PUBLIC_POSTHOG_KEY is not set (safe for local dev).
- * Uses memory persistence and disables autocapture to respect user privacy.
+ * Uses localStorage persistence so queued events survive client-side navigation.
+ * Autocapture is disabled to respect user privacy — only explicit track() calls fire.
  */
 import posthog from "posthog-js";
 import { PostHogProvider as PHProvider, usePostHog } from "posthog-js/react";
@@ -37,11 +38,11 @@ function PostHogInit() {
 
     posthog.init(key, {
       api_host: host,
-      person_profiles: "always", // privacy: no anonymous profiles
+      person_profiles: "always",
       capture_pageview: false,            // we handle pageviews manually above
       capture_pageleave: true,
       autocapture: false,                 // privacy: no automatic click tracking
-      persistence: "memory",             // no cookies — fits Quiet Mirror's privacy stance
+      persistence: "localStorage",       // survives client-side navigation; stores only anon ID, no PII
       loaded: (ph) => {
         if (process.env.NODE_ENV === "development") ph.debug();
       },
