@@ -37,7 +37,7 @@ function PostHogInit() {
 
     posthog.init(key, {
       api_host: host,
-      person_profiles: "identified_only", // privacy: no anonymous profiles
+      person_profiles: "always", // privacy: no anonymous profiles
       capture_pageview: false,            // we handle pageviews manually above
       capture_pageleave: true,
       autocapture: false,                 // privacy: no automatic click tracking
