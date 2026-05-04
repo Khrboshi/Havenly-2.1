@@ -27,6 +27,7 @@ import { CONFIG } from "@/app/lib/config";
 import { verifyOtp } from "./verifyOtp";
 import { getTranslations } from "@/app/lib/i18n";
 import { useTranslation } from "@/app/components/I18nProvider";
+import { track } from "@/app/components/telemetry";
 
 type Status = "idle" | "loading" | "success" | "error";
 type Mode = "link" | "code";
@@ -150,6 +151,8 @@ function MagicLoginInner() {
     setStatus("loading");
     setMessage(null);
     try { window.localStorage.setItem("havenly:auth_next", next); } catch {}
+    // Fire before the API call so we capture intent even if the request fails.
+    track("signup_attempted", { mode });
     const fd = new FormData();
     fd.set("email", email);
     const res = await sendMagicLink(fd);
@@ -158,6 +161,9 @@ function MagicLoginInner() {
       setMessage(res.message || ml.sendFailed);
       return;
     }
+    // Supabase OTP doesn't reveal whether the email is new or returning —
+    // that would require a separate DB lookup. Omitting is_new_user intentionally.
+    track("signup_email_sent", { mode });
     setStatus("success");
     setMessage(mode === "code" ? ml.emailSentCode : ml.emailSentLink);
   }
