@@ -553,7 +553,7 @@ export const en: Translations = {
     heroQuote:        "\u201cYou\u2019ve been saying \u2018I\u2019m fine\u2019 for so long, you\u2019ve started to believe it.\u201d",
     heroQuoteSub:     "Sound familiar? That\u2019s what Quiet Mirror is for.",
     heroCta1:         "Write your first entry free \u2192",
-    heroCta2:         "See a real reflection \u2192",
+    heroCta2:         "See what Premium unlocks \u2192",
     heroPromise:      "\u2713\u00a0Journal in under 60 seconds \u00b7 \u2713\u00a0First reflection within moments \u00b7 \u2713\u00a0No setup, no quiz",
     trust1:           MARKETING.privateByDefault,
     trust2:           MARKETING.entriesNeverTrainAI,
