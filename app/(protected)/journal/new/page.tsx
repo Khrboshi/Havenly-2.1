@@ -16,6 +16,25 @@ export default async function NewJournalPage() {
 
   const t = await getRequestTranslations();
 
+  // Fetch entry count and most recent created_at for PostHog telemetry.
+  // These are lightweight queries (head:true + limit:1) that run in parallel.
+  // Used to populate is_first_entry and days_since_last_entry on journal_submitted.
+  const [{ count: entryCount }, { data: lastEntryRows }] = await Promise.all([
+    supabase
+      .from("journal_entries")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", session.user.id),
+    supabase
+      .from("journal_entries")
+      .select("created_at")
+      .eq("user_id", session.user.id)
+      .order("created_at", { ascending: false })
+      .limit(1),
+  ]);
+
+  const lastEntryDate: string | null = lastEntryRows?.[0]?.created_at ?? null;
+  const isFirstEntry = (entryCount ?? 0) === 0;
+
   return (
     <div className="mx-auto max-w-3xl px-4">
       {/*
@@ -25,7 +44,7 @@ export default async function NewJournalPage() {
         optimisation and logs a build warning.
       */}
       <Suspense fallback={<LoadingIndicatorInline label={t.ui.loadingLabel} />}>
-        <JournalForm />
+        <JournalForm isFirstEntry={isFirstEntry} lastEntryDate={lastEntryDate} />
       </Suspense>
     </div>
   );

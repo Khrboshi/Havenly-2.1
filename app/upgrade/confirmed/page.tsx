@@ -10,6 +10,7 @@ import Link from "next/link";
 import { PRICING } from "@/app/lib/pricing";
 import { CONFIG } from "@/app/lib/config";
 import { getRequestTranslations } from "@/app/lib/i18n/server";
+import SubscriptionStartedTracker from "./SubscriptionStartedTracker";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getRequestTranslations();
@@ -38,6 +39,9 @@ export default async function UpgradeConfirmedPage() {
       <div className="pointer-events-none fixed left-1/2 top-0 h-[500px] w-[700px] -translate-x-1/2 rounded-full bg-qm-positive-strong/[0.10] blur-[130px]" />
 
       <main className="relative mx-auto max-w-2xl px-6 pb-20 pt-24 sm:pt-32">
+
+        {/* Fires subscription_started telemetry event on mount — no UI */}
+        <SubscriptionStartedTracker />
 
         {/* Icon */}
         <div className="mb-6 flex items-center justify-center">

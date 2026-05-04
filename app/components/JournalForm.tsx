@@ -17,7 +17,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslation } from "@/app/components/I18nProvider";
 import { track } from "@/app/components/telemetry";
 
-type Props = Record<string, never>;
+type Props = {
+  /** True when this user has zero existing entries — used for is_first_entry telemetry. */
+  isFirstEntry?: boolean;
+  /** ISO timestamp of the user's most recent prior entry, or null if none — used for days_since_last_entry telemetry. */
+  lastEntryDate?: string | null;
+};
 
 function getWordCountBucket(count: number): string {
   if (count < 50)  return "<50";
@@ -37,7 +42,7 @@ function pickSeed(title: string, content: string) {
   return safeSlice(base.replace(/\s+/g, " "), 180);
 }
 
-export default function JournalForm(_props: Props) {
+export default function JournalForm({ isFirstEntry = false, lastEntryDate = null }: Props) {
   const router = useRouter();
   const { t } = useTranslation();
   const searchParams = useSearchParams();
@@ -126,11 +131,18 @@ export default function JournalForm(_props: Props) {
         return;
       }
       setStatus("success");
+      // Compute days since last entry for retention telemetry.
+      // null means this is the user's first entry (days_since_last would be meaningless).
+      const daysSinceLast: number | null = lastEntryDate
+        ? Math.floor((Date.now() - new Date(lastEntryDate).getTime()) / 86_400_000)
+        : null;
       track("journal_submitted", {
         word_count: wordCount,
         word_count_bucket: getWordCountBucket(wordCount),
         has_title: Boolean(title.trim()),
         had_prompt: hasIncomingPrompt,
+        is_first_entry: isFirstEntry,
+        days_since_last_entry: daysSinceLast,
       });
       try {
         sessionStorage.setItem("havenly:show_insight_preview", "1");

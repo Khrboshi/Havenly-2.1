@@ -20,6 +20,7 @@ import { useUserPlan } from "@/app/components/useUserPlan";
 import UpgradeTriggerModal from "@/app/components/UpgradeTriggerModal";
 import { PRICING } from "@/app/lib/pricing";
 import { useTranslation } from "@/app/components/I18nProvider";
+import { track } from "@/app/components/telemetry";
 
 type JournalEntry = {
   id: string;
@@ -175,7 +176,17 @@ export default function JournalEntryClient({
         return;
       }
       const j = await res.json().catch(() => ({}));
-      setReflection(j?.reflection || null);
+      const receivedReflection = j?.reflection || null;
+      setReflection(receivedReflection);
+      if (receivedReflection) {
+        // The first reflection is the highest-leverage conversion moment (PRODUCT_BRIEF §6).
+        // Track it every time so we can funnel: journal_submitted → reflection_received → upgrade.
+        track("reflection_received", {
+          is_first_entry: isFirstEntry,
+          domain: receivedReflection.domain ?? "GENERAL",
+          word_count: entry.content.trim().split(/\s+/).filter(Boolean).length,
+        });
+      }
       await refresh();
     } catch {
       setError(t.errors.reflectionFailed);
