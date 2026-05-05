@@ -15,7 +15,7 @@ import { track } from "@/app/components/telemetry";
 import { CONFIG } from "@/app/lib/config";
 import { useTranslation } from "@/app/components/I18nProvider";
 
-const SNOOZE_KEY = "hvn_install_snooze_until_v1";
+const SNOOZE_KEY = "qm:install_snooze_until_v1";
 const SNOOZE_DAYS = 5;
 
 function addDays(days: number) {
