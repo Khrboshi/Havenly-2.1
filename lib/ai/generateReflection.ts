@@ -198,6 +198,8 @@ const PRESSURE_SIGNALS: Partial<Record<Exclude<Domain, "GENERAL">, WeightedSigna
   MONEY: [
     { re: /\b(bank(ing)? app|bank account|checking my bank|numbers|rent|behind on rent|can't afford|money|debt|bills?|overdraft|paycheck|salary)\b/i, w: 5 },
     { re: /\b(financial|broke|can't pay|can't make rent|late payment|loan)\b/i, w: 4 },
+    // "tired of pretending I'm managing" is a MONEY phrase — prevent false IDENTITY tie
+    { re: /\b(tired of pretending (i'?m |to be )?(managing|okay|fine|coping)|pretending (i'?m |to be )?(managing|okay|fine) financially)\b/i, w: 4 },
   ],
   HEALTH: [
     { re: /\b(doctor|diagnosis|test results?|scan|symptoms?|pain|health|body|blood work|appointment|specialist)\b/i, w: 5 },
@@ -205,7 +207,10 @@ const PRESSURE_SIGNALS: Partial<Record<Exclude<Domain, "GENERAL">, WeightedSigna
     // Sleep-specific pressure signals — high confidence HEALTH entries
     { re: /\b(can'?t sleep|haven'?t slept|sleep properly|wake up at \d|waking up at \d|lying awake|wide awake at)\b/i, w: 6 },
     { re: /\b(racing mind|racing thoughts|brain (just )?starts? (running|going)|can'?t switch off|rumina)\b/i, w: 5 },
-    { re: /\b(six weeks|weeks? (of|without) sleep|months? (of|without) sleep)\b/i, w: 3 },
+    // "six weeks" only counts when paired with sleep context — prevents false fire on fitness entries
+    // ("a 10k race in six weeks" is FITNESS, not HEALTH)
+    { re: /\b(six weeks? (of|without) sleep|weeks? (of|without) sleep|months? (of|without) sleep)\b/i, w: 3 },
+    { re: /\b(six weeks?)(?=.{0,40}\b(sleep|insomnia|awake|tired|exhausted|waking|rest)\b)/i, w: 3 },
   ],
   IDENTITY: [
     { re: /\b(who I am|what kind of person|don't recognize myself|version of myself|performing competence|performing|mask|fake|fraud|pretending|authentic|self-worth)\b/i, w: 5 },
