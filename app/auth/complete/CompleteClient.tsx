@@ -34,7 +34,7 @@ export default function CompleteClient() {
 
     let dest = isFirstUser ? "/journal/new" : "/dashboard";
     try {
-      const stored = window.localStorage.getItem("havenly:auth_next");
+      const stored = window.localStorage.getItem("qm:auth_next");
       // Only use localStorage destination if it was explicitly set to something
       // other than the default dashboard, and we're not a first-time user.
       if (!isFirstUser && stored && stored !== "/dashboard") dest = safeNext(stored);
@@ -43,9 +43,9 @@ export default function CompleteClient() {
     setDestination(dest);
 
     const payload = JSON.stringify({ next: dest, t: Date.now() });
-    try { localStorage.setItem("havenly:auth_complete", payload); } catch {}
+    try { localStorage.setItem("qm:auth_complete", payload); } catch {}
     try {
-      const bc = new BroadcastChannel("havenly_auth");
+      const bc = new BroadcastChannel("qm:auth_channel");
       bc.postMessage({ type: "AUTH_COMPLETE", next: dest });
       bc.close();
     } catch {}

@@ -84,7 +84,7 @@ export default function JournalForm({ isFirstEntry = false, lastEntryDate = null
   // ── Insight stage ──────────────────────────────────────────────────────────
   useEffect(() => {
     try {
-      const stage = Number(sessionStorage.getItem("havenly:insight_stage") || "0");
+      const stage = Number(sessionStorage.getItem("qm:insight_stage") || "0");
       setEntryProgress(Math.min(3, stage));
     } catch {}
   }, []);
@@ -145,11 +145,11 @@ export default function JournalForm({ isFirstEntry = false, lastEntryDate = null
         days_since_last_entry: daysSinceLast,
       });
       try {
-        sessionStorage.setItem("havenly:show_insight_preview", "1");
-        sessionStorage.setItem("havenly:last_seed", pickSeed(title, contentTrimmed));
-        const prev = Number(sessionStorage.getItem("havenly:insight_stage") || "0");
+        sessionStorage.setItem("qm:show_insight_preview", "1");
+        sessionStorage.setItem("qm:last_seed", pickSeed(title, contentTrimmed));
+        const prev = Number(sessionStorage.getItem("qm:insight_stage") || "0");
         const next = Math.min(3, (Number.isFinite(prev) ? prev : 0) + 1);
-        sessionStorage.setItem("havenly:insight_stage", String(next));
+        sessionStorage.setItem("qm:insight_stage", String(next));
       } catch {}
       const id = json?.entry?.id;
       if (id) { router.push(`/journal/${id}`); router.refresh(); return; }

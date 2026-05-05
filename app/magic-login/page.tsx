@@ -123,7 +123,7 @@ function MagicLoginInner() {
   }, [callbackError]);
 
   useEffect(() => {
-    const STORAGE_KEY = "havenly:auth_complete";
+    const STORAGE_KEY = "qm:auth_complete";
     const onStorage = (e: StorageEvent) => {
       if (e.key !== STORAGE_KEY || !e.newValue) return;
       try { goNext(JSON.parse(e.newValue)?.next); } catch { goNext(); }
@@ -131,7 +131,7 @@ function MagicLoginInner() {
     window.addEventListener("storage", onStorage);
     let bc: BroadcastChannel | null = null;
     try {
-      bc = new BroadcastChannel("havenly_auth");
+      bc = new BroadcastChannel("qm:auth_channel");
       bc.onmessage = (ev) => {
         if (ev?.data?.type === "AUTH_COMPLETE") goNext(ev.data?.next);
       };
@@ -144,13 +144,13 @@ function MagicLoginInner() {
 
   useEffect(() => {
     if (!paramsReady) return;
-    try { window.localStorage.setItem("havenly:auth_next", next); } catch {}
+    try { window.localStorage.setItem("qm:auth_next", next); } catch {}
   }, [next, paramsReady]);
 
   async function onSendEmail() {
     setStatus("loading");
     setMessage(null);
-    try { window.localStorage.setItem("havenly:auth_next", next); } catch {}
+    try { window.localStorage.setItem("qm:auth_next", next); } catch {}
     // Fire before the API call so we capture intent even if the request fails.
     // Guard: only fire on the first submission attempt — not on re-sends after
     // a successful email delivery (status === "success" means email already sent).
