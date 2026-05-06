@@ -61,7 +61,7 @@ jobs:
         run: |
           set +e
           node scripts/i18n-sync.mjs 2>&1 | tee audit.log
-          EXIT=$?
+          EXIT=${PIPESTATUS[0]}
           set -e
 
           echo "Script exit code: $EXIT"
@@ -100,7 +100,7 @@ jobs:
           # as "missing", so --write skips them. --translate-stubs closes that gap.
           set +e
           node scripts/i18n-sync.mjs --translate-stubs 2>&1 | tee stubs.log
-          EXIT=$?
+          EXIT=${PIPESTATUS[0]}
           set -e
 
           echo "Script exit code: $EXIT"
