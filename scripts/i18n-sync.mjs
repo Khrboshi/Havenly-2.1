@@ -449,7 +449,7 @@ async function main() {
   if (TRANSLATE_STUBS) {
     console.log("");
     console.log(bold("Scanning for untranslated English stubs across all locales..."));
-    console.log(muted("(Keys already present in a locale but still holding their English source value)"));
+    console.log(muted("(Keys with English source value, or stale stubs whose EN copy has since changed)"));
     console.log("");
 
     let totalStubs = 0;
@@ -462,12 +462,27 @@ async function main() {
 
       for (const [k, enVal] of Object.entries(enKeys)) {
         const locVal = localeKeys[k];
-        if (!locVal || locVal !== enVal) continue;
-        const stripped = enVal.replace(/["'`]/g, "").replace(/,\s*$/, "").trim();
-        if (stripped.length < 3)              continue; // symbols
-        if (/^\(/.test(stripped))             continue; // arrow functions
-        if (/^(readonly )?\[/.test(stripped)) continue; // arrays
-        if (INTL_OK.has(stripped))            continue; // whitelisted
+        if (!locVal) continue;
+
+        const strippedLoc = locVal.replace(/["'`]/g, "").replace(/,\s*$/, "").trim();
+        const strippedEn  = enVal.replace(/["'`]/g, "").replace(/,\s*$/, "").trim();
+
+        if (strippedLoc.length < 3)              continue; // symbols
+        if (/^\(/.test(strippedLoc))             continue; // arrow functions
+        if (/^(readonly )?\[/.test(strippedLoc)) continue; // arrays
+        if (INTL_OK.has(strippedLoc))            continue; // whitelisted
+
+        // Case 1: locale value exactly matches EN — classic untranslated stub
+        const exactMatch = locVal === enVal;
+
+        // Case 2: stale stub — old EN text that diverged from current EN copy
+        // but is still plainly English (only ASCII + common punctuation, no
+        // Cyrillic / Arabic / Latin-extended / accented chars).
+        const isAsciiOnly  = /^[\x20-\x7E\u2014\u2019\u201C\u201D]+$/.test(strippedLoc);
+        const hasNonLatin  = /[\u00C0-\u024F\u0400-\u04FF\u0600-\u06FF]/.test(strippedLoc);
+        const isStaleStub  = isAsciiOnly && !hasNonLatin && strippedLoc !== strippedEn;
+
+        if (!exactMatch && !isStaleStub) continue;
         stubs.push(k);
       }
 
