@@ -556,9 +556,9 @@ export const nl: Translations = {
     previewTag3:      "Burn-outsignaal",
     previewNeverLeaves:"Verlaat je account nooit.",
     previewSeeExample:"Volledig voorbeeld bekijken \u2192",
-    credStrip1:       "Used by people carrying more than they\u2019ve named out loud",
-    credStrip2:       "Built independently \u2014 one person accountable, no investors",
-    credStrip3:       "Questions? hello@quietmirror.me \u2014 you\u2019re writing to the person who built it",
+    credStrip1:       "Gebruikt door mensen die meer dragen dan ze hardop hebben benoemd",
+    credStrip2:       "Onafhankelijk gebouwd — één persoon verantwoordelijk, geen investeerders",
+    credStrip3:       "Vragen? hello@quietmirror.me — je schrijft naar de persoon die dit bouwde",
   },
 
   languagePage: {
