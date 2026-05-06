@@ -537,6 +537,10 @@ async function main() {
         totalFixed += hits;
       }
       console.log("");
+
+      // Brief pause between locales to stay within Groq TPM limits (30k/min on free tier).
+      // Each batch of ~32 keys uses ~8–10k tokens; 5 locales back-to-back exceeds the cap.
+      await new Promise((r) => setTimeout(r, 16000));
     }
 
     console.log("");
