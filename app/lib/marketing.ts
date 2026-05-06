@@ -49,14 +49,14 @@ export const MARKETING = {
    * Use this in icon-badge rows, CTA trust lines, or anywhere the subject
    * "Entries" would feel redundant (e.g. alongside other badge-style items).
    */
-  neverTrainsAI: "Never trains AI models",
+  neverTrainsAI: "Does not train AI models",
 
   /**
    * AI training claim — sentence form for prose trust blocks.
    * Use this when the phrase stands alone or follows a full sentence,
    * where "Entries" provides clarity about what is not being trained on.
    */
-  entriesNeverTrainAI: "Entries never train AI models",
+  entriesNeverTrainAI: "Entries are not used to train AI models",
 
   /**
    * Privacy by default — short form used in trust badges.
@@ -74,7 +74,7 @@ export const MARKETING = {
    * is intentionally kept separate.
    */
   privacyTrustLine:
-    "Your entries are private, never shared, and never used to train AI models.",
+    "Your entries are private, not shared, and not used to train AI models.",
 
   // ── Proof card illustrative data ────────────────────────────────────────
   // These demo values appear identically in homeBelowFold and upgradeFull.
