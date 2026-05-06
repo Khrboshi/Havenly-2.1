@@ -561,9 +561,9 @@ export const ro: Translations = {
     previewTag3:      "Semnal de epuizare",
     previewNeverLeaves:"Nu părăsește niciodată contul tău",
     previewSeeExample:"Vedeți exemplul complet \u2192",
-    credStrip1:       "Used by people carrying more than they\u2019ve named out loud",
-    credStrip2:       "Built independently \u2014 one person accountable, no investors",
-    credStrip3:       "Questions? hello@quietmirror.me \u2014 you\u2019re writing to the person who built it",
+    credStrip1:       "Folosit de oameni care poartă mai mult decât au numit cu voce tare",
+    credStrip2:       "Construit independent — o persoană responsabilă, fără investitori",
+    credStrip3:       "Întrebări? hello@quietmirror.me — scrieți persoanei care l-a construit",
   },
 
   languagePage: {
