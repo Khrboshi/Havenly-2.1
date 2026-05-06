@@ -569,9 +569,9 @@ export const ar: Translations = {
     previewTag3:      "إشارة الإرهاق",
     previewNeverLeaves:"لا يغادر حسابك أبداً.",
     previewSeeExample:"اطّلع على المثال الكامل \u2192",
-    credStrip1:       "Used by people carrying more than they\u2019ve named out loud",
-    credStrip2:       "Built independently \u2014 one person accountable, no investors",
-    credStrip3:       "Questions? hello@quietmirror.me \u2014 you\u2019re writing to the person who built it",
+    credStrip1:       "يستخدمه أشخاص يحملون أكثر مما أسموه بصوت عالٍ"
+    credStrip2:       "تم إنشاؤه بشكل مستقل — شخص واحد مسؤول، لا مستثمرين"
+    credStrip3:       "أسئلة؟ hello@quietmirror.me — أنت تكتب للشخص الذي بناه"
   },
 
   languagePage: {
