@@ -291,7 +291,7 @@ export const fr: Translations = {
     threadPromptEmotion:        (emotion) => `En faisant suite à votre dernière entrée — ${emotion} était présent. Est-ce que quelque chose a changé ?`,
     threadPromptNoEmotion:      "En faisant suite à votre dernière entrée — est-ce que quelque chose s’est adouci depuis que vous avez écrit ?",
     // "It's been a while" state and history sentence — auto-translated on merge
-    aWhileSinceTag:             "Ça fait un petit moment"
+    aWhileSinceTag:             "Ça fait un petit moment",
     aWhileSinceBody:            (days) => `Your last entry was ${days} days ago. No pressure — but if something has been sitting with you, this is a good place to put it.`,
     historySentence:            (entries, days) => `${entries} ${entries === 1 ? "entry" : "entries"} across ${days} ${days === 1 ? "day" : "days"} of writing.`,
   },
@@ -426,13 +426,13 @@ export const fr: Translations = {
     pageTitle:          "Réfléchir un peu plus profondément",
     pageSubtitle:       "Des façons petites et ciblées de faire le point avec vous-même — séparées de vos entrées de journal.",
     moodTitle:          "Un moment calme",
-    moodTag:             "Humeur"
+    moodTag:             "Humeur",
     moodSubtitle:       "Faites une pause et remarquez où vous en êtes vraiment — pas de scores, pas de notes, juste l'honnêteté.",
     reflectionTitle:    "Réflexion guidée",
-    reflectionTag:       "Réflexion"
+    reflectionTag:       "Réflexion",
     reflectionSubtitle: "Une invitation façonnée autour de ce qui apparaît dans vos entrées récentes.",
     suggestionsTitle:   "Petites suggestions",
-    suggestionsTag:      "Suggestions"
+    suggestionsTag:      "Suggestions",
     suggestionsSubtitle:"Une ou deux idées douces, basées sur vos schémas — pas des instructions, juste des invitations.",
     openLabel:          "Ouvrir →",
   },
@@ -474,10 +474,10 @@ export const fr: Translations = {
 
   // ── First-reflection upgrade nudge ──────────────────────────────────────────
   firstReflectionNudge: {
-    heading:  "Vos schémas se construisent avec le temps."
-    body:     "Des analyses premium sur toutes vos entrées — pas seulement celles d'aujourd'hui. Plus vous écrivez, plus cela vous montre clairement ce qui se répète et pourquoi."
-    cta:      "Commencer l'essai gratuit de 3 jours →"
-    noCharge: "Pas de frais pendant 3 jours · Annuler à tout moment"
+    heading:  "Vos schémas se construisent avec le temps.",
+    body:     "Des analyses premium sur toutes vos entrées — pas seulement celles d'aujourd'hui. Plus vous écrivez, plus cela vous montre clairement ce qui se répète et pourquoi.",
+    cta:      "Commencer l'essai gratuit de 3 jours →",
+    noCharge: "Pas de frais pendant 3 jours · Annuler à tout moment",
   },
 
   // ── Upgrade trigger nudges ───────────────────────────────────────────────────
@@ -512,7 +512,7 @@ export const fr: Translations = {
     modalDesc:            "Premium débloque des réflexions illimitées, des aperçus de tendances dans le temps et un résumé hebdomadaire de ce que Quiet Mirror a remarqué.",
     notNow:               "Pas maintenant",
     perMonth:             "/ mois",
-    premiumFeatureBadge:  "✦ Fonctionnalité premium"
+    premiumFeatureBadge:  "✦ Fonctionnalité premium",
   },
 
   // ── Upgrade confirmed ────────────────────────────────────────────────────────
@@ -546,7 +546,7 @@ export const fr: Translations = {
     heroCta1:         "Écrivez votre première entrée gratuitement \u2192",
     heroCta2:         "Voir une vraie réflexion \u2192",
     heroPromise:      "\u2713\u00a0Journal en moins de 60 secondes \u00b7 \u2713\u00a0Première réflexion en quelques instants \u00b7 \u2713\u00a0Pas de configuration, pas de quiz",
-    heroDevices:      "Disponible dans le navigateur sur n'importe quel appareil — aucune application requise"
+    heroDevices:      "Disponible dans le navigateur sur n'importe quel appareil — aucune application requise",
     trust1:           "Privé par défaut",
     trust2:           "Les entrées n'entraînent jamais les modèles d'IA",
     trust3:           "Plan gratuit, sans expiration",
@@ -588,11 +588,11 @@ export const fr: Translations = {
     proofNote:"Généré à partir de vos entrées privées. Seul vous pouvez voir ceci.",
     proofUnlock:"C'est ce que Premium débloque — le schéma sous les entrées.",
     proofSeeEx:"Voir un exemple complet →",
-    recTag:"Modèles que Quiet Mirror remarque à travers les entrées — en reconnaissez-vous certains ?"
-    rec1:"Vous êtes toujours la personne stable pour les autres, et vous vous demandez ensuite pourquoi vous vous sentez si épuisé."
-    rec2:"La même tension se présente dans différentes situations, mais le modèle reste juste à portée de main."
-    rec3:"Vous voulez que la réflexion vous aide, mais les invites génériques ne vous rencontrent jamais vraiment là où vous êtes."
-    recCardLabel:"Un modèle que Quiet Mirror remarque"
+    recTag:"Modèles que Quiet Mirror remarque à travers les entrées — en reconnaissez-vous certains ?",
+    rec1:"Vous êtes toujours la personne stable pour les autres, et vous vous demandez ensuite pourquoi vous vous sentez si épuisé.",
+    rec2:"La même tension se présente dans différentes situations, mais le modèle reste juste à portée de main.",
+    rec3:"Vous voulez que la réflexion vous aide, mais les invites génériques ne vous rencontrent jamais vraiment là où vous êtes.",
+    recCardLabel:"Un modèle que Quiet Mirror remarque",
     demoTag:"Ce qui se passe réellement",demoH1:"Écrivez une fois. Entendez-le",demoH2:"différemment.",
     step: "Étape",
     demoDesc:"Vous écrivez tout ce qui vous vient à l'esprit — honnêtement, en désordre, sans vous éditer. Quiet Mirror le lit et reflète ce qu'il a remarqué. Pas de conseils. Pas de diagnostic. Juste un miroir tenu doucement.",
@@ -633,9 +633,9 @@ export const fr: Translations = {
     ex1W:"Je continue à dire oui aux choses même quand je suis déjà dépassé. Je suis resté éveillé jusqu'à 2h du matin pour finir quelque chose qui aurait probablement pu attendre, mais je me suis senti coupable de le laisser.",
     ex1R:"Le travail s'accumule et vous continuez à dire oui même quand vous êtes déjà dépassé — la culpabilité d'arrêter semble plus lourde que le coût de continuer.",
     ex1T1:"épuisement",ex1T2:"culpabilité",ex1T3:"surengagement",
-    ex2W:"J'ai atteint la plupart de ce que je me suis fixé comme objectif. Je ne me souviens juste pas pourquoi cela était supposé avoir de l'importance. Cela me semble quelque chose que je devrais garder pour moi."
-    ex2R:"La distance entre l'arrivée à quelque chose et le sentiment que ce n'était pas une erreur d'y arriver — cet écart vaut la peine d'être pris en compte. Le nommer n'est pas une faiblesse. C'est le début d'un compte plus honnête."
-    ex2T1:"ambivalence",ex2T2:"déconnexion",ex2T3:"valeur"
+    ex2W:"J'ai atteint la plupart de ce que je me suis fixé comme objectif. Je ne me souviens juste pas pourquoi cela était supposé avoir de l'importance. Cela me semble quelque chose que je devrais garder pour moi.",
+    ex2R:"La distance entre l'arrivée à quelque chose et le sentiment que ce n'était pas une erreur d'y arriver — cet écart vaut la peine d'être pris en compte. Le nommer n'est pas une faiblesse. C'est le début d'un compte plus honnête.",
+    ex2T1:"ambivalence",ex2T2:"déconnexion",ex2T3:"valeur",
     ex3W:"Je m'en prends aux gens que j'aime et je ne comprends pas vraiment pourquoi. Je ne suis pas en colère contre eux. Je pense que je tourne juste à vide.",
     ex3R:"Vous tournez à vide et tout semble être une chose de plus — les éclats ne sont pas de la colère, c'est ce qui arrive quand il ne reste plus rien pour absorber.",
     ex3T1:"épuisement",ex3T2:"frustration",ex3T3:"impuissance",
@@ -754,17 +754,17 @@ export const fr: Translations = {
     footerLine1:       (appName: string) => `Vous recevez ceci parce que vous vous êtes inscrit sur ${appName}.`,
     footerLine2:       "Votre adresse e-mail n'est jamais vendue ou partagée.",
     privacyPolicy:     "Politique de confidentialité",
-    unsubscribeCta:    "Se désinscrire"
+    unsubscribeCta:    "Se désinscrire",
   },
 
   // ── Unsubscribe confirmed page ────────────────────────────────────────────────
   unsubscribePage: {
-    metaTitle:    "Désinscrit — Quiet Mirror Letters"
-    heading:      "Vous avez été désinscrit."
-    body:         "Vous ne recevrez plus d'emails de Quiet Mirror Letters. Si cela était une erreur, vous pouvez vous réinscrire depuis la page d'accueil."
-    errorHeading: "Quelque chose s'est mal passé."
+    metaTitle:    "Désinscrit — Quiet Mirror Letters",
+    heading:      "Vous avez été désinscrit.",
+    body:         "Vous ne recevrez plus d'emails de Quiet Mirror Letters. Si cela était une erreur, vous pouvez vous réinscrire depuis la page d'accueil.",
+    errorHeading: "Quelque chose s'est mal passé.",
     errorBody:    (email: string) => `We couldn't process your unsubscribe request. Please email ${email} and we'll remove you manually.`,
-    backHome:     "Retour à l'accueil"
+    backHome:     "Retour à l'accueil",
   },
 
   // ── Insights preview page ────────────────────────────────────────────────────
@@ -1124,16 +1124,16 @@ export const fr: Translations = {
   // ── legalPagesCta — closing CTAs on terms, privacy, and blog article pages ──
   // TODO: English placeholders — i18n-auto-translate Action translates these on merge to main.
   legalPagesCta: {
-    readyHeading:    "Prêt à essayer un point de contrôle privé ?"
-    readyBody:       "Commencer gratuitement. Mettre à niveau uniquement si cela vous aide vraiment à aller plus profondément avec des informations, des chronologies et des réflexions plus riches."
-    startFreeLabel:  "Commencer la journalisation gratuite"
-    seePremiumLabel: "Voir ce que Premium ajoute"
+    readyHeading:    "Prêt à essayer un point de contrôle privé ?",
+    readyBody:       "Commencer gratuitement. Mettre à niveau uniquement si cela vous aide vraiment à aller plus profondément avec des informations, des chronologies et des réflexions plus riches.",
+    startFreeLabel:  "Commencer la journalisation gratuite",
+    seePremiumLabel: "Voir ce que Premium ajoute",
     learnAboutLabel: (appName) => `Learn about ${appName} →`,
-    blogCtaHeading:  "Voulez-vous voir ce qui revient ?"
-    blogCtaBody:     "Des analyses premium sur vos entrées au fil du temps et vous montre ce qui se répète tranquillement — les émotions, les thèmes et les modèles que vous ne pouviez pas voir depuis eux."
-    seePremiumBlog:  "Voir les avantages de Premium →"
+    blogCtaHeading:  "Voulez-vous voir ce qui revient ?",
+    blogCtaBody:     "Des analyses premium sur vos entrées au fil du temps et vous montre ce qui se répète tranquillement — les émotions, les thèmes et les modèles que vous ne pouviez pas voir depuis eux.",
+    seePremiumBlog:  "Voir les avantages de Premium →",
     refundNote:      (days) => `🛡️ ${days}-day full refund on Premium · Cancel anytime`,
-    backToArticles:  "← Retour à tous les articles"
+    backToArticles:  "← Retour à tous les articles",
   },
   legalPages: {
     languageNotice: "Cette politique est rédigée en anglais. Pour toute question, contactez-nous.",

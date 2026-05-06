@@ -312,7 +312,7 @@ export const ar: Translations = {
     threadPromptEmotion:        (emotion) => `متابعةً لمدخلك الأخير — كان ${emotion} حاضراً. هل تغيّر شيء?`,
     threadPromptNoEmotion:      "متابعةً لمدخلك الأخير — هل لان شيء منذ أن كتبت?",
     // "It's been a while" state and history sentence — auto-translated on merge
-    aWhileSinceTag:             "مر прошло بعض الوقت،"
+    aWhileSinceTag:             "مرّ بعض الوقت،",
     aWhileSinceBody:            (days) => `Your last entry was ${days} days ago. No pressure — but if something has been sitting with you, this is a good place to put it.`,
     historySentence:            (entries, days) => `${entries} ${entries === 1 ? "entry" : "entries"} across ${days} ${days === 1 ? "day" : "days"} of writing.`,
   },
@@ -441,13 +441,13 @@ export const ar: Translations = {
     pageTitle:           "تأمل أعمق قليلاً",
     pageSubtitle:        "طرق صغيرة ومركّزة لمراجعة نفسك — بمعزل عن مدخلات مجلتك.",
     moodTitle:           "لحظة هادئة",
-    moodTag:             "المزاج،"
+    moodTag:             "المزاج،",
     moodSubtitle:        "توقف ولاحظ أين أنت فعلاً — بدون درجات، بدون تقييمات، فقط صدق.",
     reflectionTitle:     "تأمل موجّه",
-    reflectionTag:       "التفكير،"
+    reflectionTag:       "التفكير،",
     reflectionSubtitle:  "سؤال مشكّل حول ما ظهر في مدخلاتك مؤخراً.",
     suggestionsTitle:    "اقتراحات صغيرة",
-    suggestionsTag:      "الاقتراحات،"
+    suggestionsTag:      "الاقتراحات،",
     suggestionsSubtitle: "فكرة أو اثنتان بلطف، بناءً على أنماطك — ليست تعليمات، بل دعوات.",
     openLabel:           "افتح ←",
   },
@@ -485,10 +485,10 @@ export const ar: Translations = {
 
   // ── First-reflection upgrade nudge ──────────────────────────────────────────
   firstReflectionNudge: {
-    heading:  "يتم بناء أنماطك مع مرور الوقت."
-    body:     "قراءات مميزة عبر جميع مدخلاتك — وليس فقط اليوم. كلما كتبت أكثر، كلما أوضح لك ما يعيد التكرار ولماذا."
-    cta:      "ابدأ فترة تجريبية مجانية لمدة 3 أيام →"
-    noCharge: "لا توجد رسوم لمدة 3 أيام · إلغاء في أي وقت"
+    heading:  "يتم بناء أنماطك مع مرور الوقت.",
+    body:     "قراءات مميزة عبر جميع مدخلاتك — وليس فقط اليوم. كلما كتبت أكثر، كلما أوضح لك ما يعيد التكرار ولماذا.",
+    cta:      "ابدأ فترة تجريبية مجانية لمدة 3 أيام →",
+    noCharge: "لا توجد رسوم لمدة 3 أيام · إلغاء في أي وقت",
   },
 
   upgradeTrigger: {
@@ -522,7 +522,7 @@ export const ar: Translations = {
     modalDesc:            "يفتح Premium تأملات غير محدودة ورؤى الأنماط عبر الزمن وملخصاً أسبوعياً لما لاحظه Quiet Mirror.",
     notNow:               "ليس الآن",
     perMonth:             "/ شهر",
-    premiumFeatureBadge:  "✦ ميزة مميزة"
+    premiumFeatureBadge:  "✦ ميزة مميزة",
   },
   upgradeConfirmed: {
     metaTitle:       (appName) => `مرحبًا بك في Premium | ${appName}`,
@@ -553,7 +553,7 @@ export const ar: Translations = {
     heroCta1:         "اكتب أول مدخل مجاناً \u2192",
     heroCta2:         "اطّلع على تأمل حقيقي \u2192",
     heroPromise:      "\u2713\u00a0مجلة في أقل من 60 ثانية \u00b7 \u2713\u00a0أول تأمل في لحظات \u00b7 \u2713\u00a0بدون إعداد",
-    heroDevices:      "متاح في المتصفح على أي جهاز — لا تطبيق مطلوب"
+    heroDevices:      "متاح في المتصفح على أي جهاز — لا تطبيق مطلوب",
     trust1:           "خاص بشكل افتراضي",
     trust2:           "المدخلات لا تُستخدم لتدريب الذكاء الاصطناعي",
     trust3:           "خطة مجانية بدون انتهاء",
@@ -595,11 +595,11 @@ export const ar: Translations = {
     proofNote:"مُنشأ من مدخلاتك الخاصة. أنت وحدك من يرى هذا.",
     proofUnlock:"هذا ما يفتحه Premium — النمط تحت المدخلات.",
     proofSeeEx:"اطّلع على مثال كامل ←",
-    recTag:"الأنماط التي يلاحظها Quiet Mirror عبر المدخلات — هل أي منها يبدو مألوفًا؟"
-    rec1:"تظل دائمًا الشخص المستقر للجميع، ثم تتساءل لماذا تشعر بالإرهاق."
-    rec2:"يظل نفس التوتر يظهر في مواقف مختلفة، ولكن النمط يظل بعيدًا عن متناول اليد."
-    rec3:"تريد أن تساعدك التأملات، ولكن المطالب العامة لا تلبيك حقًا حيث أنت."
-    recCardLabel:"نمط يلاحظه Quiet Mirror"
+    recTag:"الأنماط التي يلاحظها Quiet Mirror عبر المدخلات — هل أي منها يبدو مألوفًا؟",
+    rec1:"تظل دائمًا الشخص المستقر للجميع، ثم تتساءل لماذا تشعر بالإرهاق.",
+    rec2:"يظل نفس التوتر يظهر في مواقف مختلفة، ولكن النمط يظل بعيدًا عن متناول اليد.",
+    rec3:"تريد أن تساعدك التأملات، ولكن المطالب العامة لا تلبيك حقًا حيث أنت.",
+    recCardLabel:"نمط يلاحظه Quiet Mirror",
     demoTag:"ما يحدث فعلاً",demoH1:"اكتب مرة واحدة. اسمعه يعود",demoH2:"بشكل مختلف.",
     step: "الخطوة",
     demoDesc:"تكتب ما يدور في بالك — بصدق، بشكل فوضوي، دون تعديل نفسك. يقرأ Quiet Mirror ذلك ويعكسه عليك بلطف.",
@@ -640,9 +640,9 @@ export const ar: Translations = {
     ex1W:"أستمر في الموافقة على أشياء حتى عندما أكون مثقلاً بالفعل. بقيت مستيقظاً حتى الساعة 2 صباحاً لإنهاء شيء ربما كان يمكن أن ينتظر، لكنني شعرت بالذنب لتركه.",
     ex1R:"العمل يتراكم وتستمر في قول نعم حتى عندما تكون مثقلاً بالفعل — الذنب من التوقف يبدو أثقل من تكلفة الاستمرار.",
     ex1T1:"إنهاك",ex1T2:"ذنب",ex1T3:"التزامات مفرطة",
-    ex2W:"لقد حققت معظم ما حددته لنفسي. لا أستطيع فقط أن أتذكر لماذا كان من المفترض أن يكون مهمًا. هذا شعور يجب أن أبقيه لنفسي."
-    ex2R:"المسافة بين الوصول إلى شيء ما والشعور بأنها لم تكن خطأ الحصول عليها — هذه الفجوة تستحق الاهتمام. تسميتها ليست ضعفًا. إنها بداية حساب أكثر صدقًا."
-    ex2T1:"اللامبالاة،"
+    ex2W:"لقد حققت معظم ما حددته لنفسي. لا أستطيع فقط أن أتذكر لماذا كان من المفترض أن يكون مهمًا. هذا شعور يجب أن أبقيه لنفسي.",
+    ex2R:"المسافة بين الوصول إلى شيء ما والشعور بأنها لم تكن خطأ الحصول عليها — هذه الفجوة تستحق الاهتمام. تسميتها ليست ضعفًا. إنها بداية حساب أكثر صدقًا.",
+    ex2T1:"ازدواجية",ex2T2:"انفصال",ex2T3:"قيمة",
     ex3W:"كنت أنفجر غضباً على من أهتم بهم ولا أفهم السبب تماماً. لست غاضباً منهم. أعتقد أنني فقط نفد مخزوني.",
     ex3R:"مخزونك نفد وكل شيء يبدو كشيء آخر — الانفجار ليس غضباً، إنه ما يحدث عندما لم يتبق شيء لاستيعابه.",
     ex3T1:"إنهاك",ex3T2:"إحباط",ex3T3:"عجز",
@@ -757,18 +757,18 @@ export const ar: Translations = {
     footerLine1:       (appName: string) => `تلقّيت هذا لأنك اشتركت في ${appName}.`,
     footerLine2:       "عنوان بريدك الإلكتروني لن يُباع أو يُشارك أبداً.",
     privacyPolicy:     "سياسة الخصوصية",
-    unsubscribeCta:    "إلغاء الاشتراك"
+    unsubscribeCta:    "إلغاء الاشتراك",
   },
 
 
   // ── Unsubscribe confirmed page ────────────────────────────────────────────────
   unsubscribePage: {
-    metaTitle:    "تم إلغاء الاشتراك — رسائل Quiet Mirror"
-    heading:      "لقد تم إلغاء اشتراكك."
-    body:         "لن تتلقى أي رسائل إلكترونية أخرى من رسائل Quiet Mirror. إذا كانت هذه كانت خطأ، يمكنك إعادة الاشتراك من الصفحة الرئيسية."
-    errorHeading: "حدث خطأ ما."
+    metaTitle:    "تم إلغاء الاشتراك — رسائل Quiet Mirror",
+    heading:      "لقد تم إلغاء اشتراكك.",
+    body:         "لن تتلقى أي رسائل إلكترونية أخرى من رسائل Quiet Mirror. إذا كانت هذه كانت خطأ، يمكنك إعادة الاشتراك من الصفحة الرئيسية.",
+    errorHeading: "حدث خطأ ما.",
     errorBody:    (email: string) => `We couldn't process your unsubscribe request. Please email ${email} and we'll remove you manually.`,
-    backHome:     "العودة إلى الصفحة الرئيسية"
+    backHome:     "العودة إلى الصفحة الرئيسية",
   },
 
   // ── Insights preview page ────────────────────────────────────────────────────
@@ -1133,16 +1133,16 @@ export const ar: Translations = {
   // ── legalPagesCta — closing CTAs on terms, privacy, and blog article pages ──
   // TODO: English placeholders — i18n-auto-translate Action translates these on merge to main.
   legalPagesCta: {
-    readyHeading:    "هل أنت مستعد للقيام بفحص خاص؟"
-    readyBody:       "ابدأ مجانًا. 업그ريد فقط إذا ساعدك ذلك حقًا على الذهاب أعمق برؤى وتسلسل وتفكير أكثر ثراءً."
-    startFreeLabel:  "ابدأ تدوين مجاني"
-    seePremiumLabel: "انظر ما الذي تضيفه Premium"
+    readyHeading:    "هل أنت مستعد للقيام بفحص خاص؟",
+    readyBody:       "ابدأ مجانًا. 업그ريد فقط إذا ساعدك ذلك حقًا على الذهاب أعمق برؤى وتسلسل وتفكير أكثر ثراءً.",
+    startFreeLabel:  "ابدأ تدوين مجاني",
+    seePremiumLabel: "انظر ما الذي تضيفه Premium",
     learnAboutLabel: (appName) => `Learn about ${appName} →`,
-    blogCtaHeading:  "هل تريد أن ترى ما يعود؟"
-    blogCtaBody:     "قراءات مميزة عبر مدخلاتك بمرور الوقت وتظهر لك ما يتكرر بهدوء — العواطف والمواضيع والأنماط التي لم تتمكن من رؤيتها من داخلها."
-    seePremiumBlog:  "انظر فوائد Premium →"
+    blogCtaHeading:  "هل تريد أن ترى ما يعود؟",
+    blogCtaBody:     "قراءات مميزة عبر مدخلاتك بمرور الوقت وتظهر لك ما يتكرر بهدوء — العواطف والمواضيع والأنماط التي لم تتمكن من رؤيتها من داخلها.",
+    seePremiumBlog:  "انظر فوائد Premium →",
     refundNote:      (days) => `🛡️ ${days}-day full refund on Premium · Cancel anytime`,
-    backToArticles:  "← العودة إلى جميع المقالات"
+    backToArticles:  "← العودة إلى جميع المقالات",
   },
   legalPages: {
     languageNotice: "هذه السياسة مكتوبة باللغة الإنجليزية. للاستفسارات، تواصل معنا.",
