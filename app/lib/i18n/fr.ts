@@ -432,7 +432,7 @@ export const fr: Translations = {
     reflectionTag:       "Réflexion",
     reflectionSubtitle: "Une invitation façonnée autour de ce qui apparaît dans vos entrées récentes.",
     suggestionsTitle:   "Petites suggestions",
-    suggestionsTag:      "Suggestions",
+    suggestionsTag:      "Suggestions"
     suggestionsSubtitle:"Une ou deux idées douces, basées sur vos schémas — pas des instructions, juste des invitations.",
     openLabel:          "Ouvrir →",
   },
