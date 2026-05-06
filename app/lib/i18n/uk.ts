@@ -330,7 +330,7 @@ export const uk: Translations = {
     threadPromptEmotion:        (emotion) => `Продовжуючи твій останній запис — ${emotion} було присутнє. Щось змінилось?`,
     threadPromptNoEmotion:      "Продовжуючи твій останній запис — щось пом’якшало відтоді, як ти писав?",
     // "It's been a while" state and history sentence — auto-translated on merge
-    aWhileSinceTag:             "It's been a little while",
+    aWhileSinceTag:             "Минуло трохи часу"
     aWhileSinceBody:            (days) => `Your last entry was ${days} days ago. No pressure — but if something has been sitting with you, this is a good place to put it.`,
     historySentence:            (entries, days) => `${entries} ${entries === 1 ? "entry" : "entries"} across ${days} ${days === 1 ? "day" : "days"} of writing.`,
   },
@@ -465,13 +465,13 @@ export const uk: Translations = {
     pageTitle:          "Зануртесь трохи глибше",
     pageSubtitle:       "Невеликі, цілеспрямовані способи перевірити себе — окремо від записів у щоденнику.",
     moodTitle:          "Тихий момент",
-    moodTag:             "Mood",
+    moodTag:             "Настрій"
     moodSubtitle:       "Зупиніться і помітьте, де ти насправді — без оцінок, просто чесність.",
     reflectionTitle:    "Кероване відображення",
-    reflectionTag:       "Reflection",
+    reflectionTag:       "Роздуми"
     reflectionSubtitle: "Підказка, сформована навколо того, що з'являлося у ваших записах останнім часом.",
     suggestionsTitle:   "Невеликі пропозиції",
-    suggestionsTag:      "Suggestions",
+    suggestionsTag:      "Пропозиції"
     suggestionsSubtitle:"Одна-дві м'які ідеї, засновані на ваших шаблонах — не інструкції, просто запрошення.",
     openLabel:          "Відкрити →",
   },
@@ -518,10 +518,10 @@ export const uk: Translations = {
 
   // ── First-reflection upgrade nudge ──────────────────────────────────────────
   firstReflectionNudge: {
-    heading:  "Your patterns build over time.",
-    body:     "Premium reads across all your entries — not just today's. The longer you write, the more clearly it shows you what keeps repeating and why.",
-    cta:      "Start 3-day free trial \u2192",
-    noCharge: "No charge for 3 days \u00B7 Cancel anytime",
+    heading:  "Ваші шаблони формуються з часом."
+    body:     "Преміум-доступ до всіх ваших записів — не лише сьогоднішніх. Чим більше ви пишете, тим більше чітко видно, що повторюється і чому."
+    cta:      "Почати 3-денну безкоштовну пробу →"
+    noCharge: "Безкоштовно протягом 3 днів · Відмінити в будь-який час"
   },
 
   // ── Upgrade trigger nudges ───────────────────────────────────────────────────
@@ -556,7 +556,7 @@ export const uk: Translations = {
     modalDesc:            "Premium відкриває необмежені відображення, аналітику паттернів з часом і щотижневий підсумок того, що помітив Quiet Mirror.",
     notNow:               "Не зараз",
     perMonth:             "/ місяць",
-    premiumFeatureBadge:  "✦ Premium feature",
+    premiumFeatureBadge:  "✦ Преміум-функція"
   },
 
   // ── Upgrade confirmed ────────────────────────────────────────────────────────
@@ -589,7 +589,7 @@ export const uk: Translations = {
     heroCta1:         "Написати перший запис безкоштовно \u2192",
     heroCta2:         "Побачити справжнє відображення \u2192",
     heroPromise:      "\u2713\u00a0Щоденник за 60 секунд \u00b7 \u2713\u00a0Перше відображення миттєво \u00b7 \u2713\u00a0Без налаштувань",
-    heroDevices:      "Available in browser on any device — no app required",
+    heroDevices:      "Доступно в браузері на будь-якому пристрої — не потрібен додаток"
     trust1:           "Приватно за замовчуванням",
     trust2:           "Записи ніколи не навчають AI",
     trust3:           "Безкоштовний план без обмежень часу",
@@ -631,11 +631,11 @@ export const uk: Translations = {
     proofNote:"Згенеровано з ваших приватних записів. Бачите лише ти.",
     proofUnlock:"Це те, що відкриває Premium — закономірність під записами.",
     proofSeeEx:"Переглянути повний приклад →",
-    recTag:"Patterns Quiet Mirror notices across entries — do any feel familiar?",
-    rec1:"You keep being the steady one for everyone else, and then wonder why you feel so depleted.",
-    rec2:"The same tension keeps showing up in different situations, but the pattern stays just out of reach.",
-    rec3:"You want reflection to help, but generic prompts never quite meet you where you actually are.",
-    recCardLabel:"A pattern Quiet Mirror notices",
+    recTag:"Шаблони, які Quiet Mirror помічає у ваших записах — чи якісь із них здаються знайомими?"
+    rec1:"Ви завжди залишаєтесь стабільним для всіх інших, а потім дивуєтеся, чому відчуваєте себе виснаженим."
+    rec2:"Те саме напруження виникає у різних ситуаціях, але шаблон залишається недосяжним."
+    rec3:"Ви хочете, щоб роздуми допомогли, але загальні підказки ніколи не відповідають тому, де ви дійсно перебуваєте."
+    recCardLabel:"Шаблон, який помічає Quiet Mirror"
     demoTag:"Що насправді відбувається",demoH1:"Напиши один раз. Почуйте у відповідь",demoH2:"по-іншому.",
     step: "Крок",
     demoDesc:"Ти пишете що завгодно — чесно, безладно, не редагуючи себе. Quiet Mirror читає це та м'яко відображає назад те, що помітив.",
@@ -676,9 +676,9 @@ export const uk: Translations = {
     ex1W:"Я продовжую погоджуватися на речі, навіть коли вже перевантажений. Я не спав до 2 ночі, завершуючи щось, що могло зачекати, але відчував провину, залишаючи це.",
     ex1R:"Роботи накопичується, і ти продовжуєш говорити «так», навіть коли вже перевантажені — провина від зупинки відчувається важчою за вартість продовження.",
     ex1T1:"виснаження",ex1T2:"провина",ex1T3:"надмірні зобов'язання",
-    ex2W:"I've achieved most of what I set out to do. I just can't remember why it was supposed to matter. That feels like something I should keep to myself.",
-    ex2R:"The distance between arriving at something and feeling it wasn't a mistake getting there — that gap is worth paying attention to. Naming it isn't weakness. It's the beginning of a more honest account.",
-    ex2T1:"ambivalence",ex2T2:"disconnection",ex2T3:"worth",
+    ex2W:"Я досягнув більшості того, що планував. Просто не можу згадати, чому це мало значення. Відчуваю, що це те, що я повинен зберігати в собі."
+    ex2R:"Відстань між досягненням чогось і усвідомленням того, що це не була помилка — цей розрив варто уваги. Назвати його — не слабкість. Це початок більш чесного звіту."
+    ex2T1:"двоїстість",ex2T2:"від'єднання",ex2T3:"цінність"
     ex3W:"Я зриваюся на людях, яких люблю, і не розумію чому. Я не злюся на них. Думаю, просто ресурс вичерпано.",
     ex3R:"Ресурс вичерпано, і все відчувається як ще одна річ — зрив — це не злість, це те, що відбувається, коли нічого не залишилося для поглинання.",
     ex3T1:"виснаження",ex3T2:"розчарування",ex3T3:"безпорадність",
@@ -793,18 +793,18 @@ export const uk: Translations = {
     footerLine1:       (appName: string) => `Ти отримуєш це, тому що підписався на ${appName}.`,
     footerLine2:       "твоя електронна адреса ніколи не продається і не передається третім особам.",
     privacyPolicy:     "Політика конфіденційності",
-    unsubscribeCta:    "Unsubscribe",
+    unsubscribeCta:    "Відписатися"
   },
 
 
   // ── Unsubscribe confirmed page ────────────────────────────────────────────────
   unsubscribePage: {
-    metaTitle:    "Unsubscribed — Quiet Mirror Letters",
-    heading:      "You've been unsubscribed.",
-    body:         "You won't receive any more emails from Quiet Mirror Letters. If this was a mistake, you can re-subscribe from the homepage.",
-    errorHeading: "Something went wrong.",
+    metaTitle:    "Відписано — Quiet Mirror Letters"
+    heading:      "Ви відписались."
+    body:         "Вам більше не будуть надсилатися електронні листи від Quiet Mirror Letters. Якщо це була помилка, ви можете підписатися знову на головній сторінці."
+    errorHeading: "Сталася помилка."
     errorBody:    (email: string) => `We couldn't process your unsubscribe request. Please email ${email} and we'll remove you manually.`,
-    backHome:     "Back to home",
+    backHome:     "Назад на головну"
   },
 
   // ── Insights preview page ────────────────────────────────────────────────────
@@ -1164,16 +1164,16 @@ export const uk: Translations = {
   // ── legalPagesCta — closing CTAs on terms, privacy, and blog article pages ──
   // TODO: English placeholders — i18n-auto-translate Action translates these on merge to main.
   legalPagesCta: {
-    readyHeading:    "Ready to try a private check-in?",
-    readyBody:       "Start free. Upgrade only if it genuinely helps you go deeper with insights, timelines, and richer reflections.",
-    startFreeLabel:  "Start free journaling",
-    seePremiumLabel: "See what Premium adds",
+    readyHeading:    "Готові спробувати приватну перевірку?"
+    readyBody:       "Почати безкоштовно. Оновити лише якщо це дійсно допомагає вам глибше пізнати себе з інсайтами, хронологією та багатшими роздумами."
+    startFreeLabel:  "Почати безкоштовне ведення журналу"
+    seePremiumLabel: "Подивитися, що додає Преміум"
     learnAboutLabel: (appName) => `Learn about ${appName} →`,
-    blogCtaHeading:  "Want to see what keeps returning?",
-    blogCtaBody:     "Premium reads across your entries over time and shows you what quietly repeats — the emotions, themes, and patterns you couldn't see from inside them.",
-    seePremiumBlog:  "See Premium benefits →",
+    blogCtaHeading:  "Хочете побачити, що повертається?"
+    blogCtaBody:     "Преміум-доступ до ваших записів протягом часу і показує вам те, що тихо повторюється — емоції, теми та шаблони, які ви не могли побачити всередині них."
+    seePremiumBlog:  "Подивитися переваги Преміум →"
     refundNote:      (days) => `🛡️ ${days}-day full refund on Premium · Cancel anytime`,
-    backToArticles:  "← Back to all articles",
+    backToArticles:  "← Назад до всіх статей"
   },
   legalPages: {
     languageNotice: "Ця політика написана англійською. З питаннями звернись до нас.",

@@ -297,7 +297,7 @@ export const ro: Translations = {
     threadPromptEmotion:        (emotion) => `Continuând ultima ta intrare — ${emotion} era prezent. S-a schimbat ceva?`,
     threadPromptNoEmotion:      "Continuând ultima ta intrare — s-a înmuiat ceva de când ai scris?",
     // "It's been a while" state and history sentence — auto-translated on merge
-    aWhileSinceTag:             "It's been a little while",
+    aWhileSinceTag:             "A trecut ceva timp"
     aWhileSinceBody:            (days) => `Your last entry was ${days} days ago. No pressure — but if something has been sitting with you, this is a good place to put it.`,
     historySentence:            (entries, days) => `${entries} ${entries === 1 ? "entry" : "entries"} across ${days} ${days === 1 ? "day" : "days"} of writing.`,
   },
@@ -429,13 +429,13 @@ export const ro: Translations = {
     pageTitle:          "Reflectați puțin mai profund",
     pageSubtitle:       "Modalități mici și concentrate de a te verifica cu voi înșivă — separate de înregistrările din jurnal.",
     moodTitle:          "Un moment liniștit",
-    moodTag:             "Mood",
+    moodTag:             "Stare"
     moodSubtitle:       "Fă o pauză și observi unde te afli cu adevărat — fără scoruri, fără evaluări, doar onestitate.",
     reflectionTitle:    "Reflecție ghidată",
-    reflectionTag:       "Reflection",
+    reflectionTag:       "Reflecție"
     reflectionSubtitle: "Un prompt format în jurul a ceea ce a apărut în înregistrările tale recent.",
     suggestionsTitle:   "Sugestii mici",
-    suggestionsTag:      "Suggestions",
+    suggestionsTag:      "Sugestii"
     suggestionsSubtitle:"Una sau două idei blânde, bazate pe tiparele tale — nu instrucțiuni, doar invitații.",
     openLabel:          "Deschide →",
   },
@@ -475,10 +475,10 @@ export const ro: Translations = {
 
   // ── First-reflection upgrade nudge ──────────────────────────────────────────
   firstReflectionNudge: {
-    heading:  "Your patterns build over time.",
-    body:     "Premium reads across all your entries — not just today's. The longer you write, the more clearly it shows you what keeps repeating and why.",
-    cta:      "Start 3-day free trial \u2192",
-    noCharge: "No charge for 3 days \u00B7 Cancel anytime",
+    heading:  "Tiparele tale se construiesc în timp."
+    body:     "Lecturi premium pe toate intrările tale — nu doar pentru azi. Cu cât scrii mai mult, cu atât mai clar îți arată ce se repetă și de ce."
+    cta:      "Începe un trial gratuit de 3 zile →"
+    noCharge: "Nicio taxă pentru 3 zile · Anulează oricând"
   },
 
   upgradeTrigger: {
@@ -512,7 +512,7 @@ export const ro: Translations = {
     modalDesc:            "Premium deblochează reflecții nelimitate, perspective asupra tiparelor în timp și un rezumat săptămânal a ceea ce a observat Quiet Mirror.",
     notNow:               "Nu acum",
     perMonth:             "/ lună",
-    premiumFeatureBadge:  "✦ Premium feature",
+    premiumFeatureBadge:  "✦ Funcție premium"
   },
 
   upgradeConfirmed: {
@@ -545,7 +545,7 @@ export const ro: Translations = {
     heroCta1:         "Scrie prima înregistrare gratuit \u2192",
     heroCta2:         "Vedeți o reflecție reală \u2192",
     heroPromise:      "\u2713\u00a0Jurnal în mai puțin de 60 de secunde \u00b7 \u2713\u00a0Prima reflecție în câteva momente \u00b7 \u2713\u00a0Fără configurare, fără chestionar",
-    heroDevices:      "Available in browser on any device — no app required",
+    heroDevices:      "Disponibil în browser pe orice dispozitiv — nicio aplicație necesară"
     trust1:           "Privat implicit",
     trust2:           "Înregistrările nu antrenează niciodată modele AI",
     trust3:           "Plan gratuit, fără expirare",
@@ -587,11 +587,11 @@ export const ro: Translations = {
     proofNote:"Generat din înregistrările tale private. Doar tău poți vedea asta.",
     proofUnlock:"Asta este ceea ce deblochează Premium — tiparul de sub înregistrări.",
     proofSeeEx:"Vedeți un exemplu complet →",
-    recTag:"Patterns Quiet Mirror notices across entries — do any feel familiar?",
-    rec1:"You keep being the steady one for everyone else, and then wonder why you feel so depleted.",
-    rec2:"The same tension keeps showing up in different situations, but the pattern stays just out of reach.",
-    rec3:"You want reflection to help, but generic prompts never quite meet you where you actually are.",
-    recCardLabel:"A pattern Quiet Mirror notices",
+    recTag:"Tipare pe care Quiet Mirror le observă în intrări — îți sunt familiare?"
+    rec1:"Ești mereu cel stabil pentru toată lumea, și apoi te întrebi de ce te simți atât de epuizat."
+    rec2:"Aceeași tensiune continuă să apară în situații diferite, dar tiparul rămâne la îndemână."
+    rec3:"Vrei ca reflecția să te ajute, dar promptele generice nu ți se potrivesc niciodată acolo unde ești cu adevărat."
+    recCardLabel:"Un tipar pe care Quiet Mirror îl observă"
     demoTag:"Ce se întâmplă de fapt",demoH1:"Scrie o dată. Auziți-o",demoH2:"diferit.",
     step: "Pasul",
     demoDesc:"Scrie ce îți trece prin minte — onest, dezordonat, fără să te editați. Quiet Mirror citește și reflectă înapoi ce a observat. Fără sfaturi. Fără diagnostic. Doar o oglindă ținută blând.",
@@ -632,9 +632,9 @@ export const ro: Translations = {
     ex1W:"Continuu să spun da la lucruri chiar și atunci când sunt deja copleșit. Am stat treaz până la 2 noaptea terminând ceva care probabil putea aștepta, dar m-am simțit vinovat lăsându-l.",
     ex1R:"Munca se adună și continui să spui da chiar și atunci când ești deja copleșit — vinovăția de a te opri pare mai grea decât costul de a continua.",
     ex1T1:"epuizare",ex1T2:"vinovăție",ex1T3:"supraangajament",
-    ex2W:"I've achieved most of what I set out to do. I just can't remember why it was supposed to matter. That feels like something I should keep to myself.",
-    ex2R:"The distance between arriving at something and feeling it wasn't a mistake getting there — that gap is worth paying attention to. Naming it isn't weakness. It's the beginning of a more honest account.",
-    ex2T1:"ambivalence",ex2T2:"disconnection",ex2T3:"worth",
+    ex2W:"Am realizat majoritatea lucrurilor pe care le-am dorit. Nu mai îmi amintesc de ce erau importante. Asta mi se pare ceva ce ar trebui să păstrez pentru mine."
+    ex2R:"Distanța dintre a ajunge la ceva și a simți că nu a fost o greșeală să ajungi acolo — acea distanță merită atenție. A o numi nu este o slăbiciune. Este începutul unui cont mai onest."
+    ex2T1:"ambivalență",ex2T2:"deconectare",ex2T3:"valoare"
     ex3W:"Mă răstesc la oamenii pe care îi iubesc și nu înțeleg pe deplin de ce. Nu sunt supărat pe ei. Cred că funcționez pur și simplu pe rezerve goale.",
     ex3R:"Funcționați pe rezerve goale și totul pare un lucru în plus — răstelile nu sunt furie, sunt ce se întâmplă când nu mai rămâne nimic pentru a absorbi.",
     ex3T1:"epuizare",ex3T2:"frustrare",ex3T3:"neputință",
@@ -752,7 +752,7 @@ export const ro: Translations = {
     footerLine1:       (appName: string) => `Primiți asta pentru că te-ai înregistrat la ${appName}.`,
     footerLine2:       "Adresa ta de e-mail nu este niciodată vândută sau partajată.",
     privacyPolicy:     "Politică de confidențialitate",
-    unsubscribeCta:    "Unsubscribe",
+    unsubscribeCta:    "Dezabonare"
   },
 
   insightPreview: {
@@ -1111,16 +1111,16 @@ export const ro: Translations = {
   // ── legalPagesCta — closing CTAs on terms, privacy, and blog article pages ──
   // TODO: English placeholders — i18n-auto-translate Action translates these on merge to main.
   legalPagesCta: {
-    readyHeading:    "Ready to try a private check-in?",
-    readyBody:       "Start free. Upgrade only if it genuinely helps you go deeper with insights, timelines, and richer reflections.",
-    startFreeLabel:  "Start free journaling",
-    seePremiumLabel: "See what Premium adds",
+    readyHeading:    "Ești gata pentru un check-in privat?"
+    readyBody:       "Începe gratuit. Upgradează doar dacă îți ajută cu adevărat să mergi mai adânc în perspective, cronologii și reflecții mai bogate."
+    startFreeLabel:  "Începe jurnalizarea gratuit"
+    seePremiumLabel: "Vezi ce adaugă Premium"
     learnAboutLabel: (appName) => `Learn about ${appName} →`,
-    blogCtaHeading:  "Want to see what keeps returning?",
-    blogCtaBody:     "Premium reads across your entries over time and shows you what quietly repeats — the emotions, themes, and patterns you couldn't see from inside them.",
-    seePremiumBlog:  "See Premium benefits →",
+    blogCtaHeading:  "Vrei să vezi ce continuă să se întoarcă?"
+    blogCtaBody:     "Lecturi premium pe intrările tale în timp și îți arată ce se repetă în liniște — emoțiile, temele și tiparele pe care nu le-ai văzut din interiorul lor."
+    seePremiumBlog:  "Vezi beneficiile Premium →"
     refundNote:      (days) => `🛡️ ${days}-day full refund on Premium · Cancel anytime`,
-    backToArticles:  "← Back to all articles",
+    backToArticles:  "← Înapoi la toate articolele"
   },
   legalPages: {
     languageNotice: "Această politică este redactată în engleză. Pentru întrebări, contactează-ne.",
@@ -1146,12 +1146,12 @@ export const ro: Translations = {
 
   // ── Unsubscribe confirmed page ────────────────────────────────────────────────
   unsubscribePage: {
-    metaTitle:    "Unsubscribed — Quiet Mirror Letters",
-    heading:      "You've been unsubscribed.",
-    body:         "You won't receive any more emails from Quiet Mirror Letters. If this was a mistake, you can re-subscribe from the homepage.",
-    errorHeading: "Something went wrong.",
+    metaTitle:    "Dezabonat — Quiet Mirror Letters"
+    heading:      "Te-ai dezabonat."
+    body:         "Nu vei mai primi niciun e-mail de la Quiet Mirror Letters. Dacă a fost o greșeală, te poți reabona de pe pagina de start."
+    errorHeading: "A apărut o problemă."
     errorBody:    (email: string) => `We couldn't process your unsubscribe request. Please email ${email} and we'll remove you manually.`,
-    backHome:     "Back to home",
+    backHome:     "Înapoi la pagina de start"
   },
 
 };
