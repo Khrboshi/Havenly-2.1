@@ -292,7 +292,7 @@ export const nl: Translations = {
     threadPromptEmotion:        (emotion) => `Voortbouwend op je laatste bericht — ${emotion} was aanwezig. Is er iets veranderd?`,
     threadPromptNoEmotion:      "Voortbouwend op je laatste bericht — is er iets verzacht sinds je schreef?",
     // "It's been a while" state and history sentence — auto-translated on merge
-    aWhileSinceTag:             "Het is al even geleden"
+    aWhileSinceTag:             "Het is al even geleden",
     aWhileSinceBody:            (days) => `Your last entry was ${days} days ago. No pressure — but if something has been sitting with you, this is a good place to put it.`,
     historySentence:            (entries, days) => `${entries} ${entries === 1 ? "entry" : "entries"} across ${days} ${days === 1 ? "day" : "days"} of writing.`,
   },
@@ -424,13 +424,13 @@ export const nl: Translations = {
     pageTitle:          "Reflecteer wat dieper",
     pageSubtitle:       "Kleine, gerichte manieren om bij jezelf in te checken — los van je dagboekberichten.",
     moodTitle:          "Een stil moment",
-    moodTag:             "Stemming"
+    moodTag:             "Stemming",
     moodSubtitle:       "Pauzeer en merk op waar je echt bent — geen scores, geen beoordelingen, alleen eerlijkheid.",
     reflectionTitle:    "Begeleide Reflectie",
-    reflectionTag:       "Reflectie"
+    reflectionTag:       "Reflectie",
     reflectionSubtitle: "Een prompt gevormd rond wat er de laatste tijd in je berichten opduikt.",
     suggestionsTitle:   "Kleine Suggesties",
-    suggestionsTag:      "Suggesties"
+    suggestionsTag:      "Suggesties",
     suggestionsSubtitle:"Één of twee zachte ideeën, gebaseerd op je patronen — geen instructies, gewoon uitnodigingen.",
     openLabel:          "Openen →",
   },
@@ -470,10 +470,10 @@ export const nl: Translations = {
 
   // ── First-reflection upgrade nudge ──────────────────────────────────────────
   firstReflectionNudge: {
-    heading:  "Je patronen ontwikkelen zich in de tijd."
-    body:     "Premium lezingen over al je inzendingen — niet alleen van vandaag. Hoe langer je schrijft, hoe duidelijker het je laat zien wat blijft terugkeren en waarom."
-    cta:      "Start 3-dagen gratis proefperiode →"
-    noCharge: "Geen kosten voor 3 dagen · Annuleren op elk moment"
+    heading:  "Je patronen ontwikkelen zich in de tijd.",
+    body:     "Premium lezingen over al je inzendingen — niet alleen van vandaag. Hoe langer je schrijft, hoe duidelijker het je laat zien wat blijft terugkeren en waarom.",
+    cta:      "Start 3-dagen gratis proefperiode →",
+    noCharge: "Geen kosten voor 3 dagen · Annuleren op elk moment",
   },
 
   upgradeTrigger: {
@@ -507,7 +507,7 @@ export const nl: Translations = {
     modalDesc:            "Premium ontgrendelt onbeperkte reflecties, patrooninzichten over tijd en een wekelijkse samenvatting van wat Quiet Mirror opmerkte.",
     notNow:               "Niet nu",
     perMonth:             "/ maand",
-    premiumFeatureBadge:  "✦ Premium functie"
+    premiumFeatureBadge:  "✦ Premium functie",
   },
 
   upgradeConfirmed: {
@@ -540,7 +540,7 @@ export const nl: Translations = {
     heroCta1:         "Schrijf je eerste bericht gratis \u2192",
     heroCta2:         "Bekijk een echte reflectie \u2192",
     heroPromise:      "\u2713\u00a0Dagboek in minder dan 60 seconden \u00b7 \u2713\u00a0Eerste reflectie binnen momenten \u00b7 \u2713\u00a0Geen setup, geen quiz",
-    heroDevices:      "Beschikbaar in browser op elk apparaat — geen app vereist"
+    heroDevices:      "Beschikbaar in browser op elk apparaat — geen app vereist",
     trust1:           "Standaard privé",
     trust2:           "Berichten trainen nooit AI-modellen",
     trust3:           "Gratis plan, geen vervaldatum",
@@ -582,11 +582,11 @@ export const nl: Translations = {
     proofNote:"Gegenereerd uit je privéberichten. Alleen jij kunt dit zien.",
     proofUnlock:"Dit is wat Premium ontgrendelt — het patroon onder de berichten.",
     proofSeeEx:"Volledig voorbeeld bekijken →",
-    recTag:"Patronen die Quiet Mirror opmerkt over inzendingen — voelen sommige bekend aan?"
-    rec1:"Je blijft altijd de stabiele voor iedereen, en vraagt je dan af waarom je je zo uitgeput voelt."
-    rec2:"Dezelfde spanning blijft opduiken in verschillende situaties, maar het patroon blijft net buiten bereik."
-    rec3:"Je wilt reflectie om te helpen, maar generieke prompts komen nooit echt overeen met waar je daadwerkelijk bent."
-    recCardLabel:"Een patroon dat Quiet Mirror opmerkt"
+    recTag:"Patronen die Quiet Mirror opmerkt over inzendingen — voelen sommige bekend aan?",
+    rec1:"Je blijft altijd de stabiele voor iedereen, en vraagt je dan af waarom je je zo uitgeput voelt.",
+    rec2:"Dezelfde spanning blijft opduiken in verschillende situaties, maar het patroon blijft net buiten bereik.",
+    rec3:"Je wilt reflectie om te helpen, maar generieke prompts komen nooit echt overeen met waar je daadwerkelijk bent.",
+    recCardLabel:"Een patroon dat Quiet Mirror opmerkt",
     demoTag:"Wat er eigenlijk gebeurt",demoH1:"Schrijf één keer. Hoor het",demoH2:"anders terug.",
     step: "Stap",
     demoDesc:"Je schrijft wat er in je hoofd speelt — eerlijk, rommelig, zonder jezelf te bewerken. Quiet Mirror leest het en spiegelt terug wat het opmerkte. Geen advies. Geen diagnose. Gewoon een spiegel zachtjes vastgehouden.",
@@ -627,9 +627,9 @@ export const nl: Translations = {
     ex1W:"Ik blijf ja zeggen op dingen ook als ik al overweldigd ben. Ik bleef op tot 2 uur 's nachts om iets af te maken dat waarschijnlijk had kunnen wachten, maar ik voelde me schuldig om het te laten.",
     ex1R:"Het werk hoopt zich op en je blijft ja zeggen ook als je al overweldigd bent — de schuld van stoppen voelt zwaarder dan de kosten van doorgaan.",
     ex1T1:"uitputting",ex1T2:"schuld",ex1T3:"te veel hooi op je vork",
-    ex2W:"Ik heb de meeste dingen bereikt die ik wilde doen. Ik kan me alleen niet herinneren waarom het belangrijk was. Dat voelt als iets dat ik voor mezelf moet houden."
-    ex2R:"De afstand tussen het bereiken van iets en het gevoel dat het geen fout was om daar te komen — die kloof is het waard om aandacht aan te besteden. Het benoemen ervan is geen zwakte. Het is het begin van een eerlijkere verslaggeving."
-    ex2T1:"ambivalentie",ex2T2:"disconnectie",ex2T3:"waarde"
+    ex2W:"Ik heb de meeste dingen bereikt die ik wilde doen. Ik kan me alleen niet herinneren waarom het belangrijk was. Dat voelt als iets dat ik voor mezelf moet houden.",
+    ex2R:"De afstand tussen het bereiken van iets en het gevoel dat het geen fout was om daar te komen — die kloof is het waard om aandacht aan te besteden. Het benoemen ervan is geen zwakte. Het is het begin van een eerlijkere verslaggeving.",
+    ex2T1:"ambivalentie",ex2T2:"disconnectie",ex2T3:"waarde",
     ex3W:"Ik snap niet tegen mensen van wie ik houd en begrijp niet helemaal waarom. Ik ben niet boos op hen. Ik denk dat ik gewoon op lege reserves draai.",
     ex3R:"Je draait op lege reserves en alles voelt als nog een ding — het snauwen is geen boosheid, het is wat er gebeurt als er niets meer over is om te absorberen.",
     ex3T1:"uitputting",ex3T2:"frustratie",ex3T3:"hulpeloosheid",
@@ -747,7 +747,7 @@ export const nl: Translations = {
     footerLine1:       (appName: string) => `Je ontvangt dit omdat je je hebt aangemeld bij ${appName}.`,
     footerLine2:       "Je e-mailadres wordt nooit verkocht of gedeeld.",
     privacyPolicy:     "Privacybeleid",
-    unsubscribeCta:    "Afmelden"
+    unsubscribeCta:    "Afmelden",
   },
 
   insightPreview: {
@@ -1106,16 +1106,16 @@ export const nl: Translations = {
   // ── legalPagesCta — closing CTAs on terms, privacy, and blog article pages ──
   // TODO: English placeholders — i18n-auto-translate Action translates these on merge to main.
   legalPagesCta: {
-    readyHeading:    "Klaar om een privé-check-in te proberen?"
-    readyBody:       "Start gratis. Upgrade alleen als het je echt helpt om dieper in te gaan op inzichten, tijdlijnen en rijkere reflecties."
-    startFreeLabel:  "Start gratis journaling"
-    seePremiumLabel: "Zie wat Premium toevoegt"
+    readyHeading:    "Klaar om een privé-check-in te proberen?",
+    readyBody:       "Start gratis. Upgrade alleen als het je echt helpt om dieper in te gaan op inzichten, tijdlijnen en rijkere reflecties.",
+    startFreeLabel:  "Start gratis journaling",
+    seePremiumLabel: "Zie wat Premium toevoegt",
     learnAboutLabel: (appName) => `Learn about ${appName} →`,
-    blogCtaHeading:  "Wil je zien wat blijft terugkeren?"
-    blogCtaBody:     "Premium lezingen over je inzendingen in de tijd en laat je zien wat stilzwijgend terugkeert — de emoties, thema's en patronen die je niet kon zien vanuit hen."
-    seePremiumBlog:  "Zie Premium-voordelen →"
+    blogCtaHeading:  "Wil je zien wat blijft terugkeren?",
+    blogCtaBody:     "Premium lezingen over je inzendingen in de tijd en laat je zien wat stilzwijgend terugkeert — de emoties, thema's en patronen die je niet kon zien vanuit hen.",
+    seePremiumBlog:  "Zie Premium-voordelen →",
     refundNote:      (days) => `🛡️ ${days}-day full refund on Premium · Cancel anytime`,
-    backToArticles:  "← Terug naar alle artikelen"
+    backToArticles:  "← Terug naar alle artikelen",
   },
   legalPages: {
     languageNotice: "Dit beleid is geschreven in het Engels. Voor vragen, neem contact met ons op.",
@@ -1141,12 +1141,12 @@ export const nl: Translations = {
 
   // ── Unsubscribe confirmed page ────────────────────────────────────────────────
   unsubscribePage: {
-    metaTitle:    "Afgemeld — Quiet Mirror-brieven"
-    heading:      "Je bent afgemeld."
-    body:         "Je ontvangt geen e-mails meer van Quiet Mirror-brieven. Als dit een fout was, kun je je opnieuw abonneren vanaf de startpagina."
-    errorHeading: "Er is iets misgegaan."
+    metaTitle:    "Afgemeld — Quiet Mirror-brieven",
+    heading:      "Je bent afgemeld.",
+    body:         "Je ontvangt geen e-mails meer van Quiet Mirror-brieven. Als dit een fout was, kun je je opnieuw abonneren vanaf de startpagina.",
+    errorHeading: "Er is iets misgegaan.",
     errorBody:    (email: string) => `We couldn't process your unsubscribe request. Please email ${email} and we'll remove you manually.`,
-    backHome:     "Terug naar startpagina"
+    backHome:     "Terug naar startpagina",
   },
 
 };
