@@ -1099,6 +1099,8 @@ export const uk: Translations = {
     closingStartFree: "Спочатку почати безкоштовно",
     closingTrust: "Без оплати сьогодні · Скасування в будь-який час · Без реклами",
     andConnector: "та",
+    testimonialQuote:       "",
+    testimonialAttribution: "",
   },
 
   // ── blogPage ────────────────────────────────────────────────

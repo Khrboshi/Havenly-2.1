@@ -1041,6 +1041,8 @@ export const nl: Translations = {
     closingStartFree: "Eerst gratis beginnen",
     closingTrust: "Geen kosten vandaag · Altijd opzegbaar · Geen advertenties",
     andConnector: "en",
+    testimonialQuote:       "",
+    testimonialAttribution: "",
   },
 
   // ── blogPage ────────────────────────────────────────────────

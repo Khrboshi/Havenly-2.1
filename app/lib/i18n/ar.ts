@@ -1068,6 +1068,8 @@ export const ar: Translations = {
     closingStartFree: "ابدأ مجانًا أولاً",
     closingTrust: "بدون رسوم اليوم · إلغاء في أي وقت · بدون إعلانات",
     andConnector: "و",
+    testimonialQuote:       "",
+    testimonialAttribution: "",
   },
 
   // ── blogPage ────────────────────────────────────────────────

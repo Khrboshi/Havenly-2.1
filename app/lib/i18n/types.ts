@@ -1050,6 +1050,8 @@ export interface Translations {
     closingStartFree:     string;
     closingTrust:         string;
     andConnector:         string;
+    testimonialQuote:       string;
+    testimonialAttribution: string;
   };
 
   // ── Blog page chrome ─────────────────────────────────────────────────────

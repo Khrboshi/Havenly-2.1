@@ -1073,6 +1073,12 @@ export const en: Translations = {
     closingStartFree:     "Start free first",
     closingTrust:         "No charge today \u00b7 Cancel anytime \u00b7 No ads",
     andConnector: "and",
+    // Testimonial — leave empty until a real attributed quote is available.
+    // When populated, a single-quote block renders between the insight cards
+    // and the FAQ. Must be a real user voice: first name + role only.
+    // Both keys must be non-empty for the block to render.
+    testimonialQuote:       "",
+    testimonialAttribution: "",
   },
 
   // ── Blog page chrome ─────────────────────────────────────────────────────
