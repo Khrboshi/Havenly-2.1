@@ -4,7 +4,7 @@
 > Quiet Mirror fires. Use it to verify the funnel in the PostHog dashboard,
 > build Insights/Funnels, and confirm event data looks correct.
 >
-> **Last audited:** 2026-05-06 against commit `e68f391` (PR #181)
+> **Last audited:** 2026-05-07 against commit `c20f8f4` (PR #192)
 >
 > **Dashboard status:** All 3 funnels built and live on the Quiet Mirror PostHog
 > dashboard — Core Conversion Funnel, Upgrade Path, Activation.
@@ -145,7 +145,7 @@ subscription_started     ← conversion
 | `plan` | string | `"FREE"` | Current plan type (fallback to `"FREE"` if not resolved yet) |
 
 **PostHog check:**
-- This is the entry to the upgrade funnel for users who hit a gate organically
+- Entry to the upgrade funnel for users who hit a gate organically
 - Compare to `upgrade_modal_opened` — do gated users convert to modal views?
 
 ---
@@ -206,9 +206,9 @@ subscription_started     ← conversion
 | `plan` | string | `"PREMIUM"` | Always `"PREMIUM"` currently |
 
 **PostHog check:**
-- This is the bottom of the funnel — the money event
+- Bottom of the funnel — the money event
 - Person should now have `plan: PREMIUM` as a person property (set via Supabase, not PostHog)
-- If you see duplicates: the component has a `useRef` guard — investigate if the confirmed page is being loaded twice
+- If you see duplicates: the component has a `useRef` guard — investigate if the confirmed page loads twice
 
 ---
 
@@ -259,7 +259,7 @@ subscription_started     ← conversion
 
 ---
 
-## Suggested PostHog Funnels to Build
+## Funnels (live on Quiet Mirror PostHog dashboard)
 
 ### Funnel A — Core Conversion (homepage → paying)
 ```
@@ -302,7 +302,7 @@ subscription_started     ← conversion
 
 ## What "Healthy" Looks Like
 
-Once meaningful traffic flows, these benchmarks are reasonable targets:
+Once meaningful traffic flows, these benchmarks are reasonable starting targets:
 
 | Funnel step | Healthy drop-off |
 |---|---|
@@ -312,4 +312,4 @@ Once meaningful traffic flows, these benchmarks are reasonable targets:
 | `reflection_received → upgrade_page_viewed` | < 70% (conversion intent) |
 | `upgrade_page_viewed → subscription_started` | < 60% (page conversion) |
 
-These are starting benchmarks — tune once you have 50+ users through the funnel.
+Tune these benchmarks once you have 50+ users through the full funnel.
