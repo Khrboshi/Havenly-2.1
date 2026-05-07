@@ -83,6 +83,42 @@ async function getUserInsightData(userId: string) {
 
 function sc(s: string) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
+// ── Demo data (shown to logged-out visitors) ──────────────────────────────────
+//
+// Matches the emotional arc shown on the homepage so visitors arrive at a
+// coherent, recognisable story rather than an empty skeleton.  All strings are
+// plain values — no i18n keys — because this data never gets translated; it is
+// illustrative scaffolding that disappears the moment a real user signs in.
+
+const DEMO_DATA = {
+  entryCount:     22,
+  sortedThemes:   [
+    ["overcommitment",    14],
+    ["people-pleasing",   11],
+    ["communication",      9],
+    ["boundary-setting",   7],
+    ["exhaustion",         6],
+    ["self-worth",         4],
+  ] as [string, number][],
+  sortedEmotions: [
+    ["emotional load",    14],
+    ["overwhelm",         10],
+    ["resentment",         8],
+    ["guilt",              6],
+    ["clarity",            4],
+    ["relief",             3],
+  ] as [string, number][],
+  sortedDomains:  [
+    ["WORK",         14],
+    ["RELATIONSHIP",  9],
+    ["HEALTH",        5],
+    ["IDENTITY",      3],
+  ] as [string, number][],
+  topTheme:   "overcommitment",
+  topEmotion: "emotional load",
+  topDomain:  "WORK",
+} as const;
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function InsightsPreviewPage() {
@@ -92,16 +128,21 @@ export default async function InsightsPreviewPage() {
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
 
+  // Logged-out visitors see richly-populated demo data instead of an empty
+  // skeleton.  isDemoMode controls subtitle and pattern-card copy so it's
+  // clear these are illustrative examples, not the visitor's real data.
+  const isDemoMode = !user;
+
   const insightData = user
     ? await getUserInsightData(user.id)
-    : { entryCount: 0, sortedThemes: [], sortedEmotions: [], sortedDomains: [], topTheme: null, topEmotion: null, topDomain: null };
+    : DEMO_DATA;
 
   const {
     entryCount, sortedThemes, sortedEmotions, sortedDomains,
     topTheme, topEmotion, topDomain,
   } = insightData;
 
-  const hasData = entryCount >= 2 && (topTheme || topEmotion);
+  const hasData = isDemoMode || (entryCount >= 2 && (topTheme || topEmotion));
 
   // DOMAIN_LABELS built from translations — no hardcoded strings
   const DOMAIN_LABELS: Record<string, { label: string; emoji: string }> = {
@@ -131,6 +172,13 @@ export default async function InsightsPreviewPage() {
   // Momentum example label from shared translations
   const momentumExample = t.insights.momentumDescriptions["Shifting"] ?? "Shifting";
 
+  // Computed once to avoid a nested ternary inline: demo and no-data states
+  // both show the "Example" label; only a real logged-in user with data shows
+  // "Your most recurring underlying pattern".
+  const corePatternSubtitle = (!isDemoMode && hasData)
+    ? ip.corepatternSubHasData
+    : ip.corepatternSubNoData;
+
   return (
     <div className="min-h-screen bg-qm-bg text-qm-primary">
       <UpgradeIntentTracker source="insights-preview" />
@@ -157,9 +205,11 @@ export default async function InsightsPreviewPage() {
         <div>
           <h1 className="font-display text-3xl font-semibold text-qm-primary sm:text-4xl">{ip.heading}</h1>
           <p className="mt-1 text-sm text-qm-faint">
-            {hasData
-              ? <>{ip.subHasDataPrefix}{" "}<span className="text-qm-muted">{ip.subHasDataCount(entryCount)}</span></>
-              : ip.subNoData}
+            {isDemoMode
+              ? ip.subNoData
+              : hasData
+                ? <>{ip.subHasDataPrefix}{" "}<span className="text-qm-muted">{ip.subHasDataCount(entryCount)}</span></>
+                : ip.subNoData}
           </p>
         </div>
 
@@ -168,7 +218,7 @@ export default async function InsightsPreviewPage() {
           <div className="rounded-xl border border-qm-border-subtle bg-qm-bg p-4 space-y-1">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-qm-faint">{t.insights.entries}</p>
             <p className="text-base font-semibold text-qm-primary">{entryCount}</p>
-            <p className="text-xs text-qm-faint">{t.insights.sinceJoined}</p>
+            <p className="text-xs text-qm-faint">{isDemoMode ? ip.subNoData : t.insights.sinceJoined}</p>
           </div>
           <div className="rounded-xl border border-qm-border-subtle bg-qm-bg p-4 space-y-1">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-qm-faint">{t.insights.topEmotion}</p>
@@ -310,7 +360,7 @@ export default async function InsightsPreviewPage() {
                 </span>
               </div>
               <p className="mt-2 ps-4 text-xs text-qm-faint">
-                {hasData ? ip.corepatternSubHasData : ip.corepatternSubNoData}
+                {corePatternSubtitle}
               </p>
             </div>
 
@@ -483,10 +533,10 @@ export default async function InsightsPreviewPage() {
         <div className="rounded-2xl border border-qm-positive-border bg-qm-positive-strong/[0.04] p-7">
           <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-qm-positive">{ip.upgradePremiumLabel}</p>
           <h3 className="mb-1 text-lg font-semibold text-qm-primary">
-            {hasData ? ip.upgradeHeadingHasData : ip.upgradeHeadingNoData}
+            {isDemoMode ? ip.upgradeHeadingNoData : hasData ? ip.upgradeHeadingHasData : ip.upgradeHeadingNoData}
           </h3>
           <p className="mb-5 max-w-xl text-sm leading-relaxed text-qm-muted">
-            {hasData ? ip.upgradeBodyHasData(entryCount) : ip.upgradeBodyNoData}
+            {isDemoMode ? ip.upgradeBodyNoData : hasData ? ip.upgradeBodyHasData(entryCount) : ip.upgradeBodyNoData}
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
@@ -495,12 +545,14 @@ export default async function InsightsPreviewPage() {
             >
               {ip.upgradeCta(ps.perMonth(PRICING.monthly))}
             </Link>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center rounded-full border border-white/[0.08] px-6 py-3 text-sm font-medium text-qm-muted transition hover:border-white/[0.15] hover:text-qm-primary"
-            >
-              {ip.upgradeBack}
-            </Link>
+            {!isDemoMode && (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center rounded-full border border-white/[0.08] px-6 py-3 text-sm font-medium text-qm-muted transition hover:border-white/[0.15] hover:text-qm-primary"
+              >
+                {ip.upgradeBack}
+              </Link>
+            )}
           </div>
           <p className="mt-4 text-xs text-qm-faint">{ip.upgradeRefund(PRICING.trialDays)}</p>
         </div>
