@@ -1,93 +1,54 @@
 /**
  * app/upgrade/page.tsx
  *
- * Upgrade / paywall page — shown to free users who want Premium.
+ * Upgrade / paywall page — server component.
  *
  * Responsibilities:
- * - Displays pricing, trial offer, and feature list from PRICING constants
- * - Initiates checkout via POST /api/dodo/checkout → redirects to Dodo payment page
- * - Handles loading and error states for the checkout flow
- * - Domain-aware social proof: shows contextual copy based on ?domain= query param
- *   passed through from the upgrade trigger modal
+ * - Renders all pricing copy into SSR HTML via getRequestTranslations()
+ *   so that PRICING.monthly ("$25") and PAYMENT.checkoutTrustLine
+ *   ("Secure checkout via Dodo Payments") are present in the raw HTML
+ *   response — verifiable by fetch and immune to edge-cache stale-price issues.
+ * - Passes resolved string props to <UpgradeButton> (the only client island),
+ *   which handles useState / checkout fetch / router navigation.
  */
-"use client";
 
+import type { Metadata } from "next";
 import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { PRICING } from "@/app/lib/pricing";
-import { useTranslation } from "@/app/components/I18nProvider";
 import { PAYMENT } from "@/app/lib/payment";
 import { CONFIG } from "@/app/lib/config";
 import { QM } from "@/app/lib/colors";
+import { getRequestTranslations } from "@/app/lib/i18n/server";
+import UpgradeButton from "@/app/components/UpgradeButton";
 
-// ─── Upgrade button ─────────────────────────────────────────────────────────
+// ─── SEO metadata ─────────────────────────────────────────────────────────────
 
-function UpgradeButton({
-  className,
-  label,
-}: {
-  className?: string;
-  label?: string;
-}) {
-  const router = useRouter();
-  const { t } = useTranslation();
-  const uf = t.upgradeFull;
-  const ps = t.pricingStrings;
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const defaultLabel = ps.startTrialCta(ps.trialLabel(PRICING.trialDays));
-
-  async function handleUpgrade() {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(PAYMENT.checkoutApiRoute, { method: "POST" });
-      if (res.status === 401) {
-        router.push("/magic-login?next=/upgrade");
-        return;
-      }
-      const data = await res.json();
-      if (data?.checkoutUrl) {
-        // Redirect to Dodo-hosted checkout page.
-        // On success, Dodo redirects back to /upgrade/confirmed.
-        window.location.href = data.checkoutUrl;
-      } else {
-        setError(`${t.errors.entryGenericFail} ${CONFIG.supportEmail}.`);
-      }
-    } catch {
-      setError(`${t.errors.entryGenericFail} ${CONFIG.supportEmail}.`);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <>
-      <button
-        type="button"
-        onClick={handleUpgrade}
-        disabled={loading}
-        className={className}
-      >
-        {loading ? t.upgradePage.redirecting : (label ?? defaultLabel)}
-      </button>
-      {error && (
-        <p className="mt-2 text-center text-xs text-qm-danger">{error}</p>
-      )}
-    </>
-  );
+export async function generateMetadata(): Promise<Metadata> {
+  const { upgradeFull: uf, pricingStrings: ps } = await getRequestTranslations();
+  return {
+    title: `${CONFIG.appName} Premium · ${ps.perMonth(PRICING.monthly)}`,
+    description: uf.heroDesc(CONFIG.appName),
+    openGraph: {
+      title: `${CONFIG.appName} Premium`,
+      description: uf.heroDesc(CONFIG.appName),
+      type: "website",
+    },
+  };
 }
 
-// ─── Page ───────────────────────────────────────────────────────────────────
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function UpgradePage() {
-  const { t } = useTranslation();
+export default async function UpgradePage() {
+  const t  = await getRequestTranslations();
   const up = t.upgradePage;
   const uf = t.upgradeFull;
   const ps = t.pricingStrings;
   const pf = t.premiumFeatures;
+
+  // Resolved strings passed to the UpgradeButton client island.
+  const btnLabel       = ps.startTrialCta(ps.trialLabel(PRICING.trialDays));
+  const btnRedirecting = up.redirecting;
+  const btnErrorPrefix = t.errors.entryGenericFail;
 
   const faqs = [
     { q: uf.faq1Q(CONFIG.appName), a: uf.faq1A },
@@ -100,13 +61,23 @@ export default function UpgradePage() {
     { q: uf.faq8Q, a: uf.faq8A(CONFIG.supportEmail) },
   ];
 
+  // Shared button className variants
+  const btnPrimary =
+    "inline-flex w-full items-center justify-center rounded-full bg-qm-accent px-6 py-4 text-base font-semibold text-white shadow-lg transition-all hover:bg-qm-accent-hover hover:-translate-y-px disabled:opacity-60 sm:py-3.5 sm:text-sm";
+  const btnMidPage =
+    "inline-flex items-center justify-center rounded-full bg-qm-accent px-7 py-3.5 text-sm font-semibold text-white shadow-lg transition-all hover:bg-qm-accent-hover hover:-translate-y-px disabled:opacity-60";
+  const btnClosing =
+    "inline-flex items-center justify-center rounded-full bg-qm-accent px-7 py-4 text-base font-semibold text-white shadow-lg transition-all hover:bg-qm-accent-hover hover:-translate-y-px disabled:opacity-60 sm:py-3.5 sm:text-sm";
+
   return (
     <div className="min-h-screen bg-qm-bg text-qm-primary">
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden border-b border-qm-border-subtle">
         <div className="pointer-events-none absolute left-1/2 top-0 h-[420px] w-[700px] -translate-x-1/2 rounded-full bg-qm-positive-strong/[0.13] blur-[110px]" />
-        <div className="pointer-events-none absolute right-[-80px] top-24 h-72 w-72 rounded-full blur-[90px]"
-          style={{ backgroundColor: "var(--qm-accent-soft)" }} />
+        <div
+          className="pointer-events-none absolute right-[-80px] top-24 h-72 w-72 rounded-full blur-[90px]"
+          style={{ backgroundColor: "var(--qm-accent-soft)" }}
+        />
 
         <div className="relative mx-auto max-w-6xl px-5 pb-16 pt-12 sm:pb-20 sm:pt-16">
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(360px,480px)] lg:items-start lg:gap-14">
@@ -129,11 +100,11 @@ export default function UpgradePage() {
               {/* Feature list */}
               <ul className="mt-7 space-y-3">
                 {[
-                  { label: pf.f1Label, sub: pf.f1Sub,       color: "text-qm-positive" },
-                  { label: pf.f2Label, sub: pf.f2Sub,       color: "text-qm-premium"  },
-                  { label: pf.f3Label, sub: pf.f3Sub,       color: "text-qm-warning"  },
-                  { label: pf.f4Label, sub: pf.f4Sub,       color: "text-qm-premium"  },
-                  { label: pf.f5Label, sub: pf.f5Sub, color: "text-qm-faint" },
+                  { label: pf.f1Label, sub: pf.f1Sub, color: "text-qm-positive" },
+                  { label: pf.f2Label, sub: pf.f2Sub, color: "text-qm-premium"  },
+                  { label: pf.f3Label, sub: pf.f3Sub, color: "text-qm-warning"  },
+                  { label: pf.f4Label, sub: pf.f4Sub, color: "text-qm-premium"  },
+                  { label: pf.f5Label, sub: pf.f5Sub, color: "text-qm-faint"    },
                 ].map(({ label, sub, color }) => (
                   <li key={label} className="flex items-start gap-3 text-sm text-qm-secondary">
                     <span className={`mt-0.5 shrink-0 text-sm ${color}`}>✓</span>
@@ -191,7 +162,13 @@ export default function UpgradePage() {
                 </p>
 
                 <div className="flex flex-col gap-2 sm:max-w-sm">
-                  <UpgradeButton className="inline-flex w-full items-center justify-center rounded-full bg-qm-accent px-6 py-4 text-base font-semibold text-white shadow-lg transition-all hover:bg-qm-accent-hover hover:-translate-y-px disabled:opacity-60 sm:py-3.5 sm:text-sm" />
+                  <UpgradeButton
+                    label={btnLabel}
+                    redirectingLabel={btnRedirecting}
+                    errorPrefix={btnErrorPrefix}
+                    supportEmail={CONFIG.supportEmail}
+                    className={btnPrimary}
+                  />
 
                   <div className="rounded-xl border border-qm-positive-border bg-qm-positive-strong/[0.04] px-4 py-2.5 text-center">
                     <p className="text-xs font-medium text-qm-secondary">
@@ -210,13 +187,13 @@ export default function UpgradePage() {
                   </Link>
                 </div>
 
+                {/* Trust lines — these are the critical SSR-verifiable strings */}
                 <p className="mt-3 text-xs text-qm-faint">{PAYMENT.checkoutTrustLine}</p>
                 <p className="mt-1 text-xs text-qm-faint">
                   {uf.bySubscribing}{" "}
                   <Link href="/terms" className="text-qm-positive underline underline-offset-2 transition-colors hover:text-qm-positive-hover">
                     {uf.termsOfService}
                   </Link>{" "}
-                  {/* "and" connector — translated */}
                   {uf.andConnector}{" "}
                   <Link href="/privacy" className="text-qm-positive underline underline-offset-2 transition-colors hover:text-qm-positive-hover">
                     {uf.privacyPolicy}
@@ -236,7 +213,10 @@ export default function UpgradePage() {
               <div className="pointer-events-none absolute -inset-4 rounded-[2.5rem] bg-qm-positive-strong/[0.07] blur-[60px]" />
               <div className="relative overflow-hidden rounded-[1.75rem] border border-white/[0.09] shadow-2xl shadow-black/60">
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-qm-border-subtle px-6 py-4" style={{ backgroundColor: QM.bgElevated }}>
+                <div
+                  className="flex items-center justify-between border-b border-qm-border-subtle px-6 py-4"
+                  style={{ backgroundColor: QM.bgElevated }}
+                >
                   <div className="flex items-center gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-qm-positive shadow-sm" />
                     <p className="text-xs font-medium text-qm-faint">{uf.proofCardHeader}</p>
@@ -424,7 +404,13 @@ export default function UpgradePage() {
             <span className="text-qm-positive">{uf.midAccent}</span>
           </p>
           <div className="flex flex-col items-center gap-2">
-            <UpgradeButton className="inline-flex items-center justify-center rounded-full bg-qm-accent px-7 py-3.5 text-sm font-semibold text-white shadow-lg transition-all hover:bg-qm-accent-hover hover:-translate-y-px disabled:opacity-60" />
+            <UpgradeButton
+              label={btnLabel}
+              redirectingLabel={btnRedirecting}
+              errorPrefix={btnErrorPrefix}
+              supportEmail={CONFIG.supportEmail}
+              className={btnMidPage}
+            />
             <p className="text-xs text-qm-faint">
               {ps.trialFreeFor(PRICING.trialDays)} · {t.upgrade.cancelAnytime}
             </p>
@@ -471,8 +457,11 @@ export default function UpgradePage() {
           </p>
           <div className="mt-7 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <UpgradeButton
-              className="inline-flex items-center justify-center rounded-full bg-qm-accent px-7 py-4 text-base font-semibold text-white shadow-lg transition-all hover:bg-qm-accent-hover hover:-translate-y-px disabled:opacity-60 sm:py-3.5 sm:text-sm"
               label={ps.startTrialCta(ps.trialLabel(PRICING.trialDays))}
+              redirectingLabel={btnRedirecting}
+              errorPrefix={btnErrorPrefix}
+              supportEmail={CONFIG.supportEmail}
+              className={btnClosing}
             />
             <Link
               href="/magic-login"
