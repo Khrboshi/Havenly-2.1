@@ -334,7 +334,7 @@ export const ar: Translations = {
     goPremium:         "انتقل إلى Premium",
     termsOfService:    "شروط الخدمة",
     privacyPolicy:     "سياسة الخصوصية",
-    security:          "الأمان،"
+    security:          "الأمان،",
     contact:           "تواصل معنا",
     noAds:             "بدون إعلانات",
     noDataSales:       "لا بيع للبيانات",

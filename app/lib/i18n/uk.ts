@@ -354,7 +354,7 @@ export const uk: Translations = {
     goPremium:         "Отримати Premium",
     termsOfService:    "Умови використання",
     privacyPolicy:     "Політика конфіденційності",
-    security:          "Безпека"
+    security:          "Безпека",
     contact:           "Зв'язатися",
     noAds:             "Без реклами",
     noDataSales:       "Без продажу даних",
