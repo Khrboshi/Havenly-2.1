@@ -1,43 +1,63 @@
 # Quiet Mirror
 
-A private AI journal that reads what you write and gently reflects it back.
+A private AI journal that reads what you write and gently reflects it back — then, over time, shows you the patterns you've been too close to see.
 
 Live site: https://quietmirror.me · Repo: Khrboshi/quiet-mirror
 
+---
+
 ## Stack
 
-Next.js 15 (App Router) · TypeScript · Tailwind CSS · Supabase (Postgres + Auth) · Groq / Llama 4 Scout (AI reflections) · Resend (transactional email) · Dodo Payments (new subscribers) · Stripe webhook (legacy — never touch) · Vercel · PostHog EU cloud
+Next.js 15 (App Router) · TypeScript · Tailwind CSS · Supabase (Postgres + Auth)
+Groq / Llama 4 Scout (`meta-llama/llama-4-scout-17b-16e-instruct`) · Resend (transactional + newsletter email)
+Dodo Payments (new subscribers) · Stripe webhook (legacy — **never touch**) · Vercel Hobby · PostHog EU cloud
+
+---
 
 ## Languages
 
-Ships in six languages including one right-to-left script. Authoritative list: `app/lib/i18n/locales.ts` (`LOCALE_REGISTRY`).
+Ships in six languages including one right-to-left script (Arabic).
+Authoritative list: `app/lib/i18n/locales.ts` → `LOCALE_REGISTRY`.
 
-i18n is custom TypeScript — no `next-intl`, no JSON catalogues. See [`docs/I18N.md`](docs/I18N.md) for the architecture, ESLint metadata rule, and how to add translations. CI enforces stub presence across all 6 locales on every PR.
+i18n is custom TypeScript — no `next-intl`, no JSON catalogues, no runtime fetching.
+See [`docs/I18N.md`](docs/I18N.md) for the full architecture, ESLint metadata rule, and how to add translations.
+
+CI enforces stub presence across all 6 locales on every PR — a missing stub exits 1 and blocks the build.
+New stubs are auto-translated into all 5 non-English locales on merge via `.github/workflows/i18n-auto-translate.yml`.
+
+Current key count: **985 keys** across 6 locales (en / uk / ar / fr / nl / ro).
+
+---
 
 ## Design system
 
-Colours, typography, brand strings, pricing, and payment labels derive from authoritative source files — no hardcoded values in components. See [`docs/DESIGN.md`](docs/DESIGN.md) for the `--qm-*` token system and component classes.
+All colours, typography, brand strings, pricing, and payment labels derive from authoritative source files — no hardcoded values in components. See [`docs/DESIGN.md`](docs/DESIGN.md) for the full `--qm-*` token system, Tailwind aliases, utility classes, and RTL/Arabic support.
 
 | Concern | Source file |
 |---|---|
-| Brand / app name / tagline | `app/lib/config.ts` → `CONFIG` |
-| Pricing numbers | `app/lib/pricing.ts` → `PRICING` |
-| Payment provider strings | `app/lib/payment.ts` → `PAYMENT` |
-| Shared marketing copy | `app/lib/marketing.ts` → `MARKETING` |
-| Copy decisions | `docs/BRAND.md` |
-| Product intent / UI standards | `docs/REQUIREMENTS.md` |
-| PostHog event reference | `docs/POSTHOG_FUNNEL.md` |
+| Brand / app name / tagline / email | `app/lib/config.ts` → `CONFIG` |
+| Pricing numbers and trial length | `app/lib/pricing.ts` → `PRICING` |
+| Payment provider strings and routes | `app/lib/payment.ts` → `PAYMENT` |
+| Shared marketing copy (multi-namespace) | `app/lib/marketing.ts` → `MARKETING` |
+| AI Groq client | `app/lib/ai/groq.ts` → `getGroqConfig()` |
+| Copy decisions and editorial voice | `docs/BRAND.md` |
+| Product intent / UI standards / forbidden patterns | `docs/REQUIREMENTS.md` |
+| PostHog event reference and funnel specs | `docs/POSTHOG_FUNNEL.md` |
+| Business context and launch checklist | `docs/PRODUCT_BRIEF.md` |
+
+---
 
 ## CI
 
-GitHub Actions (`.github/workflows/ci.yml`) runs on every PR:
-1. `tsc --noEmit` — type check
-2. `npm run lint` — ESLint
-3. `node scripts/i18n-sync.mjs` — missing locale stubs
+GitHub Actions (`.github/workflows/ci.yml`) runs on every PR — all three must be green before merge:
 
-All three must be green before merge.
+1. `tsc --noEmit` — type check (catches locale drift before Vercel does)
+2. `npm run lint` — ESLint quality gate
+3. `node scripts/i18n-sync.mjs` — exits 1 if any of the 6 locales is missing a key stub
 
-## Environment Variables
+---
+
+## Environment variables
 
 Copy `.env.example` to `.env.local`:
 
@@ -52,8 +72,8 @@ SUPABASE_SERVICE_ROLE_KEY=...
 
 GROQ_API_KEY=...            # Llama 4 Scout via Groq
 
-RESEND_API_KEY=...          # Transactional email
-UNSUBSCRIBE_SECRET=...      # HMAC key for one-click unsubscribe
+RESEND_API_KEY=...          # Transactional + newsletter email
+UNSUBSCRIBE_SECRET=...      # HMAC-SHA256 key for one-click unsubscribe tokens
 
 DODO_PAYMENTS_API_KEY=...
 DODO_PAYMENTS_WEBHOOK_KEY=...
@@ -64,9 +84,26 @@ STRIPE_SECRET_KEY=...       # Legacy webhook only — never touch
 STRIPE_WEBHOOK_SECRET=...   # Legacy webhook only — never touch
 ```
 
+---
+
 ## Payment migration state
 
-New subscribers → Dodo Payments (`app/api/dodo/*`)
-Legacy subscribers → Stripe webhook only (`app/api/stripe/webhook/`) — **NEVER TOUCH**
+| Subscriber type | Provider | Code path |
+|---|---|---|
+| New subscribers | Dodo Payments | `app/api/dodo/*` |
+| Legacy subscribers | Stripe (webhook only) | `app/api/stripe/webhook/` — **NEVER TOUCH** |
 
-The Stripe webhook handler must remain until all legacy subscriptions have expired.
+The Stripe webhook handler must remain active until all legacy Stripe subscriptions have expired and are confirmed inactive.
+
+---
+
+## Key docs
+
+| Doc | Purpose |
+|---|---|
+| [`docs/BRAND.md`](docs/BRAND.md) | Authoritative copy map — every marketing string, its key, its source file |
+| [`docs/REQUIREMENTS.md`](docs/REQUIREMENTS.md) | Product intent, UI standards, forbidden UI/copy patterns |
+| [`docs/DESIGN.md`](docs/DESIGN.md) | Design token system, component classes, RTL/Arabic rules |
+| [`docs/I18N.md`](docs/I18N.md) | i18n architecture, locale workflow, how to add translations |
+| [`docs/POSTHOG_FUNNEL.md`](docs/POSTHOG_FUNNEL.md) | All 12 PostHog events, 3 funnel specs, healthy benchmarks |
+| [`docs/PRODUCT_BRIEF.md`](docs/PRODUCT_BRIEF.md) | Business context, target user, revenue model, launch checklist |
