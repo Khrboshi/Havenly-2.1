@@ -46,6 +46,27 @@ More specifically:
 This user does not respond to urgency, gamification, or social proof.
 They respond to honesty, specificity, and restraint.
 
+**Secondary user types (identified via secret shopper audit, 2026-05-07):**
+
+These users share the core response pattern but have specific trust blockers:
+
+- **Budget-conscious new journaler** (e.g. early-career professional, first job):
+  Has never journaled before. $25/month is real money. Needs proof the product works
+  within the 3-day trial, not "within two weeks." Key blockers addressed: magic-link
+  explainer (#196), cancel-in-Settings hint (#196), "Even 2 entries can surface
+  something" FAQ (#195).
+
+- **Privacy-obsessed technical user** (e.g. engineer, HN referral):
+  Reads the privacy policy. Checks subprocessors. Wants to know what happens to data
+  on cancellation and whether they can export their entries. Subprocessor transparency
+  in the privacy policy is a strong trust signal for this persona. Open gap: data
+  export is not yet mentioned anywhere.
+
+- **Sophisticated evaluator** (e.g. executive coach, already journals daily):
+  Wants depth evidence before paying. Will click the preview link expecting a real
+  product demo. Fixed in #194: /insights/preview now shows populated DEMO_DATA for
+  logged-out visitors.
+
 ---
 
 ## 3. The core promise
@@ -86,7 +107,11 @@ inside the app, or "you're getting X worth of Y" framing.
 | Free | $0 | Unlimited journaling · 3 AI reflections/month · Gentle prompts |
 | Premium | $25/month | Unlimited reflections · Full pattern insights · Weekly summary · Why-this-keeps-happening layer |
 
-**Trial:** 3 days full access, no charge until day 4. Cancel anytime.
+**Trial:** 3 days full access, no charge until day 4. Cancel anytime from Settings.
+
+**Refund policy:** Full refund for the first subscription period if Premium is not what
+the user expected — no questions asked. Handled via hello@quietmirror.me. This must
+appear as a visible trust signal near the upgrade CTA, not only in the FAQ.
 
 Free users are real users, not a conversion funnel to be pressured.
 Premium is depth added — not features locked away punitively.
@@ -111,35 +136,67 @@ The funnel in order of leverage:
    If it feels like it saw something real, they upgrade.
 2. **Onboarding clarity** — a new signup should reach their first reflection
    in under 2 minutes, with no friction. (Verified end-to-end: PR #168.)
-3. **The upgrade page** — honest, no pressure, clear on what Premium adds.
-4. **The homepage** — strong copy, live demo examples, and trust signals.
-   CTA flow and credibility strip in all 6 languages (#173–#192).
+3. **The preview page** — every homepage CTA points to /insights/preview.
+   For logged-out visitors it must show DEMO_DATA, not an empty skeleton.
+   (Fixed PR #194.)
+4. **The upgrade page** — honest, no pressure, clear on what Premium adds.
+   Must always show current pricing from PRICING.* — not a cached old version.
+5. **The homepage** — strong copy, live demo examples, and trust signals.
+   CTA flow and credibility strip in all 6 languages (#173–#196).
 
 ---
 
 ## 7. Launch readiness checklist
 
 - [x] **Resend email** — subscribe, one-click unsubscribe (HMAC-SHA256 token),
-      confirmation page, i18n across all 6 locales, e2e tested in production (PR #170, 2026-05-05)
+      confirmation page, i18n across all 6 locales, e2e tested in production (PR #170)
 - [x] **PostHog analytics** — 12 custom events, localStorage persistence, 3 funnels live
-      on Quiet Mirror dashboard (Core Conversion, Upgrade Path, Activation),
-      quietmirror.me authorized URL configured (2026-05-05)
+      on Quiet Mirror dashboard, quietmirror.me authorized URL configured
 - [x] **Onboarding** — first-reflection flow verified end-to-end (PR #168)
-- [x] **Conversion copy** — safeguarding note (PR #179), desktop signal + privacy date (PR #177),
-      narrative pattern preview on /insights/preview (PR #178),
-      rec cards reframed as observations not testimonials (PR #180)
-- [x] **Price — $25/month** — live in `app/lib/pricing.ts` (PR #181, 2026-05-06)
-- [x] **Credibility strip** — proper fr/nl/ro translations written; ar/uk trailing comma
-      pipeline bug fixed (PRs #188–#192, 2026-05-06)
-- [x] **Absolute claims removed** — never/always/ever → present-tense factual across
-      all 6 locales (PR #189)
-- [ ] **Dodo Payments e2e** — integration is complete. A real test transaction +
-      withdrawal to bank account must be verified in the Dodo dashboard before charging
-      real users. **This is the final pre-launch gate.**
+- [x] **Conversion copy** — safeguarding note (#179), desktop signal + privacy date (#177),
+      rec cards reframed as observations not testimonials (#180)
+- [x] **Price — $25/month** — live in `app/lib/pricing.ts` (PR #181)
+- [x] **Credibility strip** — fr/nl/ro translations; ar/uk trailing comma fixed (#188–#192)
+- [x] **Absolute claims removed** — present-tense factual across all 6 locales (PR #189)
+- [x] **Preview page demo** — logged-out visitors see populated DEMO_DATA, not skeleton (PR #194)
+- [x] **Infrequent-writer objection** — "Even 2 entries can surface something" in FAQ (PR #195)
+- [x] **Magic-link explainer** — hero promise strip explains passwordless login (PR #196)
+- [x] **Cancel path made concrete** — "go to Settings — it takes seconds" in trial explainer (PR #196)
+- [ ] **Dodo Payments e2e** — integration complete. A real test transaction + withdrawal to
+      bank account must be verified in the Dodo dashboard before charging real users.
+      **This is the final pre-launch gate.**
 
 ---
 
-## 8. AI infrastructure
+## 8. Open conversion gaps (from secret shopper audit, 2026-05-07)
+
+A five-persona secret shopper audit was run against the live site on 2026-05-07.
+Four of seven issues were fixed same-day in PRs #194–#196.
+
+| # | Issue | Severity | Status |
+|---|---|---|---|
+| 1 | /upgrade page served stale $9/Paddle render via Vercel edge cache | Critical | Verify each session — force redeploy if stale |
+| 3 | No social proof anywhere on the site | High | Open — no PR yet; needs real user data |
+| 6 | Data export not mentioned in privacy policy or FAQ | Medium | Open — no PR yet |
+
+**What the audit confirmed is working well:** hero copy ("You've been saying 'I'm fine'…"),
+privacy policy subprocessor transparency (Groq link, explicit GDPR rights), sample
+reflection quality on the homepage, honest "is not" positioning, independent builder story.
+
+**Social proof — when to add and how:**
+Only add when real data is available. Prefer one attributed quote (first name + role) over
+a vanity user count. Must fit brand voice: no exclamation marks, no hyperbole, no
+"life-changing." Do not repurpose the existing rec cards (rec1–3) as testimonials — they
+are positioned as pattern observations, not user voices.
+
+**Data export — resolution options:**
+1. Build CSV/JSON export in Settings and add it to the privacy policy (preferred).
+2. At minimum: add one line to the privacy policy and FAQ stating entries can be exported
+   on request via hello@quietmirror.me.
+
+---
+
+## 9. AI infrastructure
 
 Model: `meta-llama/llama-4-scout-17b-16e-instruct` via Groq
 The `meta-llama/` prefix is required — omitting it silently breaks inference (fixed #186).
@@ -147,12 +204,13 @@ Shared via `getGroqConfig()` in `app/lib/ai/groq.ts`. Every AI call goes through
 
 Used for:
 - Generating journal reflections (`lib/ai/generateReflection.ts`)
-- Domain classification of entries (WORK / RELATIONSHIP / HEALTH / etc.)
+- Domain classification of entries (WORK / RELATIONSHIP / HEALTH / MONEY / GRIEF /
+  PARENTING / CREATIVE / IDENTITY / FITNESS / GENERAL)
 - Auto-translating new i18n stubs into 5 languages (`.github/workflows/i18n-auto-translate.yml`)
 
 ---
 
-## 9. Payment processor migration state
+## 10. Payment processor migration state
 
 | Path | Provider | Status |
 |---|---|---|
@@ -165,7 +223,7 @@ STRIPE_WEBHOOK_SECRET must stay configured in Vercel until then.
 
 ---
 
-## 10. What not to build (yet)
+## 11. What not to build (yet)
 
 Things that would feel like progress but are not the constraint right now:
 
@@ -180,13 +238,13 @@ Everything else is a distraction until that number is reached.
 
 ---
 
-## 11. How to use this document
+## 12. How to use this document
 
 When evaluating a proposed change, ask:
 
 1. Does it serve the core promise (§3)?
 2. Does it move the user toward their first paid reflection?
 3. Does it respect the user we are building for (§2)?
-4. Is it on the launch checklist (§7) — or is it a distraction (§10)?
+4. Is it on the launch checklist (§7) — or is it a distraction (§11)?
 
 If the answer to 1–3 is no, or the answer to 4 is "distraction" — it waits.
