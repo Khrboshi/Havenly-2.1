@@ -75,6 +75,12 @@ This user does not respond to urgency, gamification, or social proof framing. Th
 
 **When in doubt about a UI decision: would this user find it calming or alerting?** Calming wins.
 
+**Secondary user types** identified via the 2026-05-07 conversion audit — see `docs/PRODUCT_BRIEF.md §2` for full detail. All share the same core response pattern. Specific design implications:
+
+- **Budget-conscious new journaler:** The cancellation path must be concrete and visible (not just promised). The refund policy must appear near the CTA, not buried in the FAQ. The trial explainer must name exactly where to cancel.
+- **Privacy-obsessed technical user:** Subprocessor names and links in the privacy policy. Data deletion timeline stated explicitly. Data export must be available or at minimum documentable on request.
+- **Sophisticated evaluator:** The /insights/preview page must show a populated demo for logged-out visitors. An empty skeleton kills conversion for this persona.
+
 ---
 
 ## 4. Core promises — never break these
@@ -84,12 +90,13 @@ These are the promises Quiet Mirror makes to every user, free and paid. Breaking
 | Promise | What it means in practice |
 |---|---|
 | **Private by default** | Entries are never shown to other users. No social layer. No sharing prompts. |
-| **Entries never train AI models** | This is stated clearly and must never be contradicted, hedged, or omitted from privacy-adjacent surfaces. |
-| **No ads, ever** | No sponsored content, no promoted features, no third-party tracking visible to users. |
+| **Entries never train AI models** | Stated clearly on every privacy-adjacent surface. Must never be contradicted, hedged, or omitted. |
+| **No ads, ever** | No sponsored content, no promoted features, no third-party tracking pixels visible to users. |
 | **No judgment** | The product never scores, grades, rates, or evaluates entries. No "great entry!" feedback. |
 | **No daily pressure** | No streak counters, no "you haven't written in X days" guilt nudges, no completion bars on the journal. |
 | **Honest about limits** | AI reflections are not therapy. The product says this plainly. No copy should imply otherwise. |
-| **Cancel anytime** | The billing relationship is frictionless to exit. Copy confirms this without hiding it. |
+| **Cancel anytime** | The billing relationship is frictionless to exit. The cancellation path is named concretely: Settings. |
+| **Data belongs to the user** | Users can request export or deletion at any time. Deletion processed within 30 days. See privacy policy. |
 
 ---
 
@@ -121,9 +128,31 @@ Premium is **more of what the product already does** — more reflections, more 
 
 Copy that positions Premium as a status upgrade, a lifestyle choice, or a self-improvement accelerant is **off-brand and must not ship**.
 
+### Refund policy (must be visible)
+
+Every new subscription includes a 3-day free trial — no charge until day 4. After the trial:
+a full refund is available for the first subscription period, no questions asked, via hello@quietmirror.me.
+
+This policy must appear as a visible trust badge or line **near the upgrade CTA** — not only in the FAQ. The FAQ elaborates; the badge anchors trust before the user scrolls.
+
 ---
 
 ## 6. Surface-by-surface purpose map
+
+### Homepage (`/`)
+
+**Purpose:** Earn the click from a sceptical stranger in under 4 minutes.
+**Must do:** Answer "what does this actually do" quickly. Establish privacy trust. Link to a working product demo.
+**Critical:** Hero promise strip must include a plain-language sign-in explanation ("No password — we email you a sign-in link") — added PR #196. The existing copy explains the product's value accurately; trust signals are well-placed.
+**Must never:** Urgency language, countdown timers, fake social proof, popup interruptions.
+
+### Preview page (`/insights/preview`)
+
+**Purpose:** The product's demo — the closest a logged-out visitor gets to seeing real Premium output.
+**Success:** A sceptical evaluator sees enough to say "this is what I'd be paying for."
+**Logged-out behaviour (mandatory):** Render `DEMO_DATA` (22 illustrative entries, emotional-load arc) via `isDemoMode` flag. Show copy variants: subtitle `subNoData`, pattern card `corepatternSubNoData` ("Example — yours will be built from your own entries"), upgrade CTA NoData variants. Hide "Back to dashboard" link.
+**Logged-in behaviour:** `getUserInsightData()` path — unchanged from pre-#194.
+**Rule:** The zero-state skeleton (entry count 0, ghosted bars, dashes) must **never** be rendered for an unauthenticated visitor. All 5 homepage CTAs that link here depend on this being populated. (Implemented PR #194.)
 
 ### Journal entry (`/journal`)
 
@@ -133,9 +162,9 @@ Copy that positions Premium as a status upgrade, a lifestyle choice, or a self-i
 
 ### Tools hub (`/tools`)
 
-**Purpose:** A calm entry point to Premium's active features — Reflection, Mood, Suggestions. The user arrives here after subscribing. It should confirm they made the right decision without feeling like a sales page.
+**Purpose:** A calm entry point to Premium's active features. The user arrives here after subscribing. It should confirm they made the right decision without feeling like a sales page.
 **Success:** User immediately understands what each tool does and feels invited (not pressured) to try one.
-**Must never:** Use feature-count language ("3 powerful tools"), urgency language, gamification, or copy that implies the free tier was inferior.
+**Must never:** Feature-count language ("3 powerful tools"), urgency language, gamification, copy that implies the free tier was inferior.
 **Visual register:** Grounded, warm, unhurried. Cards should feel like doors, not billboards.
 
 ### Mood tool (`/tools/mood`)
@@ -156,12 +185,19 @@ Copy that positions Premium as a status upgrade, a lifestyle choice, or a self-i
 ### Upgrade / paywall surfaces
 
 **Purpose:** Honest explanation of what Premium adds. No pressure. No urgency.
-**Must never:** Use countdown timers, artificial scarcity, or dark patterns. Must always include the refund note and cancel-anytime line.
+**Must include near the CTA (not only in FAQ):** Trial length and no-charge-until date · "Cancel in Settings — it takes seconds" · Full refund note for first subscription period.
+**Must never:** Countdown timers, artificial scarcity, or dark patterns.
 
 ### Settings / billing
 
 **Purpose:** Transparent account management — plan status, billing date, cancel option.
 **Must never:** Make cancellation hard to find or use guilt-framing to dissuade cancellation.
+
+### Magic login (`/magic-login`)
+
+**Purpose:** The only entry point for new and returning users. Must be legible to non-technical users.
+**Required:** A plain-language explanation of the sign-in mechanism near the form and in the hero promise strip on the homepage: "No password — we email you a sign-in link." (Added PR #196.)
+**Must never:** Use jargon ("magic link," "OTP") without explanation in user-facing copy.
 
 ---
 
@@ -223,8 +259,6 @@ Value is communicated through:
 - Patterns that surface something real
 - An interface that doesn't get in the way
 
-**The tools page specifically:** A subscriber arriving at `/tools` should feel: _"Yes, this is what I paid for. I know exactly what to do next."_ That feeling comes from clarity and warmth, not from a bullet list of features.
-
 ---
 
 ## 9. Design decision checklist
@@ -234,7 +268,7 @@ Before any new UI element, page change, or copy addition ships, run it through t
 - [ ] Does it align with the product mission (§1)?
 - [ ] Is it consistent with the Is/Is not list (§2)?
 - [ ] Would the archetypal user (§3) find it calming or alerting?
-- [ ] Does it honour all seven core promises (§4)?
+- [ ] Does it honour all core promises (§4)?
 - [ ] If it touches Premium: does it add depth without feeling punitive to free users?
 - [ ] Does it follow the surface-purpose rules (§6) for its screen?
 - [ ] Does copy avoid all forbidden language patterns (§10 + BRAND.md §3)?
@@ -242,6 +276,9 @@ Before any new UI element, page change, or copy addition ships, run it through t
 - [ ] Has it been checked against the NEVER TOUCH list in `SKILL.md`?
 - [ ] If it introduces new i18n strings: are they in `en.ts` and do they follow `docs/I18N.md`?
 - [ ] If it duplicates a string from another namespace: is it extracted to `MARKETING` in `marketing.ts`?
+- [ ] If it touches pricing or the payment provider name: does it use `PRICING.*` and `PAYMENT.*` — no hardcoded values?
+- [ ] If it touches `/insights/preview`: does the logged-out path render `DEMO_DATA`, not a zero-state skeleton?
+- [ ] If it touches the upgrade page or any pricing surface: has the live /upgrade render been verified in incognito after deployment?
 
 ---
 
@@ -275,13 +312,15 @@ These are hard stops. If a PR introduces any of the following, it must be revise
 | "Premium 👑" badges on every feature | Status signalling — positions subscription as class marker |
 | Celebratory animations on entry save | Performative feedback — contradicts "no judgment" |
 | Push notification prompts for daily writing | Pressure mechanic |
+| Zero-state skeleton at `/insights/preview` for logged-out users | Breaks the product demo — must show DEMO_DATA |
 
 ### Technical patterns
 
 | Forbidden | Why |
 |---|---|
 | Hardcoded `"Quiet Mirror"` in JSX | Must use `CONFIG.appName` / `<BrandName />` |
-| Hardcoded `"$9"` or `"3 days"` | Must use `PRICING.*` constants |
+| Hardcoded `"$25"`, `"$9"`, `"$19"`, `"3 days"` or any price/trial string | Must use `PRICING.*` constants |
+| Hardcoded `"Dodo Payments"`, `"Paddle"`, or `"Stripe"` in user-facing copy | Must use `PAYMENT.providerName` / `PAYMENT.checkoutTrustLine` |
 | `bg-emerald-500`, `text-green-400`, etc. in new code | Must use `--qm-*` tokens |
 | New `havenly:` or `hvn_` localStorage keys | Use `qm:` prefix |
 | Any change to Stripe webhook handler | NEVER TOUCH |
