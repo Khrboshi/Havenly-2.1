@@ -172,6 +172,13 @@ export default async function InsightsPreviewPage() {
   // Momentum example label from shared translations
   const momentumExample = t.insights.momentumDescriptions["Shifting"] ?? "Shifting";
 
+  // Computed once to avoid a nested ternary inline: demo and no-data states
+  // both show the "Example" label; only a real logged-in user with data shows
+  // "Your most recurring underlying pattern".
+  const corePatternSubtitle = (!isDemoMode && hasData)
+    ? ip.corepatternSubHasData
+    : ip.corepatternSubNoData;
+
   return (
     <div className="min-h-screen bg-qm-bg text-qm-primary">
       <UpgradeIntentTracker source="insights-preview" />
@@ -353,7 +360,7 @@ export default async function InsightsPreviewPage() {
                 </span>
               </div>
               <p className="mt-2 ps-4 text-xs text-qm-faint">
-                {isDemoMode ? ip.corepatternSubNoData : hasData ? ip.corepatternSubHasData : ip.corepatternSubNoData}
+                {corePatternSubtitle}
               </p>
             </div>
 
