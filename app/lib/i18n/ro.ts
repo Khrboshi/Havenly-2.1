@@ -1046,6 +1046,8 @@ export const ro: Translations = {
     closingStartFree: "Începe gratuit mai întâi",
     closingTrust: "Fără taxe astăzi · Anulează oricând · Fără reclame",
     andConnector: "și",
+    testimonialQuote:       "",
+    testimonialAttribution: "",
   },
 
   // ── blogPage ────────────────────────────────────────────────

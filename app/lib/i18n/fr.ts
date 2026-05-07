@@ -1059,6 +1059,8 @@ export const fr: Translations = {
     closingStartFree: "Commencer gratuitement d’abord",
     closingTrust: "Sans frais aujourd’hui · Annulez à tout moment · Sans publicité",
     andConnector: "et",
+    testimonialQuote:       "",
+    testimonialAttribution: "",
   },
 
   // ── blogPage ────────────────────────────────────────────────

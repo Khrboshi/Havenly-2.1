@@ -44,6 +44,7 @@ export default async function UpgradePage() {
   const uf = t.upgradeFull;
   const ps = t.pricingStrings;
   const pf = t.premiumFeatures;
+  const ip = t.insightPreview;
 
   // Resolved strings passed to the UpgradeButton client island.
   const btnLabel       = ps.startTrialCta(ps.trialLabel(PRICING.trialDays));
@@ -187,8 +188,13 @@ export default async function UpgradePage() {
                   </Link>
                 </div>
 
+                {/* Refund badge — visible trust signal near primary CTA */}
+                <p className="mt-3 text-xs font-medium text-qm-positive">
+                  {ip.upgradeRefund(PRICING.trialDays)}
+                </p>
+
                 {/* Trust lines — these are the critical SSR-verifiable strings */}
-                <p className="mt-3 text-xs text-qm-faint">{PAYMENT.checkoutTrustLine}</p>
+                <p className="mt-1 text-xs text-qm-faint">{PAYMENT.checkoutTrustLine}</p>
                 <p className="mt-1 text-xs text-qm-faint">
                   {uf.bySubscribing}{" "}
                   <Link href="/terms" className="text-qm-positive underline underline-offset-2 transition-colors hover:text-qm-positive-hover">
@@ -414,9 +420,26 @@ export default async function UpgradePage() {
             <p className="text-xs text-qm-faint">
               {ps.trialFreeFor(PRICING.trialDays)} · {t.upgrade.cancelAnytime}
             </p>
+            <p className="text-xs font-medium text-qm-positive">
+              {ip.upgradeRefund(PRICING.trialDays)}
+            </p>
           </div>
         </div>
       </div>
+
+      {/* ── Testimonial — renders only when a real quote is available ─────── */}
+      {uf.testimonialQuote && uf.testimonialAttribution && (
+        <section className="border-b border-qm-border-subtle py-12 sm:py-16">
+          <div className="mx-auto max-w-3xl px-5 text-center">
+            <p className="font-display text-lg font-medium leading-relaxed text-qm-primary sm:text-xl">
+              &ldquo;{uf.testimonialQuote}&rdquo;
+            </p>
+            <p className="mt-4 text-xs font-medium uppercase tracking-[0.18em] text-qm-faint">
+              {uf.testimonialAttribution}
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* ── FAQ ───────────────────────────────────────────────────────────── */}
       <section className="border-b bg-qm-card py-12 sm:py-14">
