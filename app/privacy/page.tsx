@@ -238,6 +238,27 @@ export default async function PrivacyPolicyPage() {
                 <span className="font-semibold text-qm-primary">Resend</span>{" "}
                 — transactional email delivery (magic links, sign-in codes).
               </li>
+              <li>
+                <Link
+                  href="https://posthog.com/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-qm-primary underline-offset-2 hover:underline"
+                >
+                  PostHog
+                </Link>{" "}
+                — privacy-focused product analytics (EU cloud). PostHog does
+                not sell your data; see their{" "}
+                <Link
+                  href="https://posthog.com/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-qm-accent underline-offset-2 hover:underline"
+                >
+                  Privacy Policy
+                </Link>
+                .
+              </li>
             </ul>
             <p className="mt-3 text-qm-secondary">
               We will update this list if subprocessors change.

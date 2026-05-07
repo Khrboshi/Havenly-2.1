@@ -72,6 +72,11 @@ export default function HomePage() {
               </Link>
             </div>
 
+            {/* Price hint — surfaces cost before users invest emotional energy */}
+            <p className="animate-fade-in anim-delay-450 mt-3 text-xs text-qm-faint">
+              {hp.heroPriceHint}
+            </p>
+
             {/* Promise strip */}
             <div className="animate-fade-in anim-delay-500 mt-4 rounded-xl border px-4 py-2.5 text-xs text-qm-muted"
               style={{ borderColor: "var(--qm-border-card)", backgroundColor: "var(--qm-accent-soft)" }}>
