@@ -99,6 +99,7 @@ function FooterLinks({ isSignedIn }: { isSignedIn: boolean }) {
         <FooterSection title={t.footer.legal}>
           <FooterLink href="/terms">{t.footer.termsOfService}</FooterLink>
           <FooterLink href="/privacy">{t.footer.privacyPolicy}</FooterLink>
+          <FooterLink href="/security">{t.footer.security}</FooterLink>
           <FooterLink href={`mailto:${CONFIG.supportEmail}`} isExternal>
             {t.footer.contact}
           </FooterLink>

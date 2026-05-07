@@ -354,6 +354,7 @@ export const uk: Translations = {
     goPremium:         "Отримати Premium",
     termsOfService:    "Умови використання",
     privacyPolicy:     "Політика конфіденційності",
+    security:          "Security",
     contact:           "Зв'язатися",
     noAds:             "Без реклами",
     noDataSales:       "Без продажу даних",
@@ -1197,6 +1198,12 @@ export const uk: Translations = {
     termsMetaDescription: (appName) => `Умови, що регулюють твоє користування ${appName}. Твоя приватність і права чітко викладені тут.`,
     termsOgTitle:         (appName) => `Умови використання | ${appName}`,
     termsOgDescription:   (appName) => `Ознайомся з умовами, що регулюють твоє користування ${appName}.`,
+    securityTitle:           "Security & Privacy Architecture",
+    securityHeadline:        "How your entries are protected.",
+    securityMetaTitle:       (appName) => `Security & Privacy Architecture | ${appName}`,
+    securityMetaDescription: (appName) => `How ${appName} protects your journal entries — data flow, storage, authentication, and AI processing explained honestly.`,
+    securityOgTitle:         (appName) => `Security & Privacy Architecture | ${appName}`,
+    securityOgDescription:   (appName) => `A clear explanation of how ${appName} stores, transmits, and processes your journal entries.`,
   },
 
 };

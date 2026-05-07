@@ -315,6 +315,7 @@ export const nl: Translations = {
     goPremium:         "Naar Premium",
     termsOfService:    "Servicevoorwaarden",
     privacyPolicy:     "Privacybeleid",
+    security:          "Security",
     contact:           "Contact",
     noAds:             "Geen advertenties",
     noDataSales:       "Geen dataverkoop",
@@ -1139,6 +1140,12 @@ export const nl: Translations = {
     termsMetaDescription: (appName) => `Voorwaarden die je gebruik van ${appName} regelen. Je privacy en rechten worden hier duidelijk uiteengezet.`,
     termsOgTitle:         (appName) => `Servicevoorwaarden | ${appName}`,
     termsOgDescription:   (appName) => `Lees de voorwaarden die je gebruik van ${appName} regelen.`,
+    securityTitle:           "Security & Privacy Architecture",
+    securityHeadline:        "How your entries are protected.",
+    securityMetaTitle:       (appName) => `Security & Privacy Architecture | ${appName}`,
+    securityMetaDescription: (appName) => `How ${appName} protects your journal entries — data flow, storage, authentication, and AI processing explained honestly.`,
+    securityOgTitle:         (appName) => `Security & Privacy Architecture | ${appName}`,
+    securityOgDescription:   (appName) => `A clear explanation of how ${appName} stores, transmits, and processes your journal entries.`,
   },
 
 

@@ -323,6 +323,7 @@ export interface Translations {
     // Legal links
     termsOfService:   string;
     privacyPolicy:    string;
+    security:         string;
     contact:          string;
     // Trust badges
     noAds:            string;
@@ -1148,6 +1149,12 @@ export interface Translations {
     termsMetaDescription:       (appName: string) => string;
     termsOgTitle:               (appName: string) => string;
     termsOgDescription:         (appName: string) => string;
+    securityTitle:              string;
+    securityHeadline:           string;
+    securityMetaTitle:          (appName: string) => string;
+    securityMetaDescription:    (appName: string) => string;
+    securityOgTitle:            (appName: string) => string;
+    securityOgDescription:      (appName: string) => string;
   };
 
 }

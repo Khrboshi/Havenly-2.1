@@ -333,6 +333,7 @@ export const en: Translations = {
     goPremium:         "Go Premium",
     termsOfService:    "Terms of Service",
     privacyPolicy:     "Privacy Policy",
+    security:          "Security",
     contact:           "Contact",
     noAds:             MARKETING.noAds,
     noDataSales:       "No data sales",
@@ -1171,6 +1172,12 @@ export const en: Translations = {
     termsMetaDescription: (appName) => `Terms governing your use of ${appName}. Your privacy and rights are clearly outlined here.`,
     termsOgTitle:         (appName) => `Terms of Service | ${appName}`,
     termsOgDescription:   (appName) => `Read the terms governing your use of ${appName}.`,
+    securityTitle:        "Security & Privacy Architecture",
+    securityHeadline:     "How your entries are protected.",
+    securityMetaTitle:       (appName) => `Security & Privacy Architecture | ${appName}`,
+    securityMetaDescription: (appName) => `How ${appName} protects your journal entries — data flow, storage, authentication, and AI processing explained honestly.`,
+    securityOgTitle:         (appName) => `Security & Privacy Architecture | ${appName}`,
+    securityOgDescription:   (appName) => `A clear explanation of how ${appName} stores, transmits, and processes your journal entries.`,
   },
 
 };

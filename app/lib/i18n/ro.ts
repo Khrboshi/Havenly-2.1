@@ -320,6 +320,7 @@ export const ro: Translations = {
     goPremium:         "Treceți la Premium",
     termsOfService:    "Termeni de serviciu",
     privacyPolicy:     "Politică de confidențialitate",
+    security:          "Security",
     contact:           "Contact",
     noAds:             "Fără reclame",
     noDataSales:       "Fără vânzarea datelor",
@@ -1144,6 +1145,12 @@ export const ro: Translations = {
     termsMetaDescription: (appName) => `Termenii care reglementează utilizarea ${appName}. Confidențialitatea și drepturile tale sunt descrise clar aici.`,
     termsOgTitle:         (appName) => `Termeni de serviciu | ${appName}`,
     termsOgDescription:   (appName) => `Citește termenii care reglementează utilizarea ${appName}.`,
+    securityTitle:           "Security & Privacy Architecture",
+    securityHeadline:        "How your entries are protected.",
+    securityMetaTitle:       (appName) => `Security & Privacy Architecture | ${appName}`,
+    securityMetaDescription: (appName) => `How ${appName} protects your journal entries — data flow, storage, authentication, and AI processing explained honestly.`,
+    securityOgTitle:         (appName) => `Security & Privacy Architecture | ${appName}`,
+    securityOgDescription:   (appName) => `A clear explanation of how ${appName} stores, transmits, and processes your journal entries.`,
   },
 
 
