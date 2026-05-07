@@ -59,8 +59,9 @@ These users share the core response pattern but have specific trust blockers:
 - **Privacy-obsessed technical user** (e.g. engineer, HN referral):
   Reads the privacy policy. Checks subprocessors. Wants to know what happens to data
   on cancellation and whether they can export their entries. Subprocessor transparency
-  in the privacy policy is a strong trust signal for this persona. Open gap: data
-  export is not yet mentioned anywhere.
+  in the privacy policy is a strong trust signal for this persona. Addressed: PostHog
+  named as subprocessor (#198), data export FAQ on /upgrade (#198), /security page
+  added for deep technical transparency (#201).
 
 - **Sophisticated evaluator** (e.g. executive coach, already journals daily):
   Wants depth evidence before paying. Will click the preview link expecting a real
@@ -162,6 +163,13 @@ The funnel in order of leverage:
 - [x] **Infrequent-writer objection** — "Even 2 entries can surface something" in FAQ (PR #195)
 - [x] **Magic-link explainer** — hero promise strip explains passwordless login (PR #196)
 - [x] **Cancel path made concrete** — "go to Settings — it takes seconds" in trial explainer (PR #196)
+- [x] **Docs sync** — PRODUCT_BRIEF and REQUIREMENTS synced with audit findings (PR #197)
+- [x] **PostHog subprocessor** — named in privacy policy with link to posthog.com/privacy (PR #198)
+- [x] **Data export FAQ** — added to /upgrade: email export on request within 48h (PR #198)
+- [x] **Hero price hint** — "Free to start · $25/month if you want the deeper layer" above fold (PR #198)
+- [x] **ar/uk trailing commas** — pipeline bug fixed post-#198 auto-translate (PRs #199–#202)
+- [x] **/security page** — dedicated page for technical users: data flow, auth, subprocessors, deletion (PR #201)
+- [x] **/upgrade SSR** — page converted to server component; $25/Dodo Payments in raw HTML, immune to edge-cache stale-price (PR #203)
 - [ ] **Dodo Payments e2e** — integration complete. A real test transaction + withdrawal to
       bank account must be verified in the Dodo dashboard before charging real users.
       **This is the final pre-launch gate.**
@@ -175,9 +183,9 @@ Four of seven issues were fixed same-day in PRs #194–#196.
 
 | # | Issue | Severity | Status |
 |---|---|---|---|
-| 1 | /upgrade page served stale $9/Paddle render via Vercel edge cache | Critical | Verify each session — force redeploy if stale |
+| 1 | /upgrade page served stale $9/Paddle render via Vercel edge cache | Critical | ✅ Closed — /upgrade converted to SSR (#203); $25/Dodo in raw HTML |
 | 3 | No social proof anywhere on the site | High | Open — no PR yet; needs real user data |
-| 6 | Data export not mentioned in privacy policy or FAQ | Medium | Open — no PR yet |
+| 6 | Data export not mentioned in privacy policy or FAQ | Medium | ✅ Closed — email export FAQ added to /upgrade (#198) |
 
 **What the audit confirmed is working well:** hero copy ("You've been saying 'I'm fine'…"),
 privacy policy subprocessor transparency (Groq link, explicit GDPR rights), sample
@@ -189,10 +197,11 @@ a vanity user count. Must fit brand voice: no exclamation marks, no hyperbole, n
 "life-changing." Do not repurpose the existing rec cards (rec1–3) as testimonials — they
 are positioned as pattern observations, not user voices.
 
-**Data export — resolution options:**
-1. Build CSV/JSON export in Settings and add it to the privacy policy (preferred).
-2. At minimum: add one line to the privacy policy and FAQ stating entries can be exported
-   on request via hello@quietmirror.me.
+**Data export — resolution:**
+Option 2 implemented in #198: FAQ on /upgrade states entries can be exported on request
+via hello@quietmirror.me (JSON, within 48 hours) and that self-serve export from Settings
+is on the roadmap. Option 1 (build CSV/JSON export in Settings) remains the preferred
+long-term path.
 
 ---
 

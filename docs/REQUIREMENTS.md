@@ -78,7 +78,7 @@ This user does not respond to urgency, gamification, or social proof framing. Th
 **Secondary user types** identified via the 2026-05-07 conversion audit — see `docs/PRODUCT_BRIEF.md §2` for full detail. All share the same core response pattern. Specific design implications:
 
 - **Budget-conscious new journaler:** The cancellation path must be concrete and visible (not just promised). The refund policy must appear near the CTA, not buried in the FAQ. The trial explainer must name exactly where to cancel.
-- **Privacy-obsessed technical user:** Subprocessor names and links in the privacy policy. Data deletion timeline stated explicitly. Data export must be available or at minimum documentable on request.
+- **Privacy-obsessed technical user:** Subprocessor names and links in the privacy policy. Data deletion timeline stated explicitly. Data export available on request (FAQ on /upgrade, #198). Dedicated /security page for full technical transparency (#201).
 - **Sophisticated evaluator:** The /insights/preview page must show a populated demo for logged-out visitors. An empty skeleton kills conversion for this persona.
 
 ---
@@ -192,6 +192,14 @@ This policy must appear as a visible trust badge or line **near the upgrade CTA*
 
 **Purpose:** Transparent account management — plan status, billing date, cancel option.
 **Must never:** Make cancellation hard to find or use guilt-framing to dissuade cancellation.
+
+### Security page (`/security`)
+
+**Purpose:** Deep technical transparency for the privacy-obsessed user (engineer, HN referral). Covers data flow step-by-step, honest limits (what Quiet Mirror does *not* claim — no E2E encryption, no local AI, no zero-knowledge), authentication (magic link, no password stored), access controls (RLS at DB level), AI processing, infrastructure + subprocessors, deletion/export, and security reporting contact.
+**Audience:** Users who read privacy policies, check subprocessors, and need honest answers before trusting a journaling app with personal writing.
+**Must always:** Be factually accurate and updated when the stack changes. Named in the Footer legal section.
+**Must never:** Make security claims that are not true or that overstate protections.
+(Added PR #201.)
 
 ### Magic login (`/magic-login`)
 
