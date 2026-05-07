@@ -1088,7 +1088,7 @@ export const uk: Translations = {
     faq6A: (appName) => `Так. твої записи залишаються приватними, ніколи не продаються, не передаються і не використовуються для навчання ШІ-моделей. ${appName} побудований навколо цього принципу.`,
     faq7Q: (cadence) => `Чому Premium коштує ${cadence}?`,
     faq7A: (appName, cadence) => `Більшість інструментів для щоденника стягують плату за хмарне сховище або красивіші шаблони. ${appName} стягує плату за шар ШІ, який читає тижні записів і виявляє те, чого ти не могли побачити зсередини. Ця робота справді вимагає витрат — і ${cadence} робить її стійкою без реклами чи продажу ваших даних.`,
-    faq8Q:                "Чи можу я експортувати свої дані?"
+    faq8Q:                "Чи можу я експортувати свої дані?",
     faq8A:                (email) => `Yes. Your journal entries belong to you. You can request a full export of your entries as a JSON file at any time by emailing ${email} — you will receive it within 48 hours. Self-serve export from Settings is on the roadmap.`,
     faqTerms: "Умови використання →",
     faqPrivacy: "Політика конфіденційності →",
