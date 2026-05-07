@@ -315,6 +315,7 @@ export const fr: Translations = {
     goPremium:         "Passer à Premium",
     termsOfService:    "Conditions d'utilisation",
     privacyPolicy:     "Politique de confidentialité",
+    security:          "Security",
     contact:           "Contact",
     noAds:             "Pas de publicités",
     noDataSales:       "Pas de vente de données",
@@ -1157,6 +1158,12 @@ export const fr: Translations = {
     termsMetaDescription: (appName) => `Conditions régissant votre utilisation de ${appName}. Votre vie privée et vos droits y sont clairement exposés.`,
     termsOgTitle:         (appName) => `Conditions d'utilisation | ${appName}`,
     termsOgDescription:   (appName) => `Consultez les conditions régissant votre utilisation de ${appName}.`,
+    securityTitle:           "Security & Privacy Architecture",
+    securityHeadline:        "How your entries are protected.",
+    securityMetaTitle:       (appName) => `Security & Privacy Architecture | ${appName}`,
+    securityMetaDescription: (appName) => `How ${appName} protects your journal entries — data flow, storage, authentication, and AI processing explained honestly.`,
+    securityOgTitle:         (appName) => `Security & Privacy Architecture | ${appName}`,
+    securityOgDescription:   (appName) => `A clear explanation of how ${appName} stores, transmits, and processes your journal entries.`,
   },
 
 };

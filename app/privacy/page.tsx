@@ -397,6 +397,12 @@ export default async function PrivacyPolicyPage() {
           >
             {lp.termsOfService} →
           </Link>
+          <Link
+            href="/security"
+            className="text-qm-accent transition-colors duration-150 hover:text-qm-accent-hover"
+          >
+            Security &amp; Privacy Architecture →
+          </Link>
         </div>
 
         {/* CTA - updated with design tokens */}
