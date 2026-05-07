@@ -553,7 +553,7 @@ export const ar: Translations = {
     heroCta1:         "اكتب أول مدخل مجاناً \u2192",
     heroCta2:         "اطّلع على تأمل حقيقي \u2192",
     heroPromise:      "\u2713\u00a0مجلة في أقل من 60 ثانية \u00b7 \u2713\u00a0أول تأمل في لحظات \u00b7 \u2713\u00a0بدون إعداد",
-    heroPriceHint:    "Free to start \u00b7 $25/month if you want the deeper picture \u00b7 3-day free trial included",
+    heroPriceHint:    "مجانًا للبدء · 25 دولارًا في الشهر إذا كنت تريد الصورة الأعمق · 3 أيام تجربة مجانية متضمنة"
     heroDevices:      "متاح في المتصفح على أي جهاز — لا تطبيق مطلوب",
     trust1:           "خاص بشكل افتراضي",
     trust2:           "المدخلات لا تُستخدم لتدريب الذكاء الاصطناعي",
@@ -1057,7 +1057,7 @@ export const ar: Translations = {
     faq6A: (appName) => `نعم. مدخلاتك تبقى خاصة، لا تُباع أبدًا ولا تُشارك ولا تُستخدم لتدريب نماذج الذكاء الاصطناعي. ${appName} مبني على هذا المبدأ.`,
     faq7Q: (cadence) => `لماذا Premium بـ ${cadence}؟`,
     faq7A: (appName, cadence) => `معظم أدوات اليوميات تتقاضى رسومًا على التخزين السحابي أو القوالب الأجمل. ${appName} يتقاضى رسومًا على طبقة الذكاء الاصطناعي التي تقرأ عبر أسابيع من المدخلات. هذا العمل مكلف حقًا — و${cadence} يجعله مستدامًا بدون إعلانات أو بيع بياناتك.`,
-    faq8Q:                "Can I export my data?",
+    faq8Q:                "هل يمكنني تصدير بياناتي؟"
     faq8A:                (email) => `Yes. Your journal entries belong to you. You can request a full export of your entries as a JSON file at any time by emailing ${email} — you will receive it within 48 hours. Self-serve export from Settings is on the roadmap.`,
     faqTerms: "شروط الخدمة →",
     faqPrivacy: "سياسة الخصوصية →",
