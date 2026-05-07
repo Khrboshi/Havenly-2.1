@@ -568,6 +568,7 @@ export interface Translations {
     heroCta1:         string;
     heroCta2:         string;
     heroPromise:      string;
+    heroPriceHint:    string;
     heroDevices:      string;
     trust1:           string;
     trust2:           string;
@@ -1037,6 +1038,8 @@ export interface Translations {
     faq6A:                (appName: string) => string;
     faq7Q:                (cadence: string) => string;
     faq7A:                (appName: string, cadence: string) => string;
+    faq8Q:                string;
+    faq8A:                (email: string) => string;
     faqTerms:             string;
     faqPrivacy:           string;
     // Closing CTA

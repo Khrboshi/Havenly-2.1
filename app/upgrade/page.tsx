@@ -97,6 +97,7 @@ export default function UpgradePage() {
     { q: uf.faq5Q, a: uf.faq5A },
     { q: uf.faq6Q, a: uf.faq6A(CONFIG.appName) },
     { q: uf.faq7Q(ps.perMonth(PRICING.monthly)), a: uf.faq7A(CONFIG.appName, ps.perMonth(PRICING.monthly)) },
+    { q: uf.faq8Q, a: uf.faq8A(CONFIG.supportEmail) },
   ];
 
   return (
