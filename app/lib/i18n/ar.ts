@@ -1167,8 +1167,8 @@ export const ar: Translations = {
     termsMetaDescription: (appName) => `الشروط التي تحكم استخدامك لـ ${appName}. خصوصيتك وحقوقك موضّحة هنا بوضوح.`,
     termsOgTitle:         (appName) => `شروط الخدمة | ${appName}`,
     termsOgDescription:   (appName) => `اطّلع على الشروط التي تحكم استخدامك لـ ${appName}.`,
-    securityTitle:           "هندسة الأمان والخصوصية،"
-    securityHeadline:        "كيف يتم حماية مدخلاتك."
+    securityTitle:           "هندسة الأمان والخصوصية،",
+    securityHeadline:        "كيف يتم حماية مدخلاتك.",
     securityMetaTitle:       (appName) => `Security & Privacy Architecture | ${appName}`,
     securityMetaDescription: (appName) => `How ${appName} protects your journal entries — data flow, storage, authentication, and AI processing explained honestly.`,
     securityOgTitle:         (appName) => `Security & Privacy Architecture | ${appName}`,

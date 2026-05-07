@@ -1198,8 +1198,8 @@ export const uk: Translations = {
     termsMetaDescription: (appName) => `Умови, що регулюють твоє користування ${appName}. Твоя приватність і права чітко викладені тут.`,
     termsOgTitle:         (appName) => `Умови використання | ${appName}`,
     termsOgDescription:   (appName) => `Ознайомся з умовами, що регулюють твоє користування ${appName}.`,
-    securityTitle:           "Архітектура безпеки та конфіденційності"
-    securityHeadline:        "Як захищено ваші записи."
+    securityTitle:           "Архітектура безпеки та конфіденційності",
+    securityHeadline:        "Як захищено ваші записи.",
     securityMetaTitle:       (appName) => `Security & Privacy Architecture | ${appName}`,
     securityMetaDescription: (appName) => `How ${appName} protects your journal entries — data flow, storage, authentication, and AI processing explained honestly.`,
     securityOgTitle:         (appName) => `Security & Privacy Architecture | ${appName}`,
