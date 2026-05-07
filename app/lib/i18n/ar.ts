@@ -1058,7 +1058,7 @@ export const ar: Translations = {
     faq7Q: (cadence) => `لماذا Premium بـ ${cadence}؟`,
     faq7A: (appName, cadence) => `معظم أدوات اليوميات تتقاضى رسومًا على التخزين السحابي أو القوالب الأجمل. ${appName} يتقاضى رسومًا على طبقة الذكاء الاصطناعي التي تقرأ عبر أسابيع من المدخلات. هذا العمل مكلف حقًا — و${cadence} يجعله مستدامًا بدون إعلانات أو بيع بياناتك.`,
     faq8Q:                "هل يمكنني تصدير بياناتي؟",
-    faq8A:                (email) => `Yes. Your journal entries belong to you. You can request a full export of your entries as a JSON file at any time by emailing ${email} — you will receive it within 48 hours. Self-serve export from Settings is on the roadmap.`,
+    faq8A:                (email) => `نعم. مدخلات يومياتك تخصّك أنت. يمكنك طلب تصدير كامل لمدخلاتك كملف JSON في أي وقت عن طريق مراسلة ${email} — ستستلمه خلال 48 ساعة. التصدير الذاتي من الإعدادات موجود في خطة التطوير.`,
     faqTerms: "شروط الخدمة →",
     faqPrivacy: "سياسة الخصوصية →",
     closingH: "شيء ما يحاول أن يصبح واضحًا.",
