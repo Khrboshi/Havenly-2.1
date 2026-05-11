@@ -1052,6 +1052,29 @@ export interface Translations {
     andConnector:         string;
     testimonialQuote:       string;
     testimonialAttribution: string;
+    // Emotional progression timeline
+    progressionTag:         string;
+    progressionH:           string;
+    progressionDesc:        string;
+    prog1Label:             string;
+    prog1b1:                string;
+    prog1b2:                string;
+    prog1b3:                string;
+    prog2Label:             string;
+    prog2b1:                string;
+    prog2b2:                string;
+    prog2b3:                string;
+    prog3Label:             string;
+    prog3b1:                string;
+    prog3b2:                string;
+    prog3b3:                string;
+    progressionNote:        string;
+    // Founder trust strip
+    founderTag:             string;
+    founderH:               string;
+    founderBodyPre:         string;
+    founderBodyPost:        string;
+    founderEmail:           string;
   };
 
   // ── Blog page chrome ─────────────────────────────────────────────────────

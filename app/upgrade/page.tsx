@@ -427,6 +427,103 @@ export default async function UpgradePage() {
         </div>
       </div>
 
+      {/* ── Mid-page CTA ─────────────────────────────────────────────────── */}
+      <div className="border-b border-qm-border-subtle bg-qm-positive-strong/[0.03] py-10">
+        <div className="mx-auto max-w-3xl px-5 text-center">
+          <p className="mb-4 font-display text-xl font-medium text-qm-primary sm:text-2xl">
+            {uf.midH}
+            <br />
+            <span className="text-qm-positive">{uf.midAccent}</span>
+          </p>
+          <div className="flex flex-col items-center gap-2">
+            <UpgradeButton
+              label={btnLabel}
+              redirectingLabel={btnRedirecting}
+              errorPrefix={btnErrorPrefix}
+              supportEmail={CONFIG.supportEmail}
+              className={btnMidPage}
+            />
+            <p className="text-xs text-qm-faint">
+              {ps.trialFreeFor(PRICING.trialDays)} · {t.upgrade.cancelAnytime}
+            </p>
+            <p className="text-xs font-medium text-qm-positive">
+              {ip.upgradeRefund(PRICING.trialDays)}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Emotional progression timeline ───────────────────────────────── */}
+      <section className="border-b border-qm-border-subtle py-14 sm:py-20">
+        <div className="mx-auto max-w-6xl px-5">
+          <div className="mb-10 max-w-2xl">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-qm-positive">
+              {uf.progressionTag}
+            </p>
+            <h2 className="mt-3 font-display text-2xl font-semibold text-qm-primary sm:text-3xl">
+              {uf.progressionH}
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-qm-muted">{uf.progressionDesc}</p>
+          </div>
+
+          {(() => {
+            const stages: Array<{
+              label: string;
+              bullets: string[];
+              accent: string;
+              labelColor: string;
+              dot: string;
+            }> = [
+              {
+                label: uf.prog1Label,
+                bullets: [uf.prog1b1, uf.prog1b2, uf.prog1b3],
+                accent: "border-qm-border-subtle",
+                labelColor: "text-qm-muted",
+                dot: "bg-qm-faint",
+              },
+              {
+                label: uf.prog2Label,
+                bullets: [uf.prog2b1, uf.prog2b2, uf.prog2b3],
+                accent: "border-qm-positive-border",
+                labelColor: "text-qm-positive",
+                dot: "bg-qm-positive-muted",
+              },
+              {
+                label: uf.prog3Label,
+                bullets: [uf.prog3b1, uf.prog3b2, uf.prog3b3],
+                accent: "border-qm-premium-border",
+                labelColor: "text-qm-premium",
+                dot: "bg-qm-premium",
+              },
+            ];
+            return (
+              <div className="grid gap-4 sm:grid-cols-3">
+                {stages.map((stage, si) => (
+                  <div
+                    key={si}
+                    className={`rounded-[1.5rem] border ${stage.accent} bg-white/[0.02] p-6`}
+                  >
+                    <p className={`text-[11px] font-semibold uppercase tracking-[0.2em] ${stage.labelColor}`}>
+                      {stage.label}
+                    </p>
+                    <ul className="mt-4 space-y-3">
+                      {stage.bullets.map((b, bi) => (
+                        <li key={bi} className="flex items-start gap-3">
+                          <span className={`mt-[7px] h-1 w-1 shrink-0 rounded-full ${stage.dot}`} />
+                          <span className="text-sm leading-relaxed text-qm-muted">{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+
+          <p className="mt-6 text-xs text-qm-faint">{uf.progressionNote}</p>
+        </div>
+      </section>
+
       {/* ── Testimonial — renders only when a real quote is available ─────── */}
       {uf.testimonialQuote && uf.testimonialAttribution && (
         <section className="border-b border-qm-border-subtle py-12 sm:py-16">
@@ -440,6 +537,28 @@ export default async function UpgradePage() {
           </div>
         </section>
       )}
+
+      {/* ── Founder trust strip ───────────────────────────────────────────── */}
+      <section className="border-b border-qm-border-subtle py-12 sm:py-16">
+        <div className="mx-auto max-w-3xl px-5">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-qm-faint">
+            {uf.founderTag}
+          </p>
+          <h2 className="mt-3 font-display text-xl font-semibold text-qm-primary sm:text-2xl">
+            {uf.founderH}
+          </h2>
+          <p className="mt-4 max-w-xl text-sm leading-relaxed text-qm-muted">
+            {uf.founderBodyPre}
+            <a
+              href={`mailto:${uf.founderEmail}`}
+              className="text-qm-positive underline underline-offset-2 transition-colors hover:text-qm-positive-hover"
+            >
+              {uf.founderEmail}
+            </a>
+            {uf.founderBodyPost}
+          </p>
+        </div>
+      </section>
 
       {/* ── FAQ ───────────────────────────────────────────────────────────── */}
       <section className="border-b bg-qm-card py-12 sm:py-14">
