@@ -1061,31 +1061,31 @@ export const fr: Translations = {
     andConnector: "et",
     testimonialQuote:       "",
     testimonialAttribution: "",
-    progressionTag:         "What changes",
-    progressionH:           "The pattern becomes clearer the longer you write.",
-    progressionDesc:        "Most people notice a shift within weeks. Here is what that tends to look like.",
-    prog1Label:             "Week 1",
-    prog1b1:                "Something feels named that you had not quite found words for",
-    prog1b2:                "Writing feels less like recording and more like noticing",
-    prog1b3:                "You start to see which emotions show up most often",
-    prog2Label:             "After a month",
-    prog2b1:                "Recurring patterns become harder to ignore",
-    prog2b2:                "You recognise the feeling earlier — before it builds",
-    prog2b3:                "The weekly mirror starts reflecting something you did not expect",
-    prog3Label:             "After 3 months",
-    prog3b1:                "You understand why certain situations keep producing the same feeling",
-    prog3b2:                "Emotional loops that once felt invisible start to loosen",
-    prog3b3:                "The pattern you were too close to see is finally readable",
-    progressionNote:        "These are honest observations — not guarantees. Everyone's pace is different.",
-    founderTag:             "Who is behind this",
-    founderH:               "One person built this. One person answers for it.",
+    progressionTag:         "Ce qui change"
+    progressionH:           "Le modèle devient plus clair plus vous écrivez."
+    progressionDesc:        "La plupart des gens remarquent un changement en quelques semaines. Voici à quoi cela ressemble généralement."
+    prog1Label:             "Semaine 1"
+    prog1b1:                "Quelque chose se nomme enfin que vous n'aviez pas encore trouvé les mots pour"
+    prog1b2:                "Écrire ressemble moins à enregistrer et plus à remarquer"
+    prog1b3:                "Vous commencez à voir quelles émotions apparaissent le plus souvent"
+    prog2Label:             "Après un mois"
+    prog2b1:                "Les modèles récurrents deviennent plus difficiles à ignorer"
+    prog2b2:                "Vous reconnaissez le sentiment plus tôt — avant qu'il ne s'accumule"
+    prog2b3:                "Le miroir hebdomadaire commence à refléter quelque chose que vous n'attendiez pas"
+    prog3Label:             "Après 3 mois"
+    prog3b1:                "Vous comprenez pourquoi certaines situations produisent toujours le même sentiment"
+    prog3b2:                "Les boucles émotionnelles qui semblaient invisibles commencent à se desserrer"
+    prog3b3:                "Le modèle que vous étiez trop proche pour voir est enfin lisible"
+    progressionNote:        "Ce sont des observations honnêtes — pas des garanties. La vitesse de chacun est différente."
+    founderTag:             "Qui est derrière cela"
+    founderH:               "Une personne a construit cela. Une personne en répond."
     founderBodyPre:         "Quiet Mirror is independently built — no investors, no board, no data deals. Every decision about privacy, pricing, and product has one person behind it. If something feels wrong, email ",
     founderBodyPost:        " and you are writing directly to the person who built every line of it.",
-    founderEmail:           "hello@quietmirror.me",
-    depthTag:               "What Quiet Mirror is building",
-    depthH:                 "The picture gets clearer the more you write.",
-    depthDesc:              "Each entry adds to what Quiet Mirror already knows about you. After a few weeks, it is not reading a single entry — it is reading the shape of your inner life over months.",
-    longitudinalNote:       "Each card above is built from your full writing history — not just your last entry.",
+    founderEmail:           "hello@quietmirror.me"
+    depthTag:               "Ce que Quiet Mirror construit"
+    depthH:                 "L'image devient plus claire plus vous écrivez."
+    depthDesc:              "Chaque entrée ajoute à ce que Quiet Mirror sait déjà sur vous. Après quelques semaines, ce n'est pas une seule entrée qu'il lit — c'est la forme de votre vie intérieure sur des mois."
+    longitudinalNote:       "Chaque carte ci-dessus est construite à partir de votre historique d'écriture complet — pas seulement votre dernière entrée."
   },
 
   // ── blogPage ────────────────────────────────────────────────
