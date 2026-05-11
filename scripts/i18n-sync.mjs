@@ -57,6 +57,7 @@ const INTL_OK = new Set([
   "Active",        // French feminine form
   "Option A", "Option B",  // letter labels — same everywhere
   "Later",         // Dutch word identical
+  "Suggestions",   // French/Dutch cognate — identical spelling, same meaning
   // Symbols and placeholders — legitimately same in all languages
   "you@example.com",
   "/ mo",
