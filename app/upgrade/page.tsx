@@ -466,8 +466,14 @@ export default async function UpgradePage() {
             <p className="mt-3 text-sm leading-relaxed text-qm-muted">{uf.progressionDesc}</p>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-3">
-            {[
+          {(() => {
+            const stages: Array<{
+              label: string;
+              bullets: string[];
+              accent: string;
+              labelColor: string;
+              dot: string;
+            }> = [
               {
                 label: uf.prog1Label,
                 bullets: [uf.prog1b1, uf.prog1b2, uf.prog1b3],
@@ -489,25 +495,30 @@ export default async function UpgradePage() {
                 labelColor: "text-qm-premium",
                 dot: "bg-qm-premium",
               },
-            ].map(({ label, bullets, accent, labelColor, dot }) => (
-              <div
-                key={label}
-                className={`rounded-[1.5rem] border ${accent} bg-white/[0.02] p-6`}
-              >
-                <p className={`text-[11px] font-semibold uppercase tracking-[0.2em] ${labelColor}`}>
-                  {label}
-                </p>
-                <ul className="mt-4 space-y-3">
-                  {bullets.map((b) => (
-                    <li key={b} className="flex items-start gap-3">
-                      <span className={`mt-[7px] h-1 w-1 shrink-0 rounded-full ${dot}`} />
-                      <span className="text-sm leading-relaxed text-qm-muted">{b}</span>
-                    </li>
-                  ))}
-                </ul>
+            ];
+            return (
+              <div className="grid gap-4 sm:grid-cols-3">
+                {stages.map((stage, si) => (
+                  <div
+                    key={si}
+                    className={`rounded-[1.5rem] border ${stage.accent} bg-white/[0.02] p-6`}
+                  >
+                    <p className={`text-[11px] font-semibold uppercase tracking-[0.2em] ${stage.labelColor}`}>
+                      {stage.label}
+                    </p>
+                    <ul className="mt-4 space-y-3">
+                      {stage.bullets.map((b, bi) => (
+                        <li key={bi} className="flex items-start gap-3">
+                          <span className={`mt-[7px] h-1 w-1 shrink-0 rounded-full ${stage.dot}`} />
+                          <span className="text-sm leading-relaxed text-qm-muted">{b}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            );
+          })()}
 
           <p className="mt-6 text-xs text-qm-faint">{uf.progressionNote}</p>
         </div>
