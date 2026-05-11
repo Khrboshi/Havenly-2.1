@@ -873,6 +873,10 @@ export const uk: Translations = {
     demoParagraph2:       "Вимальовується певний патерн: стрес часто посилюється відчуттям, що тебе не помічають або недооцінюють. Це відчуття роз'єднаності повторюється і впливає на твоє самопочуття.",
     demoParagraph3:       "Що останнім часом у тебе на думці, і як ти дбаєш про себе?",
     footerNote:           "Аналітика поглиблюється в міру зростання вашої історії відображень.",
+    questionsSectionLabel: "Questions the Mirror holds for you",
+    question1:            "What would change if you gave yourself the same patience you give everyone else?",
+    question2:            "Where does 'I'm fine' end and what you actually feel begin?",
+    question3:            "What small boundary, if you held it once, might start to shift this pattern?",
   },
 
   installPrompt: {

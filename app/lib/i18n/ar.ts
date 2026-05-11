@@ -842,6 +842,10 @@ export const ar: Translations = {
     demoParagraph2:       "ظهر نمط واضح: كثيرًا ما يتكثف التوتر بمشاعر عدم الرؤية أو التقدير. هذا الإحساس بالانفصال يتكرر، وهو يؤثر على صحتك النفسية.",
     demoParagraph3:       "ما الذي يشغل بالك مؤخرًا، وكيف تعتني بنفسك؟",
     footerNote:           "تعمق التحليلات مع نمو تاريخ تأملاتك.",
+    questionsSectionLabel: "Questions the Mirror holds for you",
+    question1:            "What would change if you gave yourself the same patience you give everyone else?",
+    question2:            "Where does 'I'm fine' end and what you actually feel begin?",
+    question3:            "What small boundary, if you held it once, might start to shift this pattern?",
   },
 
   installPrompt: {

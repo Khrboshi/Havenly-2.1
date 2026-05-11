@@ -822,7 +822,7 @@ export const en: Translations = {
     corepatternLabel:     "What you keep coming back to",
     corepatternSub:       "The specific dynamic Quiet Mirror noticed most often beneath your entries.",
     corepatternHasData:   (theme: string) => `${theme} keeps appearing alongside a sense of feeling unseen or behind.`,
-    corepatternNoData:    "Work stress is being sharpened by feeling unseen, undervalued, or behind.",
+    corepatternNoData:    "You carry the emotional steadiness for everyone around you — and rarely extend the same patience inward.",
     corepatternSubHasData:"Your most recurring underlying pattern",
     corepatternSubNoData: "Example — yours will be built from your own entries",
     corepatternBlur1:     "You\'re caught between maintaining the relationship and expressing your own emotional needs.",
@@ -847,6 +847,11 @@ export const en: Translations = {
     demoParagraph2:       "A pattern has emerged: stress is often intensified by feelings of being unseen or undervalued. This sense of disconnection is recurring, and it's affecting your well-being.",
     demoParagraph3:       "What's been on your mind lately, and how have you been taking care of yourself?",
     footerNote:           "Insights deepen as your reflection history grows.",
+    // Questions the Mirror holds for you — demo-mode section only
+    questionsSectionLabel: "Questions the Mirror holds for you",
+    question1:            "What would change if you gave yourself the same patience you give everyone else?",
+    question2:            "Where does 'I'm fine' end and what you actually feel begin?",
+    question3:            "What small boundary, if you held it once, might start to shift this pattern?",
   },
 
   // ── Install prompt (PWA banner) ───────────────────────────────────────────

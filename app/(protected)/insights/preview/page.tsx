@@ -529,6 +529,24 @@ export default async function InsightsPreviewPage() {
           </div>
         </div>
 
+        {/* ── Questions the Mirror holds for you — demo mode only ─────── */}
+        {isDemoMode && (
+          <div className="rounded-2xl border border-qm-border-subtle bg-qm-bg p-6">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-qm-faint mb-5">
+              {ip.questionsSectionLabel}
+            </h2>
+            <ul className="space-y-4">
+              {[ip.question1, ip.question2, ip.question3].map((q, i) => (
+                <li key={i} className="flex items-start gap-3">
+                  <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-qm-positive-muted" />
+                  <p className="text-sm leading-relaxed text-qm-secondary">{q}</p>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-5 text-xs text-qm-faint">{ip.corepatternSubNoData}</p>
+          </div>
+        )}
+
         {/* ── Upgrade CTA ─────────────────────────────────────────────────── */}
         <div className="rounded-2xl border border-qm-positive-border bg-qm-positive-strong/[0.04] p-7">
           <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-qm-positive">{ip.upgradePremiumLabel}</p>

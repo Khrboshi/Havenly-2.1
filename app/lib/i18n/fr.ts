@@ -833,6 +833,10 @@ export const fr: Translations = {
     demoParagraph2:       "Un schéma a émergé : le stress est souvent intensifié par le sentiment de ne pas être vu·e ou d'être sous-estimé·e. Ce sentiment de déconnexion revient, et il affecte votre bien-être.",
     demoParagraph3:       "Qu'est-ce qui vous préoccupe ces derniers temps, et comment prenez-vous soin de vous ?",
     footerNote:           "Les aperçus s'approfondissent au fur et à mesure que votre historique de réflexions grandit.",
+    questionsSectionLabel: "Questions the Mirror holds for you",
+    question1:            "What would change if you gave yourself the same patience you give everyone else?",
+    question2:            "Where does 'I'm fine' end and what you actually feel begin?",
+    question3:            "What small boundary, if you held it once, might start to shift this pattern?",
   },
 
   installPrompt: {
