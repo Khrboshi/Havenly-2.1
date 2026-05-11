@@ -126,10 +126,10 @@ export default async function UpgradePage() {
                 </div>
                 {[
                   { label: up.compRow1, free: "✓",  premium: "✓" },
-                  { label: up.compRow2, free: `${PRICING.freeMonthlyCredits} ${ps.perMoShort}`, premium: up.compUnlimited },
+                  { label: up.compRow2, free: "—",  premium: "✓" },
                   { label: up.compRow3, free: "—",  premium: "✓" },
                   { label: up.compRow4, free: "—",  premium: "✓" },
-                  { label: up.compRow5, free: "—",  premium: "✓" },
+                  { label: up.compRow5, free: `${PRICING.freeMonthlyCredits} ${ps.perMoShort}`, premium: up.compUnlimited },
                   { label: up.compRow6, free: "✓",  premium: "✓" },
                 ].map(({ label, free, premium }, i) => (
                   <div
