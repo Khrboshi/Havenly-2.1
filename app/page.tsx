@@ -9,6 +9,7 @@
 import Link from "next/link";
 import HomeBelowFold from "./(home)/HomeBelowFold";
 import { useTranslation } from "@/app/components/I18nProvider";
+import { PRICING } from "@/app/lib/pricing";
 
 export default function HomePage() {
   const { t } = useTranslation();
@@ -74,7 +75,7 @@ export default function HomePage() {
 
             {/* Price hint — surfaces cost before users invest emotional energy */}
             <p className="animate-fade-in anim-delay-450 mt-3 text-xs text-qm-faint">
-              {hp.heroPriceHint}
+              {hp.heroPriceHint(PRICING.monthly, PRICING.trialDays)}
             </p>
 
             {/* Promise strip */}

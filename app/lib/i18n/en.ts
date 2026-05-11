@@ -564,7 +564,7 @@ export const en: Translations = {
     heroCta1:         "Write your first entry free \u2192",
     heroCta2:         "See what Premium unlocks \u2192",
     heroPromise:      "\u2713\u00a0Journal in under 60 seconds \u00b7 \u2713\u00a0First reflection within moments \u00b7 \u2713\u00a0No setup, no quiz \u00b7 \u2713\u00a0No password \u2014 we email you a sign-in link",
-    heroPriceHint:    "Free to start \u00b7 $25/month if you want the deeper picture \u00b7 3-day free trial included",
+    heroPriceHint:    (price: string, trialDays: number) => `Free to start \u00b7 ${price}/month if you want the deeper picture \u00b7 ${trialDays}-day free trial included`,
     heroDevices:      "Works in browser or installed — no app store needed",
     trust1:           MARKETING.privateByDefault,
     trust2:           MARKETING.entriesNeverTrainAI,

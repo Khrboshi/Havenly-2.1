@@ -547,7 +547,7 @@ export const fr: Translations = {
     heroCta1:         "Écrivez votre première entrée gratuitement \u2192",
     heroCta2:         "Voir une vraie réflexion \u2192",
     heroPromise:      "\u2713\u00a0Journal en moins de 60 secondes \u00b7 \u2713\u00a0Première réflexion en quelques instants \u00b7 \u2713\u00a0Pas de configuration, pas de quiz",
-    heroPriceHint:    "Gratuit pour commencer · 25 $/mois si vous voulez une vision plus approfondie · Essai gratuit de 3 jours inclus",
+    heroPriceHint:    (price: string, trialDays: number) => `Gratuit pour commencer · ${price}/mois si vous voulez une vision plus approfondie · Essai gratuit de ${trialDays} jours inclus`,
         heroDevices:      "Disponible dans le navigateur sur n'importe quel appareil — aucune application requise",
     trust1:           "Privé par défaut",
     trust2:           "Les entrées n'entraînent jamais les modèles d'IA",

@@ -569,7 +569,7 @@ export interface Translations {
     heroCta1:         string;
     heroCta2:         string;
     heroPromise:      string;
-    heroPriceHint:    string;
+    heroPriceHint:    (price: string, trialDays: number) => string;
     heroDevices:      string;
     trust1:           string;
     trust2:           string;

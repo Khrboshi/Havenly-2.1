@@ -546,7 +546,7 @@ export const ro: Translations = {
     heroCta1:         "Scrie prima înregistrare gratuit \u2192",
     heroCta2:         "Vedeți o reflecție reală \u2192",
     heroPromise:      "\u2713\u00a0Jurnal în mai puțin de 60 de secunde \u00b7 \u2713\u00a0Prima reflecție în câteva momente \u00b7 \u2713\u00a0Fără configurare, fără chestionar",
-    heroPriceHint:    "Gratuit pentru început · 25 $/lună dacă vrei imaginea mai profundă · Perioadă de probă gratuită de 3 zile inclusă",
+    heroPriceHint:    (price: string, trialDays: number) => `Gratuit pentru început · ${price}/lună dacă vrei imaginea mai profundă · Perioadă de probă gratuită de ${trialDays} zile inclusă`,
         heroDevices:      "Disponibil în browser pe orice dispozitiv — nicio aplicație necesară",
     trust1:           "Privat implicit",
     trust2:           "Înregistrările nu antrenează niciodată modele AI",
