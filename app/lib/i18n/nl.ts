@@ -541,7 +541,7 @@ export const nl: Translations = {
     heroCta1:         "Schrijf je eerste bericht gratis \u2192",
     heroCta2:         "Bekijk een echte reflectie \u2192",
     heroPromise:      "\u2713\u00a0Dagboek in minder dan 60 seconden \u00b7 \u2713\u00a0Eerste reflectie binnen momenten \u00b7 \u2713\u00a0Geen setup, geen quiz",
-    heroPriceHint:    "Gratis beginnen · $25/maand als je het diepere beeld wilt · 3 dagen gratis proefperiode inbegrepen",
+    heroPriceHint:    (price: string, trialDays: number) => `Gratis beginnen · ${price}/maand als je het diepere beeld wilt · ${trialDays} dagen gratis proefperiode inbegrepen`,
         heroDevices:      "Beschikbaar in browser op elk apparaat — geen app vereist",
     trust1:           "Standaard privé",
     trust2:           "Berichten trainen nooit AI-modellen",
