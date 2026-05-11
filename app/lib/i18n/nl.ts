@@ -815,6 +815,10 @@ export const nl: Translations = {
     demoParagraph2:       "Er is een patroon ontstaan: stress wordt vaak versterkt door gevoelens van niet gezien of ondergewaardeerd worden. Dit gevoel van verbondenheidsverlies komt terug, en het beïnvloedt je welzijn.",
     demoParagraph3:       "Wat houdt je de laatste tijd bezig, en hoe zorg je voor jezelf?",
     footerNote:           "Inzichten verdiepen naarmate je reflectiegeschiedenis groeit.",
+    questionsSectionLabel: "Questions the Mirror holds for you",
+    question1:            "What would change if you gave yourself the same patience you give everyone else?",
+    question2:            "Where does 'I'm fine' end and what you actually feel begin?",
+    question3:            "What small boundary, if you held it once, might start to shift this pattern?",
   },
 
   installPrompt: {

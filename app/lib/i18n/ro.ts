@@ -820,6 +820,10 @@ export const ro: Translations = {
     demoParagraph2:       "A apărut un tipar: stresul este adesea intensificat de sentimentul că nu ești văzut sau apreciat. Acest sentiment de deconectare se repetă și îți afectează bunăstarea.",
     demoParagraph3:       "Ce te preocupă în ultima vreme și cum ai grijă de tine?",
     footerNote:           "Perspectivele se aprofundează pe măsură ce istoricul reflecțiilor tău crește.",
+    questionsSectionLabel: "Questions the Mirror holds for you",
+    question1:            "What would change if you gave yourself the same patience you give everyone else?",
+    question2:            "Where does 'I'm fine' end and what you actually feel begin?",
+    question3:            "What small boundary, if you held it once, might start to shift this pattern?",
   },
 
   installPrompt: {

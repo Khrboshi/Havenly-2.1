@@ -816,6 +816,11 @@ export interface Translations {
     demoParagraph3:       string;
     // Footer
     footerNote:           string;
+    // Questions the Mirror holds for you — demo-mode section only
+    questionsSectionLabel: string;
+    question1:            string;
+    question2:            string;
+    question3:            string;
   };
 
   // ── Install prompt (PWA banner) ───────────────────────────────────────────
