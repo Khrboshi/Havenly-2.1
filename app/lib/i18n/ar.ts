@@ -1070,27 +1070,27 @@ export const ar: Translations = {
     andConnector: "و",
     testimonialQuote:       "",
     testimonialAttribution: "",
-    progressionTag:         "ما هي التغييرات؟"
-    progressionH:           "يصبح النمط أوضح كلما كتبت لفترة أطول."
-    progressionDesc:        "يلاحظ معظم الناس تحولًا في غضون أسابيع. هذا هو الشكل الذي يميل إلى أن يبدو عليه."
-    prog1Label:             "الأسبوع الأول"
-    prog1b1:                "هناك شيء ما يشعر بالتسمية التي لم تكن لتجد الكلمات لها"
-    prog1b2:                "الكتابة تشعر أقل مثل التسجيل وأكثر مثل الملاحظة"
-    prog1b3:                "تبدأ في رؤية المشاعر التي تظهر في أغلب الأحيان"
-    prog2Label:             "بعد شهر"
-    prog2b1:                "الأنماط المتكررة تصبح أكثر صعوبة في تجاهلها"
-    prog2b2:                "تعترف بالمشاعر في وقت مبكر — قبل أن تتراكم"
-    prog2b3:                "المرآة الأسبوعية تبدأ في عكس شيء لم تتوقعه"
-    prog3Label:             "بعد 3 أشهر"
-    prog3b1:                "تفهم لماذا المواقف معينة تستمر في إنتاج نفس الشعور"
-    prog3b2:                "الدوائر العاطفية التي كانت تشعر بالغيبوبة تبدأ في التخفيف"
-    prog3b3:                "النمط الذي كنت قريبًا جدًا لرؤيته هو الآن قابل للقراءة"
-    progressionNote:        "هذه ملاحظات صادقة — ليست ضمانات. كل شخص له وتيرة مختلفة."
-    founderTag:             "من هو خلف هذا"
-    founderH:               "شخص واحد بنى هذا. شخص واحد يجيب عنه."
+    progressionTag:         "ما هي التغييرات؟",
+    progressionH:           "يصبح النمط أوضح كلما كتبت لفترة أطول.",
+    progressionDesc:        "يلاحظ معظم الناس تحولًا في غضون أسابيع. هذا هو الشكل الذي يميل إلى أن يبدو عليه.",
+    prog1Label:             "الأسبوع الأول",
+    prog1b1:                "هناك شيء ما يشعر بالتسمية التي لم تكن لتجد الكلمات لها",
+    prog1b2:                "الكتابة تشعر أقل مثل التسجيل وأكثر مثل الملاحظة",
+    prog1b3:                "تبدأ في رؤية المشاعر التي تظهر في أغلب الأحيان",
+    prog2Label:             "بعد شهر",
+    prog2b1:                "الأنماط المتكررة تصبح أكثر صعوبة في تجاهلها",
+    prog2b2:                "تعترف بالمشاعر في وقت مبكر — قبل أن تتراكم",
+    prog2b3:                "المرآة الأسبوعية تبدأ في عكس شيء لم تتوقعه",
+    prog3Label:             "بعد 3 أشهر",
+    prog3b1:                "تفهم لماذا المواقف معينة تستمر في إنتاج نفس الشعور",
+    prog3b2:                "الدوائر العاطفية التي كانت تشعر بالغيبوبة تبدأ في التخفيف",
+    prog3b3:                "النمط الذي كنت قريبًا جدًا لرؤيته هو الآن قابل للقراءة",
+    progressionNote:        "هذه ملاحظات صادقة — ليست ضمانات. كل شخص له وتيرة مختلفة.",
+    founderTag:             "من هو خلف هذا",
+    founderH:               "شخص واحد بنى هذا. شخص واحد يجيب عنه.",
     founderBodyPre:         "Quiet Mirror is independently built — no investors, no board, no data deals. Every decision about privacy, pricing, and product has one person behind it. If something feels wrong, email ",
     founderBodyPost:        " and you are writing directly to the person who built every line of it.",
-    founderEmail:           "hello@quietmirror.me"
+    founderEmail:           "hello@quietmirror.me",
   },
 
   // ── blogPage ────────────────────────────────────────────────
