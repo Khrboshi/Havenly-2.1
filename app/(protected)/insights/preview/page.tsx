@@ -536,8 +536,8 @@ export default async function InsightsPreviewPage() {
               {ip.questionsSectionLabel}
             </h2>
             <ul className="space-y-4">
-              {[ip.question1, ip.question2, ip.question3].map((q) => (
-                <li key={q} className="flex items-start gap-3">
+              {[ip.question1, ip.question2, ip.question3].map((q, i) => (
+                <li key={i} className="flex items-start gap-3">
                   <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-qm-positive-muted" />
                   <p className="text-sm leading-relaxed text-qm-secondary">{q}</p>
                 </li>
