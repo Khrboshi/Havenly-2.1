@@ -808,7 +808,7 @@ export const fr: Translations = {
     corepatternLabel:     "Ce à quoi vous revenez sans cesse",
     corepatternSub:       "La dynamique spécifique que Quiet Mirror a remarquée le plus souvent sous vos entrées.",
     corepatternHasData:   (theme: string) => `${theme} continue à apparaître avec un sentiment d'être invisible ou en retard.`,
-    corepatternNoData:    "Le stress au travail est aggravé par le sentiment d'être invisible, sous-estimé ou en retard.",
+    corepatternNoData:    "Tu portes la stabilité émotionnelle de tout le monde autour de toi — et tu t'accordes rarement la même patience.",
     corepatternSubHasData:"Votre schéma sous-jacent le plus récurrent",
     corepatternSubNoData: "Exemple — le vôtre sera construit à partir de vos propres entrées",
     corepatternBlur1:     "Vous êtes pris entre maintenir la relation et exprimer vos propres besoins émotionnels.",

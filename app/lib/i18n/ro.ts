@@ -795,7 +795,7 @@ export const ro: Translations = {
     corepatternLabel:     "La ce continuă să revino",
     corepatternSub:       "Dinamica specifică pe care Quiet Mirror a observat-o cel mai adesea sub înregistrările tale",
     corepatternHasData:   (theme: string) => `${theme} continuă să apară alături de un sentiment de a fi nevăzut sau în urmă.`,
-    corepatternNoData:    "Stresul de muncă este accentuat de sentimentul de a fi nevăzut, subevaluat sau în urmă.",
+    corepatternNoData:    "Tu porți stabilitatea emoțională a tuturor celor din jurul tău — și rareori îți acorzi ție aceeași răbdare.",
     corepatternSubHasData:"Tiparul tău recurent cel mai des",
     corepatternSubNoData: "Exemplu — al tău va fi construit din propriile tău înregistrări",
     corepatternBlur1:     "Sunteți prins între menținerea relației și exprimarea propriilor nevoi emoționale.",
