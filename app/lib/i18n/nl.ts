@@ -790,7 +790,7 @@ export const nl: Translations = {
     corepatternLabel:     "Waar je steeds op terugkomt",
     corepatternSub:       "De specifieke dynamiek die Quiet Mirror het vaakst heeft opgemerkt onder je berichten.",
     corepatternHasData:   (theme: string) => `${theme} blijft verschijnen naast een gevoel van onzichtbaar zijn of achter te lopen.`,
-    corepatternNoData:    "Jij draagt de emotionele stabiliteit van iedereen om je heen — en geeft jezelf zelden dezelfde geduld.",
+    corepatternNoData:    "Jij draagt de emotionele stabiliteit van iedereen om je heen — en geeft jezelf zelden hetzelfde geduld.",
     corepatternSubHasData:"Je meest terugkerende onderliggende patroon",
     corepatternSubNoData: "Voorbeeld — die van jou wordt gebouwd uit jouw eigen berichten",
     corepatternBlur1:     "Je zit gevangen tussen de relatie bewaren en je eigen emotionele behoeften uitdrukken.",
