@@ -1125,7 +1125,7 @@ export const uk: Translations = {
     founderH:               "Одна людина створила це. Одна людина відповідає за це.",
     founderBodyPre:         "Quiet Mirror is independently built — no investors, no board, no data deals. Every decision about privacy, pricing, and product has one person behind it. If something feels wrong, email ",
     founderBodyPost:        " and you are writing directly to the person who built every line of it.",
-    founderEmail:           "hello@quietmirror.me",
+    founderEmail:           "hello@quietmirror.me"
     depthTag:               "Що Quiet Mirror створює",
     depthH:                 "Картина стає чіткішою, чим більше ви пишете.",
     depthDesc:              "Кожен запис додається до того, що Quiet Mirror вже знає про вас. Через кілька тижнів він читає не один запис — він читає форму вашого внутрішнього життя протягом місяців.",
