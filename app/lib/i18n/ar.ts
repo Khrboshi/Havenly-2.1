@@ -842,10 +842,10 @@ export const ar: Translations = {
     demoParagraph2:       "ظهر نمط واضح: كثيرًا ما يتكثف التوتر بمشاعر عدم الرؤية أو التقدير. هذا الإحساس بالانفصال يتكرر، وهو يؤثر على صحتك النفسية.",
     demoParagraph3:       "ما الذي يشغل بالك مؤخرًا، وكيف تعتني بنفسك؟",
     footerNote:           "تعمق التحليلات مع نمو تاريخ تأملاتك.",
-    questionsSectionLabel: "Questions the Mirror holds for you",
-    question1:            "What would change if you gave yourself the same patience you give everyone else?",
-    question2:            "Where does 'I'm fine' end and what you actually feel begin?",
-    question3:            "What small boundary, if you held it once, might start to shift this pattern?",
+    questionsSectionLabel: "الأسئلة التي يحتفظ بها المرآة لك"
+    question1:            "ماذا سيتغير إذا منحتنفسك نفس الصبر الذي تمنحه للآخرين؟"
+    question2:            "أين ينتهي 'أنا بخير' وتبدأ ما تشعر به حقًا؟"
+    question3:            "ما الحدود الصغيرة، إذا احتفظت بها مرة واحدة، قد تبدأ في تغيير هذا النمط؟"
   },
 
   installPrompt: {
@@ -1094,11 +1094,11 @@ export const ar: Translations = {
     founderH:               "شخص واحد بنى هذا. شخص واحد يجيب عنه.",
     founderBodyPre:         "Quiet Mirror is independently built — no investors, no board, no data deals. Every decision about privacy, pricing, and product has one person behind it. If something feels wrong, email ",
     founderBodyPost:        " and you are writing directly to the person who built every line of it.",
-    founderEmail:           "hello@quietmirror.me",
-    depthTag:               "What Quiet Mirror is building",
-    depthH:                 "The picture gets clearer the more you write.",
-    depthDesc:              "Each entry adds to what Quiet Mirror already knows about you. After a few weeks, it is not reading a single entry — it is reading the shape of your inner life over months.",
-    longitudinalNote:       "Each card above is built from your full writing history — not just your last entry.",
+    founderEmail:           "hello@quietmirror.me"
+    depthTag:               "ما الذي تبنيه Quiet Mirror"
+    depthH:                 "الصورة تصبح أوضح كلما كتبت."
+    depthDesc:              "يضيف كل مدخل إلى ما تعرفه Quiet Mirror عنك بالفعل. بعد بضعة أسابيع، لن تقرأ مدخلاً واحدًا - بل تقرأ شكل حياتك الداخلية على مدار أشهر."
+    longitudinalNote:       "كل بطاقة أعلاه مبنية من تاريخ كتابتك الكامل - وليس فقط آخر مدخل لك."
   },
 
   // ── blogPage ────────────────────────────────────────────────
