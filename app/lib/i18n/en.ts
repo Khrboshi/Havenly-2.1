@@ -1102,6 +1102,12 @@ export const en: Translations = {
     founderBodyPre:         "Quiet Mirror is independently built \u2014 no investors, no board, no data deals. Every decision about privacy, pricing, and product has one person behind it. If something feels wrong, email\u00a0",
     founderBodyPost:        "\u00a0and you are writing directly to the person who built every line of it.",
     founderEmail:           "hello@quietmirror.me",
+    // Depth signal strip — shown instead of the dark testimonial placeholder
+    depthTag:               "What Quiet Mirror is building",
+    depthH:                 "The picture gets clearer the more you write.",
+    depthDesc:              "Each entry adds to what Quiet Mirror already knows about you. After a few weeks, it is not reading a single entry — it is reading the shape of your inner life over months.",
+    // Longitudinal framing note below the insight card grid
+    longitudinalNote:       "Each card above is built from your full writing history — not just your last entry.",
   },
 
   // ── Blog page chrome ─────────────────────────────────────────────────────

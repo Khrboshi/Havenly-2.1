@@ -1075,6 +1075,12 @@ export interface Translations {
     founderBodyPre:         string;
     founderBodyPost:        string;
     founderEmail:           string;
+    // Depth signal strip — replaces the dark testimonial placeholder
+    depthTag:               string;
+    depthH:                 string;
+    depthDesc:              string;
+    // Longitudinal framing note below the insight card grid
+    longitudinalNote:       string;
   };
 
   // ── Blog page chrome ─────────────────────────────────────────────────────

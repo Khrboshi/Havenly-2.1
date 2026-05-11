@@ -393,39 +393,15 @@ export default async function UpgradePage() {
             </div>
           </div>
 
-          <div className="mt-8">
+          <p className="mt-6 text-xs text-qm-faint">{uf.longitudinalNote}</p>
+
+          <div className="mt-4">
             <Link href="/insights/preview" className="inline-flex items-center gap-2 text-sm font-medium text-qm-positive transition-colors hover:text-qm-positive-hover">
               {uf.seeFullExample}
             </Link>
           </div>
         </div>
       </section>
-
-      {/* ── Mid-page CTA ─────────────────────────────────────────────────── */}
-      <div className="border-b border-qm-border-subtle bg-qm-positive-strong/[0.03] py-10">
-        <div className="mx-auto max-w-3xl px-5 text-center">
-          <p className="mb-4 font-display text-xl font-medium text-qm-primary sm:text-2xl">
-            {uf.midH}
-            <br />
-            <span className="text-qm-positive">{uf.midAccent}</span>
-          </p>
-          <div className="flex flex-col items-center gap-2">
-            <UpgradeButton
-              label={btnLabel}
-              redirectingLabel={btnRedirecting}
-              errorPrefix={btnErrorPrefix}
-              supportEmail={CONFIG.supportEmail}
-              className={btnMidPage}
-            />
-            <p className="text-xs text-qm-faint">
-              {ps.trialFreeFor(PRICING.trialDays)} · {t.upgrade.cancelAnytime}
-            </p>
-            <p className="text-xs font-medium text-qm-positive">
-              {ip.upgradeRefund(PRICING.trialDays)}
-            </p>
-          </div>
-        </div>
-      </div>
 
       {/* ── Mid-page CTA ─────────────────────────────────────────────────── */}
       <div className="border-b border-qm-border-subtle bg-qm-positive-strong/[0.03] py-10">
@@ -521,6 +497,51 @@ export default async function UpgradePage() {
           })()}
 
           <p className="mt-6 text-xs text-qm-faint">{uf.progressionNote}</p>
+        </div>
+      </section>
+
+      {/* ── Depth signal strip — what the system builds over time ──────── */}
+      <section className="border-b border-qm-border-subtle py-12 sm:py-16">
+        <div className="mx-auto max-w-6xl px-5">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-qm-positive">
+            {uf.depthTag}
+          </p>
+          <h2 className="mt-3 font-display text-xl font-semibold text-qm-primary sm:text-2xl">
+            {uf.depthH}
+          </h2>
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-qm-muted">
+            {uf.depthDesc}
+          </p>
+          <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            {[
+              {
+                stat: "5–7",
+                label: "entries before first pattern surfaces",
+                color: "text-qm-positive",
+                border: "border-qm-positive-border",
+                bg: "bg-qm-positive-strong/[0.04]",
+              },
+              {
+                stat: "4 wks",
+                label: "typical time to recognise a recurring emotional loop",
+                color: "text-qm-premium",
+                border: "border-qm-premium-border",
+                bg: "bg-qm-premium-strong/[0.04]",
+              },
+              {
+                stat: "6 languages",
+                label: "every insight in your own language, wherever you are",
+                color: "text-qm-muted",
+                border: "border-qm-border-subtle",
+                bg: "bg-white/[0.02]",
+              },
+            ].map(({ stat, label, color, border, bg }) => (
+              <div key={stat} className={`rounded-[1.5rem] border ${border} ${bg} p-6`}>
+                <p className={`font-display text-3xl font-bold ${color}`}>{stat}</p>
+                <p className="mt-2 text-sm leading-relaxed text-qm-muted">{label}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
