@@ -848,7 +848,7 @@ export const uk: Translations = {
     corepatternLabel:     "До чого ти повертаєшся знову",
     corepatternSub:       "Конкретна динаміка, яку Quiet Mirror помічав найчастіше у ваших записах.",
     corepatternHasData:   (theme: string) => `${theme} постійно з'являється поруч із відчуттям, що тебе не помічають або що ти відстаєш.`,
-    corepatternNoData:    "Робочий стрес загострюється через відчуття, що тебе не бачать, не цінують або ти відстаєш.",
+    corepatternNoData:    "Ти несеш емоційну стійкість усіх навколо — і рідко даєш собі таке ж терпіння.",
     corepatternSubHasData:"твоя найбільш повторювана схема",
     corepatternSubNoData: "Приклад — твоя буде побудована з ваших власних записів",
     corepatternBlur1:     "Ти розриваєшся між збереженням стосунків і вираженням власних емоційних потреб.",
@@ -873,10 +873,10 @@ export const uk: Translations = {
     demoParagraph2:       "Вимальовується певний патерн: стрес часто посилюється відчуттям, що тебе не помічають або недооцінюють. Це відчуття роз'єднаності повторюється і впливає на твоє самопочуття.",
     demoParagraph3:       "Що останнім часом у тебе на думці, і як ти дбаєш про себе?",
     footerNote:           "Аналітика поглиблюється в міру зростання вашої історії відображень.",
-    questionsSectionLabel: "Запитання, які Дзеркало ставить перед вами"
-    question1:            "Що змінилося б, якби ви дали собі стільки ж терпіння, скільки даєте всім іншим?"
-    question2:            "Де закінчується 'Мені нормально' і починається те, що ви насправді відчуваєте?"
-    question3:            "Яка невелика межа, якби ви її встановили хоча б раз, могла б почати змінювати цю закономірність?"
+    questionsSectionLabel: "Запитання, які Дзеркало ставить перед вами",
+    question1:            "Що змінилося б, якби ви дали собі стільки ж терпіння, скільки даєте всім іншим?",
+    question2:            "Де закінчується 'Мені нормально' і починається те, що ви насправді відчуваєте?",
+    question3:            "Яка невелика межа, якби ви її встановили хоча б раз, могла б почати змінювати цю закономірність?",
   },
 
   installPrompt: {
@@ -1125,7 +1125,7 @@ export const uk: Translations = {
     founderH:               "Одна людина створила це. Одна людина відповідає за це.",
     founderBodyPre:         "Quiet Mirror is independently built — no investors, no board, no data deals. Every decision about privacy, pricing, and product has one person behind it. If something feels wrong, email ",
     founderBodyPost:        " and you are writing directly to the person who built every line of it.",
-    founderEmail:           "hello@quietmirror.me"
+    founderEmail:           "hello@quietmirror.me",
     depthTag:               "Що Quiet Mirror створює",
     depthH:                 "Картина стає чіткішою, чим більше ви пишете.",
     depthDesc:              "Кожен запис додається до того, що Quiet Mirror вже знає про вас. Через кілька тижнів він читає не один запис — він читає форму вашого внутрішнього життя протягом місяців.",

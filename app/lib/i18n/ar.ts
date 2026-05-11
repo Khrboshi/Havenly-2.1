@@ -817,7 +817,7 @@ export const ar: Translations = {
     corepatternLabel:     "ما تعود إليه مراراً",
     corepatternSub:       "الديناميكية المحددة التي لاحظها Quiet Mirror في مدخلاتك أكثر من غيرها.",
     corepatternHasData:   (theme: string) => `${theme} يظهر باستمرار بجانب شعور بأنك غير مرئي أو متأخر.`,
-    corepatternNoData:    "ضغط العمل يتفاقم بسبب الشعور بأنك غير مرئي أو غير مُقدَّر أو متأخر.",
+    corepatternNoData:    "أنت تحمل الثبات العاطفي لكل من حولك — ونادرًا ما تمنح نفسك الصبر ذاته.",
     corepatternSubHasData:"نمطك المتكرر الأكثر شيوعاً",
     corepatternSubNoData: "مثال — نمطك سيُبنى من مدخلاتك الخاصة",
     corepatternBlur1:     "أنت ممزَّق بين الحفاظ على العلاقة والتعبير عن احتياجاتك العاطفية.",
@@ -842,10 +842,10 @@ export const ar: Translations = {
     demoParagraph2:       "ظهر نمط واضح: كثيرًا ما يتكثف التوتر بمشاعر عدم الرؤية أو التقدير. هذا الإحساس بالانفصال يتكرر، وهو يؤثر على صحتك النفسية.",
     demoParagraph3:       "ما الذي يشغل بالك مؤخرًا، وكيف تعتني بنفسك؟",
     footerNote:           "تعمق التحليلات مع نمو تاريخ تأملاتك.",
-    questionsSectionLabel: "الأسئلة التي يحتفظ بها المرآة لك"
-    question1:            "ماذا سيتغير إذا منحتنفسك نفس الصبر الذي تمنحه للآخرين؟"
-    question2:            "أين ينتهي 'أنا بخير' وتبدأ ما تشعر به حقًا؟"
-    question3:            "ما الحدود الصغيرة، إذا احتفظت بها مرة واحدة، قد تبدأ في تغيير هذا النمط؟"
+    questionsSectionLabel: "الأسئلة التي يحتفظ بها المرآة لك",
+    question1:            "ماذا سيتغير إذا منحت نفسك نفس الصبر الذي تمنحه للآخرين؟",
+    question2:            "أين ينتهي 'أنا بخير' وتبدأ ما تشعر به حقًا؟",
+    question3:            "ما الحدود الصغيرة، إذا احتفظت بها مرة واحدة، قد تبدأ في تغيير هذا النمط؟",
   },
 
   installPrompt: {
@@ -1094,11 +1094,11 @@ export const ar: Translations = {
     founderH:               "شخص واحد بنى هذا. شخص واحد يجيب عنه.",
     founderBodyPre:         "Quiet Mirror is independently built — no investors, no board, no data deals. Every decision about privacy, pricing, and product has one person behind it. If something feels wrong, email ",
     founderBodyPost:        " and you are writing directly to the person who built every line of it.",
-    founderEmail:           "hello@quietmirror.me"
-    depthTag:               "ما الذي تبنيه Quiet Mirror"
-    depthH:                 "الصورة تصبح أوضح كلما كتبت."
-    depthDesc:              "يضيف كل مدخل إلى ما تعرفه Quiet Mirror عنك بالفعل. بعد بضعة أسابيع، لن تقرأ مدخلاً واحدًا - بل تقرأ شكل حياتك الداخلية على مدار أشهر."
-    longitudinalNote:       "كل بطاقة أعلاه مبنية من تاريخ كتابتك الكامل - وليس فقط آخر مدخل لك."
+    founderEmail:           "hello@quietmirror.me",
+    depthTag:               "ما الذي تبنيه Quiet Mirror",
+    depthH:                 "الصورة تصبح أوضح كلما كتبت.",
+    depthDesc:              "يضيف كل مدخل إلى ما تعرفه Quiet Mirror عنك بالفعل. بعد بضعة أسابيع، لن تقرأ مدخلاً واحدًا - بل تقرأ شكل حياتك الداخلية على مدار أشهر.",
+    longitudinalNote:       "كل بطاقة أعلاه مبنية من تاريخ كتابتك الكامل - وليس فقط آخر مدخل لك.",
   },
 
   // ── blogPage ────────────────────────────────────────────────
