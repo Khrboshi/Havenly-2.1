@@ -144,16 +144,19 @@ export default function JournalEntryClient({
 
   const parsedSummary = useMemo(
     () => (reflection ? parseSummary(reflection.summary) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- leaf-value dep is intentionally more precise than full reflection object
     [reflection?.summary]
   );
 
   const parsedStep = useMemo(
     () => (reflection ? parseNextStep(reflection.gentlenextstep) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- leaf-value dep is intentionally more precise than full reflection object
     [reflection?.gentlenextstep]
   );
 
   const questionsTitle = useMemo(
     () => t.ui.questionsHeading(reflection?.questions?.length ?? 0),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- leaf-value dep is intentionally precise; t.ui is stable translations
     [reflection?.questions?.length]
   );
 

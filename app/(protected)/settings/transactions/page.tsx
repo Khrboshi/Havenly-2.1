@@ -103,6 +103,7 @@ export default function TransactionsPage() {
     return () => {
       alive = false;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- t is stable translations, adding it causes re-fetch loops
   }, []);
 
   const showUpgrade = !loading && planType !== "PREMIUM";

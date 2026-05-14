@@ -103,6 +103,7 @@ function MagicLoginInner() {
     setMode(deviceIsIOS ? "code" : "link");
     setQuoteIndex(Math.floor(Math.random() * SIDE_QUOTES.length));
     setParamsReady(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- SIDE_QUOTES is a module-level constant, never changes at runtime
   }, []);
 
   const goNext = useCallback(
@@ -120,6 +121,7 @@ function MagicLoginInner() {
     setMode("code");
     setStatus("error");
     setMessage(ml.callbackError);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- ml is stable translations, adding it causes unnecessary re-runs
   }, [callbackError]);
 
   useEffect(() => {
