@@ -16,6 +16,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PRICING } from "@/app/lib/pricing";
 import { PAYMENT } from "@/app/lib/payment";
+// PRICING.earlyAccess — when true, paid CTAs are replaced with a free sign-up
+// button and an early-access banner. Flip to false in pricing.ts to resume
+// the normal paid trial flow. No other files need changing.
 import { CONFIG } from "@/app/lib/config";
 import { QM } from "@/app/lib/colors";
 import { getRequestTranslations } from "@/app/lib/i18n/server";
@@ -147,65 +150,91 @@ export default async function UpgradePage() {
                 ))}
               </div>
 
-              {/* Price + CTA */}
+              {/* Price + CTA — conditional on early access mode */}
               <div className="mt-8">
-                <div className="mb-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                  <span className="font-display text-4xl font-bold text-qm-primary">
-                    {PRICING.monthly}
-                  </span>
-                  <span className="text-sm text-qm-muted">{uf.perMonth}</span>
-                  <span className="rounded-full border border-qm-positive-border bg-qm-positive-soft px-2.5 py-0.5 text-[11px] font-medium text-qm-positive">
-                    {ps.valueLabel(PRICING.trialDays)}
-                  </span>
-                </div>
-                <p className="mb-4 text-xs text-qm-faint">
-                  {ps.trialFreeFor(PRICING.trialDays)} · {t.upgrade.cancelAnytime}
-                </p>
-
-                <div className="flex flex-col gap-2 sm:max-w-sm">
-                  <UpgradeButton
-                    label={btnLabel}
-                    redirectingLabel={btnRedirecting}
-                    errorPrefix={btnErrorPrefix}
-                    supportEmail={CONFIG.supportEmail}
-                    className={btnPrimary}
-                  />
-
-                  <div className="rounded-xl border border-qm-positive-border bg-qm-positive-strong/[0.04] px-4 py-2.5 text-center">
-                    <p className="text-xs font-medium text-qm-secondary">
-                      {ps.trialLabel(PRICING.trialDays)} — {uf.trialNoCharge}
-                    </p>
-                    <p className="mt-0.5 text-[11px] leading-relaxed text-qm-faint">
-                      {uf.trialExplainer(ps.trialLabel(PRICING.trialDays))}
+                {PRICING.earlyAccess ? (
+                  /* ── Early access mode ─────────────────────────────────── */
+                  <div className="flex flex-col gap-3 sm:max-w-sm">
+                    {/* Banner */}
+                    <div className="rounded-xl border border-qm-positive-border bg-qm-positive-strong/[0.06] px-4 py-3">
+                      <p className="text-xs leading-relaxed text-qm-secondary">
+                        {uf.earlyAccessBanner}
+                      </p>
+                    </div>
+                    {/* Free CTA */}
+                    <Link
+                      href="/magic-login"
+                      className={btnPrimary}
+                    >
+                      {uf.earlyAccessCta}
+                    </Link>
+                    {/* Subline — honest about future pricing */}
+                    <p className="text-center text-xs text-qm-faint">
+                      {uf.earlyAccessSubline}
                     </p>
                   </div>
+                ) : (
+                  /* ── Normal paid trial mode ─────────────────────────────── */
+                  <>
+                    <div className="mb-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                      <span className="font-display text-4xl font-bold text-qm-primary">
+                        {PRICING.monthly}
+                      </span>
+                      <span className="text-sm text-qm-muted">{uf.perMonth}</span>
+                      <span className="rounded-full border border-qm-positive-border bg-qm-positive-soft px-2.5 py-0.5 text-[11px] font-medium text-qm-positive">
+                        {ps.valueLabel(PRICING.trialDays)}
+                      </span>
+                    </div>
+                    <p className="mb-4 text-xs text-qm-faint">
+                      {ps.trialFreeFor(PRICING.trialDays)} · {t.upgrade.cancelAnytime}
+                    </p>
 
-                  <Link
-                    href="/insights/preview"
-                    className="inline-flex w-full items-center justify-center rounded-full border border-qm-border-subtle px-6 py-3 text-sm font-medium text-qm-muted transition-colors hover:border-qm-border-subtle hover:text-qm-primary"
-                  >
-                    {uf.previewInsights}
-                  </Link>
-                </div>
+                    <div className="flex flex-col gap-2 sm:max-w-sm">
+                      <UpgradeButton
+                        label={btnLabel}
+                        redirectingLabel={btnRedirecting}
+                        errorPrefix={btnErrorPrefix}
+                        supportEmail={CONFIG.supportEmail}
+                        className={btnPrimary}
+                      />
 
-                {/* Refund badge — visible trust signal near primary CTA */}
-                <p className="mt-3 text-xs font-medium text-qm-positive">
-                  {ip.upgradeRefund(PRICING.trialDays)}
-                </p>
+                      <div className="rounded-xl border border-qm-positive-border bg-qm-positive-strong/[0.04] px-4 py-2.5 text-center">
+                        <p className="text-xs font-medium text-qm-secondary">
+                          {ps.trialLabel(PRICING.trialDays)} — {uf.trialNoCharge}
+                        </p>
+                        <p className="mt-0.5 text-[11px] leading-relaxed text-qm-faint">
+                          {uf.trialExplainer(ps.trialLabel(PRICING.trialDays))}
+                        </p>
+                      </div>
 
-                {/* Trust lines — these are the critical SSR-verifiable strings */}
-                <p className="mt-1 text-xs text-qm-faint">{PAYMENT.checkoutTrustLine}</p>
-                <p className="mt-1 text-xs text-qm-faint">
-                  {uf.bySubscribing}{" "}
-                  <Link href="/terms" className="text-qm-positive underline underline-offset-2 transition-colors hover:text-qm-positive-hover">
-                    {uf.termsOfService}
-                  </Link>{" "}
-                  {uf.andConnector}{" "}
-                  <Link href="/privacy" className="text-qm-positive underline underline-offset-2 transition-colors hover:text-qm-positive-hover">
-                    {uf.privacyPolicy}
-                  </Link>
-                  .
-                </p>
+                      <Link
+                        href="/insights/preview"
+                        className="inline-flex w-full items-center justify-center rounded-full border border-qm-border-subtle px-6 py-3 text-sm font-medium text-qm-muted transition-colors hover:border-qm-border-subtle hover:text-qm-primary"
+                      >
+                        {uf.previewInsights}
+                      </Link>
+                    </div>
+
+                    {/* Refund badge — visible trust signal near primary CTA */}
+                    <p className="mt-3 text-xs font-medium text-qm-positive">
+                      {ip.upgradeRefund(PRICING.trialDays)}
+                    </p>
+
+                    {/* Trust lines — these are the critical SSR-verifiable strings */}
+                    <p className="mt-1 text-xs text-qm-faint">{PAYMENT.checkoutTrustLine}</p>
+                    <p className="mt-1 text-xs text-qm-faint">
+                      {uf.bySubscribing}{" "}
+                      <Link href="/terms" className="text-qm-positive underline underline-offset-2 transition-colors hover:text-qm-positive-hover">
+                        {uf.termsOfService}
+                      </Link>{" "}
+                      {uf.andConnector}{" "}
+                      <Link href="/privacy" className="text-qm-positive underline underline-offset-2 transition-colors hover:text-qm-positive-hover">
+                        {uf.privacyPolicy}
+                      </Link>
+                      .
+                    </p>
+                  </>
+                )}
               </div>
 
               <p className="mt-5 text-xs text-qm-faint">
@@ -412,19 +441,33 @@ export default async function UpgradePage() {
             <span className="text-qm-positive">{uf.midAccent}</span>
           </p>
           <div className="flex flex-col items-center gap-2">
-            <UpgradeButton
-              label={btnLabel}
-              redirectingLabel={btnRedirecting}
-              errorPrefix={btnErrorPrefix}
-              supportEmail={CONFIG.supportEmail}
-              className={btnMidPage}
-            />
-            <p className="text-xs text-qm-faint">
-              {ps.trialFreeFor(PRICING.trialDays)} · {t.upgrade.cancelAnytime}
-            </p>
-            <p className="text-xs font-medium text-qm-positive">
-              {ip.upgradeRefund(PRICING.trialDays)}
-            </p>
+            {PRICING.earlyAccess ? (
+              <>
+                <Link
+                  href="/magic-login"
+                  className={btnMidPage}
+                >
+                  {uf.earlyAccessCta}
+                </Link>
+                <p className="text-xs text-qm-faint">{uf.earlyAccessSubline}</p>
+              </>
+            ) : (
+              <>
+                <UpgradeButton
+                  label={btnLabel}
+                  redirectingLabel={btnRedirecting}
+                  errorPrefix={btnErrorPrefix}
+                  supportEmail={CONFIG.supportEmail}
+                  className={btnMidPage}
+                />
+                <p className="text-xs text-qm-faint">
+                  {ps.trialFreeFor(PRICING.trialDays)} · {t.upgrade.cancelAnytime}
+                </p>
+                <p className="text-xs font-medium text-qm-positive">
+                  {ip.upgradeRefund(PRICING.trialDays)}
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -619,19 +662,38 @@ export default async function UpgradePage() {
             {uf.closingDesc(CONFIG.appName)}
           </p>
           <div className="mt-7 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <UpgradeButton
-              label={ps.startTrialCta(ps.trialLabel(PRICING.trialDays))}
-              redirectingLabel={btnRedirecting}
-              errorPrefix={btnErrorPrefix}
-              supportEmail={CONFIG.supportEmail}
-              className={btnClosing}
-            />
-            <Link
-              href="/magic-login"
-              className="inline-flex items-center justify-center rounded-full border border-qm-border-subtle px-7 py-4 text-base font-medium text-qm-muted transition-colors hover:border-qm-border-subtle hover:text-qm-primary sm:py-3.5 sm:text-sm"
-            >
-              {uf.closingStartFree}
-            </Link>
+            {PRICING.earlyAccess ? (
+              <>
+                <Link
+                  href="/magic-login"
+                  className={btnClosing}
+                >
+                  {uf.earlyAccessCta}
+                </Link>
+                <Link
+                  href="/insights/preview"
+                  className="inline-flex items-center justify-center rounded-full border border-qm-border-subtle px-7 py-4 text-base font-medium text-qm-muted transition-colors hover:border-qm-border-subtle hover:text-qm-primary sm:py-3.5 sm:text-sm"
+                >
+                  {uf.previewInsights}
+                </Link>
+              </>
+            ) : (
+              <>
+                <UpgradeButton
+                  label={ps.startTrialCta(ps.trialLabel(PRICING.trialDays))}
+                  redirectingLabel={btnRedirecting}
+                  errorPrefix={btnErrorPrefix}
+                  supportEmail={CONFIG.supportEmail}
+                  className={btnClosing}
+                />
+                <Link
+                  href="/magic-login"
+                  className="inline-flex items-center justify-center rounded-full border border-qm-border-subtle px-7 py-4 text-base font-medium text-qm-muted transition-colors hover:border-qm-border-subtle hover:text-qm-primary sm:py-3.5 sm:text-sm"
+                >
+                  {uf.closingStartFree}
+                </Link>
+              </>
+            )}
           </div>
           <p className="mt-5 text-xs text-qm-faint">{uf.closingTrust}</p>
         </div>

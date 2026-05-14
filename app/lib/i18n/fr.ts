@@ -1090,6 +1090,9 @@ export const fr: Translations = {
     depthH:                 "L'image devient plus claire plus vous écrivez.",
     depthDesc:              "Chaque entrée ajoute à ce que Quiet Mirror sait déjà sur vous. Après quelques semaines, ce n'est pas une seule entrée qu'il lit — c'est la forme de votre vie intérieure sur des mois.",
     longitudinalNote:       "Chaque carte ci-dessus est construite à partir de votre historique d'écriture complet — pas seulement votre dernière entrée.",
+    earlyAccessBanner:      "Pricing is paused while we're getting started — all premium features are free right now.",
+    earlyAccessCta:         "Sign up free →",
+    earlyAccessSubline:     "$25/month when pricing goes live · No card needed now",
   },
 
   // ── blogPage ────────────────────────────────────────────────
