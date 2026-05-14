@@ -257,3 +257,19 @@ When evaluating a proposed change, ask:
 4. Is it on the launch checklist (§7) — or is it a distraction (§11)?
 
 If the answer to 1–3 is no, or the answer to 4 is "distraction" — it waits.
+
+---
+
+## 13. Cross-project sync — Dev ↔ Instagram
+
+Quiet Mirror runs two Claude projects: this development project and the
+**Quiet Mirror IG** project (Instagram content and growth).
+
+The bridge document is **`docs/IG_SYNC.md`**. It captures only the facts
+that cross the boundary between projects — product state that affects IG
+copy, IG state that affects dev (e.g. testimonials), and open bridge items
+that require action in both.
+
+**Read `docs/IG_SYNC.md` at session start** alongside SKILL.md.
+**Update it** whenever a bridge item closes or product state changes
+(earlyAccess flip, testimonial shipped, bio link updated, etc.).
