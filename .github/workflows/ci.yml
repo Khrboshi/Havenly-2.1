@@ -16,13 +16,11 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      # Translation commits from i18n-auto-translate.yml — no need to re-check
-      - 'app/lib/i18n/ar.ts'
-      - 'app/lib/i18n/fr.ts'
-      - 'app/lib/i18n/nl.ts'
-      - 'app/lib/i18n/ro.ts'
-      - 'app/lib/i18n/uk.ts'
+    # Note: locale files (ar/fr/nl/ro/uk.ts) are intentionally NOT excluded here.
+    # The auto-translate bot commits to these files directly on main, and those
+    # commits must pass tsc to catch the known trailing-comma pipeline bug.
+    # The bot workflow now runs tsc itself before committing (added in the same PR
+    # that fixed the bug), so this is a belt-and-suspenders check.
 
 jobs:
   ci:

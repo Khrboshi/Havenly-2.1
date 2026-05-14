@@ -528,13 +528,19 @@ async function main() {
         // Match the exact line for this leaf key with its English stub value
         // so we never accidentally replace a key with the same name in a different namespace
         const enVal  = enKeys[fullKey] ?? "";
-        const enEscaped = enVal.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        // extractKeyValues stores raw TS source which includes the trailing comma
+        // (e.g. '"hello@quietmirror.me",'). Strip the comma BEFORE escaping so it
+        // is NOT baked into enEscaped — that way (,?) correctly captures the comma
+        // from the file and $2 restores it. Without this, (,?) always captures ''
+        // and the replacement loses the trailing comma → TypeScript syntax error.
+        const enValStripped = enVal.replace(/,\s*$/, "");
+        const enEscaped = enValStripped.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         // Match: <whitespace><key>:<whitespace><englishValue><optional comma><EOL>
         const lineRe = new RegExp(
           `([ \\t]+${leafKey}[ \\t]*:[ \\t]*)${enEscaped}(,?)`,
           ""
         );
-        const cleaned = newVal.replace(/,\s*$/, ""); // strip trailing comma — we add it back
+        const cleaned = newVal.replace(/,\s*$/, ""); // strip trailing comma — $2 restores it
         const replacement = `$1${cleaned}$2`;
         const patched = src.replace(lineRe, replacement);
         if (patched !== src) {
