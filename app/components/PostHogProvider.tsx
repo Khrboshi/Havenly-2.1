@@ -33,11 +33,15 @@ function PostHogPageView() {
 function PostHogInit() {
   useEffect(() => {
     const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
-    const host = process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com";
     if (!key) return; // silently no-op if key not set (local dev without env var)
 
     posthog.init(key, {
-      api_host: host,
+      // Route all events through the Next.js reverse proxy (/ingest/*)
+      // so ad blockers and privacy browsers cannot block PostHog calls.
+      // See: next.config.mjs rewrites() for the proxy destination.
+      api_host: "/ingest",
+      // ui_host must point to the real PostHog dashboard so the toolbar works.
+      ui_host: "https://eu.posthog.com",
       person_profiles: "always",
       capture_pageview: false,            // we handle pageviews manually above
       capture_pageleave: true,
