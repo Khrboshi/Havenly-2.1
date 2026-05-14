@@ -79,7 +79,7 @@ When this happens in the dev project:
 | New i18n keys added that affect public copy | Dev | Note if copy appears on pages IG links to |
 | Bio or /upgrade CTA changes | Dev | IG copy rules section |
 | IG follower milestone (100, 500, 1000) | IG | Note here for potential social proof on site |
-| Post with strong save rate identified | IG | Note pillar — may inform homepage copy direction |
+| Post with strong save rate identified | IG | Note the pillar — may inform homepage copy direction |
 
 ---
 
