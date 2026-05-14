@@ -2,7 +2,7 @@
 // app/(protected)/insights/InsightsClient.tsx
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "@/app/components/I18nProvider";
 import { DOMAIN_COLOR, QM } from "@/app/lib/colors";
 import { CONFIG } from "@/app/lib/config";
@@ -526,7 +526,7 @@ function WeeklySummarySection({ hasRealData }: { hasRealData: boolean }) {
   const { t } = useTranslation();
   const [state, setState] = useState<SummaryState>({ status: "idle" });
 
-  async function fetchSummary(force = false) {
+  const fetchSummary = useCallback(async function fetchSummary(force = false) {
     setState({ status: "loading" });
     try {
       if (force) {
@@ -556,11 +556,11 @@ function WeeklySummarySection({ hasRealData }: { hasRealData: boolean }) {
         message: t.errors.networkRetry,
       });
     }
-  }
+  }, [t]);
 
   useEffect(() => {
     if (hasRealData) fetchSummary();
-  }, [hasRealData]);
+  }, [hasRealData, fetchSummary]);
 
   const generatedLabel = useMemo(() => {
     if (state.status !== "ready") return null;
@@ -692,6 +692,7 @@ export default function InsightsClient() {
       }
     }
     load();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- t is stable translations, adding it causes re-fetch loops
   }, []);
 
   const allThemes = useMemo(() => (data ? sortMap(data.themes) : []), [data]);
