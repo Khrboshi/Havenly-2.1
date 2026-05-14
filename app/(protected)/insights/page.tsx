@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase/server";
 import { type PlanType } from "@/lib/planUtils";
+import { PRICING } from "@/app/lib/pricing";
 import InsightsClient from "./InsightsClient";
 import type { UserPlanRow } from "@/lib/supabaseTypes";
 
@@ -27,7 +28,8 @@ export default async function InsightsPage() {
 
   const planType = normalizePlan((data as UserPlanRow | null)?.plan_type);
 
-  if (planType !== "PREMIUM" && planType !== "TRIAL") {
+  // During early-access mode all users get full insights access.
+  if (!PRICING.earlyAccess && planType !== "PREMIUM" && planType !== "TRIAL") {
     redirect("/insights/preview");
   }
 

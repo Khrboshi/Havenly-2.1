@@ -19,7 +19,7 @@ import {
   normalizeAIResponseSignals,
 } from "@/lib/ai/normalizeInsightSignals";
 import { type PlanType, normalizePlan, type UserCreditsRow, type JournalAIRow, parseAIResponse } from "@/lib/planUtils";
-
+import { PRICING } from "@/app/lib/pricing";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
@@ -61,7 +61,7 @@ export async function GET() {
   }
 
   const planType = await getUserPlanType(supabase, user.id);
-  if (planType !== "PREMIUM" && planType !== "TRIAL") {
+  if (!PRICING.earlyAccess && planType !== "PREMIUM" && planType !== "TRIAL") {
     return NextResponse.json({ error: "Premium required" }, { status: 402 });
   }
 
