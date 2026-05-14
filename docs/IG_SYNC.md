@@ -1,0 +1,92 @@
+# docs/IG_SYNC.md
+### Cross-project sync — Quiet Mirror Dev ↔ Quiet Mirror IG
+**Last updated: May 14, 2026**
+Paste this file at session start in whichever project you're working in.
+It captures only the facts that cross the boundary between projects.
+Full product rules → SKILL.md · Full IG rules → quiet-mirror-ig SKILL
+
+---
+
+## Product state (what the site actually does right now)
+
+| Fact | Value | Relevant to IG? |
+|---|---|---|
+| Top commit | `be4957c` (#218) | No |
+| `PRICING.earlyAccess` | `true` | **Yes — see below** |
+| Price | $25/month (visible on /upgrade, no card required now) | **Yes** |
+| Free features | All premium features open to all signed-up users | **Yes** |
+| CTAs on /upgrade | "Sign up free →" (links to /magic-login) | **Yes** |
+| Trial | 3-day free trial (wired, not shown while earlyAccess:true) | No |
+| Testimonial slot | Wired on /upgrade — dark (empty strings in en.ts) | **Yes** |
+| Open PRs | 0 | No |
+| Vercel prod | READY — #218 live | No |
+
+### What earlyAccess:true means for IG copy
+- Do **not** mention "3-day free trial" in captions or stories — the trial flow is hidden
+- Do **not** say "start your trial" — the CTA is "sign up free"
+- **Do** say: "free to use", "sign up free", "no card needed"
+- The $25/month price is still visible on /upgrade — fine to reference as "what it will cost when pricing goes live"
+- All premium features (reflections, patterns, weekly summary) are fully unlocked for anyone who signs up
+
+### When earlyAccess flips to false
+Trigger: Dodo Payments e2e test completes (real transaction + withdrawal confirmed).
+When this happens in the dev project:
+- IG copy must immediately switch from "free to use" → "3-day free trial, $25/month"
+- Update this file + notify IG project at next session
+
+---
+
+## IG state (what Instagram actually is right now)
+
+| Fact | Value | Relevant to dev? |
+|---|---|---|
+| Handle | @quietmirror.me | No |
+| Followers | 1 | No |
+| Posts live | 1 (Post 9 — "A private journal that reads underneath") | No |
+| Testimonial collected | None yet | **Yes** |
+| First Tier A comment | Left on @the.holistic.psychologist (May 14) | No |
+| Grid complete | May 30, 2026 (Posts 8→1 publishing every other day) | No |
+
+---
+
+## Bridge items — require action in BOTH projects
+
+### 1. Testimonial (open — HIGH priority)
+**IG side:** Watch comments on Posts 3, 7, and 2 most closely. If someone writes more than one genuine sentence, DM them for permission.
+**Dev side:** Once a real quote + attribution exists, add to `en.ts` under `upgradeFull.testimonialQuote` and `upgradeFull.testimonialAttribution`. Run i18n-sync → push → auto-translate handles 5 non-EN locales. The slot on /upgrade renders immediately.
+**Current status:** Slot dark. No quote yet.
+
+### 2. earlyAccess flip (pending Dodo e2e)
+**Dev side:** Set `PRICING.earlyAccess: false` in `app/lib/pricing.ts`. No other files change. Push.
+**IG side:** Caption language must change — "sign up free" → "start your 3-day free trial". Stories and bio link may need updating.
+**Current status:** Blocked on Dodo Payments e2e test.
+
+### 3. Dodo Payments e2e (final launch gate)
+**Dev side:** Run a real test transaction through the Dodo dashboard. Confirm webhook fires, subscription row appears in Supabase, withdrawal clears.
+**IG side:** No action until confirmed complete. Then earlyAccess flips (see above).
+**Current status:** Not yet done.
+
+---
+
+## Sync triggers — update this file when any of these happen
+
+| Event | Which project acts | What to update here |
+|---|---|---|
+| Dodo e2e confirmed | Dev | earlyAccess status, CTA language |
+| earlyAccess flipped to false | Dev | Product state table, IG copy rules |
+| First testimonial collected via IG | IG | Bridge item #1 status |
+| Testimonial shipped to /upgrade | Dev | Bridge item #1 → closed |
+| New i18n keys added that affect public copy | Dev | Note if copy appears on pages IG links to |
+| Bio or /upgrade CTA changes | Dev | IG copy rules section |
+| IG follower milestone (100, 500, 1000) | IG | Note here for potential social proof on site |
+| Post with strong save rate identified | IG | Note pillar — may inform homepage copy direction |
+
+---
+
+## How to use this file
+
+**In the dev project:** Paste at session start after SKILL.md. Check bridge items before writing any user-facing copy. If earlyAccess changes, update this file as part of the PR.
+
+**In the IG project:** Paste at session start. Check "What earlyAccess:true means for IG copy" before writing any caption. Check bridge items for testimonial status.
+
+**Updating:** Copy this file from the repo, edit the relevant section, paste back as a new version. The repo is the source of truth — `docs/IG_SYNC.md`.
