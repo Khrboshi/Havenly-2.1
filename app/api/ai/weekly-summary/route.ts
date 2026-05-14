@@ -37,6 +37,7 @@ import {
   SUPPORTED_LOCALES,
   DEFAULT_LOCALE,
 } from "@/app/lib/i18n";
+import { PRICING } from "@/app/lib/pricing";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -206,7 +207,7 @@ export async function GET(req: Request) {
     .maybeSingle() as { data: UserCreditsRow | null; error: unknown };
 
   const plan = normalizePlan(credits?.plan_type);
-  if (plan !== "PREMIUM" && plan !== "TRIAL") {
+  if (!PRICING.earlyAccess && plan !== "PREMIUM" && plan !== "TRIAL") {
     return NextResponse.json({ error: "Premium required" }, { status: 402 });
   }
 

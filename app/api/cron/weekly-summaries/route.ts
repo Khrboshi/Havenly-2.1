@@ -23,6 +23,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { generateWeeklySummaryForUser } from "@/app/lib/ai/generateWeeklySummary";
+import { PRICING } from "@/app/lib/pricing";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30; // Vercel Hobby ignores this (hard 10s cap), Pro honours it
@@ -54,11 +55,16 @@ export async function GET(req: Request) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  // ── Find all Premium / Trial users ───────────────────────────────────────
-  const { data: premiumUsers, error: usersErr } = await adminClient
+  // ── Find eligible users ───────────────────────────────────────────────────
+  // During early-access mode all users get weekly summaries; otherwise
+  // only Premium and Trial subscribers are included.
+  const usersQuery = adminClient
     .from("user_credits")
-    .select("user_id")
-    .in("plan_type", ["PREMIUM", "TRIAL"]);
+    .select("user_id");
+
+  const { data: premiumUsers, error: usersErr } = PRICING.earlyAccess
+    ? await usersQuery
+    : await usersQuery.in("plan_type", ["PREMIUM", "TRIAL"]);
 
   if (usersErr || !premiumUsers?.length) {
     console.log("[cron/weekly-summaries] No Premium users found");

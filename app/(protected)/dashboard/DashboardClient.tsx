@@ -352,8 +352,8 @@ export default function DashboardClient({ data }: { data: DashboardData }) {
     });
   }, [supabase]);
 
-  const isPremium = planType === "PREMIUM" || planType === "TRIAL";
-  const isFree = !planLoading && planType === "FREE";
+  const isPremium = planType === "PREMIUM" || planType === "TRIAL" || PRICING.earlyAccess;
+  const isFree = !planLoading && planType === "FREE" && !PRICING.earlyAccess;
   const reflectionsPaused = isFree && (credits ?? 0) === 0;
   const resetLabel = startOfNextMonth();
 

@@ -139,7 +139,7 @@ export default function JournalEntryClient({
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const isUnlimited = planType === "PREMIUM" || planType === "TRIAL";
+  const isUnlimited = planType === "PREMIUM" || planType === "TRIAL" || PRICING.earlyAccess;
   const isLimitReached = !isUnlimited && credits === 0;
 
   const parsedSummary = useMemo(

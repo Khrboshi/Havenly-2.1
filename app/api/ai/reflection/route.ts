@@ -306,7 +306,8 @@ export async function POST(req: Request) {
   // Trust the plan_type maintained by the Stripe webhook in the DB.
   // No live Stripe API call needed here — the webhook already handles
   // subscription changes (active → past_due → cancelled → FREE).
-  const effectiveTier: "FREE" | "PREMIUM" = (planType === "PREMIUM" || planType === "TRIAL") ? "PREMIUM" : "FREE";
+  // During early-access mode every user gets unlimited reflections.
+  const effectiveTier: "FREE" | "PREMIUM" = (PRICING.earlyAccess || planType === "PREMIUM" || planType === "TRIAL") ? "PREMIUM" : "FREE";
 
   const existingFull = tryParseReflection(entry.ai_response);
   if (existingFull) {
