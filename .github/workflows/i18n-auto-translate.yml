@@ -127,14 +127,17 @@ jobs:
           # If any translated value introduced a syntax error (e.g. missing trailing
           # comma from the known pipeline bug), this catches it here and aborts the
           # commit — preventing a broken build from reaching Vercel.
+          #
+          # pipefail is required: without it, the exit status comes from `tee`
+          # (which always exits 0), so a tsc failure would never be detected.
+          set -o pipefail
           echo "Running tsc --noEmit to validate locale file syntax..."
           if ! npx tsc --noEmit 2>&1 | tee tsc-validation.log; then
             echo ""
             echo "❌ tsc validation failed after translation — aborting commit."
             echo "   The translated locale files contain a syntax error."
             echo "   Check tsc-validation.log above for details."
-            echo "   This is likely the known trailing-comma pipeline bug."
-            echo "   The fix is in scripts/i18n-sync.mjs — review patchLocaleFile()."
+            echo "   The fix is in scripts/i18n-sync.mjs — review the --translate-stubs path."
             exit 1
           fi
           echo "✅ tsc validation passed — locale files are syntactically valid."
