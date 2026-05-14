@@ -1086,6 +1086,10 @@ export interface Translations {
     depthDesc:              string;
     // Longitudinal framing note below the insight card grid
     longitudinalNote:       string;
+    // Early access mode — visible when PRICING.earlyAccess is true
+    earlyAccessBanner:      string;
+    earlyAccessCta:         string;
+    earlyAccessSubline:     string;
   };
 
   // ── Blog page chrome ─────────────────────────────────────────────────────

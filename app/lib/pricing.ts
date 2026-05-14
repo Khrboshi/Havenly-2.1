@@ -65,4 +65,20 @@ export const PRICING = {
    * Always one more than trialDays.
    */
   trialNoChargeUntil: `no charge until day ${TRIAL_DAYS + 1}`,
+
+  // ── Early access ──────────────────────────────────────────────────────────
+
+  /**
+   * Early-access mode — flip to false when Dodo Payments e2e is complete
+   * and billing is ready to go live.
+   *
+   * When true:
+   *   - /upgrade page replaces paid CTAs with a free sign-up button
+   *   - An early-access banner explains pricing is paused
+   *   - All pricing copy, the comparison table, and FAQ remain fully visible
+   *     so visitors understand what the product will cost
+   *
+   * When false: normal paid trial flow resumes. No other files need changing.
+   */
+  earlyAccess: true,
 } as const;

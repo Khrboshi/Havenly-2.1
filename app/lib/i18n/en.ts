@@ -1113,6 +1113,9 @@ export const en: Translations = {
     depthDesc:              "Each entry adds to what Quiet Mirror already knows about you. After a few weeks, it is not reading a single entry — it is reading the shape of your inner life over months.",
     // Longitudinal framing note below the insight card grid
     longitudinalNote:       "Each card above is built from your full writing history — not just your last entry.",
+    earlyAccessBanner:      "Pricing is paused while we're getting started — all premium features are free right now.",
+    earlyAccessCta:         "Sign up free →",
+    earlyAccessSubline:     "$25/month when pricing goes live · No card needed now",
   },
 
   // ── Blog page chrome ─────────────────────────────────────────────────────

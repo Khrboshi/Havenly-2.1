@@ -1099,6 +1099,9 @@ export const ar: Translations = {
     depthH:                 "الصورة تصبح أوضح كلما كتبت.",
     depthDesc:              "يضيف كل مدخل إلى ما تعرفه Quiet Mirror عنك بالفعل. بعد بضعة أسابيع، لن تقرأ مدخلاً واحدًا - بل تقرأ شكل حياتك الداخلية على مدار أشهر.",
     longitudinalNote:       "كل بطاقة أعلاه مبنية من تاريخ كتابتك الكامل - وليس فقط آخر مدخل لك.",
+    earlyAccessBanner:      "Pricing is paused while we're getting started — all premium features are free right now.",
+    earlyAccessCta:         "Sign up free →",
+    earlyAccessSubline:     "$25/month when pricing goes live · No card needed now",
   },
 
   // ── blogPage ────────────────────────────────────────────────
