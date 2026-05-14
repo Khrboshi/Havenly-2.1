@@ -2,6 +2,32 @@
 const nextConfig = {
   reactStrictMode: true,
 
+  // ── PostHog reverse proxy ────────────────────────────────────────────────
+  //
+  // Routes PostHog ingestion through quietmirror.me/ingest/... so that
+  // ad blockers and privacy browsers (Brave, uBlock) cannot distinguish
+  // analytics calls from first-party API requests. Without this, users on
+  // strict browser privacy settings are invisible in PostHog.
+  //
+  // EU cloud endpoints:
+  //   /ingest/static/* → eu-assets.i.posthog.com  (JS bundle)
+  //   /ingest/*        → eu.i.posthog.com          (event ingestion)
+  //
+  // PostHogProvider is updated to use api_host: '/ingest' so all SDK
+  // calls go through these rewrites automatically.
+  async rewrites() {
+    return [
+      {
+        source: "/ingest/static/:path*",
+        destination: "https://eu-assets.i.posthog.com/static/:path*",
+      },
+      {
+        source: "/ingest/:path*",
+        destination: "https://eu.i.posthog.com/:path*",
+      },
+    ];
+  },
+
   async headers() {
     // ── Content Security Policy ──────────────────────────────────────────────
     //
@@ -12,7 +38,8 @@ const nextConfig = {
     //   style-src   — 'self' + 'unsafe-inline' for Tailwind
     //   img-src     — 'self' + data: (noise SVG in globals.css) + blob:
     //   font-src    — 'self' only (Google Fonts served locally via next/font)
-    //   connect-src — self API routes + Supabase (REST + WebSocket) + PostHog + Vercel
+    //   connect-src — self API routes + Supabase (REST + WebSocket) + Vercel
+    //                 (PostHog is proxied through /ingest/* — covered by 'self')
     //   frame-src   — 'none' (no iframes needed — Dodo checkout is a full-page redirect)
     //   object-src  — 'none' (no browser plugins)
     //   base-uri    — 'self' (prevents <base> tag injection attacks)
@@ -31,7 +58,8 @@ const nextConfig = {
         "connect-src 'self'",
         "https://*.supabase.co",
         "wss://*.supabase.co",
-        "https://*.posthog.com",
+        // PostHog events are proxied through /ingest/* — no external posthog.com
+        // domain needed; 'self' covers all ingestion. Tightens the CSP.
         "https://va.vercel-scripts.com",
       ].join(" "),
       "frame-src 'none'",
